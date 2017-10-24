@@ -36,7 +36,7 @@ def randomize_q(q) :
 	q.flat[i] = np.random.choice([-1,1])
 
                     
-def anneal(q, G, kT, m, J, h, c) :
+def anneal(q, G, kT, m, h, J, c) :
     N = q.shape[1]
     for i in range(N * m):
 	x = np.random.randint(N)
