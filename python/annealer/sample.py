@@ -11,7 +11,7 @@ qubo = np.array([[-32,4,4,4,4,4,4,4],
                  [4,4,4,4,4,4,-32,4],
                  [4,4,4,4,4,4,4,-32]])
 
-J, h, c = annealer.createJhc(qubo)
+h, J, c = annealer.create_hJc(qubo)
 
 Ginit = 5.
 Gfin = 0.01
@@ -22,11 +22,11 @@ nRepeat = 4
 kT = 0.02
 tau = 0.99
 
-q = annealer.createQ(N, m)
+q = annealer.create_q(N, m)
 Ec = 0
 for loop in range(0, nRepeat) :
     G = Ginit
-    annealer.randomizeQ(q)
+    annealer.randomize_q(q)
     while Gfin < G :
         Ec = annealer.anneal(q, G, kT, m, J, h, c)
         G = G * tau

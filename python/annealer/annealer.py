@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-def createJhc(qubo) :
+def create_hJc(qubo) :
     N = len(qubo)
     h = np.zeros(N, dtype=np.float64)
     J = np.zeros((N, N), dtype=np.float64)
@@ -25,13 +25,13 @@ def createJhc(qubo) :
         hsum += s * 1.0 / 2
         h[j] = s * 1.0 / 2 + sum
 
-    return (J, h, Jsum + hsum)
+    return (h, J, Jsum + hsum)
     
     
-def createQ(N, m) :
+def create_q(N, m) :
     return np.zeros((m, N), dtype=np.int8) 
 
-def randomizeQ(q) :
+def randomize_q(q) :
     for i in range(q.size):
 	q.flat[i] = np.random.choice([-1,1])
 
