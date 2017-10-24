@@ -28,7 +28,7 @@ for loop in range(0, nRepeat) :
     G = Ginit
     annealer.randomize_q(q)
     while Gfin < G :
-        Ec = annealer.anneal(q, G, kT, m, h, J, c)
+        Ec = annealer.anneal_one_step(q, G, kT, h, J, c)
         G = G * tau
 
     print(q[0,:], Ec)
