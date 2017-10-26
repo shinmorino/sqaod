@@ -1,41 +1,48 @@
 import numpy as np
 import random
+import native
+
+use_native=True
 
 def create_hJc(qubo) :
-    N = len(qubo)
-    h = np.zeros(N, dtype=np.float64)
-    J = np.zeros((N, N), dtype=np.float64)
-    Jsum = 0.
-    hsum = 0.
-
-    for j in range(N):
-        sum = 0
+    if use_native :
+        N = len(qubo)
+        h = np.zeros(N, dtype=np.float64)
+        J = np.zeros((N, N), dtype=np.float64)
+        Jsum = 0.
+        hsum = 0.
         
-        for i in range(j+1,N):
-            r = qubo[j][i]
-            sum += r
-            J[j][i] = r*1.0/4
-            J[i][j] = r*1.0/4
-            Jsum += r*1.0/4
+        for j in range(N):
+            sum = 0
+        
+            for i in range(j+1,N):
+                r = qubo[j][i]
+                sum += r
+                J[j][i] = r*1.0/4
+                J[i][j] = r*1.0/4
+                Jsum += r*1.0/4
             
-        for i in range(0, j):
-            sum += qubo[j][i]
+            for i in range(0, j):
+                sum += qubo[j][i]
             
-        s = qubo[j][j]
-        hsum += s * 1.0 / 2
-        h[j] = s * 1.0 / 2 + sum
-
-    return (h, J, Jsum + hsum)
-    
+            s = qubo[j][j]
+            hsum += s * 1.0 / 2
+            h[j] = s * 1.0 / 2 + sum
+        return (h, J, Jsum + hsum)
+    else :
+        return native.create_hJc(qubo)
     
 def create_q(N, m) :
     return np.zeros((m, N), dtype=np.int8) 
 
 def randomize_q(q) :
-    for i in range(q.size):
-	q.flat[i] = np.random.choice([-1,1])
+    if use_native :
+        for i in range(q.size):
+            q.flat[i] = np.random.choice([-1,1])
+    else :
+        native.randomize_q(q)
 
-                    
+    
 def anneal_one_step(q, G, kT, h, J, c) :
     m = q.shape[0]
     N = q.shape[1]

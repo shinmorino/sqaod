@@ -1,4 +1,14 @@
-from distutils.core import setup
+from distutils.core import setup, Extension
+import numpy
+
+module = Extension('native',
+                   sources = ['native.c'],
+                   include_dirs=[numpy.get_include()])
+
+setup (name = 'native',
+       version = '0.1',
+       description = 'native extension for annealer',
+       ext_modules = [module])
 
 setup(
     name='annealer',
