@@ -36,9 +36,9 @@ def anneal(ann) :
         print(q[0,:], E)
 
 
-print('simle annealer')
+print('simple annealer (python)')
 anneal(annealer.simple_annealer(N, m))
 print
-print('simple native annealer')
+print('simple native annealer (native)')
 anneal(annealer.simple_native_annealer(N, m))
 
