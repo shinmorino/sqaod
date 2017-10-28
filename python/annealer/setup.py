@@ -1,8 +1,20 @@
 from distutils.core import setup, Extension
+import sysconfig
 import numpy
+
+_DEBUG=True
+
+# Common flags for both release and debug builds.
+extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
+extra_compile_args += ["-Wall", "-Wextra"]
+if _DEBUG:
+    extra_compile_args += ["-O0", "-ggdb"]
+else:
+    extra_compile_args += ["-DNDEBUG", "-O3"]
 
 module = Extension('native',
                    sources = ['native.c'],
+                   extra_compile_args = extra_compile_args, 
                    include_dirs=[numpy.get_include()])
 
 setup (name = 'native',
