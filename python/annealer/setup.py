@@ -13,7 +13,7 @@ else:
     extra_compile_args += ["-DNDEBUG", "-O3"]
 
 module = Extension('native',
-                   sources = ['native.c'],
+                   sources = ['native.c', 'src/mt19937ar.c'],
                    extra_compile_args = extra_compile_args, 
                    include_dirs=[numpy.get_include()])
 

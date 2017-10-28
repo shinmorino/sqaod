@@ -3,12 +3,32 @@
 #include <numpy/arrayobject.h>
 #include <assert.h>
 
-
 // http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
 // http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
 
 static PyObject *NativeError;
 typedef double real;
+
+void init_genrand(unsigned long s);
+double genrand_res53(void);
+unsigned long genrand_int32(void);
+
+
+static
+void mt_setSeed(unsigned long seed) {
+    init_genrand(seed);
+}
+
+static
+real mt_random() {
+    return (real)genrand_res53();
+}
+
+static
+int mt_intrand(int N) {
+    return genrand_int32() % N;
+}
+
 
 static
 int checkQType(PyArrayObject *objQ) {
@@ -53,7 +73,15 @@ int isSquareMatrix(const char *varname, const char *typename, PyArrayObject *obj
     return 1;
 }
 
-
+static
+PyObject *annealer_set_seed(PyObject *self, PyObject *args) {
+    unsigned long seed = 0;
+    if (!PyArg_ParseTuple(args, "k", &seed))
+         return NULL;
+    mt_setSeed(seed);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 /* def create_hJc(qubo) */
 static
@@ -143,7 +171,7 @@ PyObject *annealer_randomize_q(PyObject *self, PyObject *args) {
     for (int j = 0; j < m; ++j) {
         char *qn = &q[stride * j];
         for (int i = 0; i < N; ++i)
-            qn[i] = rand() < (RAND_MAX / 2) ? -1 : 1;
+            qn[i] = mt_intrand(2) == 0 ? -1 : 1;
     }
     Py_INCREF(Py_None);
     return Py_None;
@@ -183,15 +211,15 @@ PyObject *annealer_anneal_one_step(PyObject *self, PyObject *args) {
     // simulated quantum annealing simulator using quantum monte carlo & metropolis
     real coef = log(tanh(G / kT / m)) * 1.0 / kT;
     for (int i = 0; i < N * m; ++i) {
-        int x = rand() % N; // mt_randomByN(N);
-        int y = rand() % m; // mt_randomByN(m);
+        int x = mt_intrand(N); // mt_randomByN(N);
+        int y = mt_intrand(m); // mt_randomByN(m);
         int xLeft = (N + x - 1) % N, xRight = (x + 1) % N;
         int yLeft = (m + y - 1) % m, yRight = (y + 1) % m;
                 
         char qyx = q[y * N + x];
         real dE =  (2* qyx * (h[x] + q[y * N + xLeft] * J[x * N + xLeft] + q[y * N + xRight] * J[x * N + xRight])) * 1.0 / m;
         dE += -qyx * (q[yLeft * N + x] + q[yRight * N + x]) * coef;
-        if (exp(-dE/kT) > (real)rand() / (real)RAND_MAX)
+        if (exp(-dE/kT) > mt_random())
             q[y * N + x] = -qyx;
     }
 
@@ -207,6 +235,7 @@ PyObject *annealer_anneal_one_step(PyObject *self, PyObject *args) {
 
 static
 PyMethodDef annealermethods[] = {
+	{"set_seed", annealer_set_seed, METH_VARARGS},
 	{"create_hJc", annealer_create_hJc, METH_VARARGS},
 	{"randomize_q", annealer_randomize_q, METH_VARARGS},
 	{"anneal_one_step", annealer_anneal_one_step, METH_VARARGS},

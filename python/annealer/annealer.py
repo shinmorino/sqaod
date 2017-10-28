@@ -12,7 +12,13 @@ class simple_annealer :
     def __init__(self, N, m, use_native=True) :
         self.set_problem_size(N, m)
         self.use_native=use_native
-    
+
+    def set_seed(seed) :
+        if not self.use_native :
+            random.seed(seed)
+        else :
+            native.set_seed(seed)
+        
     def set_problem_size(self, N, m) :
         self.N = N
         self.m = m;
