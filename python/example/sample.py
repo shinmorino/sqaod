@@ -13,13 +13,16 @@ qubo = np.array([[-32,4,4,4,4,4,4,4],
 
 
 ann = annealer.simple_annealer(8, 4)
+#ann = annealer.simple_native_annealer(8, 4)
+
 ann.set_qubo(qubo)
 
 Ginit = 5.
 Gfin = 0.01
+
+N = 8
 m = 4
 
-N=8
 nRepeat = 4
 kT = 0.02
 tau = 0.99
