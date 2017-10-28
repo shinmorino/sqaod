@@ -16,7 +16,7 @@ include_dirs=sysconfig.get_config_var('INCLDIRSTOMAKE').split()
 include_dirs.append(numpy.get_include())
 include_dirs = [ '-I' + dir for dir in include_dirs]
 
-sources = ['../native.c', 'mt19937ar.c']
+sources = ['native.c', 'mt19937ar.c']
 
 command = ['gcc', '-shared'] + extra_compile_args + include_dirs + sources + ['-o', '../native.so']
 print(command)
