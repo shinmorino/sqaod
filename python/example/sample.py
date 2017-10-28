@@ -12,8 +12,8 @@ qubo = np.array([[-32,4,4,4,4,4,4,4],
                  [4,4,4,4,4,4,4,-32]])
 
 
-ann = annealer.simple_annealer(8, 4)
-#ann = annealer.simple_native_annealer(8, 4)
+#ann = annealer.simple_annealer(8, 4)
+ann = annealer.simple_native_annealer(8, 4)
 
 ann.set_qubo(qubo)
 
