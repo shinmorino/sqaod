@@ -2,7 +2,7 @@ import sysconfig
 import numpy
 import subprocess
 
-_DEBUG=True
+_DEBUG=False
 
 # Common flags for both release and debug builds.
 extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
