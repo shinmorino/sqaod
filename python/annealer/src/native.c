@@ -20,7 +20,7 @@ void mt_setSeed(unsigned long seed) {
 }
 
 static
-real mt_random() {
+real mt_random(void) {
     return (real)genrand_res53();
 }
 
