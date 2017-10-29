@@ -1,17 +1,17 @@
 # quant_sandbox
 sandbox for simulated quantum annealing
 
-QUANTSANDBOX_ROOT is the root directory of quant_native.
+QUANTSANDBOX_ROOT is the root directory of quant_native.  
 
-To build:
+To build:  
 
-   $ cd ${QUANTSANDBOX_ROOT}
-   $ cd python
-   $ ./build.sh
+   $ cd ${QUANTSANDBOX_ROOT}  
+   $ cd python  
+   $ ./build.sh  
 
-To run sample.py:
+To run sample.py:  
 
-   $ cd ${QUANTSANDBOX_ROOT}
-   $ cd python
-   $ export PYTHONPATH=`pwd`
-   $ python example/sample.py
+   $ cd ${QUANTSANDBOX_ROOT}  
+   $ cd python  
+   $ export PYTHONPATH=\`pwd\`  
+   $ python example/sample.py  
