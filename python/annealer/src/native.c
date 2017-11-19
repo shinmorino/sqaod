@@ -213,11 +213,16 @@ PyObject *annealer_anneal_one_step(PyObject *self, PyObject *args) {
     for (int i = 0; i < N * m; ++i) {
         int x = mt_intrand(N); // mt_randomByN(N);
         int y = mt_intrand(m); // mt_randomByN(m);
-        int xLeft = (N + x - 1) % N, xRight = (x + 1) % N;
         int yLeft = (m + y - 1) % m, yRight = (y + 1) % m;
                 
+        real sum = 0.;
+        for (int i = 0; i < x; ++i)
+            sum += q[y * N + i] * J[x * N + i];
+        for (int i = x + 1; i < N; ++i)
+            sum += q[y * N + i] * J[x * N + i];
+
         char qyx = q[y * N + x];
-        real dE =  (2* qyx * (h[x] + q[y * N + xLeft] * J[x * N + xLeft] + q[y * N + xRight] * J[x * N + xRight])) * 1.0 / m;
+        real dE =  (2* qyx * (h[x] + sum) * 1.0 / m;
         dE += -qyx * (q[yLeft * N + x] + q[yRight * N + x]) * coef;
         if (exp(-dE/kT) > mt_random())
             q[y * N + x] = -qyx;
