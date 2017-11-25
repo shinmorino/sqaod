@@ -72,13 +72,8 @@ class SimpleAnnealer :
             x = np.random.randint(N)
             y = np.random.randint(m)
 
+            sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
             qyx = q[y][x]
-            sum = 0
-            for i in range(x) :
-                sum += q[y][i] * J[x][i]
-            for i in range(x + 1, N) :
-                sum += q[y][i] * J[x][i]
-
             dE = (2 * qyx * (h[x] + sum)) * 1.0 / m
             dE += -qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * np.log(np.tanh(G/kT/m)) * 1.0 / kT
             if np.exp(-dE/kT)> np.random.rand():
