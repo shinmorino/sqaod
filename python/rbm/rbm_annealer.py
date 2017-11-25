@@ -88,16 +88,16 @@ class RBMAnnealer :
                 if thresh > np.random.rand():
                     qAnneal[im][iq] = -q
 
-    def _get_vers(self) :
+    def _get_vars(self) :
         return self._J, self._hlist[0], self._hlist[1], self._qlist[0], self._qlist[1]
                     
     def anneal_one_step(self, G, kT) :
-        J, h0, h1, q0, q1 = self._get_vers()
+        J, h0, h1, q0, q1 = self._get_vars()
         self._anneal_half_step(N1, q1, h1, J, q0, G, kT)
         self._anneal_half_step(N0, q0, h0, np.transpose(J), q1, G, kT)
 
     def calculate_E(self) :
-        J, h0, h1, q0, q1 = self._get_vers()
+        J, h0, h1, q0, q1 = self._get_vars()
         J = self._J
         self.E = np.dot(h0, q0[0]) + np.dot(h1, q1[0]) + np.dot(h1, np.matmul(J, q0[0]))
         
