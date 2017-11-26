@@ -7,17 +7,24 @@ class RBMAnnealer :
         if not N0 == 0 :
             self.set_problem_size(N0, N1, m)
 
+    def _get_vars(self) :
+        return self._J, self._hlist[0], self._hlist[1], self._qlist[0], self._qlist[1]
+
+    def _get_dim(self) :
+        return self.dim[0], self.dim[1], self.m
+            
     def set_problem_size(self, N0, N1, m) :
         self.dim = [N0, N1]
         self._qlist = [ np.zeros((m, N0), dtype=np.int8), np.zeros((m, N1), dtype=np.int8) ]
         self.m = m;
 
     def _check_dim(self, W, b0, b1) :
-        if W.shape != (N1, N0) :
+        dimRev = [n for n in reversed(W.shape)]
+        if not np.allclose(dimRev, self.dim) :
             return False
-        if len(b0) != N0 :
+        if len(b0) != self.dim[0] :
             return False;
-        if len(b1) != N1 :
+        if len(b1) != self.dim[1] :
             return False;
         return True
         
@@ -30,10 +37,11 @@ class RBMAnnealer :
                 raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
                                 .format(W.shape, b0.size, b1.size))
 
-        self._c = (1. / 4.) * np.sum(W) + (1. / 2.) * (np.sum(b0) + np.sum(b1))
-        self._J = W * (1. /  4.)
-        h0 = [np.sum(W[:, i]) + 0.5 * b0[i] for i in range(0, N0)]
-        h1 = [np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
+        self._c = 0.25 * np.sum(W) + 0.5 * (np.sum(b0) + np.sum(b1))
+        self._J = 0.25 * W
+        N0, N1, m = self._get_dim()
+        h0 = [(1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i] for i in range(0, N0)]
+        h1 = [(1. / 4.) * np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
         self._hlist = [h0, h1]
         
     def set_ising_model(self, J, h0, h1, c = 0.) :
@@ -55,8 +63,16 @@ class RBMAnnealer :
         if len(q) != self.dim[idx] :
             raise "Error"
         q_int8 = q.astype(np.int8)
-        for i in range(0, m) :
-            self._qlist[i][:] = q_int8
+        for im in range(0, self.m) :
+            self._qlist[idx][:][im] = q_int8[:]
+
+    def set_x(self, idx, x) :
+        if len(x) != self.dim[idx] :
+            raise "Error"
+        q_int8 = [-1 if xi == 0 else 1 for xi in x]
+        for im in range(0, self.m) :
+            self._qlist[idx][:][im] = q_int8[:]
+        
 
     def randomize_q(self, idx) :
         q = self._qlist[idx];
@@ -75,7 +91,7 @@ class RBMAnnealer :
         tempCoef = np.log(np.tanh(G/kT/m)) / kT
         invKT = 1. / kT
         for im in range(self.m):
-            rim = np.random.randint(m)
+            rim = im #np.random.randint(m)
             for iq in range(N):
                 riq = iq #np.random.randint(N)
 
@@ -87,18 +103,16 @@ class RBMAnnealer :
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():
                     qAnneal[rim][riq] = -q
-
-    def _get_vars(self) :
-        return self._J, self._hlist[0], self._hlist[1], self._qlist[0], self._qlist[1]
                     
     def anneal_one_step(self, G, kT) :
         J, h0, h1, q0, q1 = self._get_vars()
+        N0, N1 = self.dim[0], self.dim[1]
         self._anneal_half_step(N1, q1, h1, J, q0, G, kT)
         self._anneal_half_step(N0, q0, h0, J.T, q1, G, kT)
 
     def calculate_E(self) :
         J, h0, h1, q0, q1 = self._get_vars()
-        self.E = - np.dot(h0, q0[0]) - np.dot(h1, q1[0]) - np.dot(h1, np.matmul(J, q0[0]))
+        self.E = - np.dot(h0, q0[0]) - np.dot(h1, q1[0]) - np.dot(q1[0], np.matmul(J, q0[0])) - self._c
         return self.E
         
 
@@ -107,9 +121,9 @@ def rbm_annealer(N0 = 0, N1 = 0, m = 0) :
 
 
 if __name__ == '__main__' :
-    N0 = 6
-    N1 = 6
-    m = 4
+    N0 = 10
+    N1 = 8
+    m = 8
     
     np.random.seed(0)
         
@@ -120,11 +134,11 @@ if __name__ == '__main__' :
     b1 = np.random.random((N1)) - 0.5
     an.set_qubo(W, b0, b1)
     #an.set_ising_model(W, b0, b1)
-
+    
     Ginit = 5.
     Gfin = 0.01
 
-    nRepeat = 30
+    nRepeat = 10
     kT = 0.02
     tau = 0.99
 
