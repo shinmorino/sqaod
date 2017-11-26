@@ -4,16 +4,25 @@ import sys
 
 class RBMBFSolver :
     
-    def __init__(self, N0 = 0, N1 = 0) :
+    def __init__(self, N0 = 0, N1 = 0, verbose = False) :
         if not N0 == 0 :
             self.set_problem_size(N0, N1)
+        self._verbose = False
+
+    def _get_vars(self) :
+        return self._W, self._blist[0], self._blist[1], self._xlist[0], self._xlist[1]
+
+    def _get_dim(self) :
+        return self.dim[0], self.dim[1]
 
     def set_problem_size(self, N0, N1) :
         self.dim = [N0, N1]
         self._xlist = [ np.zeros((N0), dtype=np.int8), np.zeros((N1), dtype=np.int8) ]
-
+        
     def _check_dim(self, W, b0, b1) :
-        if W.shape != (N1, N0) :
+        N0, N1 = self._get_dim()
+        dimRev = [n for n in reversed(W.shape)]
+        if not np.allclose(dimRev, self.dim) :
             return False
         if len(b0) != N0 :
             return False;
@@ -39,13 +48,10 @@ class RBMBFSolver :
     def get_E(self) :
         return self.E;
 
-    def _get_vars(self) :
-        return self._W, self._blist[0], self._blist[1], self._xlist[0], self._xlist[1]
-
     def search_optimum(self) :
-        iMax = 1 << self.dim[0]
-        jMax = 1 << self.dim[1]
-        print iMax, jMax
+        N0, N1 = self._get_dim()
+        iMax = 1 << N0
+        jMax = 1 << N1
         self.E = sys.float_info.max
         W, b0, b1, x0, x1 = self._get_vars()
         x0min = []
@@ -58,8 +64,9 @@ class RBMBFSolver :
                 Etmp = - np.dot(b0, x0) - np.dot(b1, x1) - np.dot(x1, np.matmul(W, x0))
                 if Etmp < self.E :
                     self.E = Etmp
-                    print("{0}:{1} Etmp < Emin : {2}".format(i, j, Etmp))
-                    x0min, x1min = x0, x1
+                    x0min, x1min = np.copy(x0), np.copy(x1)
+                    if self._verbose :
+                        print("{0}:{1} Etmp < Emin : {2}".format(i, j, Etmp))
                     
         self._xlist = [x0min, x1min]
 

@@ -1,6 +1,9 @@
 import unittest
 import numpy as np
+import rbm.rbm
 from rbm.rbm_annealer import *
+from rbm.rbm_bf_solver import *
+
 
 class TestMinEnergy(unittest.TestCase):
 
@@ -45,6 +48,32 @@ class TestMinEnergy(unittest.TestCase):
                 an.set_x(1, x1)
                 Ean = an.calculate_E()
                 self.assertTrue(np.absolute(Ebf - Ean) < 1.e-13)
+
+    def test_bf_solver(self):
+        N0 = 8
+        N1 = 5
+
+        an = rbm_annealer(N0, N1, 1)
+        bf = rbm_bf_solver(N0, N1)
+        
+        W = np.random.random((N1, N0)) - 0.5
+        b0 = np.random.random((N0)) - 0.5
+        b1 = np.random.random((N1)) - 0.5
+
+        an.set_qubo(W, b0, b1)
+        bf.set_qubo(W, b0, b1)
+        
+        bf.search_optimum();
+        rbm.rbm.anneal(an)
+
+        # Assuming problems with small N0 and N1 give the same results
+        # for annealer and brute-force solver.
+        fbx0 = bf.get_x(0)
+        fbx1 = bf.get_x(1)
+        anx0 = an.get_x(0)
+        anx1 = an.get_x(1)
+        self.assertTrue(np.allclose(fbx0, anx0))
+        self.assertTrue(np.allclose(fbx1, anx1))
 
         
 if __name__ == '__main__':

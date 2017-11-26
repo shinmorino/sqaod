@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class RBMAnnealer :
     
     def __init__(self, N0 = 0, N1 = 0, m = 0) :
@@ -43,6 +44,21 @@ class RBMAnnealer :
         h0 = [(1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i] for i in range(0, N0)]
         h1 = [(1. / 4.) * np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
         self._hlist = [h0, h1]
+
+    def get_x(self, idx) :
+        q = self._qlist[idx][0]
+        x = np.ndarray([self.dim[idx]], np.int8)
+        for i in range(self.dim[idx]) :
+            x[i] = 1 if q[i] == 1 else 0
+        return x
+
+    def set_x(self, idx, x) :
+        if len(x) != self.dim[idx] :
+            raise "Error"
+        q_int8 = [-1 if xi == 0 else 1 for xi in x]
+        for im in range(0, self.m) :
+            self._qlist[idx][:][im] = q_int8[:]
+
         
     def set_ising_model(self, J, h0, h1, c = 0.) :
         if self.dim[0] == 0 or self.dim[1] == 0 :
@@ -66,14 +82,6 @@ class RBMAnnealer :
         for im in range(0, self.m) :
             self._qlist[idx][:][im] = q_int8[:]
 
-    def set_x(self, idx, x) :
-        if len(x) != self.dim[idx] :
-            raise "Error"
-        q_int8 = [-1 if xi == 0 else 1 for xi in x]
-        for im in range(0, self.m) :
-            self._qlist[idx][:][im] = q_int8[:]
-        
-
     def randomize_q(self, idx) :
         q = self._qlist[idx];
         for v in np.nditer(q, [], ['readwrite']):
@@ -85,30 +93,28 @@ class RBMAnnealer :
     def get_E(self) :
         return self.E;
 
-    def _anneal_half_step(self, N, qAnneal, h, J, qFixed, G, kT) :
+    def _anneal_half_step(self, N, qAnneal, h, J, qFixed, G, kT, m) :
         dEmat = np.matmul(J, qFixed.T)
         twoDivM = 2. / m
         tempCoef = np.log(np.tanh(G/kT/m)) / kT
         invKT = 1. / kT
-        for im in range(self.m):
+        for im in range(m):
             rim = im #np.random.randint(m)
             for iq in range(N):
-                riq = iq #np.random.randint(N)
-
-                q = qAnneal[rim][riq]
-                dE = twoDivM * q * (h[riq] + dEmat[riq, rim])
+                q = qAnneal[rim][iq]
+                dE = twoDivM * q * (h[iq] + dEmat[iq, rim])
                 mNeibour0 = (rim + m - 1) % m
                 mNeibour1 = (rim + 1) % m
-                dE += -q * (qAnneal[mNeibour0][riq] + qAnneal[mNeibour1][riq]) * tempCoef
+                dE += -q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():
-                    qAnneal[rim][riq] = -q
+                    qAnneal[rim][iq] = -q
                     
     def anneal_one_step(self, G, kT) :
         J, h0, h1, q0, q1 = self._get_vars()
-        N0, N1 = self.dim[0], self.dim[1]
-        self._anneal_half_step(N1, q1, h1, J, q0, G, kT)
-        self._anneal_half_step(N0, q0, h0, J.T, q1, G, kT)
+        N0, N1, m = self._get_dim()
+        self._anneal_half_step(N1, q1, h1, J, q0, G, kT, m)
+        self._anneal_half_step(N0, q0, h0, J.T, q1, G, kT, m)
 
     def calculate_E(self) :
         J, h0, h1, q0, q1 = self._get_vars()
@@ -135,13 +141,6 @@ if __name__ == '__main__' :
     an.set_qubo(W, b0, b1)
     #an.set_ising_model(W, b0, b1)
     
-    Ginit = 5.
-    Gfin = 0.01
-
-    nRepeat = 10
-    kT = 0.02
-    tau = 0.99
-
     for loop in range(0, nRepeat) :
         an.randomize_q(0)
         an.randomize_q(1)
