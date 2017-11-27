@@ -48,7 +48,7 @@ class RBMBFSolver :
     def get_E(self) :
         return self.E;
 
-    def search_optimum(self) :
+    def _search_optimum(self) :
         N0, N1 = self._get_dim()
         iMax = 1 << N0
         jMax = 1 << N1
@@ -69,7 +69,48 @@ class RBMBFSolver :
                         print("{0}:{1} Etmp < Emin : {2}".format(i, j, Etmp))
                     
         self._xlist = [x0min, x1min]
+        
+    @staticmethod
+    def _create_bit_sequences(v0, v1, N) :
+        x = np.ndarray((v1 - v0, N), np.int8)
+        for v in range(v0, v1) :
+            for pos in range(N - 1, -1, -1) :
+                x[v - v0][pos] = np.int8(v >> pos & 1)
+        return x
 
+        
+    def _search_optimum_batched(self) :
+        N0, N1 = self._get_dim()
+        iMax = 1 << N0
+        jMax = 1 << N1
+        self.E = sys.float_info.max
+        W, b0, b1, _, _ = self._get_vars()
+        x0min = []
+        x1min = []
+
+        iStep = min(256, iMax)
+        jStep = min(256, jMax)
+        for iTile in range(0, iMax, iStep) :
+            x0 = RBMBFSolver._create_bit_sequences(iTile, iTile + iStep, N0)
+            for jTile in range(0, jMax, jStep) :
+                x1 = RBMBFSolver._create_bit_sequences(jTile, jTile + jStep, N1)
+                Etmp = - np.matmul(b0, x0.T).reshape(1, iStep) \
+                       - np.matmul(b1, x1.T).reshape(jStep, 1) - np.matmul(x1, np.matmul(W, x0.T))
+
+                for j in range(jStep) :
+                    for i in range(iStep) :
+                        if Etmp[j][i] < self.E :
+                            self.E = Etmp[j][i]
+                            x0min, x1min = np.copy(x0[i]), np.copy(x1[j])
+                            if self._verbose :
+                                print("{0}:{1} Etmp < Emin : {2}".format(i, j, Etmp))
+                    
+        self._xlist = [x0min, x1min]
+
+
+    def search_optimum(self) :
+        self._search_optimum_batched()
+                              
     def calculate_E(self) :
         W, b0, b1, x0, x1 = self._get_vars()
         self.E = - np.dot(b0, x0) - np.dot(b1, x1) - np.dot(x1, np.matmul(W, x0))
@@ -81,8 +122,8 @@ def rbm_bf_solver(N0 = 0, N1 = 0) :
 
 
 if __name__ == '__main__' :
-    N0 = 10
-    N1 = 8
+    N0 = 14
+    N1 = 5
     
     np.random.seed(0)
         
@@ -92,10 +133,15 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
     bf.set_qubo(W, b0, b1)
-    bf.search_optimum()
-
+    bf._search_optimum()
     x0 = bf.get_x(0) 
     x1 = bf.get_x(1) 
     E = bf.calculate_E()
-
     print(x0[:], x1[:], E)
+    
+    bf._search_optimum_batched()
+    x0 = bf.get_x(0) 
+    x1 = bf.get_x(1) 
+    E = bf.calculate_E()
+    print(x0[:], x1[:], E)
+
