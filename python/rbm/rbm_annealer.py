@@ -98,8 +98,9 @@ class RBMAnnealer :
         twoDivM = 2. / m
         tempCoef = np.log(np.tanh(G/kT/m)) / kT
         invKT = 1. / kT
-        for im in range(m):
-            rim = im #np.random.randint(m)
+        mrange = range(m);
+        random.shuffle(mrange)
+        for rim in mrange:
             for iq in range(N):
                 q = qAnneal[rim][iq]
                 dE = twoDivM * q * (h[iq] + dEmat[iq, rim])
@@ -127,9 +128,10 @@ def rbm_annealer(N0 = 0, N1 = 0, m = 0) :
 
 
 if __name__ == '__main__' :
-    N0 = 10
-    N1 = 8
-    m = 8
+    N0 = 40
+    N1 = 40
+    m = 20
+
     
     np.random.seed(0)
         
@@ -141,7 +143,13 @@ if __name__ == '__main__' :
     an.set_qubo(W, b0, b1)
     #an.set_ising_model(W, b0, b1)
     
-    for loop in range(0, nRepeat) :
+    Ginit = 5
+    Gfin = 0.01
+    kT = 0.02
+    tau = 0.99
+    n_repeat = 10
+
+    for loop in range(0, n_repeat) :
         an.randomize_q(0)
         an.randomize_q(1)
         G = Ginit
