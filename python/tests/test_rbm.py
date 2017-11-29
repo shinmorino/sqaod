@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
-import rbm.rbm
-from rbm.rbm_annealer import *
-from rbm.rbm_bf_solver import *
+import utils
+import py
 
 
 class TestMinEnergy(unittest.TestCase):
@@ -10,7 +9,7 @@ class TestMinEnergy(unittest.TestCase):
     def test_min_energy(self):
         N0 = 200
         N1 = 350
-        an = rbm_annealer(N0, N1, 1)
+        an = py.rbm_annealer(N0, N1, 1)
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
@@ -30,7 +29,7 @@ class TestMinEnergy(unittest.TestCase):
     def test_qubo_energy(self):
         N0 = 8
         N1 = 5
-        an = rbm_annealer(N0, N1, 1)
+        an = py.rbm_annealer(N0, N1, 1)
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
@@ -53,8 +52,8 @@ class TestMinEnergy(unittest.TestCase):
         N0 = 8
         N1 = 5
 
-        an = rbm_annealer(N0, N1, 1)
-        bf = rbm_bf_solver(N0, N1)
+        an = py.rbm_annealer(N0, N1, 1)
+        bf = py.rbm_bf_solver(N0, N1)
         
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
@@ -64,16 +63,19 @@ class TestMinEnergy(unittest.TestCase):
         bf.set_qubo(W, b0, b1)
         
         bf.search_optimum();
-        rbm.rbm.anneal(an)
+        utils.anneal(an)
 
         # Assuming problems with small N0 and N1 give the same results
         # for annealer and brute-force solver.
-        fbx0 = bf.get_x(0)
-        fbx1 = bf.get_x(1)
+        bfx0 = bf.get_x(0)
+        bfx1 = bf.get_x(1)
         anx0 = an.get_x(0)
         anx1 = an.get_x(1)
-        self.assertTrue(np.allclose(fbx0, anx0))
-        self.assertTrue(np.allclose(fbx1, anx1))
+        if not np.allclose(bfx0, anx0) or not np.allclose(bfx1, anx1) :
+            print bfx0, anx0, an.get_E()
+            print bfx1, anx1, bf.get_E()
+        self.assertTrue(np.allclose(bfx0, anx0))
+        self.assertTrue(np.allclose(bfx1, anx1))
 
         
 if __name__ == '__main__':
