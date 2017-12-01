@@ -1,6 +1,20 @@
 import sys
 import numpy as np
 
+# common
+
+def is_symmetric(mat) :
+    return np.allclose(mat, mat.T)
+
+def generate_random_symmetric_W(N, wmin = -0.5, wmax = 0.5, dtype=np.float64) :
+    W = np.zeros((N, N), dtype)
+    for i in range(0, N) :
+        for j in range(i, N) :
+            W[i, j] = np.random.random()
+    W = W + np.tril(np.ones((N, N)), -1) * W.T
+    W = W * (wmax - wmin) + wmin
+    return W
+
 
 def create_bits_sequence(vals, nbits) :
     if isinstance(vals, list) or isinstance(vals, tuple) :
