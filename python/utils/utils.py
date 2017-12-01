@@ -20,10 +20,13 @@ def randomize_qbits(qbits) :
     for qbit in np.nditer(qbits, [], [['readwrite']]) :
         qbit[...] = np.random.choice([-1,1])
 
-def x_to_q(x) :
+def bits_to_qbits(x) :
     q = x.copy() * 2 - 1
     return q
 
+def bits_from_qbits(q) :
+    x = ((q.copy() + 1) >> 1)
+    return x
 
 
 def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 10, verbose = False) :
@@ -44,8 +47,8 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
 
         E = annealer.calculate_E()
         if E < Emin :
-            q0 = annealer.get_q(0)[0] 
-            q1 = annealer.get_q(1)[0]
+            q0 = annealer.get_q(0)[0].copy()
+            q1 = annealer.get_q(1)[0].copy()
             Emin = E
 
-    return E, q0, q1
+    return Emin, q0, q1

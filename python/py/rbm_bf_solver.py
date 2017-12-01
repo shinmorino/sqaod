@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import sys
+import utils
+import tags
 
 class RBMBFSolver :
     
@@ -70,15 +72,6 @@ class RBMBFSolver :
                     
         self._xlist = [x0min, x1min]
         
-    @staticmethod
-    def _create_bit_sequences(v0, v1, N) :
-        x = np.ndarray((v1 - v0, N), np.int8)
-        for v in range(v0, v1) :
-            for pos in range(N - 1, -1, -1) :
-                x[v - v0][pos] = np.int8(v >> pos & 1)
-        return x
-
-        
     def _search_optimum_batched(self) :
         N0, N1 = self._get_dim()
         iMax = 1 << N0
@@ -91,9 +84,9 @@ class RBMBFSolver :
         iStep = min(256, iMax)
         jStep = min(256, jMax)
         for iTile in range(0, iMax, iStep) :
-            x0 = RBMBFSolver._create_bit_sequences(iTile, iTile + iStep, N0)
+            x0 = utils.create_bits_sequence(range(iTile, iTile + iStep), N0)
             for jTile in range(0, jMax, jStep) :
-                x1 = RBMBFSolver._create_bit_sequences(jTile, jTile + jStep, N1)
+                x1 = utils.create_bits_sequence(range(jTile, jTile + jStep), N1)
                 Etmp = - np.matmul(b0, x0.T).reshape(1, iStep) \
                        - np.matmul(b1, x1.T).reshape(jStep, 1) - np.matmul(x1, np.matmul(W, x0.T))
 
@@ -109,6 +102,7 @@ class RBMBFSolver :
 
 
     def search_optimum(self) :
+        # self._search_optimum()
         self._search_optimum_batched()
                               
     def calculate_E(self) :

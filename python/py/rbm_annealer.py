@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+import utils
 
 class RBMAnnealer :
     
@@ -83,9 +83,7 @@ class RBMAnnealer :
             self._qlist[idx][:][im] = q_int8[:]
 
     def randomize_q(self, idx) :
-        q = self._qlist[idx];
-        for v in np.nditer(q, [], ['readwrite']):
-            v[...] = np.random.choice([-1,1])
+        utils.randomize_qbits(self._qlist[idx])
     
     def get_hJc(self) :
         return self._h, self._J, self._c
@@ -106,6 +104,8 @@ class RBMAnnealer :
                 dE = twoDivM * q * (h[iq] + dEmat[iq, rim])
                 mNeibour0 = (rim + m - 1) % m
                 mNeibour1 = (rim + 1) % m
+                dE += -q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
+                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 dE += -q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():

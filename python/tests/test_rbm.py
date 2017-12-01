@@ -49,10 +49,10 @@ class TestMinEnergy(unittest.TestCase):
                 self.assertTrue(np.absolute(Ebf - Ean) < 1.e-13)
 
     def test_bf_solver(self):
-        N0 = 8
-        N1 = 5
+        N0 = 4
+        N1 = 4
 
-        an = py.rbm_annealer(N0, N1, 1)
+        an = py.rbm_annealer(N0, N1, 3)
         bf = py.rbm_bf_solver(N0, N1)
         
         W = np.random.random((N1, N0)) - 0.5
