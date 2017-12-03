@@ -30,6 +30,12 @@ def create_bits_sequence(vals, nbits) :
     return create_bits_sequence(range(vals, vals + 1), nbits)
 
 
+def generate_random_bits(N) :
+    bits = np.empty((N), np.int8)
+    for bit in np.nditer(bits, [], [['readwrite']]) :
+        bit[...] = np.random.choice([0,1])
+    return bits
+
 def randomize_qbits(qbits) :
     for qbit in np.nditer(qbits, [], [['readwrite']]) :
         qbit[...] = np.random.choice([-1,1])
