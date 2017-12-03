@@ -56,11 +56,14 @@ def rbm_calculate_hJc(W) :
 
     return hlist, J, c
 
-def rbm_calculate_E(W, x0, x1) :
+def rbm_calculate_E(b0, b1, W, x0, x1) :
+    # FIXME: not tested
     return - np.dot(b0, x0) - np.dot(b1, x1) - np.dot(x1, np.matmul(W, x0))
 
-def rbm_batch_calculate_E(W, x0, x1) :
-    return - np.matmul(b0, x0.T).reshape(1, iStep) - np.matmul(b1, x1.T).reshape(jStep, 1) \
+def rbm_batch_calculate_E(b0, b1, W, x0, x1) :
+    # FIXME: not tested
+    nBatch0, nBatch1 = x0.shape[0], x1.shape[0]
+    return - np.matmul(b0.T, x0.T).reshape(1, nBatch0) - np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
         - np.matmul(x1, np.matmul(W, x0.T))
 
 def rbm_calculate_E_from_qbits(h, J, c, q0, q1) :
