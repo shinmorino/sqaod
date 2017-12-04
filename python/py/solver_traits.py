@@ -44,7 +44,7 @@ def dense_graph_batch_calculate_E_from_qbits(h, J, c, q) :
 
 # rbm
 
-def rbm_calculate_hJc(W) :
+def rbm_calculate_hJc(b0, b1, W) :
     N0 = W.shape[1]
     N1 = W.shape[0]
     
@@ -54,7 +54,7 @@ def rbm_calculate_hJc(W) :
     h1 = [(1. / 4.) * np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
     hlist = [h0, h1]
 
-    return hlist, J, c
+    return h0, h1, J, c
 
 def rbm_calculate_E(b0, b1, W, x0, x1) :
     # FIXME: not tested
@@ -66,10 +66,9 @@ def rbm_batch_calculate_E(b0, b1, W, x0, x1) :
     return - np.matmul(b0.T, x0.T).reshape(1, nBatch0) - np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
         - np.matmul(x1, np.matmul(W, x0.T))
 
-def rbm_calculate_E_from_qbits(h, J, c, q0, q1) :
-    return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1[0], np.matmul(J, q0[0])) - c
+def rbm_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+    return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1, np.matmul(J, q0)) - c
 
-def rbm_batch_calculate_E_from_qbits(h, J, c, q0, q1) :
-    return - np.matmul(h0, q0.T).reshape(1, q0.shape[0]) \
-        - np.matmul(h1, q1.T).reshape(1, q1.shape[1]) \
-        - np.dot(q1[0], np.matmul(J, q0[0])) - c
+def rbm_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+    return - np.matmul(h0, q0.T).T.reshape(1, -1) \
+        - np.matmul(h1, q1.T).reshape(-1, 1) - np.dot(q1, np.matmul(J, q0.T)) - c
