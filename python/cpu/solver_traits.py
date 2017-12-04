@@ -15,6 +15,8 @@ def is_scalar(v) :
     return False
 
 def is_vector(v) :
+    if not isinstance(v, np.ndarray) :
+        return False
     if len(v.shape) == 1 :
         return True
     if len(v.shape) == 2 :
@@ -53,7 +55,7 @@ def raise_wrong_shape(caption, mat) :
     msg = ''.join(tokens)
     raise Exception(msg)
 
-def raise_dimension_mismatch(caption, varlist) :
+def raise_dims_dont_match(caption, varlist) :
     tokens = ['dimension mismatch for ', caption, '. ']
     for var in varlist :
         tokens.append(str(var.shape))
@@ -112,12 +114,10 @@ def _dg_check_ising_var_dims(h, J, c, q) :
         raise_not_a_vector('h', h)
     if len(J.shape) != 2 or J.shape[0] != J.shape[1] :
         raise_wrong_shape('J', (J))
-    if q.dtype != np.int8 :
-        raise_wrong_bit_type('q', (q))
     if not h.shape[0] == J.shape[0] == J.shape[1] == q.shape[len(q.shape) - 1] :
         raise_dims_dont_match("h, J, c", (h, J, c))
-    # FIXME: check for c :
-
+    if not is_scalar(c) :
+        raise_not_a_scalar('c', c)
 
 
 # QUBO energy functions
@@ -156,6 +156,9 @@ def dense_graph_calculate_hJc(W, dtype) :
 
 def dense_graph_calculate_E_from_qbits(h, J, c, q, dtype) :
     _dg_check_ising_var_dims(h, J, c, q);
+    _check_buffer_precision(dtype, (h, J, c))
+    _check_is_bits(q)
+    _check_is_vector('q', q)
     
     q_valid = (len(q.shape) == 1) or (len(q.shape) == 2 and q.shape[1] != 1)
     if not q_valid :
@@ -165,7 +168,9 @@ def dense_graph_calculate_E_from_qbits(h, J, c, q, dtype) :
     return E[0]
 
 def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
-    _dg_check_ising_var_dims(h, J, c, q);
+    _dg_check_ising_var_dims(h0, J, c, q);
+    _check_buffer_precision(dtype, (h, J, c))
+    _check_is_bits(q)
     E = np.empty([q.shape[0]], dtype)
     cpu_native.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, to_prec(dtype))
     return E
@@ -175,60 +180,91 @@ def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
 
 
 
-def _rbm_check_qubo_var_dims(b0, b1, W, x) :
+def _rbm_check_qubo_var_dims(b0, b1, W, x0, x1) :
     if not is_vector(b0) :
         raise_not_vector('b0', b0)
-    if not is_vector(x) :
+    if not is_vector(b1) :
         raise_not_vector('b1', b1)
     if len(W.shape) != 2 :
         raise_wrong_shape('W', W)
-    if not is_vector(x) :
-        raise_not_vector('x', x)
     # dimension checks
-    if not W.shape[1] == b0.shape[0] == b1.shape[0] == x.shape[0] :
-        raise_dims_dont_match('b0, b1, W, x', (b0, b1, W, x))
+    matched = (b0.shape[0] == W.shape[1] == x0.shape[len(x0.shape) - 1]) and \
+              (b1.shape[0] == W.shape[0] == x1.shape[len(x1.shape) - 1])
+    if not matched :
+        raise_dims_dont_match('b0, b1, W, x0, x1', (b0, b1, W, x0, x1))
 
-def _rbm_check_ising_var_dims(h0, h1, J, c, q) :
+def _rbm_check_ising_var_dims(h0, h1, J, c, q0, q1) :
     if len(h0.shape) != 1 :
         raise_not_a_vector('h0', h0)
     if len(h1.shape) != 1 :
         raise_not_a_vector('h1', h1)
     if len(J.shape) != 2 and  J.shape[0] != J.shape[1] :
         raise_wrong_shape('J', J)
-    if q.dtype != np.int8 :
-        raise_wrong_bit_type('q', q)
-    if not h.shape[0] == J.shape[0] == J.shape[1] == q.shape[0] :
-        raise_dims_dont_match('h, J, c', (h, J, c))
-    if is_number(c) :
-        raise_not_a_number('c', c)
+    matched = (h0.shape[0] == J.shape[1] == q0.shape[len(q0.shape) - 1]) and \
+              (h1.shape[0] == J.shape[0] == q1.shape[len(q1.shape) - 1])
+    if not matched :
+        raise_dims_dont_match('h0, h1, J, q0, q1', (h0, h1, J, q0, q1))
+    if not is_scalar(c) :
+        raise_not_a_scalar('c', c)
 
 
 def rbm_calculate_E(b0, b1, W, x0, x1, dtype) :
-    return - np.dot(b0, x0) - np.dot(b1, x1) - np.dot(x1, np.matmul(W, x0))
+    _rbm_check_qubo_var_dims(b0, b1, W, x0, x1)
+    _check_buffer_precision(dtype, (b0, b1, W))
+    _check_is_bits((x0, x1))
+    _check_is_vector('x0', x0)
+    _check_is_vector('x1', x1)
+    E = np.ndarray((1), dtype)
+    cpu_native.rbm_calculate_E(E, b0, b1, W, x0, x1, to_prec(dtype))
+    return E[0]
+
 
 def rbm_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
-    return - np.matmul(b0, x0.T).reshape(1, iStep) - np.matmul(b1, x1.T).reshape(jStep, 1) \
-        - np.matmul(x1, np.matmul(W, x0.T))
+    _rbm_check_qubo_var_dims(b0, b1, W, x0, x1)
+    _check_buffer_precision(dtype, (b0, b1, W))
+    _check_is_bits((x0, x1))
+    nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
+    nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
+    E = np.empty((nBatch1, nBatch0), dtype)
+    cpu_native.rbm_batch_calculate_E(E, b0, b1, W, x0, x1, to_prec(dtype))
+    return E
 
-def rbm_calculate_hJc(W) :
+
+def rbm_calculate_hJc(b0, b1, W, dtype) :
+    _check_buffer_precision(dtype, (W))
+    _check_is_vector('b0', b0)
+    _check_is_vector('b1', b1)
     N0 = W.shape[1]
     N1 = W.shape[0]
-    
-    c = 0.25 * np.sum(W) + 0.5 * (np.sum(b0) + np.sum(b1))
-    J = 0.25 * W
-    h0 = [(1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i] for i in range(0, N0)]
-    h1 = [(1. / 4.) * np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
-    hlist = [h0, h1]
-
-    return hlist, J, c
+    h0 = np.empty((N0), dtype)
+    h1 = np.empty((N1), dtype)
+    J = np.empty((N1, N0), dtype)
+    c = np.empty((1), dtype)
+    cpu_native.rbm_calculate_hJc(h0, h1, J, c, b0, b1, W, to_prec(dtype));
+    return h0, h1, J, c[0]
 
 def rbm_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
-    return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1[0], np.matmul(J, q0[0])) - c
+    _rbm_check_ising_var_dims(h0, h1, J, c, q0, q1);
+    _check_buffer_precision(dtype, (h0, h1, J, c))
+    _check_is_bits((q0, q1))
+    _check_is_vector('q0', q0)
+    _check_is_vector('q1', q1)
 
-def rbm_batch_calculate_E_from_qbits(h, J, c, q0, q1, dtype) :
-    return - np.matmul(h0, q0.T).reshape(1, q0.shape[0]) \
-        - np.matmul(h1, q1.T).reshape(1, q1.shape[1]) \
-        - np.dot(q1[0], np.matmul(J, q0[0])) - c
+    E = np.ndarray((1), dtype)
+    cpu_native.rbm_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, to_prec(dtype))
+    return E[0]
+
+
+def rbm_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
+    _rbm_check_ising_var_dims(h0, h1, J, c, q0, q1);
+    _check_buffer_precision(dtype, (h0, h1, J, c))
+    _check_is_bits(q0)
+    _check_is_bits(q1)
+    nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
+    nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
+    E = np.empty((nBatch1, nBatch0), dtype)
+    cpu_native.rbm_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, to_prec(dtype))
+    return E
 
 
 if __name__ == '__main__' :
@@ -236,11 +272,12 @@ if __name__ == '__main__' :
     import py.solver_traits
     dtype = np.float64
 
+    np.random.seed(0)
+    
     # dense graph
-
     N = 16
     W = utils.generate_random_symmetric_W(N)
-    
+
     x = utils.generate_random_bits(N)
     E0 = py.solver_traits.dense_graph_calculate_E(W, x)
     E1 = dense_graph_calculate_E(W, x, dtype)
@@ -256,18 +293,18 @@ if __name__ == '__main__' :
     assert np.allclose(h0, h1);
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
-    
+
     q = utils.bits_to_qbits(x)
     E0 = py.solver_traits.dense_graph_calculate_E_from_qbits(h0, J0, c0, q);
     E1 = dense_graph_calculate_E_from_qbits(h0, J0, c0, q, dtype);
     assert np.allclose(E0, E1)
-    
+
     qlist = utils.bits_to_qbits(xlist)
     E0 = py.solver_traits.dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist);
     E1 = dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist, dtype);
     assert np.allclose(E0, E1)
 
-
+    
     # rbm
 
     N0 = 4
@@ -278,32 +315,35 @@ if __name__ == '__main__' :
     
     x0 = utils.generate_random_bits(N0)
     x1 = utils.generate_random_bits(N1)
+
     E0 = py.solver_traits.rbm_calculate_E(b0, b1, W, x0, x1)
     E1 = rbm_calculate_E(b0, b1, W, x0, x1, dtype)
-    assert np.allclose(E0, E1)
-
+    assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
+    
     xlist0 = utils.create_bits_sequence(range(0, 1 << N0), N0)
     xlist1 = utils.create_bits_sequence(range(0, 1 << N1), N1)
     E0 = py.solver_traits.rbm_batch_calculate_E(b0, b1, W, xlist0, xlist1)
     E1 = rbm_batch_calculate_E(b0, b1, W, xlist0, xlist1, dtype)
     assert np.allclose(E0, E1)
+    
+    h00, h01, J0, c0 = py.solver_traits.rbm_calculate_hJc(b0, b1, W)
+    h10, h11, J1, c1 = rbm_calculate_hJc(b0, b1, W, dtype)
+    assert np.allclose(h00, h10);
+    assert np.allclose(h01, h11);
+    assert np.allclose(J0, J1);
+    assert np.allclose(c0, c1);
 
-    if False :
-        h0, J0, c0 = py.solver_traits.dense_graph_calculate_hJc(W)
-        h1, J1, c1 = dense_graph_calculate_hJc(W, dtype)
-        assert np.allclose(h0, h1);
-        assert np.allclose(J0, J1);
-        assert np.allclose(c0, c1);
-
-        q = utils.bits_to_qbits(x)
-        E0 = py.solver_traits.dense_graph_calculate_E_from_qbits(h0, J0, c0, q);
-        E1 = dense_graph_calculate_E_from_qbits(h0, J0, c0, q, dtype);
-        assert np.allclose(E0, E1)
-
-        qlist = utils.bits_to_qbits(xlist)
-        E0 = py.solver_traits.dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist);
-        E1 = dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist, dtype);
-        assert np.allclose(E0, E1)
+    q0 = utils.bits_to_qbits(x0)
+    q1 = utils.bits_to_qbits(x1)
+    E0 = py.solver_traits.rbm_calculate_E_from_qbits(h00, h01, J0, c0, q0, q1);
+    E1 = rbm_calculate_E_from_qbits(h10, h11, J0, c0, q0, q1, dtype);
+    assert np.allclose(E0, E1)
+    
+    qlist0 = utils.bits_to_qbits(xlist0)
+    qlist1 = utils.bits_to_qbits(xlist1)
+    E0 = py.solver_traits.rbm_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1);
+    E1 = rbm_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1, dtype);
+    assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
     
 
     #W = np.ones((3, 3))

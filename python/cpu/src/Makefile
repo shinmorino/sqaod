@@ -9,7 +9,7 @@ cpu_native_so_OBJS=cpu_native.o
 CXX=g++
 CC=gcc
 CFLAGS=-fpic -Wall -g -I$(dir $(abspath Makefile))
-CFLAGS+=-O2
+#CFLAGS+=-O2
 CXXFLAGS=$(CFLAGS)
 LDFLAGS=-L.. -lquant_digital
 
