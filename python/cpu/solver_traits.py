@@ -80,7 +80,9 @@ def clone_as_number(v, dtype) :
 def clone_as_np_buffer(buf, dtype) :
     if buf is tuple or buf is list :
         return np.array(buf, dtype)
-    return np.ndarray(mat.shape, buffer=mat, order='C')
+    clone = np.ndarray(buf.shape, dtype=dtype, order='C')
+    clone[:] = buf[:]
+    return clone
 
 # value/type checks
 
@@ -144,7 +146,8 @@ def dense_graph_batch_calculate_E(W, x, dtype) :
 def dense_graph_calculate_hJc(W, dtype) :
     if len(W.shape) != 2 or W.shape[0] != W.shape[1] :
         raise_wrong_shape('W', W)
-    _check_buffer_precision(dtype, (W))
+    if W.dtype != dtype :
+        W = clone_as_np_buffer(W, dtype)
     N = W.shape[0]
     h = np.empty((N), dtype)
     J = np.empty((N, N), dtype)

@@ -24,7 +24,7 @@ void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *
     NpMatrix E(objE), W(objW);
     NpBitMatrix x(objX);
     /* do the native job */
-    qdcpu::SolverTraits<real>::denseGraphCalculate_E(E, W, x, x.dims[0]);
+    qdcpu::DGFuncs<real>::calculate_E(E, W, x, x.dims[0]);
 }
 
     
@@ -54,7 +54,7 @@ void internal_dense_graph_batch_calculate_E(PyObject *objE, PyObject *objW, PyOb
     NpMatrix E(objE), W(objW);
     NpBitMatrix x(objX);
     /* do the native job */
-    qdcpu::SolverTraits<real>::denseGraphBatchCalculate_E(E, W, x, x.dims[1], x.dims[0]);
+    qdcpu::DGFuncs<real>::batchCalculate_E(E, W, x, x.dims[1], x.dims[0]);
 }
 
 extern "C"
@@ -83,7 +83,7 @@ void internal_dense_graph_calculate_hJc(PyObject *objH, PyObject *objJ, PyObject
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix h(objH), J(objJ), c(objC), W(objW);
     /* do the native job */
-    qdcpu::SolverTraits<real>::denseGraphCalculate_hJc(h, J, c, W, W.dims[0]);
+    qdcpu::DGFuncs<real>::calculate_hJc(h, J, c, W, W.dims[0]);
 }
 
 
@@ -116,7 +116,7 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     NpBitMatrix q(objQ);
     /* do the native job */
-    qdcpu::SolverTraits<real>::denseGraphCalculate_E_fromQbits(E, h, J, c, q, q.dims[0]);
+    qdcpu::DGFuncs<real>::calculate_E_fromQbits(E, h, J, c, q, q.dims[0]);
 }
     
 
@@ -149,7 +149,7 @@ internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     NpBitMatrix q(objQ);
     /* do the native job */
-    qdcpu::SolverTraits<real>::denseGraphBatchCalculate_E_fromQbits(E, h, J, c, q, q.dims[1], q.dims[0]);
+    qdcpu::DGFuncs<real>::batchCalculate_E_fromQbits(E, h, J, c, q, q.dims[1], q.dims[0]);
 }
     
 extern "C"
@@ -184,8 +184,8 @@ internal_rbm_calculate_E(PyObject *objE,
     const NpMatrix E(objE); 
     NpBitMatrix x0(objX0), x1(objX1);
     /* do the native job */
-    qdcpu::SolverTraits<real>::rbmCalculate_E(E, b0, b1, W, x0, x1,
-                                              x0.dims[x0.nDims - 1], x1.dims[x1.nDims - 1]);
+    qdcpu::RBMFuncs<real>::calculate_E(E, b0, b1, W, x0, x1,
+                                       x0.dims[x0.nDims - 1], x1.dims[x1.nDims - 1]);
 }
     
 extern "C"
@@ -236,8 +236,8 @@ internal_rbm_batch_calculate_E(PyObject *objE,
         N1 = x1.dims[1];
         nBatch1 = x1.dims[0];
     }
-    qdcpu::SolverTraits<real>::rbmBatchCalculate_E(E, b0, b1, W, x0, x1,
-                                                   N0, N1, nBatch0, nBatch1);
+    qdcpu::RBMFuncs<real>::batchCalculate_E(E, b0, b1, W, x0, x1,
+                                            N0, N1, nBatch0, nBatch1);
 }
     
 extern "C"
@@ -271,7 +271,7 @@ void internal_rbm_calculate_hJc(PyObject *objH0, PyObject *objH1, PyObject *objJ
     const NpMatrix b0(objB0), b1(objB1), W(objW);
     NpMatrix h0(objH0), h1(objH1), J(objJ), c(objC);
     /* do the native job */
-    qdcpu::SolverTraits<real>::rbmCalculate_hJc(h0, h1, J, c, b0, b1, W, W.dims[1], W.dims[0]);
+    qdcpu::RBMFuncs<real>::calculate_hJc(h0, h1, J, c, b0, b1, W, W.dims[1], W.dims[0]);
 }
 
 
@@ -309,7 +309,7 @@ internal_rbm_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     const NpBitMatrix q0(objQ0), q1(objQ1);
     /* do the native job */
-    qdcpu::SolverTraits<real>::rbmCalculate_E_fromQbits(E, h0, h1, J, c, q0, q1, q0.dims[0], q1.dims[0]);
+    qdcpu::RBMFuncs<real>::calculate_E_fromQbits(E, h0, h1, J, c, q0, q1, q0.dims[0], q1.dims[0]);
 }
     
 extern "C"
@@ -348,8 +348,8 @@ internal_rbm_batch_calculate_E_from_qbits(PyObject *objE,
     int N0 = J.dims[1], N1 = J.dims[0];
     int nBatch0 = (q0.nDims == 1) ? 1 : q0.dims[0];
     int nBatch1 = (q1.nDims == 1) ? 1 : q1.dims[0];
-    qdcpu::SolverTraits<real>::
-        rbmBatchCalculate_E_fromQbits(E, h0, h1, J, c, q0, q1, N0, N1, nBatch0, nBatch1);
+    qdcpu::RBMFuncs<real>::
+        batchCalculate_E_fromQbits(E, h0, h1, J, c, q0, q1, N0, N1, nBatch0, nBatch1);
 }
     
 extern "C"
@@ -374,7 +374,40 @@ PyObject *cpu_native_rbm_batch_calculate_E_from_qbits(PyObject *module, PyObject
     return Py_None;    
 }
 
+
+
+/* Solver */
+
+template<class real> void
+internal_dense_graph_batch_search(PyObject *objE, PyObject *objX, PyObject *objW,
+                                  int xBegin, int xEnd) {
+    typedef NpMatrixT<real> NpMatrix;
+    NpMatrix E(objE), W(objW);
+    NpBitMatrix x(objX);
+
+    /* do the native job */
+    qdcpu::DGFuncs<real>::batchSearch(E, x, W, W.dims[0], xBegin, xEnd);
+}
     
+
+extern "C"
+PyObject *cpu_native_dense_graph_batch_search(PyObject *module, PyObject *args) {
+    PyObject *objE = NULL, *objX = NULL, *objW = NULL;
+    int xBegin = 0, xEnd = 0, nPrec = 0;
+    
+    if (!PyArg_ParseTuple(args, "OOOiii", &objE, &objX, &objW, &xBegin, &xEnd, &nPrec))
+        return NULL;
+    
+    if (nPrec == 64)
+        internal_dense_graph_batch_search<double>(objE, objX, objW, xBegin, xEnd);
+    else if (nPrec == 32)
+        internal_dense_graph_batch_search<float>(objE, objX, objW, xBegin, xEnd);
+    else
+        DONT_REACH_HERE;
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
 }
 
 
@@ -391,6 +424,7 @@ PyMethodDef annealermethods[] = {
 	{"rbm_calculate_hJc", cpu_native_rbm_calculate_hJc, METH_VARARGS},
 	{"rbm_calculate_E_from_qbits", cpu_native_rbm_calculate_E_from_qbits, METH_VARARGS},
 	{"rbm_batch_calculate_E_from_qbits", cpu_native_rbm_batch_calculate_E_from_qbits, METH_VARARGS},
+	{"dense_graph_batch_search", cpu_native_dense_graph_batch_search, METH_VARARGS},
 	{NULL},
 };
 
