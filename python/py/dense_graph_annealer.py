@@ -6,53 +6,60 @@ import tags
 
 class DenseGraphAnnealer :
     
-    def __init__(self, N = 0, m = 0) :
-        if not N == 0 :
-            self.set_problem_size(N, m)
-        
-    def set_problem_size(self, N, m) :
-        self.N = N
-        self.m = m;
-        self.q = np.zeros((m, N), dtype=np.int8)
-        
-    def set_problem(self, W, optimize = tags.minimize) :
-        self.h, self.J, self.c = solver_traits.dense_graph_calculate_hJc(W)
-        if optimize is not tags.minimize :
-            self.h, self.J, self.c = self.h * -1., self.J * -1., self.c * -1
-            self.minimize = False
-        else :
-            self.minimize = True
+    def __init__(self, W, optimize, n_trotters) :
+        if not W is None :
+            self.set_problem(W, optimize, n_trotters)
 
-            
-    def _get_vars(self) :
+    def _vars(self) :
         return self.h, self.J, self.c, self.q
+
+    def _Esign(self) :
+        return self._optimize.Esign
+    
+    def set_problem(self, W, optimize = tags.minimize, n_trotters = None) :
+        self.h, self.J, self.c = solver_traits.dense_graph_calculate_hJc(W)
+        self._optimize = optimize
+        Esign = self._Esign()
+        self.h, self.J, self.c = Esign * self.h, Esign * self.J, Esign * self.c
+        self._N = N
+        # set n_trotters.  The default value assumed to N / 4
+        m = max(2, n_trotters if n_trotters is not None else N / 4)
+        self.set_solver_preference(m)
+
+    def set_solver_preference(self, n_trotters) :
+        self._m = n_trotters
+        self.q = np.zeros((self._m, self._N), dtype=np.int8)
 
     def randomize_q(self) :
         utils.randomize_qbits(self.q)
 
-    def get_q(self) :
-        return self.q
+    def E(self) :
+        Emin = np.min(self._E)
+        return self._Esign() * Emin
+
+    def solutions(self) :
+        Esign = self._Esign()
+        sols = []
+        for idx in range(self._m) :
+            x = utils.bits_from_qbits(self.q[idx])
+            sols.append((Esign * self._E[idx], x))
+        return sols
 
     def get_hJc(self) :
         return self.h, self.J, self.c
 
-    def get_E(self) :
-        return self.E;
-
     def calculate_E(self) :
-        h, J, c, q = self._get_vars()
-        self.E = solver_traits.dense_graph_calculate_E_from_qbits(h, J, c, q[0])
-        if not self.minimize :
-            self.E = - self.E
+        h, J, c, q = self._vars()
+        self._E = solver_traits.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
             
     def anneal_one_step(self, G, kT) :
-        h, J, c, q = self._get_vars()
-        N = self.N
-        m = self.m
+        h, J, c, q = self._vars()
+        N = self._N
+        m = self._m
         two_div_m = 2. / np.float64(m)
         coef = np.log(np.tanh(G/kT/m)) / kT
         
-        for i in range(self.N * self.m):
+        for i in range(self._N * self._m):
             x = np.random.randint(N)
             y = np.random.randint(m)
             qyx = q[y][x]
@@ -63,12 +70,21 @@ class DenseGraphAnnealer :
                 q[y][x] = - qyx
         
 
-def dense_graph_annealer(N = 0, m = 0) :
-    return DenseGraphAnnealer(N, m)
+def dense_graph_annealer(W = None, optimize=tags.minimize, n_trotters = None) :
+    return DenseGraphAnnealer(W, optimize, n_trotters)
 
 
 if __name__ == '__main__' :
 
+
+    Ginit = 5.
+    Gfin = 0.01
+    
+    nRepeat = 4
+    kT = 0.02
+    tau = 0.99
+    
+    N = 8
     W = np.array([[-32,4,4,4,4,4,4,4],
                   [4,-32,4,4,4,4,4,4],
                   [4,4,-32,4,4,4,4,4],
@@ -78,19 +94,7 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,4,-32,4],
                   [4,4,4,4,4,4,4,-32]])
     
-    
-    ann = dense_graph_annealer(8, 4)
-    ann.set_problem(W, tags.minimize)
-    
-    Ginit = 5.
-    Gfin = 0.01
-    
-    N = 8
-    m = 4
-    
-    nRepeat = 4
-    kT = 0.02
-    tau = 0.99
+    ann = dense_graph_annealer(W, tags.minimize, N / 2)
     
     for loop in range(0, nRepeat) :
         G = Ginit
@@ -100,6 +104,20 @@ if __name__ == '__main__' :
             G = G * tau
 
         ann.calculate_E()
-        q = ann.get_q() 
-        E = ann.get_E()
-        print(q, E)
+        E = ann.E()
+        q = ann.solutions()
+        print E, q
+
+    ann = dense_graph_annealer(W, tags.maximize, N / 2)
+    
+    for loop in range(0, nRepeat) :
+        G = Ginit
+        ann.randomize_q()
+        while Gfin < G :
+            ann.anneal_one_step(G, kT)
+            G = G * tau
+
+        ann.calculate_E()
+        E = ann.E()
+        q = ann.solutions()
+        print E, q

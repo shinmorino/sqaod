@@ -22,7 +22,7 @@ def create_bits_sequence(vals, nbits) :
         x = np.ndarray((seqlen, nbits), np.int8)
         iseq = 0
         for v in vals :
-            for pos in range(nbits - 1, -1, -1) :
+            for pos in range(nbits) :
                 x[iseq][pos] = np.int8(v >> pos & 1)
             iseq += 1
         return x

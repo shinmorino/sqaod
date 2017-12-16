@@ -14,6 +14,11 @@ anneal = 1
 
 # optimize type
 
-minimize = 0
-maximize = 1
+class Minimize :
+    Esign = 1.
 
+class Maximize :
+    Esign = -1.
+
+minimize = Minimize()
+maximize = Maximize()

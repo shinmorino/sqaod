@@ -42,33 +42,36 @@ def dense_graph_batch_calculate_E_from_qbits(h, J, c, q) :
 
 
 
-# rbm
+# bibartite graph
 
-def rbm_calculate_hJc(b0, b1, W) :
+def bipartite_graph_calculate_hJc(b0, b1, W) :
     N0 = W.shape[1]
     N1 = W.shape[0]
     
     c = 0.25 * np.sum(W) + 0.5 * (np.sum(b0) + np.sum(b1))
     J = 0.25 * W
-    h0 = [(1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i] for i in range(0, N0)]
-    h1 = [(1. / 4.) * np.sum(W[j]) + 0.5 * b1[j] for j in range(0, N1)]
-    hlist = [h0, h1]
+    h0 = np.empty((N0), W.dtype)
+    h1 = np.empty((N0), W.dtype)
+    for i in range(N0) :
+        h0[i] = (1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i]
+    for j in range(N1) :
+        h1[j] = (1. / 4.) * np.sum(W[j]) + 0.5 * b1[j]
 
     return h0, h1, J, c
 
-def rbm_calculate_E(b0, b1, W, x0, x1) :
+def bipartite_graph_calculate_E(b0, b1, W, x0, x1) :
     # FIXME: not tested
-    return - np.dot(b0, x0) - np.dot(b1, x1) - np.dot(x1, np.matmul(W, x0))
+    return np.dot(b0, x0) + np.dot(b1, x1) + np.dot(x1, np.matmul(W, x0))
 
-def rbm_batch_calculate_E(b0, b1, W, x0, x1) :
+def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1) :
     # FIXME: not tested
     nBatch0, nBatch1 = x0.shape[0], x1.shape[0]
-    return - np.matmul(b0.T, x0.T).reshape(1, nBatch0) - np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
-        - np.matmul(x1, np.matmul(W, x0.T))
+    return np.matmul(b0.T, x0.T).reshape(1, nBatch0) + np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
+        + np.matmul(x1, np.matmul(W, x0.T))
 
-def rbm_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
-    return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1, np.matmul(J, q0)) - c
+def bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+    return np.dot(h0, q0) + np.dot(h1, q1) + np.dot(q1, np.matmul(J, q0)) + c
 
-def rbm_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
-    return - np.matmul(h0, q0.T).T.reshape(1, -1) \
-        - np.matmul(h1, q1.T).reshape(-1, 1) - np.dot(q1, np.matmul(J, q0.T)) - c
+def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+    return np.matmul(h0, q0.T).T.reshape(1, -1) \
+        + np.matmul(h1, q1.T).reshape(-1, 1) + np.dot(q1, np.matmul(J, q0.T)) + c

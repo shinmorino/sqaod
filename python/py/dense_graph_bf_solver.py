@@ -8,65 +8,64 @@ import tags
 
 class DenseGraphBFSolver :
     
-    def __init__(self, N = 0) :
+    def __init__(self, W = None, optimize = tags.minimize) :
         self._verbose = False
-        self.set_problem_size(N)
-        
-    def set_problem_size(self, N) :
+        if W is not None :
+            self.set_problem(W, optimize)
+
+    def _Esign(self) :
+        return self._optimize.Esign
+            
+    def set_problem(self, W, optimize = tags.minimize) :
+        # FIXME: check W dims, is symmetric ? */
+        self._W = W.copy()
+        N = W.shape[0]
         self._N = N
         self._x = np.zeros((N), dtype=np.int8)
-        
-    def set_problem(self, W, optimize = tags.minimize) :
-        if self._N == 0 :
-            self.set_problem_size(W.shape[0])
-        self._W = W.copy()
-        if optimize is tags.minimize :
-            self._W = self._W * -1.
-            self.minimize = True
-        else :
-            self.minimize = False
+        self._optimize = optimize
+        self._W = W * optimize.Esign
             
-    def _get_vars(self) :
-        return self._W, self._x
-
-    def get_W(self) :
+    def W(self) :
         return self._W
 
-    def get_x(self) :
-        return self._x
+    def E(self) :
+        return self._Esign() * self._Emin
+    
+    def solutions(self) :
+        return self._solutions
 
-    def get_E(self) :
-        return self.E;
+    def _reset_solutions(self, Etmp, x) :
+        self._solutions = [(self._Esign() * Etmp, x)]
+        if self._verbose :
+            print("Enew < E : {1}".format(Etmp))
 
-    def calculate_E(self) :
-        h, J, c, q = self._get_vars()
-        self.E = solver_traits.dense_graph_calculate_E_from_qbits(h, J, c, q[0])
+    def _append_to_solutions(self, Etmp, x) :
+        self._solutions.append((self._Esign() * Etmp, x))
+        if self._verbose :
+            print("{0} Etmp < Emin : {1}".format(iTile + i, Etmp))
 
     def _search_optimum_batched(self) :
         N = self._N
         iMax = 1 << N
-        self.E = sys.float_info.max
-        W, x = self._get_vars()
-        xmin = []
+        self._Emin = sys.float_info.max
+        W = self._W
+        self._solutions = []
 
         iStep = min(256, iMax)
         for iTile in range(0, iMax, iStep) :
             x = utils.create_bits_sequence(range(iTile, iTile + iStep), N)
             Etmp = solver_traits.dense_graph_batch_calculate_E(W, x)
             for i in range(iStep) :
-                if Etmp[i] < self.E :
-                    self.E = Etmp[i]
-                    xmin = np.copy(x[i])
-                    if self._verbose :
-                        print("{0} Etmp < Emin : {1}".format(iTile + i, Etmp))
+                if self._Emin < Etmp[i] :
+                    continue
+                elif Etmp[i] < self._Emin :
+                    self._Emin = Etmp[i]
+                    self._reset_solutions(Etmp[i], np.copy(x[i]))
+                else :
+                    self._append_to_solutions(self._Emin, x[i])
 
-        self._x = xmin
-        if not self.minimize :
-            self.E = - self.E
-        
-
-def dense_graph_bf_solver(N = 0) :
-    return DenseGraphBFSolver(N)
+def dense_graph_bf_solver(W = None, optimize = tags.minimize) :
+    return DenseGraphBFSolver(W, optimize)
 
 
 if __name__ == '__main__' :
@@ -82,16 +81,14 @@ if __name__ == '__main__' :
     
     
     N = 8
-    bf = dense_graph_bf_solver(8)
-
-    bf.set_problem(W, tags.minimize)
+    bf = dense_graph_bf_solver(W, tags.minimize)
     bf._search_optimum_batched()
-    x = bf.get_x() 
-    E = bf.get_E()
-    print(E, x)
+    E = bf.E()
+    x = bf.solutions() 
+    print E, len(x), x[0]
 
-    bf.set_problem(W, tags.maximize)
+    bf = dense_graph_bf_solver(W, tags.maximize)
     bf._search_optimum_batched()
-    x = bf.get_x() 
-    E = bf.get_E()
-    print(E, x)
+    E = bf.E()
+    x = bf.solutions() 
+    print E, len(x), x[0]
