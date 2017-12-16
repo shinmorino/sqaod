@@ -24,13 +24,6 @@ def is_vector(v) :
             return True
     return False
 
-def to_prec(dtype) :
-    if isinstance(dtype, np.float64) or dtype is np.float64 :
-        return 64
-    if isinstance(dtype, np.float32) or dtype is np.float32:
-        return 32
-    raise Exception("Unexpected dtype, {0}.".format(str(dtype)))
-
 
 # raising exceptions
 
@@ -130,14 +123,14 @@ def dense_graph_calculate_E(W, x, dtype) :
     _check_is_vector('x', x)
     _check_is_bits((x))
     E = np.ndarray((1), dtype)
-    cpu_native.dense_graph_calculate_E(E, W, x, to_prec(dtype))
+    cpu_native.dense_graph_calculate_E(E, W, x, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E(W, x, dtype) :
     _dg_check_qubo_var_dims(W, x);
     _check_is_bits((x))
     E = np.empty((x.shape[0]), dtype)
-    cpu_native.dense_graph_batch_calculate_E(E, W, x, to_prec(dtype))
+    cpu_native.dense_graph_batch_calculate_E(E, W, x, dtype)
     return E
 
 
@@ -152,7 +145,7 @@ def dense_graph_calculate_hJc(W, dtype) :
     h = np.empty((N), dtype)
     J = np.empty((N, N), dtype)
     c = np.empty((1), dtype)
-    cpu_native.dense_graph_calculate_hJc(h, J, c, W, to_prec(dtype));
+    cpu_native.dense_graph_calculate_hJc(h, J, c, W, dtype);
     return h, J, c[0]
 
 # Ising model energy functions
@@ -167,7 +160,7 @@ def dense_graph_calculate_E_from_qbits(h, J, c, q, dtype) :
     if not q_valid :
         raise Exception('q should be a vector(array)')
     E = np.ndarray((1), dtype)
-    cpu_native.dense_graph_calculate_E_from_qbits(E, h, J, c, q, to_prec(dtype))
+    cpu_native.dense_graph_calculate_E_from_qbits(E, h, J, c, q, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
@@ -175,7 +168,7 @@ def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
     _check_buffer_precision(dtype, (h, J, c))
     _check_is_bits(q)
     E = np.empty([q.shape[0]], dtype)
-    cpu_native.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, to_prec(dtype))
+    cpu_native.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, dtype)
     return E
 
 
@@ -218,7 +211,7 @@ def rbm_calculate_E(b0, b1, W, x0, x1, dtype) :
     _check_is_vector('x0', x0)
     _check_is_vector('x1', x1)
     E = np.ndarray((1), dtype)
-    cpu_native.rbm_calculate_E(E, b0, b1, W, x0, x1, to_prec(dtype))
+    cpu_native.rbm_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E[0]
 
 
@@ -229,7 +222,7 @@ def rbm_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_native.rbm_batch_calculate_E(E, b0, b1, W, x0, x1, to_prec(dtype))
+    cpu_native.rbm_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E
 
 
@@ -243,7 +236,7 @@ def rbm_calculate_hJc(b0, b1, W, dtype) :
     h1 = np.empty((N1), dtype)
     J = np.empty((N1, N0), dtype)
     c = np.empty((1), dtype)
-    cpu_native.rbm_calculate_hJc(h0, h1, J, c, b0, b1, W, to_prec(dtype));
+    cpu_native.rbm_calculate_hJc(h0, h1, J, c, b0, b1, W, dtype);
     return h0, h1, J, c[0]
 
 def rbm_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
@@ -254,7 +247,7 @@ def rbm_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
     _check_is_vector('q1', q1)
 
     E = np.ndarray((1), dtype)
-    cpu_native.rbm_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, to_prec(dtype))
+    cpu_native.rbm_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
     return E[0]
 
 
@@ -266,7 +259,7 @@ def rbm_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_native.rbm_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, to_prec(dtype))
+    cpu_native.rbm_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
     return E
 
 
@@ -276,6 +269,13 @@ if __name__ == '__main__' :
     dtype = np.float64
 
     np.random.seed(0)
+
+    try :
+        W = np.ones((4, 4), np.int32)
+        dense_graph_calculate_hJc(W, np.int32)
+    except Exception as e :
+        print e.message
+    
     
     # dense graph
     N = 16

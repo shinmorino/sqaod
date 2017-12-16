@@ -12,11 +12,17 @@
 static PyObject *Cpu_NativeError;
 namespace qdcpu = quantd_cpu;
 
-#define DONT_REACH_HERE {printf("Don't reach here, %s:%d\n", __FILE__, (int)__LINE__); abort();}
 
 
 namespace {
 
+
+void setErrInvalidDtype(PyObject *dtype) {
+    PyErr_SetString(Cpu_NativeError, "dtype must be numpy.float64 or numpy.float32.");
+}
+
+#define RAISE_INVALID_DTYPE(dtype) {setErrInvalidDtype(dtype); return NULL; }
+    
     
 template<class real>
 void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *objX) {
@@ -30,17 +36,18 @@ void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *
     
 extern "C"
 PyObject *cpu_native_dense_graph_calculate_E(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL, *objW = NULL, *objX = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOi", &objE, &objW, &objX, &nPrec))
+    PyObject *objE, *objW, *objX;
+    PyObject *dtype;
+    
+    if (!PyArg_ParseTuple(args, "OOOO", &objE, &objW, &objX, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_dense_graph_calculate_E<double>(objE, objW, objX);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_dense_graph_calculate_E<float>(objE, objW, objX);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -59,17 +66,17 @@ void internal_dense_graph_batch_calculate_E(PyObject *objE, PyObject *objW, PyOb
 
 extern "C"
 PyObject *cpu_native_dense_graph_batch_calculate_E(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL, *objW = NULL, *objX = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOi", &objE, &objW, &objX, &nPrec))
+    PyObject *objE, *objW, *objX;
+    PyObject *dtype = NULL;
+    if (!PyArg_ParseTuple(args, "OOOO", &objE, &objW, &objX, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_dense_graph_batch_calculate_E<double>(objE, objW, objX);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_dense_graph_batch_calculate_E<float>(objE, objW, objX);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -89,17 +96,17 @@ void internal_dense_graph_calculate_hJc(PyObject *objH, PyObject *objJ, PyObject
 
 extern "C"
 PyObject *cpu_native_dense_graph_calculate_hJc(PyObject *module, PyObject *args) {
-    PyObject *objH = NULL, *objJ = NULL, *objC = NULL, *objW = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOi", &objH, &objJ, &objC, &objW, &nPrec))
+    PyObject *objH, *objJ, *objC, *objW;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOO", &objH, &objJ, &objC, &objW, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_dense_graph_calculate_hJc<double>(objH, objJ, objC, objW);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_dense_graph_calculate_hJc<float>(objH, objJ, objC, objW);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -122,17 +129,17 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
 
 extern "C"
 PyObject *cpu_native_dense_graph_calculate_E_from_qbits(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL, *objH = NULL, *objJ = NULL, *objC = NULL, *objQ = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOi", &objE, &objH, &objJ, &objC, &objQ, &nPrec))
+    PyObject *objE, *objH, *objJ, *objC, *objQ;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_dense_graph_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_dense_graph_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -154,17 +161,17 @@ internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
     
 extern "C"
 PyObject *cpu_native_dense_graph_batch_calculate_E_from_qbits(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL, *objH = NULL, *objJ = NULL, *objC = NULL, *objQ = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOi", &objE, &objH, &objJ, &objC, &objQ, &nPrec))
+    PyObject *objE, *objH, *objJ, *objC, *objQ;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_dense_graph_batch_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_dense_graph_batch_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -190,21 +197,19 @@ internal_rbm_calculate_E(PyObject *objE,
     
 extern "C"
 PyObject *cpu_native_rbm_calculate_E(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL,
-        *objB0 = NULL, *objB1 = NULL, *objW = NULL,
-        *objX0 = NULL, *objX1 = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOOi",
+    PyObject *objE, *objB0, *objB1, *objW, *objX0, *objX1;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOOO",
                           &objE, &objB0, &objB1, &objW,
-                          &objX0, &objX1, &nPrec))
+                          &objX0, &objX1, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_rbm_calculate_E<double>(objE, objB0, objB1, objW, objX0, objX1);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_rbm_calculate_E<float>(objE, objB0, objB1, objW, objX0, objX1);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -242,21 +247,19 @@ internal_rbm_batch_calculate_E(PyObject *objE,
     
 extern "C"
 PyObject *cpu_native_rbm_batch_calculate_E(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL,
-        *objB0 = NULL, *objB1 = NULL, *objW = NULL,
-        *objX0 = NULL, *objX1 = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOOi",
+    PyObject *objE, *objB0, *objB1, *objW, *objX0, *objX1;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOOO",
                           &objE, &objB0, &objB1, &objW,
-                          &objX0, &objX1, &nPrec))
+                          &objX0, &objX1, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_rbm_batch_calculate_E<double>(objE, objB0, objB1, objW, objX0, objX1);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_rbm_batch_calculate_E<float>(objE, objB0, objB1, objW, objX0, objX1);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -277,21 +280,20 @@ void internal_rbm_calculate_hJc(PyObject *objH0, PyObject *objH1, PyObject *objJ
 
 extern "C"
 PyObject *cpu_native_rbm_calculate_hJc(PyObject *module, PyObject *args) {
-    PyObject *objH0 = NULL, *objH1 = NULL, *objJ = NULL, *objC = NULL,
-        *objB0 = NULL, *objB1 = NULL, *objW = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOOOi", &objH0, &objH1, &objJ, &objC,
-                          &objB0, &objB1, &objW, &nPrec))
+    PyObject *objH0, *objH1, *objJ, *objC, *objB0, *objB1, *objW;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOOOO", &objH0, &objH1, &objJ, &objC,
+                          &objB0, &objB1, &objW, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_rbm_calculate_hJc<double>(objH0, objH1, objJ, objC,
                                            objB0, objB1, objW);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_rbm_calculate_hJc<float>(objH0, objH1, objJ, objC,
                                           objB0, objB1, objW);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -314,21 +316,19 @@ internal_rbm_calculate_E_from_qbits(PyObject *objE,
     
 extern "C"
 PyObject *cpu_native_rbm_calculate_E_from_qbits(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL,
-        *objH0 = NULL, *objH1 = NULL, *objJ = NULL, *objC = NULL,
-        *objQ0 = NULL, *objQ1 = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOOOi",
+    PyObject *objE, *objH0, *objH1, *objJ, *objC, *objQ0, *objQ1;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOOOO",
                           &objE, &objH0, &objH1, &objJ, &objC,
-                          &objQ0, &objQ1, &nPrec))
+                          &objQ0, &objQ1, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_rbm_calculate_E_from_qbits<double>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_rbm_calculate_E_from_qbits<float>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -354,21 +354,19 @@ internal_rbm_batch_calculate_E_from_qbits(PyObject *objE,
     
 extern "C"
 PyObject *cpu_native_rbm_batch_calculate_E_from_qbits(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL,
-        *objH0 = NULL, *objH1 = NULL, *objJ = NULL, *objC = NULL,
-        *objQ0 = NULL, *objQ1 = NULL;
-    int nPrec = 0;
-    if (!PyArg_ParseTuple(args, "OOOOOOOi",
+    PyObject *objE, *objH0, *objH1, *objJ, *objC, *objQ0, *objQ1;
+    PyObject *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOOOO",
                           &objE, &objH0, &objH1, &objJ, &objC,
-                          &objQ0, &objQ1, &nPrec))
+                          &objQ0, &objQ1, &dtype))
         return NULL;
     
-    if (nPrec == 64)
+    if (isFloat64(dtype))
         internal_rbm_batch_calculate_E_from_qbits<double>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else if (nPrec == 32)
+    else if (isFloat32(dtype))
         internal_rbm_batch_calculate_E_from_qbits<float>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -378,35 +376,42 @@ PyObject *cpu_native_rbm_batch_calculate_E_from_qbits(PyObject *module, PyObject
 
 /* Solver */
 
-template<class real> void
-internal_dense_graph_batch_search(PyObject *objE, PyObject *objX, PyObject *objW,
-                                  int xBegin, int xEnd) {
+template<class real>
+PyObject *internal_dense_graph_batch_search(PyObject *objE, PyObject *objW, int xBegin, int xEnd) {
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix E(objE), W(objW);
-    NpBitMatrix x(objX);
-
+    int N = W.dims[0];
     /* do the native job */
-    qdcpu::DGFuncs<real>::batchSearch(E, x, W, W.dims[0], xBegin, xEnd);
+    qdcpu::PackedBitsArray xList;
+    qdcpu::DGFuncs<real>::batchSearch(E, &xList, W, N, xBegin, xEnd);
+    /* copy values to PyArray(int8). */
+    npy_intp dims[2] = {(int)xList.size(), N};
+    PyArrayObject *objX = (PyArrayObject*)PyArray_EMPTY(2, dims, NPY_INT8, 0);
+    char *data = (char*)PyArray_DATA(objX);
+    memcpy(data, xList.data(), sizeof(char) * xList.size() * N);
+    return (PyObject*)objX;
 }
     
 
 extern "C"
 PyObject *cpu_native_dense_graph_batch_search(PyObject *module, PyObject *args) {
-    PyObject *objE = NULL, *objX = NULL, *objW = NULL;
-    int xBegin = 0, xEnd = 0, nPrec = 0;
+    PyObject *objE, *objW, *objX;
+    PyObject *dtype;
+    unsigned long long xBegin = 0, xEnd = 0;
+    std::vector<unsigned long long> xList;
     
-    if (!PyArg_ParseTuple(args, "OOOiii", &objE, &objX, &objW, &xBegin, &xEnd, &nPrec))
+    if (!PyArg_ParseTuple(args, "OOiiO", &objE, &objW, &xBegin, &xEnd, &dtype))
         return NULL;
     
-    if (nPrec == 64)
-        internal_dense_graph_batch_search<double>(objE, objX, objW, xBegin, xEnd);
-    else if (nPrec == 32)
-        internal_dense_graph_batch_search<float>(objE, objX, objW, xBegin, xEnd);
+    if (isFloat64(dtype))
+        objX = internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
+    else if (isFloat32(dtype))
+        objX = internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
     else
-        DONT_REACH_HERE;
+        RAISE_INVALID_DTYPE(dtype);
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    Py_INCREF(objX);
+    return objX;    
 }
 }
 

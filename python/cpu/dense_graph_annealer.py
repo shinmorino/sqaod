@@ -2,69 +2,58 @@ import numpy as np
 import random
 import solver_traits
 import utils
-import tags
+import py
+from py import tags
+import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
     
-    def __init__(self, N = 0, m = 0) :
-        if not N == 0 :
-            self.set_problem_size(N, m)
+    def __init__(self, N, m, dtype) :
+        self.dtype = dtype
+        self.ext = dg_annealer.new_annealer(dtype)
+        self.set_problem_size(N, m)
+
+    def rand_seed(seed) :
+        dg_annealer.rand_seed(self.ext, seed)
         
     def set_problem_size(self, N, m) :
         self.N = N
         self.m = m;
-        self.q = np.zeros((m, N), dtype=np.int8)
+        self.E = np.zeros((self.m), self.dtype)
+        dg_annealer.set_problem_size(self.ext, N, m, self.dtype)
         
     def set_problem(self, W, optimize = tags.minimize) :
-        self.h, self.J, self.c = solver_traits.dense_graph_calculate_hJc(W)
-        if optimize is not tags.minimize :
-            self.h, self.J, self.c = self.h * -1., self.J * -1., self.c * -1
-            self.minimize = False
-        else :
-            self.minimize = True
-
-            
-    def _get_vars(self) :
-        return self.h, self.J, self.c, self.q
+        W = solver_traits.clone_as_np_buffer(W, self.dtype)
+        dg_annealer.set_problem(self.ext, W, optimize, self.dtype)
 
     def randomize_q(self) :
-        utils.randomize_qbits(self.q)
+        dg_annealer.randomize_q(self.ext, self.dtype)
 
     def get_q(self) :
-        return self.q
+        q = np.empty((self.m, self.N), np.int8)
+        dg_annealer.get_q(self.ext, q, self.dtype)
+        return q
 
     def get_hJc(self) :
-        return h, J, c
+        h = np.empty((self.N), self.dtype)
+        J = np.empty((self.N, self.N), self.dtype)
+        c = np.empty((1), self.dtype)
+        dg_annealer.get_hJc(self.ext, h, J, c, self.dtype)
+        return h, J, c[0]
 
     def get_E(self) :
+        dg_annealer.get_E(self.ext, self.E, self.dtype)
         return self.E;
 
     def calculate_E(self) :
-        h, J, c, q = self._get_vars()
-        self.E = solver_traits.dense_graph_calculate_E_from_qbits(h, J, c, q[0])
-        if not self.minimize :
-            self.E = - self.E
-            
+        dg_annealer.calculate_E(self.ext, self.dtype)
+
     def anneal_one_step(self, G, kT) :
-        h, J, c, q = self._get_vars()
-        N = self.N
-        m = self.m
-        two_div_m = 2. / np.float64(m)
-        coef = np.log(np.tanh(G/kT/m)) / kT
-        
-        for i in range(self.N * self.m):
-            x = np.random.randint(N)
-            y = np.random.randint(m)
-            qyx = q[y][x]
-            sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
-            dE = - two_div_m * qyx * (h[x] + sum)
-            dE -= qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * coef
-            if np.exp(-dE / kT) > np.random.rand():
-                q[y][x] = - qyx
+        dg_annealer.anneal_one_step(self.ext, G, kT, self.dtype)
         
 
-def dense_graph_annealer(N = 0, m = 0) :
-    return DenseGraphAnnealer(N, m)
+def dense_graph_annealer(N = 0, m = 0, dtype=np.float64) :
+    return DenseGraphAnnealer(N, m, dtype)
 
 
 if __name__ == '__main__' :
@@ -77,20 +66,37 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,-32,4,4],
                   [4,4,4,4,4,4,-32,4],
                   [4,4,4,4,4,4,4,-32]])
-    
-    
-    ann = dense_graph_annealer(8, 4)
-    ann.set_problem(W, tags.minimize)
-    
-    Ginit = 5.
-    Gfin = 0.01
-    
+    np.random.seed(0)
+
     N = 8
     m = 4
+    """
+    N = 2
+    m = 2
+    W = np.array([[-32,4],
+                  [4,-32]])
+    """
+    
+    N = 200
+    m = 150
+    W = utils.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+
+    ann = dense_graph_annealer(N, m, dtype=np.float64)
+#    ann = py.dense_graph_annealer(N, m)
+    ann.set_problem(W, tags.minimize)
+
+    h, J, c = ann.get_hJc()
+    print h
+    print J
+    print c
+    
+    
+    Ginit = 5.
+    Gfin = 0.001
     
     nRepeat = 4
     kT = 0.02
-    tau = 0.99
+    tau = 0.995
     
     for loop in range(0, nRepeat) :
         G = Ginit
