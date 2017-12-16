@@ -2,22 +2,37 @@
 #define TRAITS_H__
 
 #include <Eigen/Core>
+#include <vector>
 
 
 #define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
 
 namespace quantd_cpu {
 
-enum SolverDir {
-    solverMinimize,
-    solverMaximize
+typedef std::vector<unsigned long long> PackedBitsArray;
+    
+enum OptimizeMethod {
+    optMinimize,
+    optMaximize
 };
 
     
 template<class real>
 void createBitsSequence(real *bits, int nBits, int bBegin, int bEnd);
 
-    
+typedef Eigen::Matrix<char, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> BitMatrix;
+
+void unpackIntArrayToMatrix(BitMatrix &unpacked,
+                            const PackedBitsArray &bitsList, int N);
+
+template<class real>
+struct EigenTypes {
+    typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
+    typedef Eigen::Matrix<real, 1, Eigen::Dynamic> RowVector;
+    typedef Eigen::Matrix<real, Eigen::Dynamic, 1> ColumnVector;
+};
+
+
 template<class real>
 struct utils {
     typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
@@ -27,13 +42,11 @@ struct utils {
 
     static
     Matrix bitsToMat(const char *bits, int nRows, int nCols);
-
 };
     
 template<class real>
 struct DGFuncs {
     typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
-    typedef Eigen::Matrix<real, 1, Eigen::Dynamic> RowVector;
     typedef Eigen::Matrix<real, Eigen::Dynamic, 1> ColumnVector;
     
     static
@@ -59,10 +72,15 @@ struct DGFuncs {
     void batchCalculate_E_fromQbits(real *E,
                                     const real *h, const real *J, real c, const char *q,
                                     int N, int nBatch);
+    static
+    void batchCalculate_E_fromQbits(real *E,
+                                    const real *h, const real *J, real c, const real *q,
+                                    int N, int nBatch);
 
     static
-    void batchSearch(real *E, char *x, const real *W, int N, int xBegin, int xEnd);
-
+    void batchSearch(real *E, PackedBitsArray *xList,
+                     const real *W, int N, unsigned long xBegin, unsigned long xEnd);
+    
 };
     
 template<class real>

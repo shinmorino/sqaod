@@ -7,9 +7,20 @@
 template<class real>
 void quantd_cpu::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd) {
     for (int b = bBegin; b < bEnd; ++b) {
-        for (int pos = nBits - 1; pos != -1; --pos)
+        for (int pos = 0; pos != nBits; ++pos)
             bits[pos] = ((b >> pos) & 1);
         bits += nBits;
+    }
+}
+
+
+void quantd_cpu::unpackIntArrayToMatrix(BitMatrix &unpacked,
+                                        const PackedBitsArray &bitsList, int nBits) {
+    unpacked.resize(bitsList.size(), nBits);
+    for (size_t idx = 0; idx < bitsList.size(); ++idx) {
+        unsigned long long b = bitsList[idx];
+        for (int pos = 0; pos != nBits; ++pos)
+            unpacked(idx, pos) = ((b >> pos) & 1);
     }
 }
 
@@ -108,11 +119,20 @@ template<class real>
 void DGFuncs<real>::batchCalculate_E_fromQbits(real *E,
                                                const real *h, const real *J, real c,
                                                const char *q, int N, int nBatch) {
+    const Matrix eq = utils<real>::bitsToMat(q, nBatch, N);
+    batchCalculate_E_fromQbits(E, h, J, c, eq.data(), N, nBatch);
+}
+
+
+template<class real>
+void DGFuncs<real>::batchCalculate_E_fromQbits(real *E,
+                                               const real *h, const real *J, real c,
+                                               const real *q, int N, int nBatch) {
     const Eigen::Map<Matrix> eh((real*)h, 1, N);
     const Eigen::Map<Matrix> eJ((real*)J, N, N);
     Eigen::Map<Matrix> Ex(E, N, 1);
     
-    const Matrix eq = utils<real>::bitsToMat(q, nBatch, N);
+    const Eigen::Map<Matrix> eq((real*)q, nBatch, N);
     Eigen::Map<Matrix> eE(E, 1, nBatch);
     
     Matrix tmp = eJ * eq.transpose();
@@ -123,12 +143,11 @@ void DGFuncs<real>::batchCalculate_E_fromQbits(real *E,
 
 
 template<class real>
-void DGFuncs<real>::batchSearch(real *E, char *x,
-                                const real *W, int N, int xBegin, int xEnd) {
-    int nBatch = xEnd - xBegin;
+void DGFuncs<real>::batchSearch(real *E, std::vector<unsigned long long> *xList,
+                                const real *W, int N, unsigned long xBegin, unsigned long xEnd) {
+    int nBatch = int(xEnd - xBegin);
 
-    int xMin = -1;
-    real Emin = FLT_MAX;
+    real Emin = *E;
     const Eigen::Map<Matrix> eW((real*)W, N, N);
     Matrix eBitsSeq(nBatch, N);
     ColumnVector eEbatch(nBatch);
@@ -137,15 +156,21 @@ void DGFuncs<real>::batchSearch(real *E, char *x,
     Matrix eWx = eW * eBitsSeq.transpose();
     Matrix prod = eWx.transpose().cwiseProduct(eBitsSeq);
     eEbatch = prod.rowwise().sum(); 
-    /* FIXME: use eigen's min. */
+    /* FIXME: Parallelize */
     for (int idx = 0; idx < nBatch; ++idx) {
-        if (eEbatch(idx) < Emin) {
+        if (eEbatch(idx) > Emin) {
+            continue;
+        }
+        else if (eEbatch(idx) == Emin) {
+            xList->push_back(xBegin + idx);
+        }
+        else {
             Emin = eEbatch(idx);
-            xMin = idx;
+            xList->clear();
+            xList->push_back(idx);
         }
     }
     *E = Emin;
-    createBitsSequence(x, N, xMin, xMin + 1);
 }
 
 
