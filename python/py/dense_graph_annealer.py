@@ -34,7 +34,7 @@ class DenseGraphAnnealer :
         return self.q
 
     def get_hJc(self) :
-        return h, J, c
+        return self.h, self.J, self.c
 
     def get_E(self) :
         return self.E;
