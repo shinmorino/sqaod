@@ -1,19 +1,19 @@
 
-class dense :
-    pass
+# consts
 
-class sparse :
-    pass
+# graph type
 
-class rbm :
-    pass
+dense = 0
+sparse = 1
+rbm = 2
 
-class bruteforce :
-    pass
+# solver type
 
+bruteforce = 0
+anneal = 1
 
-class minimize :
-    pass
+# optimize type
 
-class maximize :
-    pass
+minimize = 0
+maximize = 1
+
