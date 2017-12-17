@@ -23,6 +23,7 @@ AC_PROG_CXX
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
 CFLAGS="-O2 -Wall -ggdb"
+#CFLAGS="-Wall -ggdb"
 CXXFLAGS=$CFLAGS
 
 AC_SUBST([CFLAGS], $CFLAGS)
