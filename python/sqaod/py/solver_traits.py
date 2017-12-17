@@ -51,7 +51,7 @@ def bipartite_graph_calculate_hJc(b0, b1, W) :
     c = 0.25 * np.sum(W) + 0.5 * (np.sum(b0) + np.sum(b1))
     J = 0.25 * W
     h0 = np.empty((N0), W.dtype)
-    h1 = np.empty((N0), W.dtype)
+    h1 = np.empty((N1), W.dtype)
     for i in range(N0) :
         h0[i] = (1. / 4.) * np.sum(W[:, i]) + 0.5 * b0[i]
     for j in range(N1) :

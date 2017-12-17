@@ -8,6 +8,7 @@ from py import tags
 class BipartiteGraphAnnealer :
 
     def __init__(self, W, b0, b1, optimize, n_trotters) : # n_trotters
+        self._m = None
         if not W is None :
             self.set_problem(W, b0, b1, optimize, n_trotters)
 
@@ -27,7 +28,7 @@ class BipartiteGraphAnnealer :
             return False;
         return True
         
-    def set_problem(self, W, b0, b1, optimize, n_trotters) :
+    def set_problem(self, W, b0, b1, optimize = tags.minimize) :
         self._dim = (W.shape[1], W.shape[0])
         if not self._check_dim(W, b0, b1) :
             raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
@@ -39,14 +40,14 @@ class BipartiteGraphAnnealer :
         Esign = self._Esign()
         self._h0, self._h1 = self._h0 * Esign, self._h1 * Esign
         self._J, self._c = Esign * self._J, Esign * self._c
-        # set n_trotters.  The default value assumed to N / 4
-        m = max(2, n_trotters if n_trotters is not None else N / 4)
-        self.set_solver_preference(m)
 
     def set_solver_preference(self, n_trotters) :
-        self._m = n_trotters
-        self._q0 = np.empty((m, self._dim[0]), dtype=np.int8)
-        self._q1 = np.empty((m, self._dim[1]), dtype=np.int8)
+        # set n_trotters.  The default value assumed to N / 4
+        if n_trotters is None :
+            n_trotters = (self._dim[0] + self._dim[1]) / 4
+        self._m = max(2, n_trotters)
+        self._q0 = np.empty((self._m, self._dim[0]), dtype=np.int8)
+        self._q1 = np.empty((self._m, self._dim[1]), dtype=np.int8)
         
     def get_E(self) :
         return self._Esign() * np.min(self._E);
@@ -61,8 +62,9 @@ class BipartiteGraphAnnealer :
         return sols
 
     def set_x(self, x0, x1) :
-        if (len(x0) != self.dim[0]) or (len(x0) != self.dim[0]) :
-            raise "Dim does not match."
+        if (x0.shape[len(x0.shape) - 1] != self._dim[0]) \
+           or (x1.shape[len(x1.shape) - 1] != self._dim[1]) :
+            raise Exception("Dim does not match.")
         q0 = utils.bits_to_qbits(x0)
         q1 = utils.bits_to_qbits(x1)
         for im in range(0, self._m) :
@@ -78,16 +80,20 @@ class BipartiteGraphAnnealer :
         return self._q0, self._q1
         
     def set_q(self, q0, q1) :
-        if (len(q0) != self.dim[0]) or (len(q0) != self.dim[0]) :
+        if (len(q0) != self._dim[0]) or (len(q0) != self._dim[0]) :
             raise "Dim does not match."
         for im in range(0, self._m) :
-            self._qlist[0][:][im] = q0
-            self._qlist[1][:][im] = q1
+            self._q0[:][im] = q0
+            self._q1[:][im] = q1
 
     def randomize_q(self) :
         utils.randomize_qbits(self._q0)
         utils.randomize_qbits(self._q1)
 
+    def init_anneal(self) :
+        if self._m is None :
+            self.set_solver_preference(None)
+        
     def _anneal_half_step(self, N, qAnneal, h, J, qFixed, G, kT, m) :
         dEmat = np.matmul(J, qFixed.T)
         twoDivM = 2. / m
@@ -120,7 +126,8 @@ class BipartiteGraphAnnealer :
             self._E[idx] = \
                 solver_traits.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
 
-def bipartite_graph_annealer(W, b0, b1, optimize = tags.minimize, n_trotters = None) :
+def bipartite_graph_annealer(W = None, b0 = None, b1 = None, \
+                             optimize = tags.minimize, n_trotters = None) :
     return BipartiteGraphAnnealer(W, b0, b1, optimize, n_trotters)
 
 

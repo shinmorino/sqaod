@@ -29,7 +29,7 @@ class BipartiteGraphBFSolver :
             return False;
         return True
     
-    def set_problem(self, W, b0, b1, optimize) :
+    def set_problem(self, W, b0, b1, optimize = tags.minimize) :
         if not self._check_dim(W, b0, b1) :
             raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
                             .format(W.shape, b0.size, b1.size))

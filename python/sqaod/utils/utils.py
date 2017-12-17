@@ -41,11 +41,11 @@ def randomize_qbits(qbits) :
         qbit[...] = np.random.choice([-1,1])
 
 def bits_to_qbits(x) :
-    q = x.copy() * 2 - 1
+    q = x * 2 - 1
     return q
 
 def bits_from_qbits(q) :
-    x = ((q.copy() + 1) >> 1)
+    x = ((q + 1) >> 1)
     return x
 
 
@@ -55,8 +55,8 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
     q1 = []
     
     for loop in range(0, n_repeat) :
-        annealer.randomize_q(0)
-        annealer.randomize_q(1)
+        annealer.init_anneal()
+        annealer.randomize_q()
         G = Ginit
         while Gfin < G :
             annealer.anneal_one_step(G, kT)
@@ -65,10 +65,4 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
                 print E
             G = G * tau
 
-        E = annealer.calculate_E()
-        if E < Emin :
-            q0 = annealer.get_q(0)[0].copy()
-            q1 = annealer.get_q(1)[0].copy()
-            Emin = E
-
-    return Emin, q0, q1
+        annealer.calculate_E()
