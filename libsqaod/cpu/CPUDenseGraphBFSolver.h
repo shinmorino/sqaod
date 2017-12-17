@@ -6,7 +6,7 @@
 #include <cpu/Traits.h>
 #include <Eigen/Core>
 
-namespace quantd_cpu {
+namespace sqaod {
 
 template<class real>
 class CPUDenseGraphBFSolver {

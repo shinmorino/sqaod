@@ -1,36 +1,35 @@
 #include "CPUDenseGraphAnnealer.h"
 
-
-namespace qd = quantd_cpu;
+namespace sqd = sqaod;
 
 
 template<class real>
-qd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
+sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
 }
 
 template<class real>
-qd::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
+sqd::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
+void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
     random_.seed(seed);
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::setProblemSize(int N, int m) {
+void sqd::CPUDenseGraphAnnealer<real>::setProblemSize(int N, int m) {
     N_ = N;
     m_ = m;
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::getProblemSize(int *N, int *m) const {
+void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(int *N, int *m) const {
     *N = N_;
     *m = m_;
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod om) {
+void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod om) {
     bitQ_.resize(m_, N_);
     matQ_.resize(m_, N_);;
     h_.resize(1, N_);
@@ -39,7 +38,7 @@ void qd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod o
 
     DGFuncs<real>::calculate_hJc(h_.data(), J_.data(), &c_, W, N_);
     om_ = om;
-    if (om_ == qd::optMaximize) {
+    if (om_ == sqd::optMaximize) {
         h_ *= real(-1.);
         J_ *= real(-1.);
         c_ *= real(-1.);
@@ -47,14 +46,14 @@ void qd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod o
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::randomize_q() {
+void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
     real *q = matQ_.data();
     for (int idx = 0; idx < N_ * m_; ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
 }
 
 template<class real>
-const char *qd::CPUDenseGraphAnnealer<real>::get_q() const {
+const char *sqd::CPUDenseGraphAnnealer<real>::get_q() const {
     char *bq = bitQ_.data();
     const real *mq = matQ_.data();
     for (int idx = 0; idx < N_ * m_; ++idx)
@@ -63,26 +62,26 @@ const char *qd::CPUDenseGraphAnnealer<real>::get_q() const {
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::get_hJc(const real **h, const real **J, real *c) const {
+void sqd::CPUDenseGraphAnnealer<real>::get_hJc(const real **h, const real **J, real *c) const {
     *h = h_.data();
     *J = J_.data();
     *c = c_;
 }
 
 template<class real>
-const real *qd::CPUDenseGraphAnnealer<real>::get_E() const {
+const real *sqd::CPUDenseGraphAnnealer<real>::get_E() const {
     return E_.data();
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::calculate_E() {
+void sqd::CPUDenseGraphAnnealer<real>::calculate_E() {
     DGFuncs<real>::batchCalculate_E_fromQbits(E_.data(),
                                               h_.data(), J_.data(), c_, matQ_.data(),
                                               N_, m_);
 }
 
 template<class real>
-void qd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
+void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
         
@@ -99,10 +98,10 @@ void qd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         if (threshold > random_.random<real>())
             matQ_(y, x) = - qyx;
     }
-    if (om_ == qd::optMaximize)
+    if (om_ == sqd::optMaximize)
         E_ = - E_;
 }
 
 
-template class qd::CPUDenseGraphAnnealer<float>;
-template class qd::CPUDenseGraphAnnealer<double>;
+template class sqd::CPUDenseGraphAnnealer<float>;
+template class sqd::CPUDenseGraphAnnealer<double>;

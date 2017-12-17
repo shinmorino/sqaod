@@ -1,9 +1,9 @@
 import numpy as np
 import random
+import sqaod
+import sqaod.utils as utils
+import sqaod.py as py
 import solver_traits
-import utils
-import py
-from py import tags
 import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
@@ -22,7 +22,7 @@ class DenseGraphAnnealer :
         self.E = np.zeros((self.m), self.dtype)
         dg_annealer.set_problem_size(self.ext, N, m, self.dtype)
         
-    def set_problem(self, W, optimize = tags.minimize) :
+    def set_problem(self, W, optimize = sqaod.minimize) :
         W = solver_traits.clone_as_np_buffer(W, self.dtype)
         dg_annealer.set_problem(self.ext, W, optimize, self.dtype)
 
@@ -83,7 +83,7 @@ if __name__ == '__main__' :
 
     ann = dense_graph_annealer(N, m, dtype=np.float64)
 #    ann = py.dense_graph_annealer(N, m)
-    ann.set_problem(W, tags.minimize)
+    ann.set_problem(W, sqaod.minimize)
 
     h, J, c = ann.get_hJc()
     print h

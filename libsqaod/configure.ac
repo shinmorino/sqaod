@@ -1,5 +1,5 @@
 # AC_PREREQ([2.69])
-AC_INIT(foo, 1.0, joe@foo.com)    
+AC_INIT(libsqaod, dev, shin.morino@gmail.com)    
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE
 AC_PROG_LIBTOOL

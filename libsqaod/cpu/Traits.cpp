@@ -5,7 +5,7 @@
 
 
 template<class real>
-void quantd_cpu::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd) {
+void sqaod::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd) {
     for (int b = bBegin; b < bEnd; ++b) {
         for (int pos = 0; pos != nBits; ++pos)
             bits[pos] = ((b >> pos) & 1);
@@ -14,7 +14,7 @@ void quantd_cpu::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd)
 }
 
 
-void quantd_cpu::unpackIntArrayToMatrix(BitMatrix &unpacked,
+void sqaod::unpackIntArrayToMatrix(BitMatrix &unpacked,
                                         const PackedBitsArray &bitsList, int nBits) {
     unpacked.resize(bitsList.size(), nBits);
     for (size_t idx = 0; idx < bitsList.size(); ++idx) {
@@ -25,7 +25,7 @@ void quantd_cpu::unpackIntArrayToMatrix(BitMatrix &unpacked,
 }
 
 
-using namespace quantd_cpu;
+using namespace sqaod;
 
 template<class real>
 bool utils<real>::isSymmetric(const real *W, int N) {
@@ -281,8 +281,8 @@ template struct RBMFuncs<double>;
 template struct RBMFuncs<float>;
 
 template
-void ::quantd_cpu::createBitsSequence(double *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence(double *bits, int nBits, int bBegin, int bEnd);
 template
-void ::quantd_cpu::createBitsSequence(float *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence(float *bits, int nBits, int bBegin, int bEnd);
 template
-void ::quantd_cpu::createBitsSequence(char *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence(char *bits, int nBits, int bBegin, int bEnd);

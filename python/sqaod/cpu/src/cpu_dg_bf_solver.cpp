@@ -15,7 +15,7 @@
 
 
 static PyObject *Cpu_DgBfSolverError;
-namespace qd = quantd_cpu;
+namespace sqd = sqaod;
 
 
 namespace {
@@ -30,9 +30,9 @@ void setErrInvalidDtype(PyObject *dtype) {
 
     
 template<class real>
-qd::CPUDenseGraphBFSolver<real> *pyobjToCppObj(PyObject *obj) {
+sqd::CPUDenseGraphBFSolver<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<qd::CPUDenseGraphBFSolver<real>*>(val);
+    return reinterpret_cast<sqd::CPUDenseGraphBFSolver<real>*>(val);
 }
 
 extern "C"
@@ -42,9 +42,9 @@ PyObject *dg_bf_solver_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new qd::CPUDenseGraphBFSolver<double>();
+        ext = (void*)new sqd::CPUDenseGraphBFSolver<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new qd::CPUDenseGraphBFSolver<float>();
+        ext = (void*)new sqd::CPUDenseGraphBFSolver<float>();
     else
         RAISE_INVALID_DTYPE(dtype);
     
@@ -108,7 +108,7 @@ template<class real>
 void internal_dg_bf_solver_set_problem(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix W(objW);
-    qd::OptimizeMethod om = (opt == 0) ? qd::optMinimize : qd::optMaximize;
+    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(W, om);
 }
     
@@ -133,8 +133,8 @@ PyObject *dg_bf_solver_set_problem(PyObject *module, PyObject *args) {
 template<class real>
 PyObject *internal_dg_bf_solver_get_x(PyObject *objExt) {
     int N;
-    qd::CPUDenseGraphBFSolver<real> *sol = pyobjToCppObj<real>(objExt);
-    const qd::BitMatrix &xList = sol->get_x();
+    sqd::CPUDenseGraphBFSolver<real> *sol = pyobjToCppObj<real>(objExt);
+    const sqd::BitMatrix &xList = sol->get_x();
     sol->getProblemSize(&N);
 
     NpBitMatrix bit;
@@ -163,7 +163,7 @@ PyObject *dg_bf_solver_get_x(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_dg_bf_solver_get_E(PyObject *objExt) {
-    qd::CPUDenseGraphBFSolver<real> *ext = pyobjToCppObj<real>(objExt);
+    sqd::CPUDenseGraphBFSolver<real> *ext = pyobjToCppObj<real>(objExt);
     real E = ext->get_E();
     return newScalarObj(E);
 }

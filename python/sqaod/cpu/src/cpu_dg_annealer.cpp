@@ -15,7 +15,7 @@
 
 
 static PyObject *Cpu_DgSolverError;
-namespace qd = quantd_cpu;
+namespace sqd = sqaod;
 
 
 namespace {
@@ -30,9 +30,9 @@ void setErrInvalidDtype(PyObject *dtype) {
 
     
 template<class real>
-qd::CPUDenseGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
+sqd::CPUDenseGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<qd::CPUDenseGraphAnnealer<real> *>(val);
+    return reinterpret_cast<sqd::CPUDenseGraphAnnealer<real> *>(val);
 }
 
 extern "C"
@@ -42,9 +42,9 @@ PyObject *dg_annealer_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new qd::CPUDenseGraphAnnealer<double>();
+        ext = (void*)new sqd::CPUDenseGraphAnnealer<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new qd::CPUDenseGraphAnnealer<float>();
+        ext = (void*)new sqd::CPUDenseGraphAnnealer<float>();
     else
         RAISE_INVALID_DTYPE(dtype);
     
@@ -110,7 +110,7 @@ template<class real>
 void internal_dg_annealer_set_problem(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix W(objW);
-    qd::OptimizeMethod om = (opt == 0) ? qd::optMinimize : qd::optMaximize;
+    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(W, om);
 }
     
@@ -136,7 +136,7 @@ template<class real>
 void internal_dg_annealer_get_q(PyObject *objExt, PyObject *objQ) {
     NpBitMatrix Q(objQ);
     int N, m;
-    qd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
     const char *q = ann->get_q();
     ann->getProblemSize(&N, &m);
     memcpy(Q.data, q, N * m);
@@ -184,7 +184,7 @@ void internal_dg_annealer_get_hJc(PyObject *objExt,
     const real *nh, *nJ;
     int N, m;
     
-    qd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
     ann->getProblemSize(&N, &m);
     ann->get_hJc(&nh, &nJ, c);
     memcpy(h, nh, sizeof(real) * N);
@@ -215,7 +215,7 @@ void internal_dg_annealer_get_E(PyObject *objExt, PyObject *objE) {
     NpMatrix E(objE);
 
     int N, m;
-    qd::CPUDenseGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
+    sqd::CPUDenseGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
     ext->getProblemSize(&N, &m);
     const real *nE = ext->get_E();
     memcpy(E, nE, sizeof(real) * m);

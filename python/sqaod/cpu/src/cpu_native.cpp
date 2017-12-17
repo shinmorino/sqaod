@@ -10,7 +10,7 @@
 
 
 static PyObject *Cpu_NativeError;
-namespace qdcpu = quantd_cpu;
+namespace sqd = sqaod;
 
 
 
@@ -30,7 +30,7 @@ void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *
     NpMatrix E(objE), W(objW);
     NpBitMatrix x(objX);
     /* do the native job */
-    qdcpu::DGFuncs<real>::calculate_E(E, W, x, x.dims[0]);
+    sqd::DGFuncs<real>::calculate_E(E, W, x, x.dims[0]);
 }
 
     
@@ -61,7 +61,7 @@ void internal_dense_graph_batch_calculate_E(PyObject *objE, PyObject *objW, PyOb
     NpMatrix E(objE), W(objW);
     NpBitMatrix x(objX);
     /* do the native job */
-    qdcpu::DGFuncs<real>::batchCalculate_E(E, W, x, x.dims[1], x.dims[0]);
+    sqd::DGFuncs<real>::batchCalculate_E(E, W, x, x.dims[1], x.dims[0]);
 }
 
 extern "C"
@@ -90,7 +90,7 @@ void internal_dense_graph_calculate_hJc(PyObject *objH, PyObject *objJ, PyObject
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix h(objH), J(objJ), c(objC), W(objW);
     /* do the native job */
-    qdcpu::DGFuncs<real>::calculate_hJc(h, J, c, W, W.dims[0]);
+    sqd::DGFuncs<real>::calculate_hJc(h, J, c, W, W.dims[0]);
 }
 
 
@@ -123,7 +123,7 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     NpBitMatrix q(objQ);
     /* do the native job */
-    qdcpu::DGFuncs<real>::calculate_E_fromQbits(E, h, J, c, q, q.dims[0]);
+    sqd::DGFuncs<real>::calculate_E_fromQbits(E, h, J, c, q, q.dims[0]);
 }
     
 
@@ -156,7 +156,7 @@ internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     NpBitMatrix q(objQ);
     /* do the native job */
-    qdcpu::DGFuncs<real>::batchCalculate_E_fromQbits(E, h, J, c, q, q.dims[1], q.dims[0]);
+    sqd::DGFuncs<real>::batchCalculate_E_fromQbits(E, h, J, c, q, q.dims[1], q.dims[0]);
 }
     
 extern "C"
@@ -191,7 +191,7 @@ internal_rbm_calculate_E(PyObject *objE,
     const NpMatrix E(objE); 
     NpBitMatrix x0(objX0), x1(objX1);
     /* do the native job */
-    qdcpu::RBMFuncs<real>::calculate_E(E, b0, b1, W, x0, x1,
+    sqd::RBMFuncs<real>::calculate_E(E, b0, b1, W, x0, x1,
                                        x0.dims[x0.nDims - 1], x1.dims[x1.nDims - 1]);
 }
     
@@ -241,7 +241,7 @@ internal_rbm_batch_calculate_E(PyObject *objE,
         N1 = x1.dims[1];
         nBatch1 = x1.dims[0];
     }
-    qdcpu::RBMFuncs<real>::batchCalculate_E(E, b0, b1, W, x0, x1,
+    sqd::RBMFuncs<real>::batchCalculate_E(E, b0, b1, W, x0, x1,
                                             N0, N1, nBatch0, nBatch1);
 }
     
@@ -274,7 +274,7 @@ void internal_rbm_calculate_hJc(PyObject *objH0, PyObject *objH1, PyObject *objJ
     const NpMatrix b0(objB0), b1(objB1), W(objW);
     NpMatrix h0(objH0), h1(objH1), J(objJ), c(objC);
     /* do the native job */
-    qdcpu::RBMFuncs<real>::calculate_hJc(h0, h1, J, c, b0, b1, W, W.dims[1], W.dims[0]);
+    sqd::RBMFuncs<real>::calculate_hJc(h0, h1, J, c, b0, b1, W, W.dims[1], W.dims[0]);
 }
 
 
@@ -311,7 +311,7 @@ internal_rbm_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     const NpBitMatrix q0(objQ0), q1(objQ1);
     /* do the native job */
-    qdcpu::RBMFuncs<real>::calculate_E_fromQbits(E, h0, h1, J, c, q0, q1, q0.dims[0], q1.dims[0]);
+    sqd::RBMFuncs<real>::calculate_E_fromQbits(E, h0, h1, J, c, q0, q1, q0.dims[0], q1.dims[0]);
 }
     
 extern "C"
@@ -348,7 +348,7 @@ internal_rbm_batch_calculate_E_from_qbits(PyObject *objE,
     int N0 = J.dims[1], N1 = J.dims[0];
     int nBatch0 = (q0.nDims == 1) ? 1 : q0.dims[0];
     int nBatch1 = (q1.nDims == 1) ? 1 : q1.dims[0];
-    qdcpu::RBMFuncs<real>::
+    sqd::RBMFuncs<real>::
         batchCalculate_E_fromQbits(E, h0, h1, J, c, q0, q1, N0, N1, nBatch0, nBatch1);
 }
     
@@ -382,8 +382,8 @@ PyObject *internal_dense_graph_batch_search(PyObject *objE, PyObject *objW, int 
     NpMatrix E(objE), W(objW);
     int N = W.dims[0];
     /* do the native job */
-    qdcpu::PackedBitsArray xList;
-    qdcpu::DGFuncs<real>::batchSearch(E, &xList, W, N, xBegin, xEnd);
+    sqd::PackedBitsArray xList;
+    sqd::DGFuncs<real>::batchSearch(E, &xList, W, N, xBegin, xEnd);
     /* copy values to PyArray(int8). */
     npy_intp dims[2] = {(int)xList.size(), N};
     PyArrayObject *objX = (PyArrayObject*)PyArray_EMPTY(2, dims, NPY_INT8, 0);

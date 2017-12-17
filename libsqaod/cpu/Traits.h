@@ -7,7 +7,7 @@
 
 #define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
 
-namespace quantd_cpu {
+namespace sqaod {
 
 typedef std::vector<unsigned long long> PackedBitsArray;
     

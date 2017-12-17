@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <exception>
 
-using namespace quantd_cpu;
+using namespace sqaod;
 
 template<class real>
 CPUDenseGraphBFSolver<real>::CPUDenseGraphBFSolver() {
@@ -79,5 +79,5 @@ void CPUDenseGraphBFSolver<real>::search() {
     }
 }
 
-template class quantd_cpu::CPUDenseGraphBFSolver<float>;
-template class quantd_cpu::CPUDenseGraphBFSolver<double>;
+template class sqaod::CPUDenseGraphBFSolver<float>;
+template class sqaod::CPUDenseGraphBFSolver<double>;

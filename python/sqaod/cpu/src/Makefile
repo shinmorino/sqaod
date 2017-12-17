@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../include -I../../../src -I../../../src/eigen
+INCLUDE+=-I../../../../include -I../../../../libsqaod -I../../../../libsqaod/eigen
 
 TARGETS=../cpu_native.so ../cpu_dg_annealer.so ../cpu_dg_bf_solver.so
 cpu_native_so_OBJS=cpu_native.o
@@ -13,7 +13,7 @@ CC=gcc
 CFLAGS=-fpic -DPIC -Wall -g -I$(dir $(abspath Makefile))
 #CFLAGS+=-O2
 CXXFLAGS=$(CFLAGS)
-LDFLAGS=-L.. -lquant_digital
+LDFLAGS=-L.. -lsqaod
 
 all: $(TARGETS)
 
