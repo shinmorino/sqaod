@@ -1,5 +1,5 @@
 import numpy as np
-import utils
+import sqaod.utils as utils
 
 # dense graph
 

@@ -1,14 +1,13 @@
 import numpy as np
 import random
-import solver_traits
-import utils
 import sys
-import py
-import tags
+import sqaod
+import sqaod.utils as utils
+import solver_traits
 
 class DenseGraphBFSolver :
     
-    def __init__(self, W = None, optimize = tags.minimize) :
+    def __init__(self, W = None, optimize = sqaod.minimize) :
         self._verbose = False
         if W is not None :
             self.set_problem(W, optimize)
@@ -16,7 +15,7 @@ class DenseGraphBFSolver :
     def _Esign(self) :
         return self._optimize.Esign
             
-    def set_problem(self, W, optimize = tags.minimize) :
+    def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dims, is symmetric ? */
         self._W = W.copy()
         N = W.shape[0]
@@ -61,7 +60,7 @@ class DenseGraphBFSolver :
                 else :
                     self._append_to_solutions(self._Emin, x[i])
 
-def dense_graph_bf_solver(W = None, optimize = tags.minimize) :
+def dense_graph_bf_solver(W = None, optimize = sqaod.minimize) :
     return DenseGraphBFSolver(W, optimize)
 
 
@@ -78,13 +77,13 @@ if __name__ == '__main__' :
     
     
     N = 8
-    bf = dense_graph_bf_solver(W, tags.minimize)
+    bf = dense_graph_bf_solver(W, sqaod.minimize)
     bf._search_optimum_batched()
     E = bf.get_E()
     x = bf.get_solutions() 
     print E, len(x), x[0]
 
-    bf = dense_graph_bf_solver(W, tags.maximize)
+    bf = dense_graph_bf_solver(W, sqaod.maximize)
     bf._search_optimum_batched()
     E = bf.get_E()
     x = bf.get_solutions() 

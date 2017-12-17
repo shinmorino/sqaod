@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-import utils
-from py import solver_traits
+import sqaod.utils as utils
+from sqaod.py import solver_traits
 
 
 class TestUtils(unittest.TestCase):

@@ -1,8 +1,8 @@
 import numpy as np
 import random
-import utils
+import sqaod
+import sqaod.utils as utils
 import solver_traits
-from py import tags
 
 
 class BipartiteGraphAnnealer :
@@ -28,7 +28,7 @@ class BipartiteGraphAnnealer :
             return False;
         return True
         
-    def set_problem(self, W, b0, b1, optimize = tags.minimize) :
+    def set_problem(self, W, b0, b1, optimize = sqaod.minimize) :
         self._dim = (W.shape[1], W.shape[0])
         if not self._check_dim(W, b0, b1) :
             raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
@@ -127,7 +127,7 @@ class BipartiteGraphAnnealer :
                 solver_traits.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
 
 def bipartite_graph_annealer(W = None, b0 = None, b1 = None, \
-                             optimize = tags.minimize, n_trotters = None) :
+                             optimize = sqaod.minimize, n_trotters = None) :
     return BipartiteGraphAnnealer(W, b0, b1, optimize, n_trotters)
 
 
@@ -142,7 +142,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
 
-    an = bipartite_graph_annealer(W, b0, b1, tags.minimize, m)
+    an = bipartite_graph_annealer(W, b0, b1, sqaod.minimize, m)
     
     Ginit = 5
     Gfin = 0.01

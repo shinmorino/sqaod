@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-import utils
-import py
+import sqaod.py as py
+import sqaod.utils as utils
 
 
 class TestMinEnergy(unittest.TestCase):

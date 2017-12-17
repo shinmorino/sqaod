@@ -1,8 +1,8 @@
 import numpy as np
 import random
+import sqaod
+import sqaod.utils as utils
 import solver_traits
-import utils
-import tags
 
 class DenseGraphAnnealer :
     
@@ -17,7 +17,7 @@ class DenseGraphAnnealer :
     def _Esign(self) :
         return self._optimize.Esign
     
-    def set_problem(self, W, optimize = tags.minimize) :
+    def set_problem(self, W, optimize = sqaod.minimize) :
         self.h, self.J, self.c = solver_traits.dense_graph_calculate_hJc(W)
         self._optimize = optimize
         Esign = self._Esign()
@@ -76,7 +76,7 @@ class DenseGraphAnnealer :
             if np.exp(-dE / kT) > np.random.rand():
                 q[y][x] = - qyx
                 
-def dense_graph_annealer(W = None, optimize=tags.minimize, n_trotters = None) :
+def dense_graph_annealer(W = None, optimize = sqaod.minimize, n_trotters = None) :
     return DenseGraphAnnealer(W, optimize, n_trotters)
 
 
@@ -100,7 +100,7 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,4,-32,4],
                   [4,4,4,4,4,4,4,-32]])
     
-    ann = dense_graph_annealer(W, tags.minimize, N / 2)
+    ann = dense_graph_annealer(W, sqaod.minimize, N / 2)
     
     for loop in range(0, nRepeat) :
         G = Ginit
@@ -114,7 +114,7 @@ if __name__ == '__main__' :
         q = ann.get_solutions()
         print E, q
 
-    ann = dense_graph_annealer(W, tags.maximize, N / 2)
+    ann = dense_graph_annealer(W, sqaod.maximize, N / 2)
     
     for loop in range(0, nRepeat) :
         G = Ginit

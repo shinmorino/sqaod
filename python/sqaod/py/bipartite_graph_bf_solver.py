@@ -1,8 +1,8 @@
 import numpy as np
 import random
 import sys
-import utils
-import tags
+import sqaod
+import sqaod.utils as utils
 
 class BipartiteGraphBFSolver :
     
@@ -29,7 +29,7 @@ class BipartiteGraphBFSolver :
             return False;
         return True
     
-    def set_problem(self, W, b0, b1, optimize = tags.minimize) :
+    def set_problem(self, W, b0, b1, optimize = sqaod.minimize) :
         if not self._check_dim(W, b0, b1) :
             raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
                             .format(W.shape, b0.size, b1.size))
@@ -109,7 +109,7 @@ class BipartiteGraphBFSolver :
         self._search_batched()
         
 
-def bipartite_graph_bf_solver(W = None, b0 = None, b1 = None, optimize = tags.minimize) :
+def bipartite_graph_bf_solver(W = None, b0 = None, b1 = None, optimize = sqaod.minimize) :
     return BipartiteGraphBFSolver(W, b0, b1, optimize)
 
 
