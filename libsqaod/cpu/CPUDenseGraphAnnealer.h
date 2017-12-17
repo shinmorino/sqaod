@@ -21,11 +21,11 @@ public:
 
     void seed(unsigned long seed);
 
-    void setProblemSize(int N, int m);
-
     void getProblemSize(int *N, int *m) const;
 
-    void setProblem(const real *W, OptimizeMethod om);
+    void setProblem(const real *W, int N, OptimizeMethod om);
+
+    void setNumTrotters(int m);
 
     void randomize_q();
 

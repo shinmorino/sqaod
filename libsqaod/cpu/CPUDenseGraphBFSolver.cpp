@@ -8,6 +8,7 @@ using namespace sqaod;
 
 template<class real>
 CPUDenseGraphBFSolver<real>::CPUDenseGraphBFSolver() {
+    tileSize_ = 1024;
 }
 
 template<class real>
@@ -26,20 +27,17 @@ void CPUDenseGraphBFSolver<real>::getProblemSize(int *N) const {
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::setProblemSize(int N) {
-    if (63 < N)
-        throw std::exception(); /* FIXME: */
+void CPUDenseGraphBFSolver<real>::setProblem(const real *W, int N, OptimizeMethod om) {
     N_ = N;
-    W_.resize(N, N);
-}
-
-
-template<class real>
-void CPUDenseGraphBFSolver<real>::setProblem(const real *W, OptimizeMethod om) {
     W_ = Eigen::Map<Matrix>((real*)W, N_, N_);
     om_ = om;
     if (om_ == optMaximize)
         W_ *= real(-1.);
+}
+
+template<class real>
+void CPUDenseGraphBFSolver<real>::setTileSize(int tileSize) {
+    tileSize_ = tileSize;
 }
 
 template<class real>
@@ -70,8 +68,7 @@ void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigne
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::search() {
-    const int nStep = 1024;
-    int iStep = (int)std::min((unsigned long long)nStep, xMax_);
+    int iStep = (int)std::min((unsigned long long)tileSize_, xMax_);
 
     initSearch();
     for (unsigned long long iTile = 0; iTile < xMax_; iTile += iStep) {

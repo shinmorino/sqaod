@@ -86,32 +86,14 @@ PyObject *dg_annealer_rand_seed(PyObject *module, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;    
 }
-    
-    
-    
-extern "C"
-PyObject *dg_annealer_set_problem_size(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    int N = 0, m = 0;
-    if (!PyArg_ParseTuple(args, "OiiO", &objExt, &N, &m, &dtype))
-        return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->setProblemSize(N, m);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->setProblemSize(N, m);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-
-    Py_INCREF(Py_None);
-    return Py_None;    
-}
 
 template<class real>
 void internal_dg_annealer_set_problem(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixT<real> NpMatrix;
     NpMatrix W(objW);
+    int N = W.dims[0];
     sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(W, om);
+    pyobjToCppObj<real>(objExt)->setProblem(W, N, om);
 }
     
 extern "C"
@@ -131,6 +113,24 @@ PyObject *dg_annealer_set_problem(PyObject *module, PyObject *args) {
     return Py_None;    
 }
     
+    
+extern "C"
+PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    int m = 0;
+    if (!PyArg_ParseTuple(args, "OiO", &objExt, &m, &dtype))
+        return NULL;
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->setNumTrotters(m);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->setNumTrotters(m);
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
 
 template<class real>
 void internal_dg_annealer_get_q(PyObject *objExt, PyObject *objQ) {
@@ -292,8 +292,8 @@ PyMethodDef cpu_dg_annealer_methods[] = {
 	{"new_annealer", dg_annealer_create, METH_VARARGS},
 	{"delete_annealer", dg_annealer_delete, METH_VARARGS},
 	{"rand_seed", dg_annealer_rand_seed, METH_VARARGS},
-	{"set_problem_size", dg_annealer_set_problem_size, METH_VARARGS},
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
+	{"set_solver_preference", dg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_q", dg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", dg_annealer_radomize_q, METH_VARARGS},
 	{"get_hJc", dg_annealer_get_hJc, METH_VARARGS},

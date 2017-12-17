@@ -20,11 +20,11 @@ public:
 
     void seed(unsigned long seed);
 
-    void setProblemSize(int N);
-
     void getProblemSize(int *N) const;
 
-    void setProblem(const real *W, OptimizeMethod om);
+    void setProblem(const real *W, int N, OptimizeMethod om);
+
+    void setTileSize(int tileSize);
 
     const BitMatrix &get_x() const;
 
@@ -40,6 +40,7 @@ private:
     Random random_;
     int N_;
     OptimizeMethod om_;
+    int tileSize_;
     unsigned long long xMax_;
     real E_;
     PackedBitsArray xList_;

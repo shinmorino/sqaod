@@ -5,6 +5,7 @@ namespace sqd = sqaod;
 
 template<class real>
 sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
+    m_ = -1;
 }
 
 template<class real>
@@ -17,24 +18,16 @@ void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setProblemSize(int N, int m) {
-    N_ = N;
-    m_ = m;
-}
-
-template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(int *N, int *m) const {
     *N = N_;
     *m = m_;
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod om) {
-    bitQ_.resize(m_, N_);
-    matQ_.resize(m_, N_);;
+void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, int N, OptimizeMethod om) {
+    N_ = N;
     h_.resize(1, N_);
     J_.resize(N_, N_);
-    E_.resize(m_);
 
     DGFuncs<real>::calculate_hJc(h_.data(), J_.data(), &c_, W, N_);
     om_ = om;
@@ -43,6 +36,14 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, OptimizeMethod 
         J_ *= real(-1.);
         c_ *= real(-1.);
     }
+}
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(int m) {
+    m_ = m;
+    bitQ_.resize(m_, N_);
+    matQ_.resize(m_, N_);;
+    E_.resize(m_);
 }
 
 template<class real>

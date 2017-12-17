@@ -8,52 +8,60 @@ import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
     
-    def __init__(self, N, m, dtype) :
+    def __init__(self, W, optimize, n_trotters, dtype) :
         self.dtype = dtype
-        self.ext = dg_annealer.new_annealer(dtype)
-        self.set_problem_size(N, m)
+        self._ext = dg_annealer.new_annealer(dtype)
+        self.set_problem(W, optimize)
+        self.set_solver_preference(n_trotters)
 
     def rand_seed(seed) :
-        dg_annealer.rand_seed(self.ext, seed)
-        
-    def set_problem_size(self, N, m) :
-        self.N = N
-        self.m = m;
-        self.E = np.zeros((self.m), self.dtype)
-        dg_annealer.set_problem_size(self.ext, N, m, self.dtype)
+        dg_annealer.rand_seed(self._ext, seed)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
+        # FIXME: check W dim
+        self._N = W.shape[0]
         W = solver_traits.clone_as_np_buffer(W, self.dtype)
-        dg_annealer.set_problem(self.ext, W, optimize, self.dtype)
+        dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
+
+    def set_solver_preference(self, n_trotters = None) :
+        if n_trotters is None :
+            n_trotters = self._N / 4
+        self._m = n_trotters;
+        self._E = np.zeros((self._m), self.dtype)
+        dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
 
     def randomize_q(self) :
-        dg_annealer.randomize_q(self.ext, self.dtype)
+        dg_annealer.randomize_q(self._ext, self.dtype)
 
     def get_q(self) :
-        q = np.empty((self.m, self.N), np.int8)
-        dg_annealer.get_q(self.ext, q, self.dtype)
+        q = np.empty((self._m, self._N), np.int8)
+        dg_annealer.get_q(self._ext, q, self.dtype)
         return q
 
     def get_hJc(self) :
-        h = np.empty((self.N), self.dtype)
-        J = np.empty((self.N, self.N), self.dtype)
+        h = np.empty((self._N), self.dtype)
+        J = np.empty((self._N, self._N), self.dtype)
         c = np.empty((1), self.dtype)
-        dg_annealer.get_hJc(self.ext, h, J, c, self.dtype)
+        dg_annealer.get_hJc(self._ext, h, J, c, self.dtype)
         return h, J, c[0]
 
     def get_E(self) :
-        dg_annealer.get_E(self.ext, self.E, self.dtype)
-        return self.E;
+        dg_annealer.get_E(self._ext, self._E, self.dtype)
+        return self._E;
 
     def calculate_E(self) :
-        dg_annealer.calculate_E(self.ext, self.dtype)
+        dg_annealer.calculate_E(self._ext, self.dtype)
+
+    def init_anneal(self) :
+        if not hasattr(self, '_m') :
+            self.set_solver_preference(None)
 
     def anneal_one_step(self, G, kT) :
-        dg_annealer.anneal_one_step(self.ext, G, kT, self.dtype)
+        dg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)
         
 
-def dense_graph_annealer(N = 0, m = 0, dtype=np.float64) :
-    return DenseGraphAnnealer(N, m, dtype)
+def dense_graph_annealer(W, optimize=sqaod.minimize, n_trotters = None, dtype=np.float64) :
+    return DenseGraphAnnealer(W, optimize, n_trotters, dtype)
 
 
 if __name__ == '__main__' :
@@ -81,7 +89,7 @@ if __name__ == '__main__' :
     m = 150
     W = utils.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
-    ann = dense_graph_annealer(N, m, dtype=np.float64)
+    ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
 #    ann = py.dense_graph_annealer(N, m)
     ann.set_problem(W, sqaod.minimize)
 
@@ -100,6 +108,7 @@ if __name__ == '__main__' :
     
     for loop in range(0, nRepeat) :
         G = Ginit
+        ann.init_anneal()
         ann.randomize_q()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
