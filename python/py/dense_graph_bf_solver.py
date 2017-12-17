@@ -25,13 +25,10 @@ class DenseGraphBFSolver :
         self._optimize = optimize
         self._W = W * optimize.Esign
             
-    def W(self) :
-        return self._W
-
-    def E(self) :
+    def get_E(self) :
         return self._Esign() * self._Emin
     
-    def solutions(self) :
+    def get_solutions(self) :
         return self._solutions
 
     def _reset_solutions(self, Etmp, x) :
@@ -83,12 +80,12 @@ if __name__ == '__main__' :
     N = 8
     bf = dense_graph_bf_solver(W, tags.minimize)
     bf._search_optimum_batched()
-    E = bf.E()
-    x = bf.solutions() 
+    E = bf.get_E()
+    x = bf.get_solutions() 
     print E, len(x), x[0]
 
     bf = dense_graph_bf_solver(W, tags.maximize)
     bf._search_optimum_batched()
-    E = bf.E()
-    x = bf.solutions() 
+    E = bf.get_E()
+    x = bf.get_solutions() 
     print E, len(x), x[0]

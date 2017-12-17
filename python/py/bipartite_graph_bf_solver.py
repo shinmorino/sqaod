@@ -41,10 +41,10 @@ class BipartiteGraphBFSolver :
         self._blist = (self._Esign() * b0, self._Esign() * b1)
         
 
-    def E(self) :
+    def get_E(self) :
         return self._Esign() * self._Emin
 
-    def solutions(self) :
+    def get_solutions(self) :
         return self._solutions
 
     def _reset_solutions(self, Etmp, x0, x1) :
@@ -57,7 +57,7 @@ class BipartiteGraphBFSolver :
         if self._verbose :
             print("Etmp < Emin : {0}".format(Etmp))
     
-    def _search_optimum(self) :
+    def _search(self) :
         N0, N1 = self._get_dim()
         iMax = 1 << N0
         jMax = 1 << N1
@@ -78,7 +78,7 @@ class BipartiteGraphBFSolver :
                 else :
                     self._append_to_solutions(Etmp, x0, x1)
         
-    def _search_optimum_batched(self) :
+    def _search_batched(self) :
         N0, N1 = self._get_dim()
         iMax = 1 << N0
         jMax = 1 << N1
@@ -104,9 +104,9 @@ class BipartiteGraphBFSolver :
                             self._append_to_solutions.append(Etmp[j][i], x0[i], x1[j])
                     
 
-    def search_optimum(self) :
+    def search(self) :
         # self._search_optimum()
-        self._search_optimum_batched()
+        self._search_batched()
         
 
 def bipartite_graph_bf_solver(W = None, b0 = None, b1 = None, optimize = tags.minimize) :
@@ -124,13 +124,13 @@ if __name__ == '__main__' :
     b1 = np.random.random((N1)) - 0.5
     
     bf = bipartite_graph_bf_solver(W, b0, b1)
-    bf._search_optimum()
-    E = bf.E()
-    solutions = bf.solutions() 
+    bf._search()
+    E = bf.get_E()
+    solutions = bf.get_solutions() 
     print(E, solutions)
     
-    bf._search_optimum_batched()
-    E = bf.E()
-    solutions = bf.solutions() 
+    bf._search_batched()
+    E = bf.get_E()
+    solutions = bf.get_solutions() 
     print(E, solutions)
 

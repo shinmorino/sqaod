@@ -48,10 +48,10 @@ class BipartiteGraphAnnealer :
         self._q0 = np.empty((m, self._dim[0]), dtype=np.int8)
         self._q1 = np.empty((m, self._dim[1]), dtype=np.int8)
         
-    def E(self) :
-        return self._Esigh() * np.min(self.E);
+    def get_E(self) :
+        return self._Esign() * np.min(self._E);
 
-    def solutions(self) :
+    def get_solutions(self) :
         Esign = self._Esign()
         sols = []
         for idx in range(self._m) :
@@ -150,6 +150,7 @@ if __name__ == '__main__' :
             an.anneal_one_step(G, kT)
             G = G * tau
 
-        E = an.calculate_E()
-        sol = an.solutions()
+        an.calculate_E()
+        E = an.get_E()
+        sol = an.get_solutions()
         print E, sol
