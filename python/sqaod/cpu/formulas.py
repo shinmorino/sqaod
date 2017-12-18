@@ -2,7 +2,7 @@ import numpy as np
 import numbers
 import sqaod.common.checkers as checkers
 import sqaod.common as common
-import cpu_native
+import cpu_formulas
 
 # dense graph    
 
@@ -14,7 +14,7 @@ def dense_graph_calculate_E(W, x, dtype) :
     checkers.assert_is_vector('x', x)
 
     E = np.ndarray((1), dtype)
-    cpu_native.dense_graph_calculate_E(E, W, x, dtype)
+    cpu_formulas.dense_graph_calculate_E(E, W, x, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E(W, x, dtype) :
@@ -22,7 +22,7 @@ def dense_graph_batch_calculate_E(W, x, dtype) :
     checkers.dense_graph.bits(W, x)
     
     E = np.empty((x.shape[0]), dtype)
-    cpu_native.dense_graph_batch_calculate_E(E, W, x, dtype)
+    cpu_formulas.dense_graph_batch_calculate_E(E, W, x, dtype)
     return E
 
 
@@ -36,7 +36,7 @@ def dense_graph_calculate_hJc(W, dtype) :
     h = np.empty((N), dtype)
     J = np.empty((N, N), dtype)
     c = np.empty((1), dtype)
-    cpu_native.dense_graph_calculate_hJc(h, J, c, W, dtype);
+    cpu_formulas.dense_graph_calculate_hJc(h, J, c, W, dtype);
     return h, J, c[0]
 
 # Ising model energy functions
@@ -47,7 +47,7 @@ def dense_graph_calculate_E_from_qbits(h, J, c, q, dtype) :
     checkers.assert_is_vector('q', q)
     
     E = np.ndarray((1), dtype)
-    cpu_native.dense_graph_calculate_E_from_qbits(E, h, J, c, q, dtype)
+    cpu_formulas.dense_graph_calculate_E_from_qbits(E, h, J, c, q, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
@@ -55,7 +55,7 @@ def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
     checkers.dense_graph.bits(J, q);
 
     E = np.empty([q.shape[0]], dtype)
-    cpu_native.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, dtype)
+    cpu_formulas.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, dtype)
     return E
 
 
@@ -67,7 +67,7 @@ def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype) :
     checkers.assert_is_vector('x0', x0)
     checkers.assert_is_vector('x1', x1)
     E = np.ndarray((1), dtype)
-    cpu_native.bipartite_graph_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    cpu_formulas.bipartite_graph_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E[0]
 
 
@@ -78,7 +78,7 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_native.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    cpu_formulas.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E
 
 
@@ -91,7 +91,7 @@ def bipartite_graph_calculate_hJc(b0, b1, W, dtype) :
     h1 = np.empty((N1), dtype)
     J = np.empty((N1, N0), dtype)
     c = np.empty((1), dtype)
-    cpu_native.bipartite_graph_calculate_hJc(h0, h1, J, c, b0, b1, W, dtype);
+    cpu_formulas.bipartite_graph_calculate_hJc(h0, h1, J, c, b0, b1, W, dtype);
     return h0, h1, J, c[0]
 
 def bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
@@ -101,7 +101,7 @@ def bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
     checkers.assert_is_vector('q1', q1)
 
     E = np.ndarray((1), dtype)
-    cpu_native.bipartite_graph_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
+    cpu_formulas.bipartite_graph_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
     return E[0]
 
 
@@ -112,7 +112,7 @@ def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_native.bipartite_graph_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
+    cpu_formulas.bipartite_graph_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
     return E
 
 

@@ -9,7 +9,7 @@
  * Here we only get entities needed. */
 
 
-static PyObject *Cpu_NativeError;
+static PyObject *Cpu_FormulasError;
 namespace sqd = sqaod;
 
 
@@ -18,7 +18,7 @@ namespace {
 
 
 void setErrInvalidDtype(PyObject *dtype) {
-    PyErr_SetString(Cpu_NativeError, "dtype must be numpy.float64 or numpy.float32.");
+    PyErr_SetString(Cpu_FormulasError, "dtype must be numpy.float64 or numpy.float32.");
 }
 
 #define RAISE_INVALID_DTYPE(dtype) {setErrInvalidDtype(dtype); return NULL; }
@@ -437,16 +437,16 @@ PyMethodDef annealermethods[] = {
 
 extern "C"
 PyMODINIT_FUNC
-initcpu_native(void) {
+initcpu_formulas(void) {
     PyObject *m;
     
-    m = Py_InitModule("cpu_native", annealermethods);
+    m = Py_InitModule("cpu_formulas", annealermethods);
     import_array();
     if (m == NULL)
         return;
     
-    char name[] = "cpu_native.error";
-    Cpu_NativeError = PyErr_NewException(name, NULL, NULL);
-    Py_INCREF(Cpu_NativeError);
-    PyModule_AddObject(m, "error", Cpu_NativeError);
+    char name[] = "cpu_formulas.error";
+    Cpu_FormulasError = PyErr_NewException(name, NULL, NULL);
+    Py_INCREF(Cpu_FormulasError);
+    PyModule_AddObject(m, "error", Cpu_FormulasError);
 }

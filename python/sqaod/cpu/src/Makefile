@@ -3,8 +3,8 @@
 include incpath
 INCLUDE+=-I../../../../include -I../../../../libsqaod -I../../../../libsqaod/eigen
 
-TARGETS=../cpu_native.so ../cpu_dg_annealer.so ../cpu_dg_bf_solver.so
-cpu_native_so_OBJS=cpu_native.o
+TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_solver.so
+cpu_formulas_so_OBJS=cpu_formulas.o
 cpu_dg_annealer_so_OBJS=cpu_dg_annealer.o
 cpu_dg_bf_solver_so_OBJS=cpu_dg_bf_solver.o
 
@@ -17,7 +17,7 @@ LDFLAGS=-L.. -lsqaod
 
 all: $(TARGETS)
 
-../cpu_native.so: $(cpu_native_so_OBJS)
+../cpu_formulas.so: $(cpu_formulas_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
 ../cpu_dg_annealer.so: $(cpu_dg_annealer_so_OBJS)
@@ -36,4 +36,4 @@ all: $(TARGETS)
 .PHONY:
 
 clean:
-	rm -f $(TARGETS) $(cpu_native_so_OBJS) $(cpu_dg_annealer_so_OBJS) $(cpu_dg_bf_solver_so_OBJS)
+	rm -f $(TARGETS) $(cpu_formulas_so_OBJS) $(cpu_dg_annealer_so_OBJS) $(cpu_dg_bf_solver_so_OBJS)
