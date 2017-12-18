@@ -143,12 +143,20 @@ void DGFuncs<real>::batchCalculate_E_fromQbits(real *E,
 
 
 template<class real>
-void DGFuncs<real>::batchSearch(real *E, std::vector<unsigned long long> *xList,
-                                const real *W, int N, unsigned long xBegin, unsigned long xEnd) {
+void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList, const real *W, int N,
+                                PackedBits xBegin, PackedBits xEnd) {
+    const Eigen::Map<Matrix> eW((real*)W, N, N);
+    batchSearch(E, xList, eW, xBegin, xEnd);
+}
+
+
+template<class real>
+void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList,
+                                const Matrix &eW, PackedBits xBegin, PackedBits xEnd) {
     int nBatch = int(xEnd - xBegin);
+    int N = eW.rows();
 
     real Emin = *E;
-    const Eigen::Map<Matrix> eW((real*)W, N, N);
     Matrix eBitsSeq(nBatch, N);
     ColumnVector eEbatch(nBatch);
 
@@ -174,11 +182,10 @@ void DGFuncs<real>::batchSearch(real *E, std::vector<unsigned long long> *xList,
 }
 
 
-
 /* rbm */
 
 template<class real>
-void RBMFuncs<real>::calculate_E(real *E,
+void BGFuncs<real>::calculate_E(real *E,
                                  const real *b0, const real *b1, const real *W,
                                  const char *x0, const char *x1,
                                  int N0, int N1) {
@@ -189,11 +196,11 @@ void RBMFuncs<real>::calculate_E(real *E,
     const Matrix ex1 = utils<real>::bitsToMat(x1, N1, 1);
     Eigen::Map<Matrix> eE(E, 1, 1);
     Matrix prod = (eW * ex0);
-    eE = - eb0 * ex0 - eb1 * ex1 - ex1.transpose() * (eW * ex0);
+    eE = eb0 * ex0 + eb1 * ex1 + ex1.transpose() * (eW * ex0);
 }
 
 template<class real>
-void RBMFuncs<real>::batchCalculate_E(real *E,
+void BGFuncs<real>::batchCalculate_E(real *E,
                                       const real *b0, const real *b1, const real *W,
                                       const char *x0, const char *x1,
                                       int N0, int N1, int nBatch0, int nBatch1) {
@@ -206,14 +213,14 @@ void RBMFuncs<real>::batchCalculate_E(real *E,
 
     RowVector ebx0 = eb0 * ex0.transpose();
     ColumnVector ebx1 = (eb1 * ex1.transpose()).transpose();
-    eE.rowwise() = - ebx0;
-    eE.colwise() -=  ebx1;
-    eE -= ex1 * (eW * ex0.transpose());
+    eE.rowwise() = ebx0;
+    eE.colwise() += ebx1;
+    eE += ex1 * (eW * ex0.transpose());
 }
 
 
 template<class real>
-void RBMFuncs<real>::calculate_hJc(real *h0, real *h1, real *J, real *c,
+void BGFuncs<real>::calculate_hJc(real *h0, real *h1, real *J, real *c,
                                    const real *b0, const real *b1, const real *W,
                                    int N0, int N1) {
     const Eigen::Map<Matrix> eb0((real*)b0, N0, 1), eb1((real*)b1, N1, 1), eW((real*)W, N1, N0);
@@ -229,7 +236,7 @@ void RBMFuncs<real>::calculate_hJc(real *h0, real *h1, real *J, real *c,
 
 
 template<class real>
-void RBMFuncs<real>::
+void BGFuncs<real>::
 calculate_E_fromQbits(real *E,
                       const real *h0, const real *h1, const real *J, real c,
                       const char *q0, const char *q1,
@@ -238,12 +245,12 @@ calculate_E_fromQbits(real *E,
     const Eigen::Map<Matrix> eJ((real*)J, N1, N0);
     const Matrix eq0 = utils<real>::bitsToMat(q0, N0, 1);
     const Matrix eq1 = utils<real>::bitsToMat(q1, N1, 1);
-    *E = (- eh0 * eq0 - eh1 * eq1 - eq1.transpose() * (eJ * eq0))(0, 0) - c;
+    *E = (eh0 * eq0 + eh1 * eq1 + eq1.transpose() * (eJ * eq0))(0, 0) + c;
 }
     
 
 template<class real>
-void RBMFuncs<real>::
+void BGFuncs<real>::
 batchCalculate_E_fromQbits(real *E,
                            const real *h0, const real *h1, const real *J, real c,
                            const char *q0, const char *q1,
@@ -257,10 +264,10 @@ batchCalculate_E_fromQbits(real *E,
 
     RowVector ehq0 = eh0 * eq0.transpose();
     ColumnVector ehq1 = (eh1 * eq1.transpose()).transpose();
-    eE.rowwise() = - ehq0;
-    eE.colwise() -=  ehq1;
-    eE -= eq1 * (eJ * eq0.transpose());
-    eE.array() -= c;
+    eE.rowwise() = ehq0;
+    eE.colwise() += ehq1;
+    eE += eq1 * (eJ * eq0.transpose());
+    eE.array() += c;
 }
 
 #if 0
@@ -272,13 +279,54 @@ def rbm_batch_calculate_E_from_qbits(h, J, c, q0, q1) :
 
 #endif
 
+template<class real>
+void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
+                                const RowVector &b0, const RowVector &b1, const Matrix &W,
+                                PackedBits xBegin0, PackedBits xEnd0,
+                                PackedBits xBegin1, PackedBits xEnd1) {
+    int nBatch0 = int(xEnd0 - xBegin0);
+    int nBatch1 = int(xEnd1 - xBegin1);
+
+    real Emin = *E;
+    int N0 = W.cols();
+    int N1 = W.rows();
+    Matrix eBitsSeq0(nBatch0, N0);
+    Matrix eBitsSeq1(nBatch1, N1);
+
+    createBitsSequence(eBitsSeq0.data(), N0, xBegin0, xEnd0);
+    createBitsSequence(eBitsSeq1.data(), N1, xBegin1, xEnd1);
+    
+    Matrix eEBatch = eBitsSeq1 * (W * eBitsSeq0.transpose());
+    eEBatch.rowwise() += b0 * eBitsSeq0;
+    eEBatch.colwise() += (b1 * eBitsSeq1).transpose();
+    
+    /* FIXME: Parallelize */
+    for (int idx1 = 0; idx1 < nBatch1; ++idx1) {
+        for (int idx0 = 0; idx0 < nBatch0; ++idx0) {
+            real Etmp = eEBatch(idx0, idx1);
+            if (Etmp > Emin) {
+                continue;
+            }
+            else if (Etmp == Emin) {
+                xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+            }
+            else {
+                Emin = Etmp;
+                xPairs->clear();
+                xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+            }
+        }
+    }
+    *E = Emin;
+}
+    
 
 template struct utils<double>;
 template struct utils<float>;
 template struct DGFuncs<double>;
 template struct DGFuncs<float>;
-template struct RBMFuncs<double>;
-template struct RBMFuncs<float>;
+template struct BGFuncs<double>;
+template struct BGFuncs<float>;
 
 template
 void ::sqaod::createBitsSequence(double *bits, int nBits, int bBegin, int bEnd);

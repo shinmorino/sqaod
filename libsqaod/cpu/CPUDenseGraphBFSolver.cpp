@@ -62,7 +62,7 @@ template<class real>
 void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
     iBegin = std::min(std::max(0ULL, iBegin), xMax_);
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
-    DGFuncs<real>::batchSearch(&E_, &xList_, W_.data(), N_, iBegin, iEnd);
+    DGFuncs<real>::batchSearch(&E_, &xList_, W_, iBegin, iEnd);
     /* FIXME: add max limits of # min vectors. */
 }
 
