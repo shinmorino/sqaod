@@ -27,7 +27,7 @@ public:
 
     void setTileSize(int tileSize0, int tileSize1);
 
-    const BitVectorPairArray &get_x() const;
+    const BitsPairArray &get_x() const;
 
     real get_E() const;
 
@@ -48,7 +48,7 @@ private:
     unsigned long long x0max_, x1max_;
     real E_;
     PackedBitsPairArray xPackedParis_;
-    mutable BitVectorPairArray xPairs_;
+    mutable BitsPairArray xPairs_;
 };
 
 }

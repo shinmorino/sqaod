@@ -297,13 +297,13 @@ void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
     createBitsSequence(eBitsSeq1.data(), N1, xBegin1, xEnd1);
     
     Matrix eEBatch = eBitsSeq1 * (W * eBitsSeq0.transpose());
-    eEBatch.rowwise() += b0 * eBitsSeq0;
-    eEBatch.colwise() += (b1 * eBitsSeq1).transpose();
+    eEBatch.rowwise() += b0 * eBitsSeq0.transpose();
+    eEBatch.colwise() += (b1 * eBitsSeq1.transpose()).transpose();
     
     /* FIXME: Parallelize */
     for (int idx1 = 0; idx1 < nBatch1; ++idx1) {
         for (int idx0 = 0; idx0 < nBatch0; ++idx0) {
-            real Etmp = eEBatch(idx0, idx1);
+            real Etmp = eEBatch(idx1, idx0);
             if (Etmp > Emin) {
                 continue;
             }

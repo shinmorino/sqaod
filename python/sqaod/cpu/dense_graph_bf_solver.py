@@ -25,7 +25,7 @@ class DenseGraphBFSolver :
         solutions = []
         x = dg_bf_solver.get_x(self._ext, self.dtype)
         for i in range(x.shape[0]) :
-            solutions.append((E, x[i,:]))
+            solutions.append((E, x[i]))
         return solutions
 
     def get_E(self) :

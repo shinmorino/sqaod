@@ -14,7 +14,7 @@ typedef std::vector<PackedBits> PackedBitsArray;
 typedef std::vector<std::pair<PackedBits, PackedBits> > PackedBitsPairArray;
 typedef Eigen::Matrix<char, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> BitMatrix;
 typedef Eigen::Matrix<char, Eigen::Dynamic, 1, Eigen::RowMajor> BitArray;
-typedef std::vector<std::pair<BitArray, BitArray> > BitVectorPairArray;
+typedef std::vector<std::pair<BitArray, BitArray> > BitsPairArray;
     
 enum OptimizeMethod {
     optMinimize,

@@ -48,8 +48,8 @@ void CPUBipartiteGraphBFSolver<real>::setTileSize(int tileSize0, int tileSize1) 
 }
 
 template<class real>
-const BitVectorPairArray &CPUBipartiteGraphBFSolver<real>::get_x() const {
-    //unpackIntArrayToMatrix(bitX_, xList_, N_);
+const BitsPairArray &CPUBipartiteGraphBFSolver<real>::get_x() const {
+    //unpackIntArrayToMatrix(bitX0_, xList_, N_);
     return xPairs_;
 }
 
