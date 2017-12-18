@@ -50,7 +50,6 @@ PyObject *dg_bf_solver_create(PyObject *module, PyObject *args) {
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
-    Py_INCREF(obj);
     return obj;
 }
 
@@ -146,18 +145,14 @@ PyObject *internal_dg_bf_solver_get_x(PyObject *objExt) {
     
 extern "C"
 PyObject *dg_bf_solver_get_x(PyObject *module, PyObject *args) {
-    PyObject *objExt, *objX, *dtype;
+    PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
     if (isFloat64(dtype))
-        objX = internal_dg_bf_solver_get_x<double>(objExt);
+        return internal_dg_bf_solver_get_x<double>(objExt);
     else if (isFloat32(dtype))
-        objX = internal_dg_bf_solver_get_x<float>(objExt);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-
-    Py_INCREF(objX);
-    return objX;    
+        return internal_dg_bf_solver_get_x<float>(objExt);
+    RAISE_INVALID_DTYPE(dtype);
 }
 
 
@@ -171,17 +166,14 @@ PyObject *internal_dg_bf_solver_get_E(PyObject *objExt) {
     
 extern "C"
 PyObject *dg_bf_solver_get_E(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype, *objE;
+    PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
     if (isFloat64(dtype))
-        objE = internal_dg_bf_solver_get_E<double>(objExt);
+        return internal_dg_bf_solver_get_E<double>(objExt);
     else if (isFloat32(dtype))
-        objE = internal_dg_bf_solver_get_E<float>(objExt);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-    Py_INCREF(objE);
-    return objE;
+        return internal_dg_bf_solver_get_E<float>(objExt);
+    RAISE_INVALID_DTYPE(dtype);
 }
 
 

@@ -395,7 +395,7 @@ PyObject *internal_dense_graph_batch_search(PyObject *objE, PyObject *objW, int 
 
 extern "C"
 PyObject *cpu_native_dense_graph_batch_search(PyObject *module, PyObject *args) {
-    PyObject *objE, *objW, *objX;
+    PyObject *objE, *objW;
     PyObject *dtype;
     unsigned long long xBegin = 0, xEnd = 0;
     std::vector<unsigned long long> xList;
@@ -404,15 +404,12 @@ PyObject *cpu_native_dense_graph_batch_search(PyObject *module, PyObject *args) 
         return NULL;
     
     if (isFloat64(dtype))
-        objX = internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
+        return internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
     else if (isFloat32(dtype))
-        objX = internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-
-    Py_INCREF(objX);
-    return objX;    
+        return internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
+    RAISE_INVALID_DTYPE(dtype);
 }
+    
 }
 
 

@@ -50,7 +50,6 @@ PyObject *dg_annealer_create(PyObject *module, PyObject *args) {
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
-    Py_INCREF(obj);
     return obj;
 }
 
