@@ -2,7 +2,7 @@ import numpy as np
 import random
 import sys
 import sqaod
-import sqaod.utils as utils
+import sqaod.common as common
 
 class BipartiteGraphBFSolver :
     
@@ -65,9 +65,9 @@ class BipartiteGraphBFSolver :
         W, b0, b1, x0, x1 = self._vars()
 
         for i in range(iMax) :
-            x0 = utils.create_bits_sequence((i), N0)
+            x0 = common.create_bits_sequence((i), N0)
             for j in range(jMax) :
-                x1 = utils.create_bits_sequence((j), N1)
+                x1 = common.create_bits_sequence((j), N1)
                 Etmp = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                        + np.dot(x1, np.matmul(W, x0.transpose()))
                 if self._Emin < Etmp :
@@ -88,9 +88,9 @@ class BipartiteGraphBFSolver :
         iStep = min(256, iMax)
         jStep = min(256, jMax)
         for iTile in range(0, iMax, iStep) :
-            x0 = utils.create_bits_sequence(range(iTile, iTile + iStep), N0)
+            x0 = common.create_bits_sequence(range(iTile, iTile + iStep), N0)
             for jTile in range(0, jMax, jStep) :
-                x1 = utils.create_bits_sequence(range(jTile, jTile + jStep), N1)
+                x1 = common.create_bits_sequence(range(jTile, jTile + jStep), N1)
                 Etmp = np.matmul(b0, x0.T).reshape(1, iStep) \
                        + np.matmul(b1, x1.T).reshape(jStep, 1) + np.matmul(x1, np.matmul(W, x0.T))
                 for j in range(jStep) :

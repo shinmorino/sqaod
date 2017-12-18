@@ -1,7 +1,6 @@
 import numpy as np
 import sqaod
-import sqaod.utils as utils
-import solver_traits
+import sqaod.common as common
 import cpu_dg_bf_solver as dg_bf_solver
 
 class DenseGraphBFSolver :
@@ -11,10 +10,13 @@ class DenseGraphBFSolver :
         self._ext = dg_bf_solver.new_bf_solver(dtype)
         if not W is None :
             self.set_problem(W, optimize)
+            
+    def __del__(self) :
+        dg_bf_solver.delete_bf_solver(self._ext, self.dtype)
 
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W shape.
-        W = solver_traits.clone_as_np_buffer(W, self.dtype)
+        W = common.clone_as_np_buffer(W, self.dtype)
         self._N = W.shape[0]
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
 
@@ -60,7 +62,7 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,4,4,-32]])
 
     N = 20
-    W = utils.generate_random_symmetric_W(N, -0.5, 0.5, np.float32);
+    W = common.generate_random_symmetric_W(N, -0.5, 0.5, np.float32);
     bf = dense_graph_bf_solver(W, sqaod.minimize, np.float32)
     bf.search()
     x = bf.get_x() 

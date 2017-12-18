@@ -1,15 +1,16 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.utils as utils
-import solver_traits
+import sqaod.common as common
+import formulas
 
 class DenseGraphAnnealer :
     
     def __init__(self, W, optimize, n_trotters) :
+        self._m = None
         if not W is None :
             self.set_problem(W, optimize)
-            self.set_solver_prefereence(n_trotters)
+            self.set_solver_preference(n_trotters)
 
     def _vars(self) :
         return self.h, self.J, self.c, self.q
@@ -18,7 +19,7 @@ class DenseGraphAnnealer :
         return self._optimize.Esign
     
     def set_problem(self, W, optimize = sqaod.minimize) :
-        self.h, self.J, self.c = solver_traits.dense_graph_calculate_hJc(W)
+        self.h, self.J, self.c = formulas.dense_graph_calculate_hJc(W)
         self._optimize = optimize
         Esign = self._Esign()
         self.h, self.J, self.c = Esign * self.h, Esign * self.J, Esign * self.c
@@ -38,24 +39,24 @@ class DenseGraphAnnealer :
         Esign = self._Esign()
         sols = []
         for idx in range(self._m) :
-            x = utils.bits_from_qbits(self.q[idx])
+            x = common.bits_from_qbits(self.q[idx])
             sols.append((Esign * self._E[idx], x))
         return sols
 
     # Ising model
     
     def randomize_q(self) :
-        utils.randomize_qbits(self.q)
+        common.randomize_qbits(self.q)
 
     def get_hJc(self) :
         return self.h, self.J, self.c
 
     def calculate_E(self) :
         h, J, c, q = self._vars()
-        self._E = solver_traits.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
+        self._E = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
 
     def init_anneal(self) :
-        if not hasattr(self, '_m') :
+        if self._m is None :
             self.set_solver_preference(self._N / 4)
             self.randomize_q()
         
@@ -124,6 +125,6 @@ if __name__ == '__main__' :
             G = G * tau
 
         ann.calculate_E()
-        E = ann.E()
+        E = ann.get_E()
         q = ann.get_solutions()
         print E, q

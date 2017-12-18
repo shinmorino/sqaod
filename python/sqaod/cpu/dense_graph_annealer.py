@@ -1,9 +1,8 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.utils as utils
+import sqaod.common as common
 import sqaod.py as py
-import solver_traits
 import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
@@ -14,13 +13,16 @@ class DenseGraphAnnealer :
         self.set_problem(W, optimize)
         self.set_solver_preference(n_trotters)
 
+    def __del__(self) :
+        dg_annealer.delete_annealer(self._ext, self.dtype)
+        
     def rand_seed(seed) :
         dg_annealer.rand_seed(self._ext, seed)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dim
         self._N = W.shape[0]
-        W = solver_traits.clone_as_np_buffer(W, self.dtype)
+        W = common.clone_as_np_buffer(W, self.dtype)
         dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
 
     def set_solver_preference(self, n_trotters = None) :
@@ -47,7 +49,7 @@ class DenseGraphAnnealer :
 
     def get_E(self) :
         dg_annealer.get_E(self._ext, self._E, self.dtype)
-        return self._E;
+        return np.min(self._E);
 
     def calculate_E(self) :
         dg_annealer.calculate_E(self._ext, self.dtype)
@@ -87,7 +89,7 @@ if __name__ == '__main__' :
     
     N = 200
     m = 150
-    W = utils.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+    W = common.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
 #    ann = py.dense_graph_annealer(N, m)
@@ -115,6 +117,7 @@ if __name__ == '__main__' :
             G = G * tau
 
         ann.calculate_E()
-        q = ann.get_q() 
         E = ann.get_E()
-        print(q, E)
+        q = ann.get_q() 
+        print E
+        print q

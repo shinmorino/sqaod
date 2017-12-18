@@ -1,8 +1,8 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.utils as utils
-import solver_traits
+import sqaod.common as common
+import formulas
 
 
 class BipartiteGraphAnnealer :
@@ -10,7 +10,8 @@ class BipartiteGraphAnnealer :
     def __init__(self, W, b0, b1, optimize, n_trotters) : # n_trotters
         self._m = None
         if not W is None :
-            self.set_problem(W, b0, b1, optimize, n_trotters)
+            self.set_problem(W, b0, b1, optimize)
+            self.set_solver_preference(n_trotters)
 
     def _vars(self) :
         return self._h0, self._h1, self._J, self._c, self._q0, self._q1
@@ -21,7 +22,7 @@ class BipartiteGraphAnnealer :
     def _get_dim(self) :
         return self._dim[0], self._dim[1], self._m
 
-    def _check_dim(self, W, b0, b1) :
+    def _check_dim(self, W, b0, b1) : # FIXME: wrong checks
         if len(b0) != self._dim[0] :
             return False;
         if len(b1) != self._dim[1] :
@@ -36,7 +37,7 @@ class BipartiteGraphAnnealer :
 
         self._optimize = optimize
         self._h0, self._h1, self._J, self._c = \
-            solver_traits.bipartite_graph_calculate_hJc(b0, b1, W)
+            formulas.bipartite_graph_calculate_hJc(b0, b1, W)
         Esign = self._Esign()
         self._h0, self._h1 = self._h0 * Esign, self._h1 * Esign
         self._J, self._c = Esign * self._J, Esign * self._c
@@ -56,8 +57,8 @@ class BipartiteGraphAnnealer :
         Esign = self._Esign()
         sols = []
         for idx in range(self._m) :
-            x0 = utils.bits_from_qbits(self._q0[idx])
-            x1 = utils.bits_from_qbits(self._q1[idx])
+            x0 = common.bits_from_qbits(self._q0[idx])
+            x1 = common.bits_from_qbits(self._q1[idx])
             sols.append((Esign * self._E[idx], x0, x1))
         return sols
 
@@ -65,8 +66,8 @@ class BipartiteGraphAnnealer :
         if (x0.shape[len(x0.shape) - 1] != self._dim[0]) \
            or (x1.shape[len(x1.shape) - 1] != self._dim[1]) :
             raise Exception("Dim does not match.")
-        q0 = utils.bits_to_qbits(x0)
-        q1 = utils.bits_to_qbits(x1)
+        q0 = common.bits_to_qbits(x0)
+        q1 = common.bits_to_qbits(x1)
         for im in range(0, self._m) :
             self._q0[:][im] = q0[:]
             self._q1[:][im] = q1[:]
@@ -87,8 +88,8 @@ class BipartiteGraphAnnealer :
             self._q1[:][im] = q1
 
     def randomize_q(self) :
-        utils.randomize_qbits(self._q0)
-        utils.randomize_qbits(self._q1)
+        common.randomize_qbits(self._q0)
+        common.randomize_qbits(self._q1)
 
     def init_anneal(self) :
         if self._m is None :
@@ -124,7 +125,7 @@ class BipartiteGraphAnnealer :
         for idx in range(self._m) :
             # FIXME: 1d output for batch calculation
             self._E[idx] = \
-                solver_traits.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
+                formulas.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
 
 def bipartite_graph_annealer(W = None, b0 = None, b1 = None, \
                              optimize = sqaod.minimize, n_trotters = None) :

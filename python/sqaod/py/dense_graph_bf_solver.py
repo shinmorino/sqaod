@@ -2,8 +2,8 @@ import numpy as np
 import random
 import sys
 import sqaod
-import sqaod.utils as utils
-import solver_traits
+import sqaod.common as common
+import formulas
 
 class DenseGraphBFSolver :
     
@@ -49,8 +49,8 @@ class DenseGraphBFSolver :
 
         iStep = min(256, iMax)
         for iTile in range(0, iMax, iStep) :
-            x = utils.create_bits_sequence(range(iTile, iTile + iStep), N)
-            Etmp = solver_traits.dense_graph_batch_calculate_E(W, x)
+            x = common.create_bits_sequence(range(iTile, iTile + iStep), N)
+            Etmp = formulas.dense_graph_batch_calculate_E(W, x)
             for i in range(iStep) :
                 if self._Emin < Etmp[i] :
                     continue

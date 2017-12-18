@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import sqaod.py as py
-import sqaod.utils as utils
+import sqaod.common as common
 
 
 class TestMinEnergy(unittest.TestCase):
@@ -40,9 +40,9 @@ class TestMinEnergy(unittest.TestCase):
         jMax = 1 << N1
 
         for i in range(iMax) :
-            x0 = utils.create_bits_sequence((i), N0)
+            x0 = common.create_bits_sequence((i), N0)
             for j in range(jMax) :
-                x1 = utils.create_bits_sequence((j), N1)
+                x1 = common.create_bits_sequence((j), N1)
                 Ebf = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                       + np.dot(x1, np.matmul(W, x0.transpose()))
                 an.set_x(x0, x1)
@@ -67,7 +67,7 @@ class TestMinEnergy(unittest.TestCase):
         bf.set_problem(W, b0, b1)
         
         bf.search();
-        utils.anneal(an)
+        common.anneal(an)
 
         # Assuming problems with small N0 and N1 give the same results
         # for annealer and brute-force solver.

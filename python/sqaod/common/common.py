@@ -1,7 +1,34 @@
 import sys
+import numbers
 import numpy as np
 
 # common
+
+def is_scalar(v) :
+    if isinstance(v, numbers.Number) :
+        return True
+    if isinstance(v, number.ndarray) :
+        if len(v.shape) == 1 :
+            return v.shape[0] == 1
+        elif len(v.shape) == 2 :
+            return v.shape == (1, 1)
+    return False
+
+def is_vector(v) :
+    if not isinstance(v, np.ndarray) :
+        return False
+    if len(v.shape) == 1 :
+        return True
+    if len(v.shape) == 2 :
+        if v.shape[1] == 1 :
+            return True
+    return False
+
+def is_bits(v) :
+    for bits in bitslist :
+        if bits.dtype != np.int8 :
+            return False
+    return True
 
 def is_symmetric(mat) :
     return np.allclose(mat, mat.T)
@@ -14,6 +41,26 @@ def generate_random_symmetric_W(N, wmin = -0.5, wmax = 0.5, dtype=np.float64) :
     W = W + np.tril(np.ones((N, N)), -1) * W.T
     W = W * (wmax - wmin) + wmin
     return W
+
+
+# clone number/buffer object as specified as dtype.
+
+def clone_as_number(v, dtype) :
+    if isinstance(v, numbers.Number) :
+        return dtype.type(v)
+    if isinstance(v, number.ndarray) :
+        if len(v.shape) == 1 and v.shape[0] == 1 :
+            return dtype.type(v[0])
+        elif len(v.shape) == 2 and v.shape == (1, 1) :
+            return dtype.type(v[0][0])
+    raise_not_a_scalar('v', v)
+
+def clone_as_np_buffer(buf, dtype) :
+    if buf is tuple or buf is list :
+        return np.array(buf, dtype)
+    clone = np.ndarray(buf.shape, dtype=dtype, order='C')
+    clone[:] = buf[:]
+    return clone
 
 
 def create_bits_sequence(vals, nbits) :

@@ -1,10 +1,10 @@
 import numpy as np
-import sqaod.utils as utils
+import sqaod.common as common
 
 # dense graph
 
 def dense_graph_calculate_hJc(W) :
-    if (not utils.is_symmetric(W)) :
+    if (not common.is_symmetric(W)) :
         raise Exception('W is not symmetric.')
 
     N = W.shape[0]
