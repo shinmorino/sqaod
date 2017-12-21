@@ -20,13 +20,16 @@ class DenseGraphBFSolver :
         self._N = W.shape[0]
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
 
-    def get_x(self) :
+    def get_solutions(self) :
         E = self.get_E()
         solutions = []
-        x = dg_bf_solver.get_x(self._ext, self.dtype)
-        for i in range(x.shape[0]) :
-            solutions.append((E, x[i]))
+        xlist = dg_bf_solver.get_x(self._ext, self.dtype)
+        for x in xlist :
+            solutions.append((E, x))
         return solutions
+
+    def get_x(self) :
+        return dg_bf_solver.get_x(self._ext, self.dtype)
 
     def get_E(self) :
         return dg_bf_solver.get_E(self._ext, self.dtype)
@@ -38,7 +41,8 @@ class DenseGraphBFSolver :
         dg_bf_solver.init_search(self._ext, self.dtype)
         for iTile in range(0, iMax, iStep) :
             dg_bf_solver.search_range(self._ext, iTile, iTile + iStep, self.dtype)
-
+        dg_bf_solver.fin_search(self._ext, self.dtype)
+        
     def _search(self) :
         dg_bf_solver.search(self._ext, self.dtype)
 

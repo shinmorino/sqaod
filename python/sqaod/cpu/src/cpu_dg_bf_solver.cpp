@@ -133,13 +133,18 @@ template<class real>
 PyObject *internal_dg_bf_solver_get_x(PyObject *objExt) {
     int N;
     sqd::CPUDenseGraphBFSolver<real> *sol = pyobjToCppObj<real>(objExt);
-    const sqd::BitMatrix &xList = sol->get_x();
+    const sqd::BitsArray &xList = sol->get_x();
     sol->getProblemSize(&N);
 
-    NpBitMatrix bit;
-    bit.allocate((int)xList.rows(), xList.cols());
-    memcpy(bit.data, xList.data(), sizeof(char) * xList.size());
-    return bit.obj;
+    PyObject *list = PyList_New(xList.size());
+    for (size_t idx = 0; idx < xList.size(); ++idx) {
+        const sqd::Bits &bits = xList[idx];
+        NpBitMatrix x;
+        x.allocate(1, N);
+        memcpy(x.data, bits.data(), sizeof(char) * N);
+        PyList_SET_ITEM(list, idx, x.obj);
+    }
+    return list;
 }
     
     
@@ -194,6 +199,23 @@ PyObject *dg_bf_solver_init_search(PyObject *module, PyObject *args) {
 }
 
 extern "C"
+PyObject *dg_bf_solver_fin_search(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->finSearch();
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->finSearch();
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
+    
+extern "C"
 PyObject *dg_bf_solver_search_range(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     unsigned long long iBegin, iEnd;
@@ -243,6 +265,7 @@ PyMethodDef cpu_dg_bf_solver_methods[] = {
 	{"get_x", dg_bf_solver_get_x, METH_VARARGS},
 	{"get_E", dg_bf_solver_get_E, METH_VARARGS},
 	{"init_search", dg_bf_solver_init_search, METH_VARARGS},
+	{"fin_search", dg_bf_solver_fin_search, METH_VARARGS},
 	{"search_range", dg_bf_solver_search_range, METH_VARARGS},
 	{"search", dg_bf_solver_search, METH_VARARGS},
 	{NULL},

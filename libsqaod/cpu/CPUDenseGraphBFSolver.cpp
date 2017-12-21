@@ -61,7 +61,7 @@ void CPUDenseGraphBFSolver<real>::initSearch() {
 template<class real>
 void CPUDenseGraphBFSolver<real>::finSearch() {
     xList_.clear();
-    for (size_t idx = 0; idx < xList_.size(); ++idx) {
+    for (size_t idx = 0; idx < packedXList_.size(); ++idx) {
         Bits bits;
         unpackBits(&bits, packedXList_[idx], N_);
         xList_.push_back(bits);
