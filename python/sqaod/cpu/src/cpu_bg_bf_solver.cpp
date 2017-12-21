@@ -210,6 +210,23 @@ PyObject *bg_bf_solver_init_search(PyObject *module, PyObject *args) {
     return Py_None;    
 }
 
+
+extern "C"
+PyObject *bg_bf_solver_fin_search(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->finSearch();
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->finSearch();
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+    
 extern "C"
 PyObject *bg_bf_solver_search_range(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
@@ -260,6 +277,7 @@ PyMethodDef cpu_bg_bf_solver_methods[] = {
 	{"get_x", bg_bf_solver_get_x, METH_VARARGS},
 	{"get_E", bg_bf_solver_get_E, METH_VARARGS},
 	{"init_search", bg_bf_solver_init_search, METH_VARARGS},
+	{"fin_search", bg_bf_solver_fin_search, METH_VARARGS},
 	{"search_range", bg_bf_solver_search_range, METH_VARARGS},
 	{"search", bg_bf_solver_search, METH_VARARGS},
 	{NULL},

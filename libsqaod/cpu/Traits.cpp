@@ -7,23 +7,17 @@
 template<class real>
 void sqaod::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd) {
     for (int b = bBegin; b < bEnd; ++b) {
-        for (int pos = 0; pos != nBits; ++pos)
+        for (int pos = nBits - 1; pos != -1; --pos)
             bits[pos] = ((b >> pos) & 1);
         bits += nBits;
     }
 }
 
-
-void sqaod::unpackIntArrayToMatrix(BitMatrix &unpacked,
-                                        const PackedBitsArray &bitsList, int nBits) {
-    unpacked.resize(bitsList.size(), nBits);
-    for (size_t idx = 0; idx < bitsList.size(); ++idx) {
-        unsigned long long b = bitsList[idx];
-        for (int pos = 0; pos != nBits; ++pos)
-            unpacked(idx, pos) = ((b >> pos) & 1);
-    }
+void sqaod::unpackBits(Bits *unpacked, const PackedBits packed, int N) {
+    unpacked->resize(N);
+    for (int pos = N - 1; pos != -1; --pos)
+        (*unpacked)(pos) = (packed >> pos) & 1;
 }
-
 
 using namespace sqaod;
 
@@ -233,6 +227,16 @@ void BGFuncs<real>::calculate_hJc(real *h0, real *h1, real *J, real *c,
     *c = real(0.25) * eW.sum() + real(0.5) * (eb0.sum() + eb1.sum());
 }
 
+
+template<class real>
+void BGFuncs<real>::calculate_hJc(RowVector *h0, RowVector *h1, Matrix *J, real *c,
+                                  const Matrix &b0, const Matrix &b1, const Matrix &W) {
+
+    *J = real(0.25) * W;
+    *h0 = real(0.25) * W.colwise().sum().transpose() + real(0.5) * b0;
+    *h1 = real(0.25) * W.rowwise().sum() + real(0.5) * b1;
+    *c = real(0.25) * W.sum() + real(0.5) * (b0.sum() + b1.sum());
+}
 
 
 template<class real>

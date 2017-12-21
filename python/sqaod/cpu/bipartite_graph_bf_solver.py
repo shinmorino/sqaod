@@ -29,26 +29,40 @@ class BipartiteGraphBFSolver :
         return bf_solver.get_x(self._ext, self.dtype);
         #return self._solutions
     
+    def init_search(self) :
+        bf_solver.init_search(self._ext, self.dtype);
+        
+    def fin_search(self) :
+        bf_solver.fin_search(self._ext, self.dtype);
+        
+    def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
+        bf_solver.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+        
     def _search(self) :
         bf_solver.search(self._ext, self.dtype);
         
-    def _search_range(self) :
+    def _search_interruptible(self) :
+        nStep = 1024
+        self.init_search()
+
         N0, N1 = self._dim[0], self._dim[1]
         iMax = 1 << N0
         jMax = 1 << N1
 
-        iStep = min(256, iMax)
-        jStep = min(256, jMax)
+        iStep = min(nStep, iMax)
+        jStep = min(nStep, jMax)
         for iTile in range(0, iMax, iStep) :
             for jTile in range(0, jMax, jStep) :
-                bf_solver.search_range(iTile, iTile + iStep,
-                                       jTile, jTile + jStep)
+                self.search_range(iTile, iTile + iStep, jTile, jTile + jStep)
+        
+        self.fin_search()
 
     def search(self) :
-        self._search()
+        self._search_interruptible();
+        #self._search();
         
 
-def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype=np.float64) :
+def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64) :
     return BipartiteGraphBFSolver(b0, b1, W, optimize, dtype)
 
 
@@ -68,4 +82,3 @@ if __name__ == '__main__' :
     solutions = bf.get_solutions() 
     print E
     print solutions
-

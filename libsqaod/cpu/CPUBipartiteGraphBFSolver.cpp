@@ -49,7 +49,6 @@ void CPUBipartiteGraphBFSolver<real>::setTileSize(int tileSize0, int tileSize1) 
 
 template<class real>
 const BitsPairArray &CPUBipartiteGraphBFSolver<real>::get_x() const {
-    //unpackIntArrayToMatrix(bitX0_, xList_, N_);
     return xPairs_;
 }
 
@@ -61,9 +60,21 @@ real CPUBipartiteGraphBFSolver<real>::get_E() const {
 template<class real>
 void CPUBipartiteGraphBFSolver<real>::initSearch() {
     E_ = FLT_MAX;
-    xPackedParis_.clear();
+    xPackedPairs_.clear();
     x0max_ = 1 << N0_;
     x1max_ = 1 << N1_;
+}
+
+template<class real>
+void CPUBipartiteGraphBFSolver<real>::finSearch() {
+    xPairs_.clear();
+    for (PackedBitsPairArray::const_iterator it = xPackedPairs_.begin();
+         it != xPackedPairs_.end(); ++it) {
+        Bits x0(N0_), x1(N1_);
+        unpackBits(&x0, N0_, it->first);
+        unpackBits(&x1, N1_, it->second);
+        xPairs_.push_back(BitsPairArray::value_type(x0, x1));
+    }
 }
 
 template<class real>
@@ -74,7 +85,7 @@ void CPUBipartiteGraphBFSolver<real>::searchRange(PackedBits iBegin0, PackedBits
     iBegin1 = std::min(std::max(0ULL, iBegin1), x1max_);
     iEnd1 = std::min(std::max(0ULL, iEnd1), x1max_);
 
-    BGFuncs<real>::batchSearch(&E_, &xPackedParis_, b0_ ,b1_, W_, iBegin0, iEnd0, iBegin1, iEnd1);
+    BGFuncs<real>::batchSearch(&E_, &xPackedPairs_, b0_ ,b1_, W_, iBegin0, iEnd0, iBegin1, iEnd1);
     /* FIXME: add max limits of # min vectors. */
 }
 
@@ -89,6 +100,7 @@ void CPUBipartiteGraphBFSolver<real>::search() {
             searchRange(iTile0, iTile0 + iStep0, iTile1, iTile1 + iStep1);
         }
     }
+    finSearch();
 }
 
 template class sqaod::CPUBipartiteGraphBFSolver<float>;

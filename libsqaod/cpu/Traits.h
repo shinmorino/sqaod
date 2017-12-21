@@ -9,12 +9,15 @@
 
 namespace sqaod {
     
+typedef Eigen::Matrix<char, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> BitMatrix;
+
 typedef unsigned long long PackedBits;
 typedef std::vector<PackedBits> PackedBitsArray;
 typedef std::vector<std::pair<PackedBits, PackedBits> > PackedBitsPairArray;
-typedef Eigen::Matrix<char, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> BitMatrix;
-typedef Eigen::Matrix<char, Eigen::Dynamic, 1, Eigen::RowMajor> BitArray;
-typedef std::vector<std::pair<BitArray, BitArray> > BitsPairArray;
+typedef Eigen::Array<char, Eigen::Dynamic, 1> Bits;
+typedef std::vector<Bits> BitsArray;
+typedef std::vector<std::pair<Bits, Bits> > BitsPairArray;
+
     
 enum OptimizeMethod {
     optMinimize,
@@ -24,10 +27,9 @@ enum OptimizeMethod {
     
 template<class real>
 void createBitsSequence(real *bits, int nBits, int bBegin, int bEnd);
-
-void unpackIntArrayToMatrix(BitMatrix &unpacked,
-                            const PackedBitsArray &bitsList, int N);
-
+    
+void unpackBits(Bits *unpacked, const PackedBits packed, int N);
+    
 
 template<class real>
 struct EigenTypes {
@@ -142,7 +144,11 @@ struct BGFuncs {
     void calculate_hJc(real *h0, real *h1, real *J, real *c,
                        const real *b0, const real *b1, const real *W,
                        int N0, int N1);
-    
+
+    static
+    void calculate_hJc(RowVector *h0, RowVector *h1, Matrix *J, real *c,
+                       const Matrix &b0, const Matrix &b1, const Matrix &W);
+
     static
     void calculate_E_fromQbits(real *E,
                                const real *h0, const real *h1, const real *J, real c,

@@ -26,11 +26,13 @@ public:
 
     void setTileSize(int tileSize);
 
-    const BitMatrix &get_x() const;
+    const BitsArray &get_x() const;
 
     real get_E() const;
-
+    
     void initSearch();
+
+    void finSearch();
 
     void searchRange(unsigned long long iBegin, unsigned long long iEnd);
 
@@ -43,8 +45,8 @@ private:
     int tileSize_;
     unsigned long long xMax_;
     real E_;
-    PackedBitsArray xList_;
-    mutable BitMatrix bitX_;
+    PackedBitsArray packedXList_;
+    BitsArray xList_;
     Matrix matX_;
     Matrix W_;
 };

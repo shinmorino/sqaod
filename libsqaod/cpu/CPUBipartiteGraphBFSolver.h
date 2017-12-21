@@ -33,6 +33,8 @@ public:
 
     void initSearch();
 
+    void finSearch();
+
     void searchRange(PackedBits iBegin0, PackedBits iEnd0,
                      PackedBits iBegin1, PackedBits iEnd1);
 
@@ -47,8 +49,8 @@ private:
     int tileSize0_, tileSize1_;
     unsigned long long x0max_, x1max_;
     real E_;
-    PackedBitsPairArray xPackedParis_;
-    mutable BitsPairArray xPairs_;
+    PackedBitsPairArray xPackedPairs_;
+    BitsPairArray xPairs_;
 };
 
 }

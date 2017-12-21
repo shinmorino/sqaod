@@ -41,9 +41,8 @@ void CPUDenseGraphBFSolver<real>::setTileSize(int tileSize) {
 }
 
 template<class real>
-const BitMatrix &CPUDenseGraphBFSolver<real>::get_x() const {
-    unpackIntArrayToMatrix(bitX_, xList_, N_);
-    return bitX_;
+const BitsArray &CPUDenseGraphBFSolver<real>::get_x() const {
+    return xList_;
 }
 
 template<class real>
@@ -58,11 +57,23 @@ void CPUDenseGraphBFSolver<real>::initSearch() {
     xMax_ = 1 << N_;
 }
 
+
+template<class real>
+void CPUDenseGraphBFSolver<real>::finSearch() {
+    xList_.clear();
+    for (size_t idx = 0; idx < xList_.size(); ++idx) {
+        Bits bits;
+        unpackBits(&bits, packedXList_[idx], N_);
+        xList_.push_back(bits);
+    }
+}
+
+
 template<class real>
 void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
     iBegin = std::min(std::max(0ULL, iBegin), xMax_);
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
-    DGFuncs<real>::batchSearch(&E_, &xList_, W_, iBegin, iEnd);
+    DGFuncs<real>::batchSearch(&E_, &packedXList_, W_, iBegin, iEnd);
     /* FIXME: add max limits of # min vectors. */
 }
 
@@ -74,6 +85,7 @@ void CPUDenseGraphBFSolver<real>::search() {
     for (unsigned long long iTile = 0; iTile < xMax_; iTile += iStep) {
         searchRange(iTile, iTile + iStep);
     }
+    finSearch();
 }
 
 template class sqaod::CPUDenseGraphBFSolver<float>;
