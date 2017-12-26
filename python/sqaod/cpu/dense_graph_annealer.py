@@ -32,13 +32,12 @@ class DenseGraphAnnealer :
         self._E = np.zeros((self._m), self.dtype)
         dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
 
-    def randomize_q(self) :
-        dg_annealer.randomize_q(self._ext, self.dtype)
+    def get_E(self) :
+        dg_annealer.get_E(self._ext, self._E, self.dtype)
+        return np.min(self._E);
 
-    def get_q(self) :
-        q = np.empty((self._m, self._N), np.int8)
-        dg_annealer.get_q(self._ext, q, self.dtype)
-        return q
+    def get_x(self) :
+        return dg_annealer.get_x(self._ext, self.dtype)
 
     def get_hJc(self) :
         h = np.empty((self._N), self.dtype)
@@ -47,16 +46,20 @@ class DenseGraphAnnealer :
         dg_annealer.get_hJc(self._ext, h, J, c, self.dtype)
         return h, J, c[0]
 
-    def get_E(self) :
-        dg_annealer.get_E(self._ext, self._E, self.dtype)
-        return np.min(self._E);
+    def get_q(self) :
+        return dg_annealer.get_q(self._ext, self.dtype)
+
+    def randomize_q(self) :
+        dg_annealer.randomize_q(self._ext, self.dtype)
 
     def calculate_E(self) :
         dg_annealer.calculate_E(self._ext, self.dtype)
 
     def init_anneal(self) :
-        if not hasattr(self, '_m') :
-            self.set_solver_preference(None)
+        dg_annealer.init_anneal(self._ext, self.dtype)
+
+    def fin_anneal(self) :
+        dg_annealer.fin_anneal(self._ext, self.dtype)
 
     def anneal_one_step(self, G, kT) :
         dg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)
@@ -80,26 +83,19 @@ if __name__ == '__main__' :
 
     N = 8
     m = 4
-    """
-    N = 2
-    m = 2
-    W = np.array([[-32,4],
-                  [4,-32]])
-    """
-    
-    N = 200
-    m = 150
-    W = common.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+
+#    N = 10
+#    m = 5
+#    W = common.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
-#    ann = py.dense_graph_annealer(N, m)
+    #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_problem(W, sqaod.minimize)
-
     h, J, c = ann.get_hJc()
     print h
     print J
     print c
-    
+
     
     Ginit = 5.
     Gfin = 0.001
@@ -110,8 +106,8 @@ if __name__ == '__main__' :
     
     for loop in range(0, nRepeat) :
         G = Ginit
-        ann.init_anneal()
         ann.randomize_q()
+        ann.init_anneal()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

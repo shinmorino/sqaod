@@ -8,7 +8,6 @@ import formulas
 class DenseGraphBFSolver :
     
     def __init__(self, W = None, optimize = sqaod.minimize) :
-        self._verbose = False
         if W is not None :
             self.set_problem(W, optimize)
 
@@ -20,46 +19,50 @@ class DenseGraphBFSolver :
         self._W = W.copy()
         N = W.shape[0]
         self._N = N
-        self._x = np.zeros((N), dtype=np.int8)
+        self._x = []
         self._optimize = optimize
         self._W = W * optimize.Esign
             
     def get_E(self) :
-        return self._Esign() * self._Emin
+        return self._E
     
-    def get_solutions(self) :
-        return self._solutions
+    def get_x(self) :
+        return self._x
 
-    def _reset_solutions(self, Etmp, x) :
-        self._solutions = [(self._Esign() * Etmp, x)]
-        if self._verbose :
-            print("Enew < E : {1}".format(Etmp))
-
-    def _append_to_solutions(self, Etmp, x) :
-        self._solutions.append((self._Esign() * Etmp, x))
-        if self._verbose :
-            print("{0} Etmp < Emin : {1}".format(iTile + i, Etmp))
-
-    def _search_optimum_batched(self) :
+    def init_search(self) :
         N = self._N
-        iMax = 1 << N
+        self._xMax = 1 << N
         self._Emin = sys.float_info.max
+
+    def fin_search(self) :
+        nMinX = len(self._x)
+        self._E = np.empty((nMinX))
+        self._E[...] = self._Esign() * self._Emin
+
+    def search_range(self, xBegin, xEnd) :
+        N = self._N
         W = self._W
-        self._solutions = []
+        xBegin = max(0, min(self._xMax, xBegin))
+        xEnd = max(0, min(self._xMax, xEnd))
+        x = common.create_bits_sequence(range(xBegin, xEnd), N)
+        Etmp = formulas.dense_graph_batch_calculate_E(W, x)
+        for i in range(xEnd - xBegin) :
+            if self._Emin < Etmp[i] :
+                continue
+            elif Etmp[i] < self._Emin :
+                self._Emin = Etmp[i]
+                self._x = [x[i]]
+            else :
+                self._x.append(x[i])
 
-        iStep = min(256, iMax)
-        for iTile in range(0, iMax, iStep) :
-            x = common.create_bits_sequence(range(iTile, iTile + iStep), N)
-            Etmp = formulas.dense_graph_batch_calculate_E(W, x)
-            for i in range(iStep) :
-                if self._Emin < Etmp[i] :
-                    continue
-                elif Etmp[i] < self._Emin :
-                    self._Emin = Etmp[i]
-                    self._reset_solutions(Etmp[i], np.copy(x[i]))
-                else :
-                    self._append_to_solutions(self._Emin, x[i])
-
+    def search(self) :
+        self.init_search()
+        iStep = min(256, self._xMax)
+        for iTile in range(0, self._xMax, iStep) :
+            self.search_range(iTile, iTile + iStep)
+        self.fin_search()
+        
+    
 def dense_graph_bf_solver(W = None, optimize = sqaod.minimize) :
     return DenseGraphBFSolver(W, optimize)
 
@@ -78,13 +81,13 @@ if __name__ == '__main__' :
     
     N = 8
     bf = dense_graph_bf_solver(W, sqaod.minimize)
-    bf._search_optimum_batched()
+    bf.search()
     E = bf.get_E()
-    x = bf.get_solutions() 
+    x = bf.get_x() 
     print E, len(x), x[0]
 
     bf = dense_graph_bf_solver(W, sqaod.maximize)
-    bf._search_optimum_batched()
+    bf.search()
     E = bf.get_E()
-    x = bf.get_solutions() 
+    x = bf.get_x() 
     print E, len(x), x[0]

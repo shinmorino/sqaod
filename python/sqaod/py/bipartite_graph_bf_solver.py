@@ -3,6 +3,7 @@ import random
 import sys
 import sqaod
 import sqaod.common as common
+import sqaod.common.checkers as checkers
 
 class BipartiteGraphBFSolver :
     
@@ -12,61 +13,48 @@ class BipartiteGraphBFSolver :
             self.set_problem(W, b0, b1, optimize)
 
     def _vars(self) :
-        return self._W, self._blist[0], self._blist[1], self._xlist[0], self._xlist[1]
+        return self._W, self._blist[0], self._blist[1]
 
     def _Esign(self) :
         return self._optimize.Esign
 
     def _get_dim(self) :
         return self._dim[0], self._dim[1]
-
-    def _check_dim(self, W, b0, b1) :
-        N0 = W.shape[1]
-        N1 = W.shape[0]
-        if len(b0) != N0 :
-            return False;
-        if len(b1) != N1 :
-            return False;
-        return True
     
-    def set_problem(self, W, b0, b1, optimize = sqaod.minimize) :
-        if not self._check_dim(W, b0, b1) :
-            raise Exception('dimension does not match, W: {0}, b0: {1}, b1: {2}.'\
-                            .format(W.shape, b0.size, b1.size))
+    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+        checkers.bipartite_graph.qubo(b0, b1, W)
         self._dim = (b0.shape[0], b1.shape[0])
         N0, N1 = self._get_dim()
-        self._xlist = ( np.zeros((N0), dtype=np.int8), np.zeros((N1), dtype=np.int8) )
+        self._pairs = []
         self._optimize = optimize
         self._W = self._Esign() * W
         self._blist = (self._Esign() * b0, self._Esign() * b1)
-        
 
     def get_E(self) :
-        return self._Esign() * self._Emin
+        return self._E
 
-    def get_solutions(self) :
-        return self._solutions
+    def get_x(self) :
+        return self._x_pairs
 
-    def _reset_solutions(self, Etmp, x0, x1) :
-        self._solutions = [(self._Esign() * Etmp, x0, x1)]
-        if self._verbose :
-            print("Enew < E : {0}".format(Etmp))
-
-    def _append_to_solutions(self, Etmp, x0, x1) :
-        self._solutions.append((self._Esign() * Etmp, x0, x1))
-        if self._verbose :
-            print("Etmp < Emin : {0}".format(Etmp))
-    
-    def _search(self) :
+    def init_search(self) :
         N0, N1 = self._get_dim()
-        iMax = 1 << N0
-        jMax = 1 << N1
+        self._iMax = 1 << N0
+        self._jMax = 1 << N1
         self._Emin = sys.float_info.max
-        W, b0, b1, x0, x1 = self._vars()
 
-        for i in range(iMax) :
+    def fin_search(self) :
+        nX = len(self._x_pairs)
+        self._E = np.empty((nX))
+        self._E[...] = self._Esign() * self._Emin
+
+    # Not used.  Keeping it for reference.    
+    def _search_simple(self) :
+        N0, N1 = self._get_dim()
+        W, b0, b1 = self._vars()
+
+        for i in range(self._iMax) :
             x0 = common.create_bits_sequence((i), N0)
-            for j in range(jMax) :
+            for j in range(self._jMax) :
                 x1 = common.create_bits_sequence((j), N1)
                 Etmp = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                        + np.dot(x1, np.matmul(W, x0.transpose()))
@@ -74,43 +62,48 @@ class BipartiteGraphBFSolver :
                     continue
                 elif Etmp < self._Emin :
                     self._Emin = Etmp
-                    self._reset_solutions(Etmp, x0, x1)
+                    self._x_pairs = [(x0, x1)]
                 else :
-                    self._append_to_solutions(Etmp, x0, x1)
+                    self._x_pairs.append = [(x0, x1)]
         
-    def _search_batched(self) :
+    def search_range(self, iBegin, iEnd, jBegin, jEnd) :
         N0, N1 = self._get_dim()
-        iMax = 1 << N0
-        jMax = 1 << N1
-        self._Emin = sys.float_info.max
-        W, b0, b1, _, _ = self._vars()
+        W, b0, b1 = self._vars()
+        iBegin = max(0, min(self._iMax, iBegin))
+        iEnd = max(0, min(self._iMax, iEnd))
+        jBegin = max(0, min(self._jMax, jBegin))
+        jEnd = max(0, min(self._jMax, jEnd))
 
-        iStep = min(256, iMax)
-        jStep = min(256, jMax)
-        for iTile in range(0, iMax, iStep) :
-            x0 = common.create_bits_sequence(range(iTile, iTile + iStep), N0)
-            for jTile in range(0, jMax, jStep) :
-                x1 = common.create_bits_sequence(range(jTile, jTile + jStep), N1)
-                Etmp = np.matmul(b0, x0.T).reshape(1, iStep) \
-                       + np.matmul(b1, x1.T).reshape(jStep, 1) + np.matmul(x1, np.matmul(W, x0.T))
-                for j in range(jStep) :
-                    for i in range(iStep) :
-                        if self._Emin < Etmp[j][i] :
-                            continue
-                        elif Etmp[j][i] < self._Emin :
-                            self._Emin = Etmp[j][i]
-                            self._reset_solutions(Etmp[j][i], x0[i], x1[j])
-                        else :
-                            self._append_to_solutions.append(Etmp[j][i], x0[i], x1[j])
+        iStep = iEnd - iBegin
+        jStep = jEnd - jBegin
+
+        x0 = common.create_bits_sequence(range(iBegin, iEnd), N0)
+        x1 = common.create_bits_sequence(range(jBegin, jEnd), N1)
+        Etmp = np.matmul(b0, x0.T).reshape(1, iStep) \
+               + np.matmul(b1, x1.T).reshape(jStep, 1) + np.matmul(x1, np.matmul(W, x0.T))
+        for j in range(jEnd - jBegin) :
+            for i in range(iEnd - iBegin) :
+                if self._Emin < Etmp[j][i] :
+                    continue
+                elif Etmp[j][i] < self._Emin :
+                    self._Emin = Etmp[j][i]
+                    self._x_pairs = [(x0[i], x1[j])]
+                else :
+                    self._x_pairs.append((x0[i], x1[j]))
                     
-
     def search(self) :
-        # self._search_optimum()
-        self._search_batched()
+        self.init_search()
         
+        iStep = min(256, self._iMax)
+        jStep = min(256, self._jMax)
+        for j in range(0, self._jMax, jStep) :
+            for i in range(0, self._iMax, iStep) :
+                self.search_range(i, i + iStep, j, j + jStep)
 
-def bipartite_graph_bf_solver(W = None, b0 = None, b1 = None, optimize = sqaod.minimize) :
-    return BipartiteGraphBFSolver(W, b0, b1, optimize)
+        self.fin_search()
+        
+def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize) :
+    return BipartiteGraphBFSolver(b0, b1, W, optimize)
 
 
 if __name__ == '__main__' :
@@ -123,14 +116,9 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
     
-    bf = bipartite_graph_bf_solver(W, b0, b1)
-    bf._search()
+    bf = bipartite_graph_bf_solver(b0, b1, W)
+    bf.search()
     E = bf.get_E()
-    solutions = bf.get_solutions() 
-    print(E, solutions)
-    
-    bf._search_batched()
-    E = bf.get_E()
-    solutions = bf.get_solutions() 
-    print(E, solutions)
-
+    x = bf.get_x() 
+    print E
+    print x

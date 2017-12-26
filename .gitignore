@@ -6,4 +6,7 @@
 *~
 *.so
 *.so.0
+.deps
+.libs
+
 

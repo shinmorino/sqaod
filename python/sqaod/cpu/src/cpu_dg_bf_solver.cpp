@@ -1,5 +1,5 @@
 #include <pyglue.h>
-#include <cpu/Traits.h>
+#include <cpu/CPUFormulas.h>
 #include <cpu/CPUDenseGraphBFSolver.h>
 #include <string.h>
 
@@ -89,10 +89,10 @@ PyObject *dg_bf_solver_rand_seed(PyObject *module, PyObject *args) {
 
 template<class real>
 void internal_dg_bf_solver_set_problem(PyObject *objExt, PyObject *objW, int opt) {
-    typedef NpMatrixT<real> NpMatrix;
-    NpMatrix W(objW);
+    typedef NpMatrixType<real> NpMatrix;
+    const NpMatrix W(objW);
     sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(W, W.dims[0], om);
+    pyobjToCppObj<real>(objExt)->setProblem(W, om);
 }
     
 extern "C"
@@ -139,9 +139,8 @@ PyObject *internal_dg_bf_solver_get_x(PyObject *objExt) {
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
         const sqd::Bits &bits = xList[idx];
-        NpBitMatrix x;
-        x.allocate(1, N);
-        memcpy(x.data, bits.data(), sizeof(char) * N);
+        NpBitVector x(N, NPY_INT8);
+        x.vec = bits;
         PyList_SET_ITEM(list, idx, x.obj);
     }
     return list;
@@ -162,12 +161,13 @@ PyObject *dg_bf_solver_get_x(PyObject *module, PyObject *args) {
 
 
 template<class real>
-PyObject *internal_dg_bf_solver_get_E(PyObject *objExt) {
-    sqd::CPUDenseGraphBFSolver<real> *ext = pyobjToCppObj<real>(objExt);
-    real E = ext->get_E();
-    return newScalarObj(E);
+PyObject *internal_dg_bf_solver_get_E(PyObject *objExt, int typenum) {
+    typedef NpVectorType<real> NpVector;
+    const sqaod::VectorType<real> &E = pyobjToCppObj<real>(objExt)->get_E();
+    NpVector npE(E.size, typenum); /* allocate PyObject */
+    npE.vec = E;
+    return npE.obj;
 }
-
     
 extern "C"
 PyObject *dg_bf_solver_get_E(PyObject *module, PyObject *args) {
@@ -175,9 +175,9 @@ PyObject *dg_bf_solver_get_E(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
     if (isFloat64(dtype))
-        return internal_dg_bf_solver_get_E<double>(objExt);
+        return internal_dg_bf_solver_get_E<double>(objExt, NPY_FLOAT64);
     else if (isFloat32(dtype))
-        return internal_dg_bf_solver_get_E<float>(objExt);
+        return internal_dg_bf_solver_get_E<float>(objExt, NPY_FLOAT32);
     RAISE_INVALID_DTYPE(dtype);
 }
 

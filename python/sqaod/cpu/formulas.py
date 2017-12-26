@@ -74,11 +74,25 @@ def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype) :
 def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
     checkers.bipartite_graph.bits(W, x0, x1)
+    # FIXME: fix error messages.  move to checkers.py?
+    nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
+    nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
+    if nBatch0 != nBatch1 :
+        raise Exception("Different batch dims between x0 and x1.")
+    
+    nBatch = 1 if len(x0.shape) == 1 else x0.shape[0]
+    E = np.empty((nBatch), dtype)
+    cpu_formulas.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    return E
+
+def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype) :
+    checkers.bipartite_graph.qubo(b0, b1, W, dtype)
+    checkers.bipartite_graph.bits(W, x0, x1)
     
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_formulas.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    cpu_formulas.bipartite_graph_batch_calculate_E_2d(E, b0, b1, W, x0, x1, dtype)
     return E
 
 
@@ -111,7 +125,7 @@ def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
     
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
-    E = np.empty((nBatch1, nBatch0), dtype)
+    E = np.empty((nBatch0), dtype)
     cpu_formulas.bipartite_graph_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
     return E
 
@@ -175,13 +189,17 @@ if __name__ == '__main__' :
     E0 = py_formulas.bipartite_graph_calculate_E(b0, b1, W, x0, x1)
     E1 = bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype)
     assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
+
+    E0 = py_formulas.bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1)
+    E1 = bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype)
+    assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
     
     xlist0 = common.create_bits_sequence(range(0, 1 << N0), N0)
     xlist1 = common.create_bits_sequence(range(0, 1 << N1), N1)
-    E0 = py_formulas.bipartite_graph_batch_calculate_E(b0, b1, W, xlist0, xlist1)
-    E1 = bipartite_graph_batch_calculate_E(b0, b1, W, xlist0, xlist1, dtype)
+    E0 = py_formulas.bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1)
+    E1 = bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1, dtype)
     assert np.allclose(E0, E1)
-    
+  
     h00, h01, J0, c0 = py_formulas.bipartite_graph_calculate_hJc(b0, b1, W)
     h10, h11, J1, c1 = bipartite_graph_calculate_hJc(b0, b1, W, dtype)
     assert np.allclose(h00, h10);
@@ -195,6 +213,8 @@ if __name__ == '__main__' :
     E1 = bipartite_graph_calculate_E_from_qbits(h10, h11, J0, c0, q0, q1, dtype);
     assert np.allclose(E0, E1)
     
+    xlist0 = common.create_bits_sequence(range(0, 1 << N0), N0)
+    xlist1 = common.create_bits_sequence(range(0, 1 << N0), N1)
     qlist0 = common.bits_to_qbits(xlist0)
     qlist1 = common.bits_to_qbits(xlist1)
     E0 = py_formulas.bipartite_graph_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1);

@@ -2,17 +2,18 @@
 #ifndef CPU_BIPARTITEGRAPH_BF_SOLVER_H__
 #define CPU_BIPARTITEGRAPH_BF_SOLVER_H__
 
+#include <common/Common.h>
 #include <cpu/Random.h>
-#include <cpu/Traits.h>
-#include <Eigen/Core>
+
 
 namespace sqaod {
 
 template<class real>
 class CPUBipartiteGraphBFSolver {
-    typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
-    typedef Eigen::Matrix<real, 1, Eigen::Dynamic> RowVector;
-    typedef Eigen::Matrix<real, Eigen::Dynamic, 1> ColumnVector;
+    typedef EigenMatrixType<real> EigenMatrix;
+    typedef EigenRowVectorType<real> EigenRowVector;
+    typedef MatrixType<real> Matrix;
+    typedef VectorType<real> Vector;
 
 public:
     CPUBipartiteGraphBFSolver();
@@ -22,14 +23,14 @@ public:
 
     void getProblemSize(int *N0, int *N1) const;
 
-    void setProblem(const real *b0, const real *b1, const real *W,
-                    int N0, int N1, OptimizeMethod om);
+    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
+                    OptimizeMethod om);
 
     void setTileSize(int tileSize0, int tileSize1);
 
     const BitsPairArray &get_x() const;
 
-    real get_E() const;
+    const Vector &get_E() const;
 
     void initSearch();
 
@@ -43,12 +44,13 @@ public:
 private:    
     Random random_;
     int N0_, N1_;
-    RowVector b0_, b1_;
-    Matrix W_;
+    EigenRowVector b0_, b1_;
+    EigenMatrix W_;
     OptimizeMethod om_;
     int tileSize0_, tileSize1_;
     unsigned long long x0max_, x1max_;
-    real E_;
+    real minE_;
+    Vector E_;
     PackedBitsPairArray xPackedPairs_;
     BitsPairArray xPairs_;
 };

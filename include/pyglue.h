@@ -6,54 +6,96 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
+#include <common/Matrix.h>
+#include <common/Common.h>
+
 
 template<class real>
-struct NpMatrixT {
-    NpMatrixT() { }
-    NpMatrixT(PyObject *obj);
-    
-    real *data;
-    int nDims;
-    npy_intp dims[2];
-
-    /* accessor for ease of coding. */
-    operator real*() {
-        return data;
+struct NpMatrixType {
+    typedef sqaod::MatrixType<real> Matrix;
+    NpMatrixType(PyObject *pyObj) {
+        PyArrayObject *arr = (PyArrayObject*)pyObj;
+        real *data = (real*)PyArray_DATA(arr);
+        assert(PyArray_NDIM(arr) == 2);
+        mat.set(data, PyArray_SHAPE(arr)[0], PyArray_SHAPE(arr)[1]);
     }
-    operator real*() const {
-        return data;
-    }
-};
 
-template<class real>
-inline
-NpMatrixT<real>::NpMatrixT(PyObject *obj) {
-    dims[0] = dims[1] = 1;
-    PyArrayObject *arr = (PyArrayObject*)obj;
-    data = (real*)PyArray_DATA(arr);
-    nDims = PyArray_NDIM(arr);
-    for (int idx = 0; idx < nDims; ++idx)
-        dims[idx] = PyArray_SHAPE(arr)[idx];
-}
-
-
-struct NpBitMatrix : public NpMatrixT<char> {
-    NpBitMatrix() { }
-    NpBitMatrix(PyObject *obj) : NpMatrixT<char>(obj) { }
     void allocate(int nRows, int nCols) {
         /* new array object */
+        npy_intp dims[2];
         dims[0] = nRows;
         dims[1] = nCols;
         obj = PyArray_EMPTY(2, dims, NPY_INT8, 0);
         PyArrayObject *arr = (PyArrayObject*)obj;
         /* setup members */
-        data = (char*)PyArray_DATA(arr);
+        char *data = (char*)PyArray_DATA(arr);
+        mat.set(data, nRows, nCols);
     }
+    
+    /* accessor for ease of coding. */
+    operator const Matrix&() const {
+        return mat;
+    }
+
+    Matrix *operator&() {
+        return &mat;
+    }
+    
+    Matrix mat;
     PyObject *obj;
 };
 
 
+template<class real>
+struct NpVectorType {
+    typedef sqaod::VectorType<real> Vector;
 
+    /* FIXME: npyType should be obtained by the type of real */
+    NpVectorType(int _size, int npyType) {
+        /* new array object */
+        npy_intp size = _size;
+        /* FIXME: get NPY_xx type from C++ type */
+        obj = PyArray_EMPTY(1, &size, npyType, 0);
+        PyArrayObject *arr = (PyArrayObject*)obj;
+        /* setup members */
+        real *data = (real*)PyArray_DATA(arr);
+        vec.set(data, _size);
+    }
+
+
+    NpVectorType(PyObject *pyObj) {
+        obj = pyObj;
+        PyArrayObject *arr = (PyArrayObject*)pyObj;
+        real *data = (real*)PyArray_DATA(arr);
+        int size;
+        THROW_IF(3 <= PyArray_NDIM(arr), "ndarray is not 1-diemsional.");
+        if (PyArray_NDIM(arr) == 2) {
+            int rows = PyArray_SHAPE(arr)[0];
+            int cols = PyArray_SHAPE(arr)[1];
+            THROW_IF((rows != 1) && (cols != 1), "ndarray is not 1-diemsional.");
+            size = std::max(rows, cols);
+        }
+        else if (PyArray_NDIM(arr) == 1) {
+            size = PyArray_SHAPE(arr)[0];
+        }
+        vec.set(data, size);
+    }
+
+    /* accessor for ease of coding. */
+    operator const Vector&() const {
+        return vec;
+    }
+    Vector *operator&() {
+        return &vec;
+    }
+    
+    
+    Vector vec;
+    PyObject *obj;
+};
+
+
+/* Scalar */
 
 template<class real>
 struct NpConstScalarT {
@@ -106,6 +148,10 @@ inline
 bool isFloat32(PyObject *dtype) {
     return dtype == (PyObject*)&PyFloat32ArrType_Type;
 }
+
+
+typedef NpMatrixType<char> NpBitMatrix;
+typedef NpVectorType<char> NpBitVector;
 
 
 #endif

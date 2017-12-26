@@ -13,16 +13,16 @@ class TestMinEnergy(unittest.TestCase):
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
-        an.set_problem(W, b0, b1)
+        an.set_problem(b0, b1, W)
         an.set_solver_preference(n_trotters = 1)
 
-        q0 = np.ndarray((N0), np.int8)
-        q1 = np.ndarray((N1), np.int8)
-        q0[:] = -1
-        q1[:] = -1
-        an.set_q(q0, q1)
+        x0 = np.ndarray((N0), np.int8)
+        x1 = np.ndarray((N1), np.int8)
+        x0[:] = 0
+        x1[:] = 0
+        an.set_x(x0, x1)
         an.calculate_E()
-        self.assertTrue(an.get_E() < 1.e-13)
+        self.assertTrue(np.allclose(an.get_E(), 0.))
         # print(an.E)
 
 
@@ -33,7 +33,7 @@ class TestMinEnergy(unittest.TestCase):
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
-        an.set_problem(W, b0, b1)
+        an.set_problem(b0, b1, W)
         an.set_solver_preference(n_trotters = 1)
 
         iMax = 1 << N0
@@ -63,16 +63,18 @@ class TestMinEnergy(unittest.TestCase):
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
 
-        an.set_problem(W, b0, b1)
-        bf.set_problem(W, b0, b1)
+        an.set_problem(b0, b1, W)
+        bf.set_problem(b0, b1, W)
         
         bf.search();
         common.anneal(an)
 
         # Assuming problems with small N0 and N1 give the same results
         # for annealer and brute-force solver.
-        Ebf, bfx0, bfx1 = bf.get_solutions()[0]
-        Ean, anx0, anx1 = an.get_solutions()[0]
+        Ebf = bf.get_E()[0]
+        bfx0, bfx1 = bf.get_x()[0]
+        Ean = an.get_E()[0]
+        anx0, anx1 = an.get_x()[0]
         if not np.allclose(bfx0, anx0) or not np.allclose(bfx1, anx1) :
             print bfx0, anx0, an.get_E()
             print bfx1, anx1, bf.get_E()

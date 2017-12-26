@@ -3,45 +3,45 @@ import random
 import sys
 import sqaod
 import sqaod.common as common
-import cpu_bg_bf_solver as bf_solver
+import cpu_bg_bf_solver as bg_bf_solver
 
 class BipartiteGraphBFSolver :
     
     def __init__(self, W, b0, b1, optimize, dtype) :
         self.dtype = dtype
-        self._ext = bf_solver.new_bf_solver(dtype)
+        self._ext = bg_bf_solver.new_solver(dtype)
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
             
     def __del__(self) :
-        bf_solver.delete_bf_solver(self._ext, self.dtype)
+        bg_bf_solver.delete_solver(self._ext, self.dtype)
 
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         # FIXME: add error check.
         self._dim = (b0.shape[0], b1.shape[0])
-        bf_solver.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
+        bg_bf_solver.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
 
     def get_E(self) :
-        return bf_solver.get_E(self._ext, self.dtype);
-        # return self._Esign() * self._Emin
+        return bg_bf_solver.get_E(self._ext, self.dtype);
 
-    def get_solutions(self) :
-        return bf_solver.get_x(self._ext, self.dtype);
-        #return self._solutions
+    def get_x(self) :
+        return bg_bf_solver.get_x(self._ext, self.dtype);
     
     def init_search(self) :
-        bf_solver.init_search(self._ext, self.dtype);
+        bg_bf_solver.init_search(self._ext, self.dtype);
         
     def fin_search(self) :
-        bf_solver.fin_search(self._ext, self.dtype);
+        bg_bf_solver.fin_search(self._ext, self.dtype);
         
     def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
-        bf_solver.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+        bg_bf_solver.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
         
     def _search(self) :
-        bf_solver.search(self._ext, self.dtype);
+        # one liner.  does not accept ctrl+c.
+        bg_bf_solver.search(self._ext, self.dtype);
         
-    def _search_interruptible(self) :
+
+    def search(self) :
         nStep = 1024
         self.init_search()
 
@@ -57,9 +57,6 @@ class BipartiteGraphBFSolver :
         
         self.fin_search()
 
-    def search(self) :
-        self._search_interruptible();
-        #self._search();
         
 
 def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64) :
@@ -79,6 +76,6 @@ if __name__ == '__main__' :
     bf = bipartite_graph_bf_solver(W, b0, b1)
     bf.search()
     E = bf.get_E()
-    solutions = bf.get_solutions() 
-    print E
-    print solutions
+    x = bf.get_x() 
+    print E.shape, E
+    print x

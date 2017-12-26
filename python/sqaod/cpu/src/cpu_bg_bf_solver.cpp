@@ -1,5 +1,5 @@
 #include <pyglue.h>
-#include <cpu/Traits.h>
+#include <common/Common.h>
 #include <cpu/CPUBipartiteGraphBFSolver.h>
 #include <string.h>
 
@@ -92,10 +92,12 @@ PyObject *bg_bf_solver_rand_seed(PyObject *module, PyObject *args) {
 template<class real>
 void internal_bg_bf_solver_set_problem(PyObject *objExt,
                                        PyObject *objB0, PyObject *objB1, PyObject *objW, int opt) {
-    typedef NpMatrixT<real> NpMatrix;
-    NpMatrix b0(objB0), b1(objB1), W(objW);
+    typedef NpMatrixType<real> NpMatrix;
+    typedef NpVectorType<real> NpVector;
+    NpVector b0(objB0), b1(objB1);
+    NpMatrix W(objW);
     sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, W.dims[1], W.dims[0], om);
+    pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
 }
     
 extern "C"
@@ -143,12 +145,9 @@ PyObject *internal_bg_bf_solver_get_x(PyObject *objExt) {
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
         const sqd::BitsPairArray::value_type &pair = xList[idx];
-        /* FIXME: Check reference count */
-        NpBitMatrix x0, x1;
-        x0.allocate(1, N0);
-        x1.allocate(1, N1);
-        memcpy(x0.data, pair.first.data(), sizeof(char) * N0);
-        memcpy(x1.data, pair.first.data(), sizeof(char) * N1);
+        NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
+        x0.vec = pair.first;
+        x1.vec = pair.second;
 
         PyObject *tuple = PyTuple_New(2);
         PyTuple_SET_ITEM(tuple, 0, x0.obj);
@@ -173,10 +172,12 @@ PyObject *bg_bf_solver_get_x(PyObject *module, PyObject *args) {
 
 
 template<class real>
-PyObject *internal_bg_bf_solver_get_E(PyObject *objExt) {
-    sqd::CPUBipartiteGraphBFSolver<real> *ext = pyobjToCppObj<real>(objExt);
-    real E = ext->get_E();
-    return newScalarObj(E);
+PyObject *internal_bg_bf_solver_get_E(PyObject *objExt, int typenum) {
+    typedef NpVectorType<real> NpVector;
+    const sqaod::VectorType<real> &E = pyobjToCppObj<real>(objExt)->get_E();
+    NpVector npE(E.size, typenum); /* allocate PyObject */
+    npE.vec = E;
+    return npE.obj;
 }
 
     
@@ -186,13 +187,13 @@ PyObject *bg_bf_solver_get_E(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
     if (isFloat64(dtype))
-        return internal_bg_bf_solver_get_E<double>(objExt);
+        return internal_bg_bf_solver_get_E<double>(objExt, NPY_FLOAT64);
     else if (isFloat32(dtype))
-        return internal_bg_bf_solver_get_E<float>(objExt);
+        return internal_bg_bf_solver_get_E<float>(objExt, NPY_FLOAT32);
 
     RAISE_INVALID_DTYPE(dtype);
 }
-
+    
 
 extern "C"
 PyObject *bg_bf_solver_init_search(PyObject *module, PyObject *args) {
@@ -269,8 +270,8 @@ PyObject *bg_bf_solver_search(PyObject *module, PyObject *args) {
 
 static
 PyMethodDef cpu_bg_bf_solver_methods[] = {
-	{"new_bf_solver", bg_bf_solver_create, METH_VARARGS},
-	{"delete_bf_solver", bg_bf_solver_delete, METH_VARARGS},
+	{"new_solver", bg_bf_solver_create, METH_VARARGS},
+	{"delete_solver", bg_bf_solver_delete, METH_VARARGS},
 	{"rand_seed", bg_bf_solver_rand_seed, METH_VARARGS},
 	{"set_problem", bg_bf_solver_set_problem, METH_VARARGS},
 	{"set_solver_preference", bg_bf_solver_set_solver_preference, METH_VARARGS},

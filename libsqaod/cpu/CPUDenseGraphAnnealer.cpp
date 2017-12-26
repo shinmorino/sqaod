@@ -1,4 +1,6 @@
 #include "CPUDenseGraphAnnealer.h"
+#include "CPUFormulas.h"
+#include <common/Common.h>
 
 namespace sqd = sqaod;
 
@@ -6,6 +8,7 @@ namespace sqd = sqaod;
 template<class real>
 sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
+    seed(0); /* FIXME: initialize */
 }
 
 template<class real>
@@ -24,12 +27,15 @@ void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(int *N, int *m) const {
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, int N, OptimizeMethod om) {
-    N_ = N;
+void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod om) {
+    THROW_IF(!isSymmetric(W), "W is not symmetric.");
+    N_ = W.rows;
     h_.resize(1, N_);
     J_.resize(N_, N_);
 
-    DGFuncs<real>::calculate_hJc(h_.data(), J_.data(), &c_, W, N_);
+    Vector h(h_);
+    Matrix J(J_);
+    DGFuncs<real>::calculate_hJc(&h, &J, &c_, W);
     om_ = om;
     if (om_ == sqd::optMaximize) {
         h_ *= real(-1.);
@@ -41,9 +47,32 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const real *W, int N, Optimize
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(int m) {
     m_ = m;
-    bitQ_.resize(m_, N_);
+    bitsX_.resize(m_, N_);
+    bitsQ_.resize(m_, N_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
+}
+
+template<class real>
+const sqd::VectorType<real> &sqd::CPUDenseGraphAnnealer<real>::get_E() const {
+    return E_;
+}
+
+template<class real>
+const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_x() const {
+    return bitsX_;
+}
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
+    h->mapToRowVector() = h_;
+    J->map() = J_;
+    *c = c_;
+}
+
+template<class real>
+const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_q() const {
+    return bitsQ_;
 }
 
 template<class real>
@@ -54,32 +83,44 @@ void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
 }
 
 template<class real>
-const char *sqd::CPUDenseGraphAnnealer<real>::get_q() const {
-    char *bq = bitQ_.data();
-    const real *mq = matQ_.data();
-    for (int idx = 0; idx < N_ * m_; ++idx)
-        bq[idx] = (char)mq[idx];
-    return bq;
+void sqd::CPUDenseGraphAnnealer<real>::initAnneal() {
+    if (m_ == -1) {
+        setNumTrotters((N_) / 4);
+        /* FIXME: use flags ? */
+        randomize_q();
+    }
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::get_hJc(const real **h, const real **J, real *c) const {
-    *h = h_.data();
-    *J = J_.data();
-    *c = c_;
+void sqd::CPUDenseGraphAnnealer<real>::finAnneal() {
+    syncBits();
+    calculate_E();
 }
 
-template<class real>
-const real *sqd::CPUDenseGraphAnnealer<real>::get_E() const {
-    return E_.data();
-}
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::calculate_E() {
-    DGFuncs<real>::batchCalculate_E_fromQbits(E_.data(),
-                                              h_.data(), J_.data(), c_, matQ_.data(),
-                                              N_, m_);
+    DGFuncs<real>::calculate_E(&E_, h_, J_, c_, matQ_);
+    if (om_ == sqd::optMaximize)
+        E_.mapToRowVector() *= real(-1.);
 }
+
+
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
+    bitsX_.clear();
+    bitsQ_.clear();
+    Bits x0, x1;
+    for (int idx = 0; idx < m_; ++idx) {
+        EigenBitMatrix eq = matQ_.transpose().col(idx).template cast<char>();
+        bitsQ_.push_back(Bits(eq));
+        Bits x = Bits((eq.array() + 1) / 2);
+        bitsX_.push_back(x0);
+    }
+}
+
+
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
@@ -90,7 +131,7 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         int x = random_.randInt(N_);
         int y = random_.randInt(m_);
         real qyx = matQ_(y, x);
-        real sum = J_(x) * matQ_(y);
+        real sum = J_.row(x).dot(matQ_.row(y));
         real dE = - twoDivM * qyx * (h_(x) + sum);
         int neibour0 = (m_ + y - 1) % m_;
         int neibour1 = (y + 1) % m_;
@@ -99,8 +140,6 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         if (threshold > random_.random<real>())
             matQ_(y, x) = - qyx;
     }
-    if (om_ == sqd::optMaximize)
-        E_ = - E_;
 }
 
 

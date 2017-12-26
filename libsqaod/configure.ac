@@ -22,13 +22,13 @@ AC_PROG_CXX
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
-CFLAGS="-O2 -Wall -ggdb"
-#CFLAGS="-Wall -ggdb"
+CFLAGS="-std=c++11 -O2 -Wall -ggdb"
+#CFLAGS="-std=c++11 -Wall -ggdb"
 CXXFLAGS=$CFLAGS
 
 AC_SUBST([CFLAGS], $CFLAGS)
 AC_SUBST([CXXFLAGS], $CFLAGS)
 
 
-AC_CONFIG_FILES([Makefile cpu/Makefile])
+AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
 AC_OUTPUT

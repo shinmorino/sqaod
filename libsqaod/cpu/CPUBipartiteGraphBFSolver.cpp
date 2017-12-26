@@ -1,4 +1,5 @@
 #include "CPUBipartiteGraphBFSolver.h"
+#include "CPUFormulas.h"
 #include <cmath>
 #include <float.h>
 #include <algorithm>
@@ -29,16 +30,19 @@ void CPUBipartiteGraphBFSolver<real>::getProblemSize(int *N0, int *N1) const {
 }
 
 template<class real>
-void CPUBipartiteGraphBFSolver<real>::setProblem(const real *b0, const real *b1, const real *W,
-                                                 int N0, int N1, OptimizeMethod om) {
-    N0_ = N0;
-    N1_ = N1;
-    b0_ = Eigen::Map<RowVector>((real*)b0, N0_);
-    b1_ = Eigen::Map<RowVector>((real*)b1, N1_);
-    W_ = Eigen::Map<Matrix>((real*)W, N1_, N0_);
+void CPUBipartiteGraphBFSolver<real>::setProblem(const Vector &b0, const Vector &b1,
+                                                 const Matrix &W, OptimizeMethod om) {
+    N0_ = b0.size;
+    N1_ = b1.size;
+    b0_ = b0.mapToRowVector();
+    b1_ = b1.mapToRowVector();
+    W_ = W.map();
     om_ = om;
-    if (om_ == optMaximize)
+    if (om_ == optMaximize) {
         W_ *= real(-1.);
+        b0_ *= real(-1.);
+        b1_ *= real(-1.);
+    }
 }
 
 template<class real>
@@ -53,13 +57,13 @@ const BitsPairArray &CPUBipartiteGraphBFSolver<real>::get_x() const {
 }
 
 template<class real>
-real CPUBipartiteGraphBFSolver<real>::get_E() const {
-    return (om_ == optMaximize) ? -E_ : E_;
+const VectorType<real> &CPUBipartiteGraphBFSolver<real>::get_E() const {
+    return E_;
 }
 
 template<class real>
 void CPUBipartiteGraphBFSolver<real>::initSearch() {
-    E_ = FLT_MAX;
+    minE_ = FLT_MAX;
     xPackedPairs_.clear();
     x0max_ = 1 << N0_;
     x1max_ = 1 << N1_;
@@ -71,10 +75,13 @@ void CPUBipartiteGraphBFSolver<real>::finSearch() {
     for (PackedBitsPairArray::const_iterator it = xPackedPairs_.begin();
          it != xPackedPairs_.end(); ++it) {
         Bits x0(N0_), x1(N1_);
-        unpackBits(&x0, N0_, it->first);
-        unpackBits(&x1, N1_, it->second);
+        unpackBits(&x0, it->first, N0_);
+        unpackBits(&x1, it->second, N1_);
         xPairs_.push_back(BitsPairArray::value_type(x0, x1));
     }
+    real tmpE = (om_ == optMaximize) ? -minE_ : minE_;
+    E_.resize(xPackedPairs_.size());
+    E_.mapToRowVector().array() = tmpE;
 }
 
 template<class real>
@@ -85,7 +92,7 @@ void CPUBipartiteGraphBFSolver<real>::searchRange(PackedBits iBegin0, PackedBits
     iBegin1 = std::min(std::max(0ULL, iBegin1), x1max_);
     iEnd1 = std::min(std::max(0ULL, iEnd1), x1max_);
 
-    BGFuncs<real>::batchSearch(&E_, &xPackedPairs_, b0_ ,b1_, W_, iBegin0, iEnd0, iBegin1, iEnd1);
+    BGFuncs<real>::batchSearch(&minE_, &xPackedPairs_, b0_ ,b1_, W_, iBegin0, iEnd0, iBegin1, iEnd1);
     /* FIXME: add max limits of # min vectors. */
 }
 

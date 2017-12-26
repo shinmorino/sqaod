@@ -112,4 +112,4 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
                 print E
             G = G * tau
 
-        annealer.calculate_E()
+        annealer.fin_anneal()

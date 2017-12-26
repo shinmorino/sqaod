@@ -1,8 +1,9 @@
 #include "CPUDenseGraphBFSolver.h"
+#include "CPUFormulas.h"
 #include <cmath>
+
 #include <float.h>
 #include <algorithm>
-#include <exception>
 
 using namespace sqaod;
 
@@ -27,9 +28,10 @@ void CPUDenseGraphBFSolver<real>::getProblemSize(int *N) const {
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::setProblem(const real *W, int N, OptimizeMethod om) {
-    N_ = N;
-    W_ = Eigen::Map<Matrix>((real*)W, N_, N_);
+void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om) {
+    THROW_IF(!isSymmetric(W), "W is not symmetric.");
+    N_ = W.rows;
+    W_ = W.map();
     om_ = om;
     if (om_ == optMaximize)
         W_ *= real(-1.);
@@ -46,13 +48,14 @@ const BitsArray &CPUDenseGraphBFSolver<real>::get_x() const {
 }
 
 template<class real>
-real CPUDenseGraphBFSolver<real>::get_E() const {
-    return (om_ == optMaximize) ? -E_ : E_;
+const VectorType<real> &CPUDenseGraphBFSolver<real>::get_E() const {
+    return E_;
 }
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::initSearch() {
-    E_ = FLT_MAX;
+    minE_ = FLT_MAX;
+    packedXList_.clear();
     xList_.clear();
     xMax_ = 1 << N_;
 }
@@ -66,6 +69,8 @@ void CPUDenseGraphBFSolver<real>::finSearch() {
         unpackBits(&bits, packedXList_[idx], N_);
         xList_.push_back(bits);
     }
+    E_.resize(packedXList_.size());
+    E_.mapToRowVector().array() = (om_ == optMaximize) ? - minE_ : minE_;
 }
 
 
@@ -73,7 +78,7 @@ template<class real>
 void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
     iBegin = std::min(std::max(0ULL, iBegin), xMax_);
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
-    DGFuncs<real>::batchSearch(&E_, &packedXList_, W_, iBegin, iEnd);
+    DGFuncs<real>::batchSearch(&minE_, &packedXList_, W_, iBegin, iEnd);
     /* FIXME: add max limits of # min vectors. */
 }
 
