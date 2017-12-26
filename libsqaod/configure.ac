@@ -30,5 +30,5 @@ AC_SUBST([CFLAGS], $CFLAGS)
 AC_SUBST([CXXFLAGS], $CFLAGS)
 
 
-AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
+AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile cuda/Makefile])
 AC_OUTPUT
