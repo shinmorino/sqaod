@@ -2,8 +2,10 @@
 AC_INIT(libsqaod, dev, shin.morino@gmail.com)    
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE
-AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([config.h.in])
+
+LT_INIT([disable-static])
+
 
 # Using the former instead of the latter AC_CONFIG_HEADERS results in
 # automake complaining about lack of confdefs.h.in.
@@ -30,5 +32,5 @@ AC_SUBST([CFLAGS], $CFLAGS)
 AC_SUBST([CXXFLAGS], $CFLAGS)
 
 
-AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile cuda/Makefile])
+AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
 AC_OUTPUT

@@ -111,12 +111,11 @@ template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
-    Bits x0, x1;
     for (int idx = 0; idx < m_; ++idx) {
         EigenBitMatrix eq = matQ_.transpose().col(idx).template cast<char>();
         bitsQ_.push_back(Bits(eq));
         Bits x = Bits((eq.array() + 1) / 2);
-        bitsX_.push_back(x0);
+        bitsX_.push_back(x);
     }
 }
 
