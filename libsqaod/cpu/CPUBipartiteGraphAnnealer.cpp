@@ -53,6 +53,7 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::setNumTrotters(int nTrotters) {
+    THROW_IF(nTrotters <= 0, "nTrotters must be a positive integer.");
     m_ = nTrotters;
     matQ0_.resize(m_, N0_);
     matQ1_.resize(m_, N1_);

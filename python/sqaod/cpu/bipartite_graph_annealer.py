@@ -10,29 +10,31 @@ import cpu_bg_annealer as bg_annealer
 class BipartiteGraphAnnealer :
 
     def __init__(self, b0, b1, W, optimize, n_trotters, dtype) : # n_trotters
-        self._m = None # FIXME: apply the same tric for all annealers.
         self.dtype = dtype
         self._ext = bg_annealer.new_annealer(dtype)
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
-        self.set_solver_preference(n_trotters)
+        if not n_trotters is None :
+            self.set_solver_preference(n_trotters)
 
     def _get_dim(self) :
-        return self._N0, self._N1
+        N0 = np.empty((1), np.int32)
+        N1 = np.empty((1), np.int32)
+        m = np.empty((1), np.int32)
+        bg_annealer.get_problem_size(self._ext, N0, N1, m, self.dtype)
+        return N0[0], N1[0], m[0]
         
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
-        self._N0 = b0.shape[0]
-        self._N1 = b1.shape[0]
         bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
 
     def set_solver_preference(self, n_trotters) :
         # set n_trotters.  The default value assumed to N / 4
         bg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype);
-        self._m = n_trotters
         
     def get_E(self) :
-        E = np.ndarray((self._m), self.dtype)
+        N0, N1, m = self._get_dim()
+        E = np.ndarray((m), self.dtype)
         bg_annealer.get_E(self._ext, E, self.dtype)
         return E
 
@@ -45,7 +47,7 @@ class BipartiteGraphAnnealer :
     # Ising model / spins
     
     def get_hJc(self) :
-        N0, N1 = self._get_dim()
+        N0, N1, m = self._get_dim()
         h0 = np.ndarray((N0), self.dtype);
         h1 = np.ndarray((N1), self.dtype);
         J = np.ndarray((N1, N0), self.dtype);

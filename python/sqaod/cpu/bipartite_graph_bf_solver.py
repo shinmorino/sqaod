@@ -7,7 +7,7 @@ import cpu_bg_bf_solver as bg_bf_solver
 
 class BipartiteGraphBFSolver :
     
-    def __init__(self, W, b0, b1, optimize, dtype) :
+    def __init__(self, b0, b1, W, optimize, dtype) :
         self.dtype = dtype
         self._ext = bg_bf_solver.new_solver(dtype)
         if not W is None :
@@ -73,7 +73,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
     
-    bf = bipartite_graph_bf_solver(W, b0, b1)
+    bf = bipartite_graph_bf_solver(b0, b1, W)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 

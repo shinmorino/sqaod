@@ -30,22 +30,21 @@ def search(sol) :
     print E
     
         
+np.random.seed(0)
 
-W = np.array([[-32,4,4,4,4,4,4,4],
-              [4,-32,4,4,4,4,4,4],
-              [4,4,-32,4,4,4,4,4],
-              [4,4,4,-32,4,4,4,4],
-              [4,4,4,4,-32,4,4,4],
-              [4,4,4,4,4,-32,4,4],
-              [4,4,4,4,4,4,-32,4],
-              [4,4,4,4,4,4,4,-32]])
+N0 = 10
+N1 = 10
 
-ann = sqaod.py.dense_graph_annealer(W)
+W = np.random.random((N1, N0)) - 0.5
+b0 = np.random.random((N0)) - 0.5
+b1 = np.random.random((N1)) - 0.5
+    
+ann = sqaod.py.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
-ann = sqaod.cpu.dense_graph_annealer(W)
+ann = sqaod.cpu.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
 
-sol = sqaod.py.dense_graph_bf_solver(W)
+sol = sqaod.py.bipartite_graph_bf_solver(b0, b1, W)
 search(sol)
-sol = sqaod.cpu.dense_graph_bf_solver(W)
+sol = sqaod.cpu.bipartite_graph_bf_solver(b0, b1, W)
 search(sol)

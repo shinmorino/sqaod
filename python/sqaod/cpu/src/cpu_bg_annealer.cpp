@@ -116,6 +116,24 @@ PyObject *bg_annealer_set_problem(PyObject *module, PyObject *args) {
     
     
 extern "C"
+PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
+
+    PyObject *objExt, *objN0, *objN1, *objM, *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOO", &objExt, &objN0, &objN1, &objM, &dtype))
+        return NULL;
+    const NpVectorType<int> N0(objN0), N1(objN1), m(objM);
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->getProblemSize(N0.vec.data, N1.vec.data, m.vec.data);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->getProblemSize(N0.vec.data, N1.vec.data, m.vec.data);
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+    
+extern "C"
 PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     int m = 0;
@@ -366,6 +384,7 @@ PyMethodDef cpu_bg_annealer_methods[] = {
 	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
 	{"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
 	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
+	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
 	{"set_solver_preference", bg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_E", bg_annealer_get_E, METH_VARARGS},
 	{"get_x", bg_annealer_get_x, METH_VARARGS},
