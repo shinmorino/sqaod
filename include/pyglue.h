@@ -95,11 +95,44 @@ struct NpVectorType {
 };
 
 
-/* Scalar */
+template<class real>
+struct NpScalarRefType {
+    typedef sqaod::VectorType<real> Vector;
+
+    NpScalarRefType(PyObject *pyObj) {
+        obj = pyObj;
+        PyArrayObject *arr = (PyArrayObject*)pyObj;
+        THROW_IF(3 <= PyArray_NDIM(arr), "not a scalar.");
+        if (PyArray_NDIM(arr) == 2) {
+            int rows = PyArray_SHAPE(arr)[0];
+            int cols = PyArray_SHAPE(arr)[1];
+            THROW_IF((rows != 1) || (cols != 1), "not a scalar.");
+        }
+        else if (PyArray_NDIM(arr) == 1) {
+            int size = PyArray_SHAPE(arr)[0];
+            THROW_IF(size != 1, "not a scalar.");
+        }
+        data = (real*)PyArray_DATA(arr);
+    }
+
+    /* accessor for ease of coding. */
+    operator real&() {
+        return *data;
+    }
+    real *operator&() {
+        return data;
+    }
+    
+    real *data;
+    PyObject *obj;
+};
+
+
+/* Const Scalar */
 
 template<class real>
-struct NpConstScalarT {
-    NpConstScalarT(PyObject *obj);
+struct NpConstScalarType {
+    NpConstScalarType(PyObject *obj);
     
     operator real() {
         return data;
@@ -111,13 +144,13 @@ struct NpConstScalarT {
 };
 
 template<> inline
-NpConstScalarT<double>::NpConstScalarT(PyObject *obj) {
+NpConstScalarType<double>::NpConstScalarType(PyObject *obj) {
     PyFloat64ScalarObject *fpObj = (PyFloat64ScalarObject*)obj;
     data = fpObj->obval;
 }
 
 template<> inline
-NpConstScalarT<float>::NpConstScalarT(PyObject *obj) {
+NpConstScalarType<float>::NpConstScalarType(PyObject *obj) {
     PyFloat32ScalarObject *fpObj = (PyFloat32ScalarObject*)obj;
     data = fpObj->obval;
 }

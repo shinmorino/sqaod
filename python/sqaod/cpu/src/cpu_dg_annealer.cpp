@@ -111,6 +111,21 @@ PyObject *dg_annealer_set_problem(PyObject *module, PyObject *args) {
     return Py_None;    
 }
     
+extern "C"
+PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+    int N, m;
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->getProblemSize(&N, &m);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->getProblemSize(&N, &m);
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    return Py_BuildValue("ii", N, m);
+}
     
 extern "C"
 PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
@@ -189,12 +204,14 @@ void internal_dg_annealer_get_hJc(PyObject *objExt,
                                   PyObject *objH, PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
+    typedef NpScalarRefType<real> NpScalarRef;
 
     NpMatrix J(objJ);
-    NpVector h(objH), c(objC);
+    NpVector h(objH);
+    NpScalarRef c(objC);
     
     sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
-    ann->get_hJc(&h, &J, c.vec.data);
+    ann->get_hJc(&h, &J, &c);
 }
     
     
@@ -311,7 +328,7 @@ PyObject *dg_annealer_fin_anneal(PyObject *module, PyObject *args) {
 
 template<class real>
 void internal_dg_annealer_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objKT) {
-    typedef NpConstScalarT<real> NpConstScalar;
+    typedef NpConstScalarType<real> NpConstScalar;
     NpConstScalar G(objG), kT(objKT);
     pyobjToCppObj<real>(objExt)->annealOneStep(G, kT);
 }
@@ -343,6 +360,7 @@ PyMethodDef cpu_dg_annealer_methods[] = {
 	{"delete_annealer", dg_annealer_delete, METH_VARARGS},
 	{"rand_seed", dg_annealer_rand_seed, METH_VARARGS},
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
+	{"get_problem_size", dg_annealer_get_problem_size, METH_VARARGS},
 	{"set_solver_preference", dg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_E", dg_annealer_get_E, METH_VARARGS},
 	{"get_x", dg_annealer_get_x, METH_VARARGS},

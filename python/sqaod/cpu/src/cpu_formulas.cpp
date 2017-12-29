@@ -127,14 +127,15 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
                                             PyObject *objQ) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
-    typedef NpConstScalarT<real> NpConstScalar;
-    NpVector E(objE);
+    typedef NpScalarRefType<real> NpScalarRef;
+    typedef NpConstScalarType<real> NpConstScalar;
+    NpScalarRef E(objE);
     const NpVector h(objH);
     const NpMatrix J(objJ);
     NpConstScalar c(objC);
     const NpBitVector q(objQ);
     /* do the native job */
-    sqd::DGFuncs<real>::calculate_E(E.vec.data, h, J, c, q.vec.cast<real>());
+    sqd::DGFuncs<real>::calculate_E(&E, h, J, c, q.vec.cast<real>());
 }
     
 
@@ -163,7 +164,7 @@ void internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
                                                        PyObject *objQ) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
-    typedef NpConstScalarT<real> NpConstScalar;
+    typedef NpConstScalarType<real> NpConstScalar;
     NpVector E(objE);
     const NpVector h(objH);
     const NpMatrix J(objJ);
@@ -202,12 +203,13 @@ internal_bipartite_graph_calculate_E(PyObject *objE,
                                      PyObject *objX0, PyObject *objX1) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
+    typedef NpScalarRefType<real> NpScalarRef;
     const NpVector b0(objB0), b1(objB1);
     const NpMatrix W(objW);
-    NpVector E(objE);
+    NpScalarRef E(objE);
     const NpBitVector x0(objX0), x1(objX1);
     /* do the native job */
-    sqd::BGFuncs<real>::calculate_E(E.vec.data, b0, b1, W,
+    sqd::BGFuncs<real>::calculate_E(&E, b0, b1, W,
                                     x0.vec.cast<real>(), x1.vec.cast<real>());
 }
     
@@ -307,12 +309,14 @@ void internal_bipartite_graph_calculate_hJc(PyObject *objH0, PyObject *objH1, Py
                                             PyObject *objB0, PyObject *objB1, PyObject *objW) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
+    typedef NpScalarRefType<real> NpScalarRef;
     const NpVector b0(objB0), b1(objB1);
     const NpMatrix W(objW);
-    NpVector h0(objH0), h1(objH1), c(objC);
+    NpVector h0(objH0), h1(objH1);
+    NpScalarRef c(objC);
     NpMatrix J(objJ);
     /* do the native job */
-    sqd::BGFuncs<real>::calculate_hJc(&h0, &h1, &J, c.vec.data, b0, b1, W);
+    sqd::BGFuncs<real>::calculate_hJc(&h0, &h1, &J, &c, b0, b1, W);
 }
 
 
@@ -344,7 +348,7 @@ internal_bipartite_graph_calculate_E_from_qbits(PyObject *objE,
                                                 PyObject *objQ0, PyObject *objQ1) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
-    typedef NpConstScalarT<real> NpConstScalar;
+    typedef NpConstScalarType<real> NpConstScalar;
     NpVector E(objE);
     const NpVector h0(objH0), h1(objH1);
     const NpMatrix J(objJ);
@@ -382,7 +386,7 @@ internal_bipartite_graph_batch_calculate_E_from_qbits(PyObject *objE,
                                                       PyObject *objQ0, PyObject *objQ1) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
-    typedef NpConstScalarT<real> NpConstScalar;
+    typedef NpConstScalarType<real> NpConstScalar;
     NpVector E(objE);
     const NpVector h0(objH0), h1(objH1);
     const NpMatrix J(objJ);

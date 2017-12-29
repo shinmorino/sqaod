@@ -16,27 +16,22 @@ class BipartiteGraphAnnealer :
             self.set_problem(b0, b1, W, optimize)
         if not n_trotters is None :
             self.set_solver_preference(n_trotters)
-
-    def _get_dim(self) :
-        N0 = np.empty((1), np.int32)
-        N1 = np.empty((1), np.int32)
-        m = np.empty((1), np.int32)
-        bg_annealer.get_problem_size(self._ext, N0, N1, m, self.dtype)
-        return N0[0], N1[0], m[0]
         
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
 
+    def get_problem_size(self) :
+        return bg_annealer.get_problem_size(self._ext, self.dtype)
+
     def set_solver_preference(self, n_trotters) :
         # set n_trotters.  The default value assumed to N / 4
         bg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype);
+        N0, N1, m = self.get_problem_size()
+        self._E = np.empty((m), self.dtype)
         
     def get_E(self) :
-        N0, N1, m = self._get_dim()
-        E = np.ndarray((m), self.dtype)
-        bg_annealer.get_E(self._ext, E, self.dtype)
-        return E
+        return self._E
 
     def get_x(self) :
         return bg_annealer.get_x(self._ext, self.dtype)
@@ -72,6 +67,9 @@ class BipartiteGraphAnnealer :
 
     def fin_anneal(self) :
         bg_annealer.fin_anneal(self._ext, self.dtype)
+        N0, N1, m = self.get_problem_size()
+        self._E = np.empty((m), self.dtype)
+        bg_annealer.get_E(self._ext, self._E, self.dtype)
 
         
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \

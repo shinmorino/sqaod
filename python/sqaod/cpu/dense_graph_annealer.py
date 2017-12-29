@@ -10,38 +10,40 @@ class DenseGraphAnnealer :
     def __init__(self, W, optimize, n_trotters, dtype) :
         self.dtype = dtype
         self._ext = dg_annealer.new_annealer(dtype)
-        self.set_problem(W, optimize)
-        self.set_solver_preference(n_trotters)
+        if not W is None :
+            self.set_problem(W, optimize)
+        if not n_trotters is None :
+            self.set_solver_preference(n_trotters)
 
     def __del__(self) :
         dg_annealer.delete_annealer(self._ext, self.dtype)
+
+    def get_problem_size(self) :
+        return dg_annealer.get_problem_size(self._ext, self.dtype)
         
     def rand_seed(seed) :
         dg_annealer.rand_seed(self._ext, seed)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dim
-        self._N = W.shape[0]
         W = common.clone_as_np_buffer(W, self.dtype)
         dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
 
     def set_solver_preference(self, n_trotters = None) :
-        if n_trotters is None :
-            n_trotters = self._N / 4
-        self._m = n_trotters;
-        self._E = np.zeros((self._m), self.dtype)
         dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
+        N, m = self.get_problem_size()
+        self._E = np.empty((m), self.dtype)
 
     def get_E(self) :
-        dg_annealer.get_E(self._ext, self._E, self.dtype)
-        return np.min(self._E);
+        return self._E
 
     def get_x(self) :
         return dg_annealer.get_x(self._ext, self.dtype)
 
     def get_hJc(self) :
-        h = np.empty((self._N), self.dtype)
-        J = np.empty((self._N, self._N), self.dtype)
+        N, m = self.get_problem_size()
+        h = np.empty((N), self.dtype)
+        J = np.empty((N, N), self.dtype)
         c = np.empty((1), self.dtype)
         dg_annealer.get_hJc(self._ext, h, J, c, self.dtype)
         return h, J, c[0]
@@ -60,6 +62,9 @@ class DenseGraphAnnealer :
 
     def fin_anneal(self) :
         dg_annealer.fin_anneal(self._ext, self.dtype)
+        N, m = self.get_problem_size()
+        self._E = np.empty((m), self.dtype)
+        dg_annealer.get_E(self._ext, self._E, self.dtype)
 
     def anneal_one_step(self, G, kT) :
         dg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)

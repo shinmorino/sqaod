@@ -118,19 +118,18 @@ PyObject *bg_annealer_set_problem(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
 
-    PyObject *objExt, *objN0, *objN1, *objM, *dtype;
-    if (!PyArg_ParseTuple(args, "OOOOO", &objExt, &objN0, &objN1, &objM, &dtype))
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    const NpVectorType<int> N0(objN0), N1(objN1), m(objM);
+    int N0, N1, m;
     if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->getProblemSize(N0.vec.data, N1.vec.data, m.vec.data);
+        pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1, &m);
     else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->getProblemSize(N0.vec.data, N1.vec.data, m.vec.data);
+        pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1, &m);
     else
         RAISE_INVALID_DTYPE(dtype);
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_BuildValue("iii", N0, N1, m);
 }
     
 extern "C"
@@ -248,11 +247,13 @@ void internal_bg_annealer_get_hJc(PyObject *objExt,
                                   PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
+    typedef NpScalarRefType<real> NpScalarRef;
     
     sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
-    NpVector h0(objH0), h1(objH1), c(objC);
+    NpVector h0(objH0), h1(objH1);
+    NpScalarRef c(objC);
     NpMatrix J(objJ);
-    ann->get_hJc(&h0, &h0, &J, c.vec.data);
+    ann->get_hJc(&h0, &h0, &J, &c);
 }
     
     
@@ -334,7 +335,7 @@ PyObject *bg_annealer_init_anneal(PyObject *module, PyObject *args) {
     
 template<class real>
 void internal_bg_annealer_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objKT) {
-    typedef NpConstScalarT<real> NpConstScalar;
+    typedef NpConstScalarType<real> NpConstScalar;
     NpConstScalar G(objG), kT(objKT);
     pyobjToCppObj<real>(objExt)->annealOneStep(G, kT);
 }
