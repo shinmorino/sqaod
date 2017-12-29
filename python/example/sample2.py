@@ -41,4 +41,3 @@ anneal(annealer.simple_annealer(N, m))
 print
 print('simple native annealer (native)')
 anneal(annealer.simple_native_annealer(N, m))
-

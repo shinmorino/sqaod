@@ -1,39 +1,52 @@
-import annealer
+import sqaod.py
+import sqaod.cpu
+import sqaod.common as common
 import numpy as np
 
 
-qubo = np.array([[-32,4,4,4,4,4,4,4],
-                 [4,-32,4,4,4,4,4,4],
-                 [4,4,-32,4,4,4,4,4],
-                 [4,4,4,-32,4,4,4,4],
-                 [4,4,4,4,-32,4,4,4],
-                 [4,4,4,4,4,-32,4,4],
-                 [4,4,4,4,4,4,-32,4],
-                 [4,4,4,4,4,4,4,-32]])
+def anneal(ann) :
+    
+    Ginit = 5.
+    Gfin = 0.01
+
+    nRepeat = 4
+    kT = 0.02
+    tau = 0.99
+
+    for loop in range(0, nRepeat) :
+        common.anneal(ann, Ginit, Gfin, kT)
+        x = ann.get_x() 
+        E = ann.get_E()
+
+        print x
+        print E
 
 
-#ann = annealer.simple_annealer(8, 4)
-ann = annealer.simple_native_annealer(8, 4)
+def search(sol) :
+    sol.search()
+    x = sol.get_x()
+    E = sol.get_E()
+    print x
+    print E
+    
+        
 
-ann.set_qubo(qubo)
+W = np.array([[-32,4,4,4,4,4,4,4],
+              [4,-32,4,4,4,4,4,4],
+              [4,4,-32,4,4,4,4,4],
+              [4,4,4,-32,4,4,4,4],
+              [4,4,4,4,-32,4,4,4],
+              [4,4,4,4,4,-32,4,4],
+              [4,4,4,4,4,4,-32,4],
+              [4,4,4,4,4,4,4,-32]])
 
-Ginit = 5.
-Gfin = 0.01
+ann = sqaod.py.dense_graph_annealer(W)
+anneal(ann)
+ann = sqaod.cpu.dense_graph_annealer(W)
+anneal(ann)
 
-N = 8
-m = 4
+sol = sqaod.py.dense_graph_bf_solver(W)
+search(sol)
 
-nRepeat = 4
-kT = 0.02
-tau = 0.99
-
-for loop in range(0, nRepeat) :
-    G = Ginit
-    ann.randomize_q()
-    while Gfin < G :
-        ann.anneal_one_step(G, kT)
-        G = G * tau
-
-    q = ann.get_q() 
-    E = ann.get_E() 
-    print(q[0,:], E)
+sol = sqaod.cpu.dense_graph_bf_solver(W)
+search(sol)

@@ -345,7 +345,7 @@ PyMethodDef cpu_dg_annealer_methods[] = {
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
 	{"set_solver_preference", dg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_E", dg_annealer_get_E, METH_VARARGS},
-	{"get_q", dg_annealer_get_q, METH_VARARGS},
+	{"get_x", dg_annealer_get_x, METH_VARARGS},
 	{"get_hJc", dg_annealer_get_hJc, METH_VARARGS},
 	{"get_q", dg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", dg_annealer_radomize_q, METH_VARARGS},

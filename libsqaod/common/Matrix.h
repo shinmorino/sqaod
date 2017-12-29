@@ -1,6 +1,7 @@
 #ifndef COMMON_MATRIX_H__
 #define COMMON_MATRIX_H__
 
+#define EIGEN_NO_CUDA 1
 #include <Eigen/Core>
 #include <vector>
 
