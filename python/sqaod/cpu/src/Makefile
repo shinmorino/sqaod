@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../../include -I../../../../libsqaod -I../../../../libsqaod/eigen
+INCLUDE+=-I../../../../libsqaod/include -I../../../../libsqaod -I../../../../libsqaod/eigen
 
 TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_solver.so ../cpu_bg_annealer.so ../cpu_bg_bf_solver.so
 cpu_formulas_so_OBJS=cpu_formulas.o

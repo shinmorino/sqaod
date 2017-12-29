@@ -75,7 +75,7 @@ struct NpVectorType {
             THROW_IF((rows != 1) && (cols != 1), "ndarray is not 1-diemsional.");
             size = std::max(rows, cols);
         }
-        else if (PyArray_NDIM(arr) == 1) {
+        else /*if (PyArray_NDIM(arr) == 1) */  {
             size = PyArray_SHAPE(arr)[0];
         }
         vec.set(data, size);
