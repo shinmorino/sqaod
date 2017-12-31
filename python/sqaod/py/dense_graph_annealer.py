@@ -15,25 +15,23 @@ class DenseGraphAnnealer :
 
     def _vars(self) :
         return self._h, self._J, self._c, self._q
-
-    def _Esign(self) :
-        return self._optimize.Esign
     
     def set_problem(self, W, optimize = sqaod.minimize) :
-        self._h, self._J, self._c = formulas.dense_graph_calculate_hJc(W)
+        h, J, c = formulas.dense_graph_calculate_hJc(W)
         self._optimize = optimize
-        Esign = self._Esign()
-        self._h, self._J, self._c = Esign * self._h, Esign * self._J, Esign * self._c
+        self._h, self._J, self._c = optimize.sign(h), optimize.sign(J), optimize.sign(c)
         self._N = W.shape[0]
-
+        
     def set_solver_preference(self, n_trotters) :
         # The default value assumed to N / 4
         m = max(2, n_trotters if n_trotters is not None else self._N / 4)
         self._m = m
 
+    def get_optimize_dir(self) :
+        return self._optimize
+
     def get_E(self) :
-        Emin = np.min(self._E)
-        return self._Esign() * Emin
+        return self._E
 
     def get_x(self) :
         return self._x
@@ -55,7 +53,8 @@ class DenseGraphAnnealer :
 
     def calculate_E(self) :
         h, J, c, q = self._vars()
-        self._E = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
+        E = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
+        self._E = self._optimize.sign(E)
 
     def init_anneal(self) :
         if self._m is None :

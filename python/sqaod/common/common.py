@@ -1,3 +1,4 @@
+import sqaod
 import sys
 import numbers
 import numpy as np
@@ -94,6 +95,7 @@ def bits_to_qbits(x) :
 def bits_from_qbits(q) :
     x = ((q + 1) >> 1)
     return x
+
 
 
 def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 10, verbose = False) :

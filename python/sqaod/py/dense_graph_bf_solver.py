@@ -10,9 +10,6 @@ class DenseGraphBFSolver :
     def __init__(self, W = None, optimize = sqaod.minimize) :
         if W is not None :
             self.set_problem(W, optimize)
-
-    def _Esign(self) :
-        return self._optimize.Esign
             
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dims, is symmetric ? */
@@ -21,8 +18,11 @@ class DenseGraphBFSolver :
         self._N = N
         self._x = []
         self._optimize = optimize
-        self._W = W * optimize.Esign
-            
+        self._W = optimize.sign(W)
+
+    def get_optimize_dir(self) :
+        return self._optimize
+    
     def get_E(self) :
         return self._E
     
@@ -37,7 +37,7 @@ class DenseGraphBFSolver :
     def fin_search(self) :
         nMinX = len(self._x)
         self._E = np.empty((nMinX))
-        self._E[...] = self._Esign() * self._Emin
+        self._E[...] = self._optimize.sign(self._Emin)
 
     def search_range(self, xBegin, xEnd) :
         N = self._N

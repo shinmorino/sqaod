@@ -19,6 +19,10 @@ class DenseGraphBFSolver :
         W = common.clone_as_np_buffer(W, self.dtype)
         self._N = W.shape[0]
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
+        self._optimize = optimize
+
+    def get_optimize_dir(self) :
+        return self._optimize
 
     def get_E(self) :
         return dg_bf_solver.get_E(self._ext, self.dtype)

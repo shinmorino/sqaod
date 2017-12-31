@@ -20,6 +20,10 @@ class BipartiteGraphAnnealer :
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
+        self._optimize = optimize
+
+    def get_optimize_dir(self) :
+        return self._optimize
 
     def get_problem_size(self) :
         return bg_annealer.get_problem_size(self._ext, self.dtype)

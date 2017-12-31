@@ -20,6 +20,10 @@ class BipartiteGraphBFSolver :
         # FIXME: add error check.
         self._dim = (b0.shape[0], b1.shape[0])
         bg_bf_solver.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
+        self._optimize = optimize
+
+    def get_optimize_dir(self) :
+        return self._optimize
 
     def get_E(self) :
         return bg_bf_solver.get_E(self._ext, self.dtype);

@@ -28,11 +28,15 @@ class DenseGraphAnnealer :
         # FIXME: check W dim
         W = common.clone_as_np_buffer(W, self.dtype)
         dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
+        self._optimize = optimize
 
     def set_solver_preference(self, n_trotters = None) :
         dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
         N, m = self.get_problem_size()
         self._E = np.empty((m), self.dtype)
+
+    def get_optimize_dir(self) :
+        return self._optimize
 
     def get_E(self) :
         return self._E

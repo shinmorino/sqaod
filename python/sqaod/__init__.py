@@ -11,17 +11,34 @@ rbm = 2
 bruteforce = 0
 anneal = 1
 
-# optimize type
+# operations to switch minimize / maximize.
 
 class Minimize :
-    Esign = 1.
+    @staticmethod
+    def sign(v) :
+        return v
+    @staticmethod
+    def best(list) :
+        return min(list)
+    @staticmethod
+    def sort(list) :
+        return sorted(list)
     def __trunc__(self) :
         return 0
 
+    
 class Maximize :
-    Esign = -1.
+    @staticmethod
+    def sign(v) :
+        return -v
+    @staticmethod
+    def best(list) :
+        return max(list)
+    @staticmethod
+    def sort(list) :
+        return sorted(list, reverse = true)
     def __trunc__(self) :
-        return 1
+        return 0
 
 minimize = Minimize()
 maximize = Maximize()

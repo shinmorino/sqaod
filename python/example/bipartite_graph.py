@@ -3,8 +3,16 @@ import sqaod.cpu
 import sqaod.common as common
 import numpy as np
 
+def output(solver) :
+    summary = common.make_summary(solver)
+    print 'E {}'.format(summary.E)
+    print 'Number of solutions : {}'.format(len(summary.xlist))
+    for x in summary.xlist :
+        print x
+
 
 def anneal(ann) :
+    print ann.__class__
     
     Ginit = 5.
     Gfin = 0.01
@@ -15,19 +23,12 @@ def anneal(ann) :
 
     for loop in range(0, nRepeat) :
         common.anneal(ann, Ginit, Gfin, kT)
-        x = ann.get_x() 
-        E = ann.get_E()
-
-        print x
-        print E
+        output(ann)
 
 
 def search(sol) :
     sol.search()
-    x = sol.get_x()
-    E = sol.get_E()
-    print x
-    print E
+    output(sol)
     
         
 np.random.seed(0)

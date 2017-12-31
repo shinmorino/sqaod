@@ -15,9 +15,6 @@ class BipartiteGraphBFSolver :
     def _vars(self) :
         return self._W, self._blist[0], self._blist[1]
 
-    def _Esign(self) :
-        return self._optimize.Esign
-
     def _get_dim(self) :
         return self._dim[0], self._dim[1]
     
@@ -27,9 +24,12 @@ class BipartiteGraphBFSolver :
         N0, N1 = self._get_dim()
         self._pairs = []
         self._optimize = optimize
-        self._W = self._Esign() * W
-        self._blist = (self._Esign() * b0, self._Esign() * b1)
+        self._W = self._optimize.sign(W)
+        self._blist = (self._optimize.sign(b0), self._optimize.sign(b1))
 
+    def get_optimize_dir(self) :
+        return self._optimize
+    
     def get_E(self) :
         return self._E
 
@@ -45,7 +45,7 @@ class BipartiteGraphBFSolver :
     def fin_search(self) :
         nX = len(self._x_pairs)
         self._E = np.empty((nX))
-        self._E[...] = self._Esign() * self._Emin
+        self._E[...] = self._optimize.sign(self._Emin)
 
     # Not used.  Keeping it for reference.    
     def _search_simple(self) :

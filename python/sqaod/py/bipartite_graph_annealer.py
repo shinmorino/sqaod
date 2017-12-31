@@ -19,9 +19,6 @@ class BipartiteGraphAnnealer :
     def _vars(self) :
         return self._h0, self._h1, self._J, self._c, self._q0, self._q1
 
-    def _Esign(self) :
-        return self._optimize.Esign
-
     def _get_dim(self) :
         return self._dim[0], self._dim[1], self._m
         
@@ -30,17 +27,18 @@ class BipartiteGraphAnnealer :
 
         self._dim = (W.shape[1], W.shape[0])
         self._optimize = optimize
-        self._h0, self._h1, self._J, self._c = \
-            formulas.bipartite_graph_calculate_hJc(b0, b1, W)
-        Esign = self._Esign()
-        self._h0, self._h1 = self._h0 * Esign, self._h1 * Esign
-        self._J, self._c = Esign * self._J, Esign * self._c
+        h0, h1, J, c = formulas.bipartite_graph_calculate_hJc(b0, b1, W)
+        self._h0, self._h1 = optimize.sign(h0), optimize.sign(h1)
+        self._J, self._c = optimize.sign(J), optimize.sign(c)
 
     def set_solver_preference(self, n_trotters) :
         # set n_trotters.  The default value assumed to N / 4
         if n_trotters is None :
             n_trotters = (self._dim[0] + self._dim[1]) / 4
         self._m = max(2, n_trotters)
+
+    def get_optimize_dir(self) :
+        return self._optimize
         
     def get_E(self) :
         return self._E
@@ -117,12 +115,11 @@ class BipartiteGraphAnnealer :
 
     def calculate_E(self) :
         h0, h1, J, c, q0, q1 = self._vars()
-        self._E = np.empty((self._m), J.dtype)
+        E = np.empty((self._m), J.dtype)
         for idx in range(self._m) :
             # FIXME: 1d output for batch calculation
-            self._E[idx] = \
-                formulas.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
-        self._E[idx] *= self._Esign()
+            E[idx] = formulas.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
+        self._E = self._optimize.sign(E)
 
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
                              optimize = sqaod.minimize, n_trotters = None) :
