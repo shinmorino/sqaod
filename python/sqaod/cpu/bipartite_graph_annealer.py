@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import sqaod
 from sqaod.common import checkers
 import formulas
@@ -15,7 +14,13 @@ class BipartiteGraphAnnealer :
             self.set_problem(b0, b1, W, optimize)
         if not n_trotters is None :
             self.set_solver_preference(n_trotters)
+
+    def __del__(self) :
+        bg_annealer.delete_annealer(self._ext, self.dtype)
         
+    def rand_seed(self, seed) :
+        bg_annealer.rand_seed(self._ext, seed, self.dtype)
+            
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
@@ -29,6 +34,7 @@ class BipartiteGraphAnnealer :
 
     def set_solver_preference(self, n_trotters) :
         # set n_trotters.  The default value assumed to N / 4
+        N0, N1, m = self.get_problem_size()
         bg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype);
         N0, N1, m = self.get_problem_size()
         self._E = np.empty((m), self.dtype)

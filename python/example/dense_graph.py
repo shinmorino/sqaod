@@ -6,8 +6,9 @@ def output(solver) :
     summary = sqaod.make_summary(solver)
     print 'E {}'.format(summary.E)
     print 'Number of solutions : {}'.format(len(summary.xlist))
-    for x in summary.xlist :
-        print x
+    nToShow = min(len(summary.xlist), 4)
+    for idx in range(nToShow) :
+        print summary.xlist[idx]
 
 
 def anneal(ann) :
@@ -39,9 +40,9 @@ W = np.array([[-32,4,4,4,4,4,4,4],
               [4,4,4,4,4,4,-32,4],
               [4,4,4,4,4,4,4,-32]])
 
-ann = sqaod.py.dense_graph_annealer(W, sqaod.minimize)
+ann = sqaod.py.dense_graph_annealer(W, sqaod.minimize, 4)
 anneal(ann)
-ann = sqaod.cpu.dense_graph_annealer(W)
+ann = sqaod.cpu.dense_graph_annealer(W, sqaod.minimize, 4)
 anneal(ann)
 
 sol = sqaod.py.dense_graph_bf_solver(W)

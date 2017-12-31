@@ -186,6 +186,29 @@ PyObject *bg_annealer_get_x(PyObject *module, PyObject *args) {
     RAISE_INVALID_DTYPE(dtype);
 }
 
+
+template<class real>
+void internal_bg_annealer_set_x(PyObject *objExt, PyObject *objX0, PyObject *objX1) {
+    NpBitVector x0(objX0), x1(objX1);
+    pyobjToCppObj<real>(objExt)->set_x(x0, x1);
+}
+
+extern "C"
+PyObject *bg_annealer_set_x(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objX0, *objX1, *dtype;
+    
+    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objX0, &objX1, &dtype))
+        return NULL;
+    if (isFloat64(dtype))
+        internal_bg_annealer_set_x<double>(objExt, objX0, objX1);
+    else if (isFloat32(dtype))
+        internal_bg_annealer_set_x<float>(objExt, objX0, objX1);
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
     
 
 template<class real>
@@ -389,6 +412,7 @@ PyMethodDef cpu_bg_annealer_methods[] = {
 	{"set_solver_preference", bg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_E", bg_annealer_get_E, METH_VARARGS},
 	{"get_x", bg_annealer_get_x, METH_VARARGS},
+	{"set_x", bg_annealer_set_x, METH_VARARGS},
 	{"get_hJc", bg_annealer_get_hJc, METH_VARARGS},
 	{"get_q", bg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", bg_annealer_radomize_q, METH_VARARGS},

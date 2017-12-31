@@ -13,15 +13,27 @@ def sort_bitsset_list(bitsSetList) :
                     sets0.append(bitsSetList[idx])
                 else :
                     sets1.append(bitsSetList[idx])
-        bitsSets = sets0 + sets1
+        bitsSetList = sets0 + sets1
 
-    return bitsSets
+    return bitsSetList
 
 
-def sort_bits(xlist) :
-    if type(xlist[0]) is tuple or type(xlist[0]) is list :
-        return sort_bitsset_list(xlist)
-    return sort_bitsset_list([xlist])
+def sort_bits(bitsSetList) :
+    if type(bitsSetList[0]) is tuple or type(bitsSetList[0]) is list :
+        return sort_bitsset_list(bitsSetList)
+
+    size = len(bitsSetList)
+    nBitsSetList = len(bitsSetList)
+    N = bitsSetList[0].shape[0]
+    for pos in range(N - 1, -1, -1) :
+        sets0, sets1 = [], []
+        for idx in range(size) :
+            if bitsSetList[idx][pos] == 0 :
+                sets0.append(bitsSetList[idx])
+            else :
+                sets1.append(bitsSetList[idx])
+        bitsSetList = sets0 + sets1
+    return bitsSetList
 
 def unique_x(x) :
     x = sort_bits(x)

@@ -45,6 +45,8 @@ class DenseGraphAnnealer :
         return self._q
     
     def randomize_q(self) :
+        # FIXME: raise exception
+        assert self._m is not None
         if self._q is None :
             self._q = np.empty((self._m, self._N), dtype=np.int8)
         sqaod.randomize_qbits(self._q)

@@ -200,6 +200,34 @@ PyObject *dg_annealer_get_x(PyObject *module, PyObject *args) {
 
 
 template<class real>
+void internal_dg_annealer_set_x(PyObject *objExt, PyObject *objX) {
+    NpBitVector x(objX);
+    pyobjToCppObj<real>(objExt)->set_x(x);
+}
+
+extern "C"
+PyObject *dg_annealer_set_x(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objX, *dtype;
+    
+    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objX, &dtype))
+        return NULL;
+    if (isFloat64(dtype))
+        internal_dg_annealer_set_x<double>(objExt, objX);
+    else if (isFloat32(dtype))
+        internal_dg_annealer_set_x<float>(objExt, objX);
+    else
+        RAISE_INVALID_DTYPE(dtype);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
+
+
+
+
+
+template<class real>
 void internal_dg_annealer_get_hJc(PyObject *objExt,
                                   PyObject *objH, PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
@@ -364,6 +392,7 @@ PyMethodDef cpu_dg_annealer_methods[] = {
 	{"set_solver_preference", dg_annealer_set_solver_preference, METH_VARARGS},
 	{"get_E", dg_annealer_get_E, METH_VARARGS},
 	{"get_x", dg_annealer_get_x, METH_VARARGS},
+	{"set_x", dg_annealer_set_x, METH_VARARGS},
 	{"get_hJc", dg_annealer_get_hJc, METH_VARARGS},
 	{"get_q", dg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", dg_annealer_radomize_q, METH_VARARGS},

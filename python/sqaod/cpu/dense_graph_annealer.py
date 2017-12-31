@@ -16,12 +16,12 @@ class DenseGraphAnnealer :
 
     def __del__(self) :
         dg_annealer.delete_annealer(self._ext, self.dtype)
+        
+    def rand_seed(self, seed) :
+        dg_annealer.rand_seed(self._ext, seed, self.dtype)
 
     def get_problem_size(self) :
         return dg_annealer.get_problem_size(self._ext, self.dtype)
-        
-    def rand_seed(seed) :
-        dg_annealer.rand_seed(self._ext, seed)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dim
@@ -30,9 +30,10 @@ class DenseGraphAnnealer :
         self._optimize = optimize
 
     def set_solver_preference(self, n_trotters = None) :
-        dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
         N, m = self.get_problem_size()
-        self._E = np.empty((m), self.dtype)
+        n_trotters = max(2, N / 2 if n_trotters is None else n_trotters)
+        dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
+        self._E = np.empty((n_trotters), self.dtype)
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -73,7 +74,7 @@ class DenseGraphAnnealer :
         dg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)
         
 
-def dense_graph_annealer(W, optimize=sqaod.minimize, n_trotters = None, dtype=np.float64) :
+def dense_graph_annealer(W = None, optimize=sqaod.minimize, n_trotters = None, dtype=np.float64) :
     return DenseGraphAnnealer(W, optimize, n_trotters, dtype)
 
 
