@@ -1,10 +1,8 @@
-import sqaod.py
-import sqaod.cpu
-import sqaod.common as common
+import sqaod
 import numpy as np
 
 def output(solver) :
-    summary = common.make_summary(solver)
+    summary = sqaod.make_summary(solver)
     print 'E {}'.format(summary.E)
     print 'Number of solutions : {}'.format(len(summary.xlist))
     for x in summary.xlist :
@@ -22,7 +20,7 @@ def anneal(ann) :
     tau = 0.99
 
     for loop in range(0, nRepeat) :
-        common.anneal(ann, Ginit, Gfin, kT)
+        sqaod.anneal(ann, Ginit, Gfin, kT)
         output(ann)
 
 

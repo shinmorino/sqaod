@@ -1,7 +1,7 @@
 import numpy as np
 import numbers
-import sqaod.common.checkers as checkers
-import sqaod.common as common
+import sqaod
+from sqaod.common import checkers
 import cpu_formulas
 
 # dense graph    
@@ -131,7 +131,7 @@ def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
 
 
 if __name__ == '__main__' :
-    import sqaod.common as common
+    import sqaod
     import sqaod.py.formulas as py_formulas
     dtype = np.float64
 
@@ -146,14 +146,14 @@ if __name__ == '__main__' :
     
     # dense graph
     N = 16
-    W = common.generate_random_symmetric_W(N)
+    W = sqaod.generate_random_symmetric_W(N)
 
-    x = common.generate_random_bits(N)
+    x = sqaod.generate_random_bits(N)
     E0 = py_formulas.dense_graph_calculate_E(W, x)
     E1 = dense_graph_calculate_E(W, x, dtype)
     assert np.allclose(E0, E1)
 
-    xlist = common.create_bits_sequence(range(0, 1 << N), N)
+    xlist = sqaod.create_bits_sequence(range(0, 1 << N), N)
     E0 = py_formulas.dense_graph_batch_calculate_E(W, xlist)
     E1 = dense_graph_batch_calculate_E(W, xlist, dtype)
     assert np.allclose(E0, E1)
@@ -164,12 +164,12 @@ if __name__ == '__main__' :
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
 
-    q = common.bits_to_qbits(x)
+    q = sqaod.bits_to_qbits(x)
     E0 = py_formulas.dense_graph_calculate_E_from_qbits(h0, J0, c0, q);
     E1 = dense_graph_calculate_E_from_qbits(h0, J0, c0, q, dtype);
     assert np.allclose(E0, E1)
 
-    qlist = common.bits_to_qbits(xlist)
+    qlist = sqaod.bits_to_qbits(xlist)
     E0 = py_formulas.dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist);
     E1 = dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist, dtype);
     assert np.allclose(E0, E1)
@@ -183,8 +183,8 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0))
     b1 = np.random.random((N1))
     
-    x0 = common.generate_random_bits(N0)
-    x1 = common.generate_random_bits(N1)
+    x0 = sqaod.generate_random_bits(N0)
+    x1 = sqaod.generate_random_bits(N1)
 
     E0 = py_formulas.bipartite_graph_calculate_E(b0, b1, W, x0, x1)
     E1 = bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype)
@@ -194,8 +194,8 @@ if __name__ == '__main__' :
     E1 = bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype)
     assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
     
-    xlist0 = common.create_bits_sequence(range(0, 1 << N0), N0)
-    xlist1 = common.create_bits_sequence(range(0, 1 << N1), N1)
+    xlist0 = sqaod.create_bits_sequence(range(0, 1 << N0), N0)
+    xlist1 = sqaod.create_bits_sequence(range(0, 1 << N1), N1)
     E0 = py_formulas.bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1)
     E1 = bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1, dtype)
     assert np.allclose(E0, E1)
@@ -207,16 +207,16 @@ if __name__ == '__main__' :
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
 
-    q0 = common.bits_to_qbits(x0)
-    q1 = common.bits_to_qbits(x1)
+    q0 = sqaod.bits_to_qbits(x0)
+    q1 = sqaod.bits_to_qbits(x1)
     E0 = py_formulas.bipartite_graph_calculate_E_from_qbits(h00, h01, J0, c0, q0, q1);
     E1 = bipartite_graph_calculate_E_from_qbits(h10, h11, J0, c0, q0, q1, dtype);
     assert np.allclose(E0, E1)
     
-    xlist0 = common.create_bits_sequence(range(0, 1 << N0), N0)
-    xlist1 = common.create_bits_sequence(range(0, 1 << N0), N1)
-    qlist0 = common.bits_to_qbits(xlist0)
-    qlist1 = common.bits_to_qbits(xlist1)
+    xlist0 = sqaod.create_bits_sequence(range(0, 1 << N0), N0)
+    xlist1 = sqaod.create_bits_sequence(range(0, 1 << N0), N1)
+    qlist0 = sqaod.bits_to_qbits(xlist0)
+    qlist1 = sqaod.bits_to_qbits(xlist1)
     E0 = py_formulas.bipartite_graph_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1);
     E1 = bipartite_graph_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1, dtype);
     assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))

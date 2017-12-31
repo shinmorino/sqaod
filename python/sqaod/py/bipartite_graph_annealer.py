@@ -1,9 +1,7 @@
 import numpy as np
-import random
 import sqaod
-import sqaod.common as common
-import sqaod.common.checkers as checkers
 import formulas
+from sqaod.common import checkers
 
 
 class BipartiteGraphAnnealer :
@@ -56,8 +54,8 @@ class BipartiteGraphAnnealer :
         if self._q1 is None :
             self._q1 = np.empty((self._m, self._dim[1]), dtype=np.int8)
         
-        q0 = common.bits_to_qbits(x0)
-        q1 = common.bits_to_qbits(x1)
+        q0 = sqaod.bits_to_qbits(x0)
+        q1 = sqaod.bits_to_qbits(x1)
         self._q0[:][...] = q0[:]
         self._q1[:][...] = q1[:]
 
@@ -72,10 +70,10 @@ class BipartiteGraphAnnealer :
     def randomize_q(self) :
         if self._q0 is None :
             self._q0 = np.empty((self._m, self._dim[0]), dtype=np.int8)
-        common.randomize_qbits(self._q0)
+        sqaod.randomize_qbits(self._q0)
         if self._q1 is None :
             self._q1 = np.empty((self._m, self._dim[1]), dtype=np.int8)
-        common.randomize_qbits(self._q1)
+        sqaod.randomize_qbits(self._q1)
 
     def init_anneal(self) :
         if self._m is None :
@@ -85,8 +83,8 @@ class BipartiteGraphAnnealer :
     def fin_anneal(self) :
         self._x_pairs = []
         for idx in range(self._m) :
-            x0 = common.bits_from_qbits(self._q0[idx])
-            x1 = common.bits_from_qbits(self._q1[idx])
+            x0 = sqaod.bits_from_qbits(self._q0[idx])
+            x1 = sqaod.bits_from_qbits(self._q1[idx])
             self._x_pairs.append((x0, x1))
         self.calculate_E()
         

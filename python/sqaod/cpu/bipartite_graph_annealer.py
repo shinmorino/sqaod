@@ -1,7 +1,6 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.common as common
 from sqaod.common import checkers
 import formulas
 import cpu_bg_annealer as bg_annealer

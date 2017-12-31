@@ -1,7 +1,6 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.common as common
 import sqaod.py as py
 import cpu_dg_annealer as dg_annealer
 
@@ -26,7 +25,7 @@ class DenseGraphAnnealer :
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dim
-        W = common.clone_as_np_buffer(W, self.dtype)
+        W = sqaod.clone_as_np_buffer(W, self.dtype)
         dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
 
@@ -95,7 +94,7 @@ if __name__ == '__main__' :
 
 #    N = 10
 #    m = 5
-#    W = common.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+#    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
     #ann = py.dense_graph_annealer(W, n_trotters = m)

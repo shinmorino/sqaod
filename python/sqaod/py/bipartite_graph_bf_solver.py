@@ -1,9 +1,7 @@
 import numpy as np
-import random
 import sys
 import sqaod
-import sqaod.common as common
-import sqaod.common.checkers as checkers
+from sqaod.common import checkers
 
 class BipartiteGraphBFSolver :
     
@@ -53,9 +51,9 @@ class BipartiteGraphBFSolver :
         W, b0, b1 = self._vars()
 
         for i in range(self._iMax) :
-            x0 = common.create_bits_sequence((i), N0)
+            x0 = sqaod.create_bits_sequence((i), N0)
             for j in range(self._jMax) :
-                x1 = common.create_bits_sequence((j), N1)
+                x1 = sqaod.create_bits_sequence((j), N1)
                 Etmp = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                        + np.dot(x1, np.matmul(W, x0.transpose()))
                 if self._Emin < Etmp :
@@ -77,8 +75,8 @@ class BipartiteGraphBFSolver :
         iStep = iEnd - iBegin
         jStep = jEnd - jBegin
 
-        x0 = common.create_bits_sequence(range(iBegin, iEnd), N0)
-        x1 = common.create_bits_sequence(range(jBegin, jEnd), N1)
+        x0 = sqaod.create_bits_sequence(range(iBegin, iEnd), N0)
+        x1 = sqaod.create_bits_sequence(range(jBegin, jEnd), N1)
         Etmp = np.matmul(b0, x0.T).reshape(1, iStep) \
                + np.matmul(b1, x1.T).reshape(jStep, 1) + np.matmul(x1, np.matmul(W, x0.T))
         for j in range(jEnd - jBegin) :

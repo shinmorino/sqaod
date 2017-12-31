@@ -1,8 +1,6 @@
 import numpy as np
-import random
 import sys
 import sqaod
-import sqaod.common as common
 import formulas
 
 class DenseGraphBFSolver :
@@ -44,7 +42,7 @@ class DenseGraphBFSolver :
         W = self._W
         xBegin = max(0, min(self._xMax, xBegin))
         xEnd = max(0, min(self._xMax, xEnd))
-        x = common.create_bits_sequence(range(xBegin, xEnd), N)
+        x = sqaod.create_bits_sequence(range(xBegin, xEnd), N)
         Etmp = formulas.dense_graph_batch_calculate_E(W, x)
         for i in range(xEnd - xBegin) :
             if self._Emin < Etmp[i] :

@@ -2,7 +2,6 @@ import numpy as np
 import random
 import sys
 import sqaod
-import sqaod.common as common
 import cpu_bg_bf_solver as bg_bf_solver
 
 class BipartiteGraphBFSolver :

@@ -45,5 +45,6 @@ maximize = Maximize()
 
 
 # imports
-import common
-import py
+from sqaod.common import *
+import sqaod.py
+import sqaod.cpu

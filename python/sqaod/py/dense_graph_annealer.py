@@ -1,7 +1,5 @@
 import numpy as np
-import random
 import sqaod
-import sqaod.common as common
 import formulas
 
 class DenseGraphAnnealer :
@@ -49,7 +47,7 @@ class DenseGraphAnnealer :
     def randomize_q(self) :
         if self._q is None :
             self._q = np.empty((self._m, self._N), dtype=np.int8)
-        common.randomize_qbits(self._q)
+        sqaod.randomize_qbits(self._q)
 
     def calculate_E(self) :
         h, J, c, q = self._vars()
@@ -65,7 +63,7 @@ class DenseGraphAnnealer :
     def fin_anneal(self) :
         self._x = []
         for idx in range(self._m) :
-            x = common.bits_from_qbits(self._q[idx])
+            x = sqaod.bits_from_qbits(self._q[idx])
             self._x.append(x)
         self.calculate_E()
             
