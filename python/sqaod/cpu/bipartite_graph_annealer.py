@@ -23,6 +23,7 @@ class BipartiteGraphAnnealer :
             
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
+        b0, b1, W = sqaod.clone_as_ndarray([b0, b1, W], self.dtype)
         bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
         self._optimize = optimize
 

@@ -2,7 +2,9 @@ import numpy as np
 import random
 import sys
 import sqaod
+from sqaod.common import checkers
 import cpu_bg_bf_solver as bg_bf_solver
+
 
 class BipartiteGraphBFSolver :
     
@@ -16,7 +18,8 @@ class BipartiteGraphBFSolver :
         bg_bf_solver.delete_solver(self._ext, self.dtype)
 
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
-        # FIXME: add error check.
+        checkers.bipartite_graph.qubo(b0, b1, W)
+        b0, b1, W = sqaod.clone_as_ndarray([b0, b1, W], self.dtype)
         self._dim = (b0.shape[0], b1.shape[0])
         bg_bf_solver.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
         self._optimize = optimize

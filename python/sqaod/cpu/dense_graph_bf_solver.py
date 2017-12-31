@@ -1,5 +1,6 @@
 import numpy as np
 import sqaod
+from sqaod.common import checkers
 import cpu_dg_bf_solver as dg_bf_solver
 
 class DenseGraphBFSolver :
@@ -14,8 +15,8 @@ class DenseGraphBFSolver :
         dg_bf_solver.delete_bf_solver(self._ext, self.dtype)
 
     def set_problem(self, W, optimize = sqaod.minimize) :
-        # FIXME: check W shape.
-        W = sqaod.clone_as_np_buffer(W, self.dtype)
+        checkers.dense_graph.qubo(W)
+        W = sqaod.clone_as_ndarray([W], self.dtype)
         self._N = W.shape[0]
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize

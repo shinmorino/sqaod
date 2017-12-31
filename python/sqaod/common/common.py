@@ -56,13 +56,19 @@ def clone_as_number(v, dtype) :
             return dtype.type(v[0][0])
     raise_not_a_scalar('v', v)
 
-def clone_as_np_buffer(buf, dtype) :
-    if buf is tuple or buf is list :
-        return np.array(buf, dtype)
-    clone = np.ndarray(buf.shape, dtype=dtype, order='C')
-    clone[:] = buf[:]
-    return clone
-
+def clone_as_ndarray(objlist, dtype) :
+    cloned = []
+    for obj in objlist :
+        clone = None
+        if type(obj) is tuple or type(obj) is list :
+            clone = np.array(obj, dtype)
+        else :
+            clone = np.empty(obj.shape, dtype=dtype, order='C')
+            clone[...] = obj[...]
+        cloned.append(clone)
+    if len(cloned) == 1 :
+        return cloned[0]
+    return tuple(cloned)
 
 def create_bits_sequence(vals, nbits) :
     if isinstance(vals, list) or isinstance(vals, tuple) :

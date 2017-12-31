@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import sqaod
-import sqaod.py as py
+from sqaod.common import checkers
 import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
@@ -19,15 +19,15 @@ class DenseGraphAnnealer :
         
     def rand_seed(self, seed) :
         dg_annealer.rand_seed(self._ext, seed, self.dtype)
+        
+    def set_problem(self, W, optimize = sqaod.minimize) :
+        checkers.dense_graph.qubo(W)
+        W = sqaod.clone_as_ndarray([W], self.dtype)
+        dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
+        self._optimize = optimize
 
     def get_problem_size(self) :
         return dg_annealer.get_problem_size(self._ext, self.dtype)
-        
-    def set_problem(self, W, optimize = sqaod.minimize) :
-        # FIXME: check W dim
-        W = sqaod.clone_as_np_buffer(W, self.dtype)
-        dg_annealer.set_problem(self._ext, W, optimize, self.dtype)
-        self._optimize = optimize
 
     def set_solver_preference(self, n_trotters = None) :
         N, m = self.get_problem_size()
@@ -98,6 +98,7 @@ if __name__ == '__main__' :
 #    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
+    import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_problem(W, sqaod.minimize)
     h, J, c = ann.get_hJc()

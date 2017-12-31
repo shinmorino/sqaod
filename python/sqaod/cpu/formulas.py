@@ -30,7 +30,7 @@ def dense_graph_batch_calculate_E(W, x, dtype) :
 
 def dense_graph_calculate_hJc(W, dtype) :
     if W.dtype != dtype :
-        W = clone_as_np_buffer(W, dtype)
+        W = clone_as_ndarray(W, dtype)
     checkers.dense_graph.qubo(W, dtype)
     N = W.shape[0]
     h = np.empty((N), dtype)
