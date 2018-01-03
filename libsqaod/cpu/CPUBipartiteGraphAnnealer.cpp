@@ -11,6 +11,7 @@ using namespace sqaod;
 template<class real>
 CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
+    annState_ = annNone;
 }
 
 template<class real>
@@ -21,6 +22,7 @@ CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
     random_.seed(seed);
+    annState_ |= annRandSeedGiven;
 }
 
 template<class real>
@@ -58,6 +60,7 @@ void CPUBipartiteGraphAnnealer<real>::setNumTrotters(int nTrotters) {
     matQ0_.resize(m_, N0_);
     matQ1_.resize(m_, N1_);
     E_.resize(m_);
+    annState_ |= annNTrottersGiven;
 }
 
 template<class real>
@@ -69,8 +72,9 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     EigenRowVector ex0 = x0.mapToRowVector().cast<real>();
     EigenRowVector ex1 = x0.mapToRowVector().cast<real>();
-    matQ0_.rowwise() = ex0;
-    matQ1_.rowwise() = ex1;
+    matQ0_.rowwise() = (ex0.array() * 2 - 1).matrix();
+    matQ1_.rowwise() = (ex1.array() * 2 - 1).matrix();
+    annState_ |= annQSet;
 }
 
 template<class real>
@@ -107,6 +111,7 @@ void CPUBipartiteGraphAnnealer<real>::randomize_q() {
     q = matQ1_.data();
     for (int idx = 0; idx < N1_ * m_; ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
+    annState_ |= annQSet;
 }
 
 template<class real>
@@ -118,11 +123,15 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::initAnneal() {
-    if (m_ == -1) {
+    if (!(annState_ & annRandSeedGiven))
+        seed((unsigned long long)time(NULL));
+    annState_ |= annRandSeedGiven;
+    if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N0_ + N1_) / 4);
-        /* FIXME: use flags ? */
+    annState_ |= annNTrottersGiven;
+    if (!(annState_ & annQSet))
         randomize_q();
-    }
+    annState_ |= annQSet;
 }
 
 template<class real>
@@ -171,10 +180,10 @@ void CPUBipartiteGraphAnnealer<real>::syncBits() {
     for (int idx = 0; idx < m_; ++idx) {
         EigenBitMatrix eq0 = matQ0_.transpose().col(idx).template cast<char>();
         EigenBitMatrix eq1 = matQ1_.transpose().col(idx).template cast<char>();
-        bitsPairQ_.push_back(BitsPairArray::value_type(Bits(eq0), Bits(eq1)));
+        bitsPairQ_.pushBack(BitsPairArray::ValueType(Bits(eq0), Bits(eq1)));
         Bits x0 = Bits((eq0.array() + 1) / 2);
         Bits x1 = Bits((eq1.array() + 1) / 2);
-        bitsPairX_.push_back(BitsPairArray::value_type(x0, x1));
+        bitsPairX_.pushBack(BitsPairArray::ValueType(x0, x1));
     }
 }
 

@@ -4,7 +4,6 @@
 
 #include <common/Common.h>
 #include <cpu/Random.h>
-#include <Eigen/Core>
 
 namespace sqaod {
 

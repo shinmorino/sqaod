@@ -8,7 +8,7 @@ namespace sqd = sqaod;
 template<class real>
 sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
-    seed(0); /* FIXME: initialize */
+    annState_ = annNone;
 }
 
 template<class real>
@@ -18,6 +18,7 @@ sqd::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
     random_.seed(seed);
+    annState_ |= annRandSeedGiven;
 }
 
 template<class real>
@@ -47,10 +48,11 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMetho
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(int m) {
     m_ = m;
-    bitsX_.resize(m_, N_);
-    bitsQ_.resize(m_, N_);
+    bitsX_.reserve(m_);
+    bitsQ_.reserve(m_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
+    annState_ |= annNTrottersGiven;
 }
 
 template<class real>
@@ -61,6 +63,13 @@ const sqd::VectorType<real> &sqd::CPUDenseGraphAnnealer<real>::get_E() const {
 template<class real>
 const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_x() const {
     return bitsX_;
+}
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
+    EigenRowVector ex = x.mapToRowVector().cast<real>();
+    matQ_.rowwise() = (ex.array() * 2 - 1).matrix();
+    annState_ |= annQSet;
 }
 
 template<class real>
@@ -80,15 +89,20 @@ void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
     real *q = matQ_.data();
     for (int idx = 0; idx < N_ * m_; ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
+    annState_ |= annQSet;
 }
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::initAnneal() {
-    if (m_ == -1) {
+    if (!(annState_ & annRandSeedGiven))
+        seed((unsigned long long)time(NULL));
+    annState_ |= annRandSeedGiven;
+    if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N_) / 4);
-        /* FIXME: use flags ? */
+    annState_ |= annNTrottersGiven;
+    if (!(annState_ & annQSet))
         randomize_q();
-    }
+    annState_ |= annQSet;
 }
 
 template<class real>
@@ -113,9 +127,9 @@ void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsQ_.clear();
     for (int idx = 0; idx < m_; ++idx) {
         EigenBitMatrix eq = matQ_.transpose().col(idx).template cast<char>();
-        bitsQ_.push_back(Bits(eq));
+        bitsQ_.pushBack(Bits(eq));
         Bits x = Bits((eq.array() + 1) / 2);
-        bitsX_.push_back(x);
+        bitsX_.pushBack(x);
     }
 }
 

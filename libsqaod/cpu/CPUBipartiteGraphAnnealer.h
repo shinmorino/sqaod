@@ -57,6 +57,8 @@ private:
     void annealHalfStep(int N, EigenMatrix &qAnneal,
                         const EigenRowVector &h, const EigenMatrix &J,
                         const EigenMatrix &qFixed, real G, real kT);
+    int annState_;
+
     Random random_;
     int N0_, N1_, m_;
     EigenRowVector h0_, h1_;

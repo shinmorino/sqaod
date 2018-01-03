@@ -67,7 +67,7 @@ void CPUDenseGraphBFSolver<real>::finSearch() {
     for (size_t idx = 0; idx < packedXList_.size(); ++idx) {
         Bits bits;
         unpackBits(&bits, packedXList_[idx], N_);
-        xList_.push_back(bits);
+        xList_.pushBack(bits);
     }
     E_.resize(packedXList_.size());
     E_.mapToRowVector().array() = (om_ == optMaximize) ? - minE_ : minE_;

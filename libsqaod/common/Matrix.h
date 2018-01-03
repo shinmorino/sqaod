@@ -2,8 +2,15 @@
 #define COMMON_MATRIX_H__
 
 #define EIGEN_NO_CUDA 1
+#ifdef __CUDACC__
+#  undef __CUDACC__
+#endif
+#ifdef __CUDACC_VER__
+#  undef __CUDACC_VER__
+#endif
+
 #include <Eigen/Core>
-#include <vector>
+#include <common/Array.h>
 
 namespace sqaod {
 
@@ -69,7 +76,7 @@ struct MatrixType {
         copyFrom(mat);
     }
     
-    MatrixType(MatrixType<V> &&mat) {
+    MatrixType(MatrixType<V> &&mat) noexcept {
         resetState();
         moveFrom(static_cast<MatrixType<V>&>(mat));
     }
@@ -84,7 +91,7 @@ struct MatrixType {
         return rhs;
     }
 
-    const MatrixType<V> &operator=(MatrixType<V> &&rhs) {
+    const MatrixType<V> &operator=(MatrixType<V> &&rhs) noexcept {
         moveFrom(static_cast<MatrixType<V>&>(rhs));
         return *this;
     }
@@ -146,8 +153,7 @@ struct MatrixType {
     
     void free() {
         assert(!mapped);
-        rows = -1;
-        cols = -1;
+        rows = cols = -1;
         if (data != nullptr)
             ::free(data);
         data = nullptr;
@@ -155,9 +161,10 @@ struct MatrixType {
     
     void resize(int _rows, int _cols) {
         assert(!mapped); /* mapping state not allowed */
-        if ((_rows != rows) || (_cols != cols))
+        if ((_rows != rows) || (_cols != cols)) {
             ::free(data);
-        allocate(_rows, _cols);
+            allocate(_rows, _cols);
+        }
     }
 
     V &operator()(int r, int c) {
@@ -233,7 +240,7 @@ struct VectorType {
         copyFrom(vec);
     }
     
-    VectorType(VectorType<V> &&vec) {
+    VectorType(VectorType<V> &&vec) noexcept {
         resetState();
         moveFrom(static_cast<VectorType<V>&>(vec));
     }
@@ -262,7 +269,7 @@ struct VectorType {
         return rhs;
     }
 
-    const VectorType<V> &operator=(VectorType<V> &&rhs) {
+    const VectorType<V> &operator=(VectorType<V> &&rhs) noexcept {
         moveFrom(static_cast<VectorType<V>&>(rhs));
         return *this;
     }
@@ -312,9 +319,10 @@ struct VectorType {
     
     void resize(int _size) {
         assert(!mapped);
-        if (_size != size)
+        if (_size != size) {
             ::free(data);
-        allocate(_size);
+            allocate(_size);
+        }
     }
 
     V &operator()(int idx) {
@@ -353,18 +361,12 @@ struct VectorType {
     V *data;
     bool mapped;
 };
-
-
     
 
-typedef unsigned long long PackedBits;
-typedef std::vector<PackedBits> PackedBitsArray;
-typedef std::vector<std::pair<PackedBits, PackedBits> > PackedBitsPairArray;
-
 typedef VectorType<char> Bits;
-typedef std::vector<Bits> BitsArray;
-typedef std::vector<std::pair<Bits, Bits> > BitsPairArray;
 typedef MatrixType<char> BitMatrix;
+typedef ArrayType<Bits> BitsArray;
+typedef ArrayType<std::pair<Bits, Bits> > BitsPairArray;
 
 //typedef VectorType<char> Spins;
 //typedef std::vector<Bits> SpinsArray;

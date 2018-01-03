@@ -33,6 +33,8 @@ public:
 
     const BitsArray &get_x() const;
 
+    void set_x(const Bits &x);
+
     const BitsArray &get_q() const;
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
@@ -49,6 +51,7 @@ public:
     
 private:    
     void syncBits();
+    int annState_;
     
     Random random_;
     int N_, m_;
@@ -60,7 +63,6 @@ private:
     EigenRowVector h_;
     EigenMatrix J_;
     real c_;
-
 };
 
 }

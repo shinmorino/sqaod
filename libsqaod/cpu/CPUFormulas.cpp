@@ -93,12 +93,12 @@ void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList,
             continue;
         }
         else if (eEbatch(idx) == Emin) {
-            xList->push_back(xBegin + idx);
+            xList->pushBack(xBegin + idx);
         }
         else {
             Emin = eEbatch(idx);
             xList->clear();
-            xList->push_back(idx);
+            xList->pushBack(idx);
         }
     }
     *E = Emin;
@@ -233,12 +233,12 @@ void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
                 continue;
             }
             else if (Etmp == Emin) {
-                xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+                xPairs->pushBack(PackedBitsPairArray::ValueType(xBegin0 + idx0, xBegin1 + idx1));
             }
             else {
                 Emin = Etmp;
                 xPairs->clear();
-                xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+                xPairs->pushBack(PackedBitsPairArray::ValueType(xBegin0 + idx0, xBegin1 + idx1));
             }
         }
     }

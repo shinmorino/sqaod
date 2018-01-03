@@ -77,7 +77,7 @@ void CPUBipartiteGraphBFSolver<real>::finSearch() {
         Bits x0(N0_), x1(N1_);
         unpackBits(&x0, it->first, N0_);
         unpackBits(&x1, it->second, N1_);
-        xPairs_.push_back(BitsPairArray::value_type(x0, x1));
+        xPairs_.pushBack(BitsPairArray::ValueType(x0, x1));
     }
     real tmpE = (om_ == optMaximize) ? -minE_ : minE_;
     E_.resize(xPackedPairs_.size());

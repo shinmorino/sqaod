@@ -3,7 +3,6 @@
 
 #include <Eigen/Core>
 #include <common/Common.h>
-#include <vector>
 
 
 #define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
