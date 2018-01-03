@@ -103,12 +103,12 @@ public:
     }
 
     V &operator[](size_t idx) {
-        assert((0 <= idx) && (idx < size_)); 
+        assert(idx < size_); 
         return data_[idx];
     }
 
     const V &operator[](size_t idx) const {
-        assert((0 <= idx) && (idx < size_)); 
+        assert(idx < size_); 
         return data_[idx];
     }
 
