@@ -138,7 +138,7 @@ struct MatrixType {
         rows = src.rows;
         cols = src.cols;
         data = src.data;
-        mapped = true;
+        mapped = false;
         /* clean up src */
         src.rows = src.cols = -1;
         src.data = nullptr;
