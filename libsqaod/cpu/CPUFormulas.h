@@ -1,7 +1,6 @@
 #ifndef CPUFORMULAS_H__
 #define CPUFORMULAS_H__
 
-#include <Eigen/Core>
 #include <common/Common.h>
 
 
