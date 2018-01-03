@@ -16,7 +16,7 @@ class DenseGraphBFSolver :
 
     def set_problem(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
-        W = sqaod.clone_as_ndarray([W], self.dtype)
+        W = sqaod.clone_as_ndarray(W, self.dtype)
         self._N = W.shape[0]
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
