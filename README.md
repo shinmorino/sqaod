@@ -1,17 +1,27 @@
-# quant_sandbox
-sandbox for simulated quantum annealing
+# sqaod
 
-QUANTSANDBOX_ROOT is the root directory of quant_native.  
+Collections of solvers/annealers for simulated quamtum annealing.
 
-To build:  
+## Project status
+Under development.
 
-   $ cd ${QUANTSANDBOX_ROOT}  
-   $ cd python  
-   $ ./build.sh  
+## Build/Installation  
+Run the following commands.<BR>
+~~~
+    $ git clone https://github.com/shinmorino/sqaod.git
+    $ cd sqaod
+    $ ./build.sh  
+~~~
 
-To run sample.py:  
+## Running examples
+~~~
+   $ cd sqaod/python/example
+   $ python dense_graph.py
+   $ python bipartite_graph.py
+~~~
 
-   $ cd ${QUANTSANDBOX_ROOT}  
-   $ cd python  
-   $ export PYTHONPATH=\`pwd\`  
-   $ python example/sample.py  
+## Uninstall
+~~~
+    $ cd sqaod
+    $ ./uninstall.sh
+~~~
