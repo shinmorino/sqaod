@@ -159,7 +159,7 @@ PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
 
     PyObject *list = PyList_New(xPairList.size());
     for (size_t idx = 0; idx < xPairList.size(); ++idx) {
-        const sqd::BitsPairArray::value_type &pair = xPairList[idx];
+        const sqd::BitsPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
@@ -221,7 +221,7 @@ PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
 
     PyObject *list = PyList_New(xPairList.size());
     for (size_t idx = 0; idx < xPairList.size(); ++idx) {
-        const sqd::BitsPairArray::value_type &pair = xPairList[idx];
+        const sqd::BitsPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector q0(N0, NPY_INT8), q1(N1, NPY_INT8);
         q0.vec = pair.first;

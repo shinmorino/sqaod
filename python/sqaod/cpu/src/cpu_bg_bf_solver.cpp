@@ -144,7 +144,7 @@ PyObject *internal_bg_bf_solver_get_x(PyObject *objExt) {
     
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
-        const sqd::BitsPairArray::value_type &pair = xList[idx];
+        const sqd::BitsPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
         x1.vec = pair.second;

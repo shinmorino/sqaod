@@ -443,7 +443,6 @@ PyObject *cpu_formulas_dense_graph_batch_search(PyObject *module, PyObject *args
     PyObject *objE, *objW;
     PyObject *dtype;
     unsigned long long xBegin = 0, xEnd = 0;
-    std::vector<unsigned long long> xList;
     
     if (!PyArg_ParseTuple(args, "OOiiO", &objE, &objW, &xBegin, &xEnd, &dtype))
         return NULL;
