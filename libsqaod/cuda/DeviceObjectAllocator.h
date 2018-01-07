@@ -30,7 +30,7 @@ struct DeviceObjectAllocatorType {
 
     const DeviceScalar &d_zero() const;
 
-    void initialize(DeviceMemoryStore &memStore, DeviceCopy &devCopy);
+    void initialize(DeviceMemoryStore &memStore, DeviceStream &stream);
     void uninitialize();
 
 private:
