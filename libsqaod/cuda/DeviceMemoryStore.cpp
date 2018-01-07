@@ -2,7 +2,11 @@
 #include "cudafuncs.h"
 
 
-bool DeviceMemoryBitmap::acquire(uintptr_t *addr) {
+/*
+ * FixedSizedChunks
+ */
+
+bool HeapBitmap::acquire(uintptr_t *addr) {
     if (freeRegions_.empty())
         return false;
     
@@ -15,8 +19,7 @@ bool DeviceMemoryBitmap::acquire(uintptr_t *addr) {
     return true;
 }
 
-
-bool DeviceMemoryBitmap::tryRelease(uintptr_t addr, bool *regionReleased) {
+bool HeapBitmap::tryRelease(uintptr_t addr, bool *regionReleased) {
     uintptr_t regionIdx = addr >> (sizeInPo2_ + nActiveBits_);
     RegionMap::iterator it = regions_.find(regionIdx);
     if (it == regions_.end())
@@ -33,8 +36,12 @@ bool DeviceMemoryBitmap::tryRelease(uintptr_t addr, bool *regionReleased) {
     return true;
 }
 
+void HeapBitmap::addRegion(uintptr_t addr) {
+    freeRegions_[addr] = mask_;
+    regions_[addr] = mask_;
+}
 
-void DeviceMemoryFixedSizeSeries::initialize() {
+void FixedSizedChunks::initialize() {
     bitmapLayers_[ 0].set(5,  0); /*    4 byte / chunk, 128 bytes / region */
     bitmapLayers_[ 1].set(5,  1); /*    8 byte / chunk, 256 bytes / region */
     bitmapLayers_[ 2].set(5,  2); /*   16 byte / chunk, 512 bytes / region */
@@ -51,24 +58,34 @@ void DeviceMemoryFixedSizeSeries::initialize() {
     bitmapLayers_[13].set(5, 13); /*  32k byte / chunk,   1 M / region */
 }
 
-void DeviceMemoryFixedSizeSeries::uninitialize() {
+void FixedSizedChunks::finalize() {
     for (int idx = 0; idx < nBitmapLayers; ++idx)
         bitmapLayers_[ 0].clear();
 }
 
+void FixedSizedChunks::addHeap(uintptr_t pv, size_t size) {
+    const int mega = (1 << 20);
+    assert(size % mega == 0);
+    
+    int nChunks = size / (1 << 20);
+    for (int idx = 0; idx < nChunks; ++idx)
+        bitmapLayers_[nBitmapLayers - 1].addRegion(pv + mega * idx);
+}
 
-uintptr_t DeviceMemoryFixedSizeSeries::allocate(size_t size) {
+
+
+uintptr_t FixedSizedChunks::allocate(size_t size) {
     size = (size + 3) / 4; /* round up to multiple of 4. */
     /* find appropriate slices */
     int layerIdx = __builtin_ctzll(size);
     assert((0 <= layerIdx) && (layerIdx < nBitmapLayers));
     
-    DeviceMemoryBitmap &bitmap = bitmapLayers_[layerIdx];
+    HeapBitmap &bitmap = bitmapLayers_[layerIdx];
     uintptr_t addr;
     if (bitmap.acquire(&addr))
         return addr;
     /* allocate new slice */
-    DeviceMemoryBitmap *newBitmap = allocateRegion(layerIdx);
+    HeapBitmap *newBitmap = allocateRegion(layerIdx);
     if (newBitmap != NULL) {
         newBitmap->acquire(&addr);
         return addr;
@@ -76,7 +93,7 @@ uintptr_t DeviceMemoryFixedSizeSeries::allocate(size_t size) {
     return (uintptr_t)-1;
 }
 
-void DeviceMemoryFixedSizeSeries::deallocate(uintptr_t addr) {
+void FixedSizedChunks::deallocate(uintptr_t addr) {
     int layerIdx = 0;
     bool regionReleased = false;
     for ( ; layerIdx < nBitmapLayers; ++layerIdx) {
@@ -101,12 +118,12 @@ void DeviceMemoryFixedSizeSeries::deallocate(uintptr_t addr) {
 
 
 
-DeviceMemoryBitmap *DeviceMemoryFixedSizeSeries::allocateRegion(int layerIdx) {
-    DeviceMemoryBitmap &childLayer = bitmapLayers_[layerIdx];
+HeapBitmap *FixedSizedChunks::allocateRegion(int layerIdx) {
+    HeapBitmap &childLayer = bitmapLayers_[layerIdx];
     int parentLayerIdx = layerIdx + childLayer.nActiveBits();
     if (layerIdx < nBitmapLayers) {
         assert(parentLayerIdx < nBitmapLayers);
-        DeviceMemoryBitmap &parentLayer = bitmapLayers_[parentLayerIdx];
+        HeapBitmap &parentLayer = bitmapLayers_[parentLayerIdx];
         uintptr_t addr;
         if (parentLayer.acquire(&addr)) {
             childLayer.addRegion(addr);
@@ -120,8 +137,9 @@ DeviceMemoryBitmap *DeviceMemoryFixedSizeSeries::allocateRegion(int layerIdx) {
 
 
 
-
-/* MemoryMap */
+/*
+ * FreeHeapMap
+ */
 
 FreeHeapMap::FreeHeapMap() {
 }
@@ -179,8 +197,24 @@ void FreeHeapMap::release(uintptr_t addr, size_t size) {
 }
 
 
-
 /* DeviceMemoryStore */
+void DeviceMemoryStore::initialize() {
+    const int giga = 1 << 30;
+
+    fixedSizedChunks_.initialize();
+    void *d_pv = allocate(giga);
+    d_mems_.pushBack(d_pv);
+    uintptr_t addr = reinterpret_cast<uintptr_t>(d_pv);
+    freeHeapMap_.addFreeHeap(addr, giga);
+}
+
+void DeviceMemoryStore::finalize() {
+    fixedSizedChunks_.finalize();
+    freeHeapMap_.clearRegions();
+    for (size_t idx = 0; idx < d_mems_.size(); ++idx)
+        deallocate(d_mems_[idx]);
+}
+
 
 void *DeviceMemoryStore::allocate(size_t size) {
     uintptr_t addr;
@@ -189,7 +223,7 @@ void *DeviceMemoryStore::allocate(size_t size) {
     else if (SmallChunkSize < size)
         addr = allocFromFreeHeap(size);
     else
-        addr = allocFromFixedSizeSeries(size);
+        addr = allocFromFixedSizedChunks(size);
     return reinterpret_cast<void*>(addr);
 }
 
@@ -203,10 +237,10 @@ void DeviceMemoryStore::deallocate(void *pv) {
     
     switch (it->second.src) {
     case fixedSizeSeries:
-        deallocateInFixedSizeSeries(addr);
+        deallocateInFixedSizedChunks(addr);
         break;
     case freeHeapMap:
-        deallocateToFreeHeap(addr);
+        deallocateToFreeHeap(addr, it->second.size);
         break;
     case fromCudaMalloc:
         throwOnError(cudaFree(pv));
@@ -222,27 +256,38 @@ uintptr_t DeviceMemoryStore::cudaMalloc(size_t size) {
     return addr;
 }
 
+void DeviceMemoryStore::cudaFree(void *pv) {
+    throwOnError(cudaFree(pv));
+}
+
 uintptr_t DeviceMemoryStore::allocFromFreeHeap(size_t size) {
     uintptr_t addr = freeHeapMap_.acquire(size);
     if (addr == (uintptr_t)-1) {
         uintptr_t newHeap = cudaMalloc(size);
         d_mems_.pushBack((void*)newHeap);
         freeHeapMap_.addFreeHeap(newHeap, size);
-        addr = fixedSizeSeries_.allocate(size);
+        addr = fixedSizedChunks_.allocate(size);
     }
     heapMap_[addr + size] = HeapProp(addr, freeHeapMap);
     return addr;
 }
 
+void DeviceMemoryStore::deallocateToFreeHeap(uintptr_t addr, size_t size) {
+    freeHeapMap_.release(addr, size);
+}
 
-uintptr_t DeviceMemoryStore::allocFromFixedSizeSeries(size_t size) {
-    uintptr_t addr = fixedSizeSeries_.allocate(size);
+uintptr_t DeviceMemoryStore::allocFromFixedSizedChunks(size_t size) {
+    uintptr_t addr = fixedSizedChunks_.allocate(size);
     if (addr == (uintptr_t)-1) {
         size_t size = 16 * (1 << 20);
         uintptr_t newHeap = allocFromFreeHeap(size);
-        fixedSizeSeries_.addHeap(reinterpret_cast<uintptr_t>(newHeap), size);
-        addr = fixedSizeSeries_.allocate(size);
+        fixedSizedChunks_.addHeap(reinterpret_cast<uintptr_t>(newHeap), size);
+        addr = fixedSizedChunks_.allocate(size);
     }
     heapMap_[addr + size] = HeapProp(addr, fixedSizeSeries);
     return addr;
+}
+
+void DeviceMemoryStore::deallocateInFixedSizedChunks(uintptr_t addr) {
+    fixedSizedChunks_.deallocate(addr);
 }

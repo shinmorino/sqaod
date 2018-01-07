@@ -7,12 +7,12 @@
 
 /* ToDo: This implementatin is enough for now.  Will be reconsidered when needed. */
 
-class DeviceMemoryBitmap {
+class HeapBitmap {
     typedef uint32_t  RegionBitmap;
     typedef std::map<uintptr_t, RegionBitmap> RegionMap;
 
 public:
-    DeviceMemoryBitmap() { }
+    HeapBitmap() { }
 
     void set(int nActiveBits, int sizeInPo2)  {
         nActiveBits_ = nActiveBits;
@@ -20,7 +20,10 @@ public:
         mask_ = RegionBitmap((1ull << nActiveBits) - 1);
     }
 
-    void clear();
+    void clear() {
+        freeRegions_.clear();
+        regions_.clear();
+    }
     
     bool acquire(uintptr_t *addr);
     bool tryRelease(uintptr_t addr, bool *regionReleased);
@@ -45,10 +48,11 @@ private:
 };
 
 
-class DeviceMemoryFixedSizeSeries {
+
+class FixedSizedChunks {
 public:
     void initialize();
-    void uninitialize();
+    void finalize();
 
     void addHeap(uintptr_t pv, size_t size);
     
@@ -56,10 +60,10 @@ public:
     void deallocate(uintptr_t addr);
 
 private:
-    DeviceMemoryBitmap *allocateRegion(int layerIdx);
+    HeapBitmap *allocateRegion(int layerIdx);
 
     enum { nBitmapLayers = 14 };
-    DeviceMemoryBitmap bitmapLayers_[nBitmapLayers];
+    HeapBitmap bitmapLayers_[nBitmapLayers];
 };
 
 
@@ -69,9 +73,11 @@ class FreeHeapMap {
 public:
     FreeHeapMap();
 
-    void addFreeHeap(uintptr_t addr, size_t size);
+    void clearRegions() {
+        freeRegions_.clear();
+    }
 
-    void releaseHeaps();
+    void addFreeHeap(uintptr_t addr, size_t size);
     
     uintptr_t acquire(size_t size);
     
@@ -93,7 +99,7 @@ class DeviceMemoryStore {
     };
 public:
     void initialize();
-    void uninitialize();
+    void finalize();
     
     void *allocate(size_t size);
     void deallocate(void *pv);
@@ -103,10 +109,10 @@ private:
     void cudaFree(void *pv);
 
     uintptr_t allocFromFreeHeap(size_t size);
-    void deallocateToFreeHeap(uintptr_t addr);
+    void deallocateToFreeHeap(uintptr_t addr, size_t size);
     
-    uintptr_t allocFromFixedSizeSeries(size_t size);
-    void deallocateInFixedSizeSeries(uintptr_t addr);
+    uintptr_t allocFromFixedSizedChunks(size_t size);
+    void deallocateInFixedSizedChunks(uintptr_t addr);
     
     enum MemSource {
         fixedSizeSeries = 0,
@@ -122,7 +128,7 @@ private:
     };
 
     FreeHeapMap freeHeapMap_;
-    DeviceMemoryFixedSizeSeries fixedSizeSeries_;
+    FixedSizedChunks fixedSizedChunks_;
     
     typedef std::map<uintptr_t, HeapProp> HeapMap;
     HeapMap heapMap_;

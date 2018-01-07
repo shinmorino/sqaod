@@ -23,8 +23,19 @@ DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore) :
 }
 
 DeviceStream::~DeviceStream() {
-    throwOnError(cublasDestroy(cublasHandle_));
+    finalize();
 }
+
+void DeviceStream::finalize() {
+    releaseTempObjects();
+    if (cublasHandle_ != NULL)
+        throwOnError(cublasDestroy(cublasHandle_));
+    if (stream_ != NULL)
+        throwOnError(cudaStreamDestroy(stream_));
+    cublasHandle_ = NULL;
+    stream_ = NULL;
+}
+
 
 /* sync on stream */
 void DeviceStream::synchronize() {

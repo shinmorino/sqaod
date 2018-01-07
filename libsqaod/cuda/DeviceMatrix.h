@@ -7,7 +7,7 @@
 namespace sqaod_cuda {
 
 struct DeviceObject {
-    virtual ~DeviceObject() = 0;
+    virtual ~DeviceObject() { }
     virtual void *get_data() = 0;
 };
 

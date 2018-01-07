@@ -13,7 +13,7 @@ class DeviceStream;
 class Device {
 public:
     void initialize(int devNo);
-    void uninitialize();
+    void finalize();
 
     template<class real>
     DeviceObjectAllocatorType<real> &deviceObjectAllocator();

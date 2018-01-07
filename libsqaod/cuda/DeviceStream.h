@@ -19,6 +19,7 @@ class DeviceStream {
     void set(cudaStream_t stream, DeviceMemoryStore &memStore);
     
 public:
+    void finalize();
     
     void *allocate(size_t size);
 

@@ -64,7 +64,7 @@ void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore &memStore,
 }
 
 template<class real>
-void DeviceObjectAllocatorType<real>::uninitialize() {
+void DeviceObjectAllocatorType<real>::finalize() {
     for (int idx = 0; idx < nHostConsts_; ++idx)
         delete constReg_[idx];
     

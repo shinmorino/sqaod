@@ -11,6 +11,18 @@ void Device::initialize(int devNo){
     devObjAllocatorFP64_.initialize(memStore_, defaultDeviceStream_);
 }
 
+void Device::finalize() {
+    for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it) {
+        (*it)->finalize();
+        delete *it;
+    }
+    streams_.clear();
+    devObjAllocatorFP32_.finalize();
+    devObjAllocatorFP64_.finalize();
+    memStore_.finalize();
+}
+
+
 DeviceStream &Device::newDeviceStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));
