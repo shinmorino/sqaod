@@ -27,7 +27,7 @@ public:
     template<class V>
     void allocate(DeviceScalarType<V> **s, const char *signature = NULL);
 
-    cudaStream_t getStream() {
+    cudaStream_t getStream() const {
         return stream_;
     }
 

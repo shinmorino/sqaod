@@ -64,5 +64,7 @@ void DeviceStream::releaseTempObjects() {
          it != tempObjects_.end(); ++it) {
         void *pv = (*it)->get_data();
         memStore_.deallocate(pv);
+        delete *it;
     }
+    tempObjects_.clear();
 }
