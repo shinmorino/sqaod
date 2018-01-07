@@ -2,7 +2,7 @@ SUFFIXES = .cu .cpp
 
 noinst_LTLIBRARIES=libcuda.la
 
-libcuda_la_SOURCES=DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceMath.cpp CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceBipartiteGraphBatchSearch.cpp DeviceRandom.cu DeviceMathKernel.cu
+libcuda_la_SOURCES=DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp DeviceMath.cpp CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceBipartiteGraphBatchSearch.cpp DeviceRandom.cu DeviceMathKernel.cu
 AM_CPPFLAGS=-I/usr/local/cuda/include -I$(abs_top_srcdir)/eigen
 
 NVCC=/usr/local/cuda/bin/nvcc

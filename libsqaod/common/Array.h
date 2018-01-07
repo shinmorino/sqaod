@@ -1,8 +1,10 @@
 #ifndef SQAOD_COMMON_ARRAY_H__
 #define SQAOD_COMMON_ARRAY_H__
 
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
+#include <utility>
+#include <assert.h>
 
 namespace sqaod {
 
@@ -70,7 +72,20 @@ public:
         size_ = 0;
     }
 
-
+    void erase(iterator it) {
+        if (ValueProp<V>::POD) {
+            memmove(it, it + 1, sizeof(V) * (size_ - 1));
+        }
+        else {
+            for (; it != end() - 1; ++it) {
+                it->~V();
+                new (&*it) V(std::move_if_noexcept(*(it + 1)));
+            }
+            data_[size_ - 1].~V();
+            --size_;
+        }
+    }
+    
     void pushBack(const V &v) {
         if (size_ == capacity_)
             reserve(capacity_ * 2);

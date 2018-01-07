@@ -37,6 +37,7 @@ typedef EigenMatrixType<char> EigenBitMatrix;
 /* light-weight matrix classes for C++ API */
     
 struct Dim {
+    Dim() { }
     Dim(int _rows, int _cols) {
         rows = _rows;
         cols = _cols;

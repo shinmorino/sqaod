@@ -23,7 +23,7 @@ DeviceRandom::~DeviceRandom() {
 void DeviceRandom::allocate(int nNums) {
     assert(d_buffer_ == NULL);
     bufLen_ = roundUp(nNums, mega) * 2;
-    CUERR(cudaMalloc(&d_buffer_, sizeof(int) * bufLen_));
+    throwOnError(cudaMalloc(&d_buffer_, sizeof(int) * bufLen_));
 }
         
 
