@@ -41,26 +41,32 @@ const DeviceScalarType<real> &DeviceObjectAllocatorType<real>::d_const(const rea
         return *d_one_;
     if (c == 0.)
         return *d_zero_;
-    typename ConstReg::const_iterator it = std::find(constReg_.begin(), constReg_.end(), c);
-    THROW_IF(it == constReg_.end(), "Constant not registered.");
-    int idx = it - constReg_.begin();
-    return d_consts_[idx];
+    const real *pos = std::find(hostConsts_, hostConsts_ + nHostConsts_, c);
+    int idx = pos - hostConsts_;
+    THROW_IF(idx == nHostConsts_, "Constant not registered.");
+    return *constReg_[idx];
 }
 
 template<class real>
 void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore &memStore, DeviceCopy &devCopy) {
     memStore_ = &memStore;
-    d_consts_ = memStore.allocate(sizeof(real) * nHostConsts_);
-    devCopy(d_consts_, hostConsts_, nHostConsts_);
+    d_consts_ = (real*)memStore.allocate(sizeof(real) * nHostConsts_);
+    devCopy_.copy(d_consts_, hostConsts_, nHostConsts_);
     for (int idx = 0; idx < nHostConsts_; ++idx)
-        constReg_.pushBack(DeviceScalar(&d_consts_[idx]));
+        constReg_.pushBack(new DeviceScalar(&d_consts_[idx]));
     d_one_ = &d_const(1.);
     d_zero_ = &d_const(0.);
 }
 
 template<class real>
 void DeviceObjectAllocatorType<real>::uninitialize() {
+    for (int idx = 0; idx < nHostConsts_; ++idx)
+        delete constReg_[idx];
+    
     constReg_.clear();
     memStore_->deallocate(d_consts_);
     d_consts_ = NULL;
 }
+
+template class sqaod_cuda::DeviceObjectAllocatorType<float>;
+template class sqaod_cuda::DeviceObjectAllocatorType<double>;

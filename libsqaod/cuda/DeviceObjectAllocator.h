@@ -35,15 +35,16 @@ struct DeviceObjectAllocatorType {
 
 private:
     DeviceMemoryStore *memStore_;
+    DeviceCopy devCopy_;
     static const real hostConsts_[];
     static const int nHostConsts_;
     real *d_consts_;
 
-    typedef sqaod::ArrayType<DeviceScalar> ConstReg;
+    typedef sqaod::ArrayType<DeviceScalar*> ConstReg;
     ConstReg constReg_;
 
-    DeviceScalar *d_one_;
-    DeviceScalar *d_zero_;
+    const DeviceScalar *d_one_;
+    const DeviceScalar *d_zero_;
 };
 
 
