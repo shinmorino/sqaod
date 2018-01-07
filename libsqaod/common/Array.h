@@ -1,6 +1,9 @@
 #ifndef SQAOD_COMMON_ARRAY_H__
 #define SQAOD_COMMON_ARRAY_H__
 
+#include <assert.h>
+#include <string.h>
+
 namespace sqaod {
 
 template<class V> struct ValueProp { enum { POD = false }; };
@@ -14,6 +17,7 @@ template<> struct ValueProp<long> { enum { POD = true }; };
 template<> struct ValueProp<unsigned long> { enum { POD = true }; };
 template<> struct ValueProp<long long> { enum { POD = true }; };
 template<> struct ValueProp<unsigned long long> { enum { POD = true }; };
+template<class V> struct ValueProp<V*> { enum { POD = true }; };
 
 /* ToDo: add move c-tor */
 
