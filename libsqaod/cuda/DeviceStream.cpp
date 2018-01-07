@@ -17,7 +17,7 @@ struct PlainDeviceObject : DeviceObject {
 
 
 DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore) :
-        stream_(stream), memStore_(memStore) {
+        stream_(stream), memStore_(&memStore) {
     throwOnError(cublasCreate(&cublasHandle_));
     throwOnError(cublasSetStream(cublasHandle_, stream));
 }
@@ -35,14 +35,14 @@ void DeviceStream::releaseTempObjects() {
     for (DeviceObjects::iterator it = tempObjects_.begin();
          it != tempObjects_.end(); ++it) {
         void *pv = (*it)->get_data();
-        memStore_.deallocate(pv);
+        memStore_->deallocate(pv);
         delete *it;
     }
     tempObjects_.clear();
 }
 
 void *DeviceStream::allocate(size_t size) {
-    void *d_pv = memStore_.allocate(size);
+    void *d_pv = memStore_->allocate(size);
     tempObjects_.pushBack(new PlainDeviceObject(d_pv));
     return d_pv;
 }

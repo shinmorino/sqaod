@@ -5,8 +5,15 @@ using namespace sqaod_cuda;
 
 template<class V>
 void DeviceCopy::copy(V *d_buf, const V *v, size_t nElms) const {
-    cudaStream_t stream = deviceStream_->getStream();
+    cudaStream_t stream = devStream_->getStream();
     throwOnError(cudaMemcpyAsync(d_buf, v, sizeof(V) * nElms, cudaMemcpyDefault, stream));
+}
+
+DeviceCopy::DeviceCopy() : devStream_(NULL) { }
+
+DeviceCopy::DeviceCopy(DeviceStream &stream) : devStream_(&stream) { }
+void DeviceCopy::setStream(DeviceStream &stream) {
+    devStream_ = &stream;
 }
 
 

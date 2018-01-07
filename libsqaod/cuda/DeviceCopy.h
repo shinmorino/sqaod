@@ -16,8 +16,6 @@ struct DeviceCopy {
     template<class V>
     using HostVectorType = sqaod::VectorType<V>;
     
-    void setStream(DeviceStream *stream);
-    
     template<class V>
     void copy(V *d_buf, const V *v, size_t nElms) const;
 
@@ -70,9 +68,14 @@ struct DeviceCopy {
     /* Packed bits */
     void operator()(sqaod::PackedBitsArray *dst, const DevicePackedBitsArray &src) const;
 
-private:
 
-    DeviceStream *deviceStream_;
+    DeviceCopy();
+    DeviceCopy(DeviceStream &stream);
+    
+    void setStream(DeviceStream &stream);
+    
+private:
+    DeviceStream *devStream_;
 };
 
 template<class V> inline

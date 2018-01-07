@@ -11,11 +11,15 @@ namespace sqaod_cuda {
 
 class DeviceStream {
     friend class Device;
+
+    DeviceStream() { }
     DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore);
     ~DeviceStream();
-
+    
+    void set(cudaStream_t stream, DeviceMemoryStore &memStore);
+    
 public:
-
+    
     void *allocate(size_t size);
 
     template<class V>
@@ -42,7 +46,7 @@ private:
     void releaseTempObjects();
 
     cudaStream_t stream_;
-    DeviceMemoryStore &memStore_;
+    DeviceMemoryStore *memStore_;
     typedef sqaod::ArrayType<DeviceObject*> DeviceObjects;
     DeviceObjects tempObjects_;
     cublasHandle_t cublasHandle_;
@@ -53,7 +57,7 @@ private:
 
 template<class V> inline
 DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(int rows, int cols, const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V) * rows * cols);
+    void *d_pv = memStore_->allocate(sizeof(V) * rows * cols);
     DeviceMatrixType<V> *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
     tempObjects_.pushBack(mat);
     return mat;
@@ -61,7 +65,7 @@ DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(int rows, int cols, const ch
 
 template<class V> inline
 DeviceVectorType<V> *DeviceStream::tempDeviceVector(int size, const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V) * size);
+    void *d_pv = memStore_->allocate(sizeof(V) * size);
     DeviceVectorType<V> *vec = new DeviceVectorType<V>((V*)d_pv, size);
     tempObjects_.pushBack(vec);
     return vec;
@@ -69,7 +73,7 @@ DeviceVectorType<V> *DeviceStream::tempDeviceVector(int size, const char *signat
 
 template<class V> inline
 DeviceScalarType<V> *DeviceStream::tempDeviceScalar(const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V));
+    void *d_pv = memStore_->allocate(sizeof(V));
     DeviceScalarType<V> *s = new DeviceScalarType<V>((V*)d_pv);
     tempObjects_.pushBack(s);
     return s;

@@ -12,14 +12,15 @@ class DeviceStream;
 
 class Device {
 public:
-    void setDevice(int devNo);
+    void initialize(int devNo);
+    void uninitialize();
 
     template<class real>
     DeviceObjectAllocatorType<real> &deviceObjectAllocator();
     
-    DeviceStream *newDeviceStream();
+    DeviceStream &newDeviceStream();
 
-    DeviceStream *defaultDeviceStream();
+    DeviceStream &defaultDeviceStream();
 
     void releaseStream(DeviceStream *stream);
 
@@ -35,6 +36,7 @@ private:
     /* Object allocators */
     DeviceObjectAllocatorType<float> devObjAllocatorFP32_;
     DeviceObjectAllocatorType<double> devObjAllocatorFP64_;
+    DeviceStream defaultDeviceStream_;
 };
 
 

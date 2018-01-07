@@ -4,22 +4,23 @@
 
 using namespace sqaod_cuda;
 
-void Device::setDevice(int devNo){
+void Device::initialize(int devNo){
     devNo_ = devNo;
+    memStore_.initialize();
+    devObjAllocatorFP32_.initialize(memStore_, defaultDeviceStream_);
+    devObjAllocatorFP64_.initialize(memStore_, defaultDeviceStream_);
 }
 
-DeviceStream *Device::newDeviceStream() {
+DeviceStream &Device::newDeviceStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));
     DeviceStream *deviceStream = new DeviceStream(stream, memStore_);
     streams_.pushBack(deviceStream);
-    return deviceStream;
+    return *deviceStream;
 }
 
-DeviceStream *Device::defaultDeviceStream() {
-    DeviceStream *stream = new DeviceStream(NULL, memStore_);
-    streams_.pushBack(stream);
-    return stream;
+DeviceStream &Device::defaultDeviceStream() {
+    return defaultDeviceStream_;
 }
 
 void Device::releaseStream(DeviceStream *stream) {
