@@ -75,15 +75,14 @@ struct DeviceMathType {
                     const DeviceMatrix &A, MatrixOp opA,
                     const DeviceMatrix &x, MatrixOp opx);
 
-
-    void initialize(DeviceStream *devStream);
-    void uninitialize();
-
+    void min(DeviceScalar *s, const DeviceMatrix &A);
+    
     /* get matrix shape resulting from matrix arithmetic */
+    sqaod::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);
     sqaod::Dim getProductShape(const DeviceMatrix &A, MatrixOp opA,
                                const DeviceMatrix &B, MatrixOp opB);
-    sqaod::Dim getProductShape(const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
-    sqaod::Dim getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
+    uint getProductShape(const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
+    uint getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
 
     /* Device Const */
     const DeviceScalar &deviceConst(real c);
@@ -94,11 +93,10 @@ struct DeviceMathType {
     DeviceMatrix *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);
     DeviceMatrix *tempDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
     DeviceVector *tempDeviceVector(uint size, const char *signature = NULL);
-    DeviceScalar *tempDeviceScalar(int rows, int cols, const char *signature = NULL);
+    DeviceScalar *tempDeviceScalar(const char *signature = NULL);
     void *tempAllocate(uint size);
 
     /* CUDA funcs */
-    void min(DeviceScalar *s, const DeviceMatrix &A);
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
 
     void scale(real *d_y, real alpha, const real *d_x, uint size);
@@ -116,6 +114,9 @@ struct DeviceMathType {
     void dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, uint size,
                     uint nBatch, real addAssignFactor);
 
+    void min(real *d_min, const real *d_values, uint size);
+
+    /* BLAS */
     void gemv(MatrixOp op, const DeviceScalar &d_alpha,
               const DeviceMatrix &A, const DeviceVector &x,
               const DeviceScalar &d_beta, DeviceVector &y);
@@ -128,7 +129,6 @@ private:
     DeviceStream *devStream_;
     Device *device_;
 };
-
 
 
 }  // namespace sqaod_cuda

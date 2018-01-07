@@ -54,19 +54,6 @@ void DeviceStream::allocate(DeviceScalarType<V> **s, const char *signature) {
     tempObjects_.pushBack(*s);
 }
 
-void DeviceStream::newEvent() {
-    /* FIXME: add implementation */
-    assert(!"Not implemented.");
-}
-    
-void DeviceStream::eventRecord() {
-    assert(!"Not implemented.");
-}
-    
-void DeviceStream::waitEvent(cudaEvent_t event) {
-    assert(!"Not implemented.");
-}
-
 /* sync on stream */
 void DeviceStream::synchronize() {
     throwOnError(cudaStreamSynchronize(stream_));
@@ -79,5 +66,3 @@ void DeviceStream::releaseTempObjects() {
         memStore_.deallocate(pv);
     }
 }
-
-

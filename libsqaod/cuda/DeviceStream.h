@@ -26,12 +26,6 @@ public:
 
     template<class V>
     void allocate(DeviceScalarType<V> **s, const char *signature = NULL);
-    
-    void newEvent();
-    
-    void eventRecord();
-    
-    void waitEvent(cudaEvent_t event);
 
     cudaStream_t getStream() {
         return stream_;

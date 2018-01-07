@@ -27,6 +27,14 @@ public:
 
     void deallocate(DeviceObject *obj);
 
+    /* Device Const */
+    template<class V>
+    const DeviceScalarType<V> &deviceConst(V c);
+    template<class V>
+    const DeviceScalarType<V> &d_one();
+    template<class V>
+    const DeviceScalarType<V> &d_zero();
+    
     DeviceStream *newDeviceStream();
 
     DeviceStream *defaultDeviceStream();
