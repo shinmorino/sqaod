@@ -1,9 +1,10 @@
 #ifndef CUDA_DEVICE_H__
 #define CUDA_DEVICE_H__
 
+#include <common/Array.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceMemoryStore.h>
-#include <vector>
+#include <cuda/DeviceObjectAllocator.h>
 
 namespace sqaod_cuda {
 
@@ -12,28 +13,9 @@ class DeviceStream;
 class Device {
 public:
     void setDevice(int devNo);
-    
-    template<class V>
-    void allocate(DeviceMatrixType<V> *mat, int rows, int cols);
 
-    template<class V>
-    void allocate(DeviceMatrixType<V> *mat, const sqaod::Dim &dim);
-
-    template<class V>
-    void allocate(DeviceVectorType<V> *vec, int size);
-
-    template<class V>
-    void allocate(DeviceScalarType<V> *mat);
-
-    void deallocate(DeviceObject *obj);
-
-    /* Device Const */
-    template<class V>
-    const DeviceScalarType<V> &deviceConst(V c);
-    template<class V>
-    const DeviceScalarType<V> &d_one();
-    template<class V>
-    const DeviceScalarType<V> &d_zero();
+    template<class real>
+    DeviceObjectAllocatorType<real> &deviceObjectAllocator();
     
     DeviceStream *newDeviceStream();
 
@@ -43,17 +25,29 @@ public:
 
     /* sync on device */
     void synchronize();
-
-    DeviceMemoryStore &memStore() {
-        return memStore_;
-    }
     
 private:
     int devNo_;
     DeviceMemoryStore memStore_;
-    typedef std::vector<DeviceStream *> Streams;
+    typedef sqaod::ArrayType<DeviceStream*> Streams;
     Streams streams_;
+
+    /* Object allocators */
+    DeviceObjectAllocatorType<float> devObjAllocatorFP32_;
+    DeviceObjectAllocatorType<double> devObjAllocatorFP64_;
 };
+
+
+template<> inline
+DeviceObjectAllocatorType<float> &Device::deviceObjectAllocator<float>() {
+    return devObjAllocatorFP32_;
+}
+
+template<> inline
+DeviceObjectAllocatorType<double> &Device::deviceObjectAllocator<double>() {
+    return devObjAllocatorFP64_;
+}
+
 
 }
 

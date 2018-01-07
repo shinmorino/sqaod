@@ -2,7 +2,7 @@
 #define CUDA_DEVICE_STREAM_H__
 
 #include <cuda/DeviceMatrix.h>
-#include <cuda/Device.h>
+#include <cuda/DeviceMemoryStore.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
@@ -19,13 +19,13 @@ public:
     void *allocate(size_t size);
 
     template<class V>
-    void allocate(DeviceMatrixType<V> **mat, int rows, int cols, const char *signature = NULL);
+    DeviceMatrixType<V> *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);
 
     template<class V>
-    void allocate(DeviceVectorType<V> **vec, int size, const char *signature = NULL);
+    DeviceVectorType<V> *tempDeviceVector(int size, const char *signature = NULL);
 
     template<class V>
-    void allocate(DeviceScalarType<V> **s, const char *signature = NULL);
+    DeviceScalarType<V> *tempDeviceScalar(const char *signature = NULL);
 
     cudaStream_t getStream() const {
         return stream_;
@@ -47,6 +47,34 @@ private:
     DeviceObjects tempObjects_;
     cublasHandle_t cublasHandle_;
 };
+
+
+
+
+template<class V> inline
+DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(int rows, int cols, const char *signature) {
+    void *d_pv = memStore_.allocate(sizeof(V) * rows * cols);
+    DeviceMatrixType<V> *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
+    tempObjects_.pushBack(mat);
+    return mat;
+}
+
+template<class V> inline
+DeviceVectorType<V> *DeviceStream::tempDeviceVector(int size, const char *signature) {
+    void *d_pv = memStore_.allocate(sizeof(V) * size);
+    DeviceVectorType<V> *vec = new DeviceVectorType<V>((V*)d_pv, size);
+    tempObjects_.pushBack(vec);
+    return vec;
+}
+
+template<class V> inline
+DeviceScalarType<V> *DeviceStream::tempDeviceScalar(const char *signature) {
+    void *d_pv = memStore_.allocate(sizeof(V));
+    DeviceScalarType<V> *s = new DeviceScalarType<V>((V*)d_pv);
+    tempObjects_.pushBack(s);
+    return s;
+}
+
 
 }
 

@@ -2,6 +2,7 @@
 #define CUDA_DEVICEMATH_H__
 
 #include <cuda/DeviceMatrix.h>
+#include <cuda/DeviceObjectAllocator.h>
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceCopy.h>
 
@@ -30,6 +31,7 @@ struct DeviceMathType {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
+    typedef DeviceObjectAllocatorType<real> DeviceObjectAllocator;
 
     void setToDiagonals(DeviceMatrix *V, real v);
     
@@ -85,7 +87,7 @@ struct DeviceMathType {
     uint getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
 
     /* Device Const */
-    const DeviceScalar &deviceConst(real c);
+    const DeviceScalar &d_const(real c);
     const DeviceScalar &d_one();
     const DeviceScalar &d_zero();
 
@@ -95,6 +97,12 @@ struct DeviceMathType {
     DeviceVector *tempDeviceVector(uint size, const char *signature = NULL);
     DeviceScalar *tempDeviceScalar(const char *signature = NULL);
     void *tempAllocate(uint size);
+    /* objects on heap */
+    DeviceMatrix *newDeviceMatrix(int rows, int cols, const char *signature = NULL);
+    DeviceMatrix *newDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
+    DeviceVector *newDeviceVector(uint size, const char *signature = NULL);
+    DeviceScalar *newDeviceScalar(const char *signature = NULL);
+    void *allocate(uint size);
 
     /* CUDA funcs */
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
@@ -127,8 +135,57 @@ struct DeviceMathType {
 private:
     DeviceCopy devCopy_;
     DeviceStream *devStream_;
-    Device *device_;
+    DeviceObjectAllocator *devAlloc_;
 };
+
+
+
+/* inline method implimentations */
+
+/* Device Const */
+template<class real> inline
+const DeviceScalarType<real> &DeviceMathType<real>::d_const(real c) {
+    return devAlloc_->d_const(c);
+}
+
+template<class real> inline
+const DeviceScalarType<real> &DeviceMathType<real>::d_one() {
+    return devAlloc_->d_one();
+}
+
+template<class real> inline
+const DeviceScalarType<real> &DeviceMathType<real>::d_zero() {
+    return devAlloc_->d_zero();
+}
+
+/* temporary objects */
+template<class real> inline
+DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(int rows, int cols,
+                                                               const char *signature) {
+    return devStream_->tempDeviceMatrix<real>(rows, cols, signature);
+}
+
+template<class real> inline
+DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(const sqaod::Dim &dim,
+                                                               const char *signature) {
+    return devStream_->tempDeviceMatrix<real>(dim.rows, dim.cols, signature);
+}
+
+template<class real> inline
+DeviceVectorType<real> *DeviceMathType<real>::tempDeviceVector(uint size,
+                                                               const char *signature) {
+    return devStream_->tempDeviceVector<real>(size, signature);
+}
+
+template<class real> inline
+DeviceScalarType<real> *DeviceMathType<real>::tempDeviceScalar(const char *signature) {
+    return devStream_->tempDeviceScalar<real>(signature);
+}
+
+template<class real> inline
+void *DeviceMathType<real>::tempAllocate(uint size) {
+    return devStream_->allocate(size);
+}
 
 
 }  // namespace sqaod_cuda

@@ -4,7 +4,7 @@ using namespace sqaod_cuda;
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::setProblem(const HostMatrix &W) {
-    device_->allocate(&d_W_, W.dim());
+    devAlloc_->allocate(&d_W_, W.dim());
     devCopy_(d_W_, W);
 }
 

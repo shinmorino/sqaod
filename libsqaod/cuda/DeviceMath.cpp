@@ -118,7 +118,7 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
 template<class real>
 void DeviceMathType<real>::mvProduct(DeviceVector *y, real alpha,
                                      const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x) {
-    const DeviceScalar &d_alpha = deviceConst(alpha);
+    const DeviceScalar &d_alpha = d_const(alpha);
     gemv(opA, d_alpha, A, x, d_zero(), *y);
 }
 
@@ -126,8 +126,8 @@ template<class real>
 void DeviceMathType<real>::vmProduct(DeviceVector *y, real alpha,
                                      const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA,
                                      real addAssignFactor) {
-    const DeviceScalar &d_alpha = deviceConst(alpha);
-    const DeviceScalar &d_factor = deviceConst(addAssignFactor);
+    const DeviceScalar &d_alpha = d_const(alpha);
+    const DeviceScalar &d_factor = d_const(addAssignFactor);
     opA = (opA == opNone) ? opTranspose : opNone;
     gemv(opA, d_alpha, A, x, d_factor, *y);
 }
@@ -136,7 +136,7 @@ template<class real>
 void DeviceMathType<real>::mmProduct(DeviceMatrix *C, real alpha,
                                      const DeviceMatrix &A, MatrixOp opA,
                                      const DeviceMatrix &B, MatrixOp opB) {
-    const DeviceScalar &d_alpha = deviceConst(alpha);
+    const DeviceScalar &d_alpha = d_const(alpha);
     gemm(opA, opB, d_alpha, A, B, d_zero(), *C);
 }
     
@@ -165,7 +165,7 @@ void DeviceMathType<real>::mmmProduct(DeviceMatrix *z, real alpha,
                                       const DeviceMatrix &y, MatrixOp opy,
                                       const DeviceMatrix &A, MatrixOp opA,
                                       const DeviceMatrix &x, MatrixOp opx) {
-    const DeviceScalar &d_alpha = deviceConst(alpha);
+    const DeviceScalar &d_alpha = d_const(alpha);
     
     Dim dimAx = getProductShape(A, opA, x, opx);
     DeviceMatrix *Ax =  tempDeviceMatrix(dimAx);
@@ -212,58 +212,6 @@ uint DeviceMathType<real>::getProductShape(const DeviceVector &x,
     THROW_IF(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
     return A.cols;
 }
-
-/* Device Const */
-template<class real>
-const DeviceScalarType<real> &DeviceMathType<real>::deviceConst(real c) {
-    return device_->deviceConst(c);
-}
-
-template<class real>
-const DeviceScalarType<real> &DeviceMathType<real>::d_one() {
-    return device_->d_one<real>();
-}
-
-template<class real>
-const DeviceScalarType<real> &DeviceMathType<real>::d_zero() {
-    return device_->d_zero<real>();
-}
-
-/* temporary objects */
-template<class real>
-DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(int rows, int cols,
-                                                               const char *signature) {
-    DeviceMatrix *mat;
-    devStream_->allocate(&mat, rows, cols, signature);
-    return mat;
-}
-
-template<class real>
-DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(const sqaod::Dim &dim,
-                                                               const char *signature) {
-    return tempDeviceMatrix(dim.rows, dim.cols, signature);
-}
-
-template<class real>
-DeviceVectorType<real> *DeviceMathType<real>::tempDeviceVector(uint size,
-                                                               const char *signature) {
-    DeviceVector *vec;
-    devStream_->allocate(&vec, size, signature);
-    return vec;
-}
-
-template<class real>
-DeviceScalarType<real> *DeviceMathType<real>::tempDeviceScalar(const char *signature) {
-    DeviceScalar *scalar;
-    devStream_->allocate(&scalar);
-    return scalar;
-}
-
-template<class real>
-void *DeviceMathType<real>::tempAllocate(uint size) {
-    return devStream_->allocate(size);
-}
-
 
 template struct sqaod_cuda::DeviceMathType<float>;
 template struct sqaod_cuda::DeviceMathType<double>;

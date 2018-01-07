@@ -4,6 +4,8 @@
 #include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
+#include <cuda/DeviceObjectAllocator.h>
+
 
 namespace sqaod_cuda {
 
@@ -12,6 +14,7 @@ class DeviceDenseGraphBatchSearch {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
+    typedef DeviceObjectAllocatorType<real> DeviceObjectAllocator;
     typedef CUDADGFuncs<real> DGFuncs;
     typedef sqaod::MatrixType<real> HostMatrix;
     
@@ -40,7 +43,7 @@ private:
 
     DGFuncs dgFuncs_;
     DeviceCopy devCopy_;
-    Device *device_;
+    DeviceObjectAllocator *devAlloc_;
 };
 
 }

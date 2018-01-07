@@ -26,34 +26,6 @@ DeviceStream::~DeviceStream() {
     throwOnError(cublasDestroy(cublasHandle_));
 }
 
-void *DeviceStream::allocate(size_t size) {
-    void *d_pv = memStore_.allocate(size);
-    tempObjects_.pushBack(new PlainDeviceObject(d_pv));
-    return d_pv;
-}
-
-template<class V>
-void DeviceStream::allocate(DeviceMatrixType<V> **mat, int rows, int cols,
-                            const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V) * rows * cols);
-    *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
-    tempObjects_.pushBack(*mat);
-}
-
-template<class V>
-void DeviceStream::allocate(DeviceVectorType<V> **vec, int size, const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V) * size);
-    *vec = new DeviceVectorType<V>((V*)d_pv, size);
-    tempObjects_.pushBack(*vec);
-}
-
-template<class V>
-void DeviceStream::allocate(DeviceScalarType<V> **s, const char *signature) {
-    void *d_pv = memStore_.allocate(sizeof(V));
-    *s = new DeviceScalarType<V>((V*)d_pv);
-    tempObjects_.pushBack(*s);
-}
-
 /* sync on stream */
 void DeviceStream::synchronize() {
     throwOnError(cudaStreamSynchronize(stream_));
@@ -68,3 +40,10 @@ void DeviceStream::releaseTempObjects() {
     }
     tempObjects_.clear();
 }
+
+void *DeviceStream::allocate(size_t size) {
+    void *d_pv = memStore_.allocate(size);
+    tempObjects_.pushBack(new PlainDeviceObject(d_pv));
+    return d_pv;
+}
+
