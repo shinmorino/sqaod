@@ -1,9 +1,15 @@
 SUFFIXES = .cu .cpp
 
 noinst_LTLIBRARIES=libcuda.la
+check_PROGRAMS=test
 
 libcuda_la_SOURCES=DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp DeviceMath.cpp CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceBipartiteGraphBatchSearch.cpp DeviceRandom.cu DeviceMathKernel.cu
 AM_CPPFLAGS=-I/usr/local/cuda/include -I$(abs_top_srcdir)/eigen
+
+# check
+test_SOURCES=test.cpp
+test_LDADD=libcuda.la $(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
+LIBS=-L/usr/local/cuda/lib64 -lcublas -lcudart
 
 NVCC=/usr/local/cuda/bin/nvcc
 

@@ -19,7 +19,7 @@ struct DeviceObjectAllocatorType {
 
     void allocate(DeviceVector *vec, int size);
 
-    void allocate(DeviceScalar *mat);
+    void allocate(DeviceScalar *sc);
     
     void deallocate(DeviceObject &obj);
     

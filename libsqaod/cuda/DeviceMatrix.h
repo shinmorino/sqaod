@@ -17,7 +17,11 @@ struct DeviceObject {
 template<class V>
 struct DeviceMatrixType : DeviceObject {
     typedef V ValueType;
-    typedef DeviceMatrixType<V> HostMatrix;
+
+    DeviceMatrixType() {
+        d_data = NULL;
+        rows = cols = -1;
+    }
     
     DeviceMatrixType(V *_d_data, int _rows, int _cols) {
         d_data = _d_data;
@@ -43,6 +47,11 @@ template<class V>
 struct DeviceVectorType : DeviceObject {
     typedef V ValueType;
 
+    DeviceVectorType() {
+        d_data = NULL;
+        size = -1;
+    }
+
     DeviceVectorType(V *_d_data, int _size) {
         d_data = _d_data;
         size = _size;
@@ -64,6 +73,10 @@ private:
 template<class V>
 struct DeviceScalarType : DeviceObject {
     typedef V ValueType;
+
+    DeviceScalarType() {
+        d_data = NULL;
+    }
 
     DeviceScalarType(V *_d_data) {
         d_data = _d_data;

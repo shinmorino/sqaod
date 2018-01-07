@@ -17,14 +17,21 @@ struct PlainDeviceObject : DeviceObject {
 
 
 DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore) :
-        stream_(stream), memStore_(&memStore) {
-    throwOnError(cublasCreate(&cublasHandle_));
-    throwOnError(cublasSetStream(cublasHandle_, stream));
+        stream_(NULL), memStore_(NULL) {
+    set(stream, memStore);
 }
 
 DeviceStream::~DeviceStream() {
     finalize();
 }
+
+void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore) {
+    stream = stream;
+    memStore_ = &memStore;
+    throwOnError(cublasCreate(&cublasHandle_));
+    throwOnError(cublasSetStream(cublasHandle_, stream));
+}
+
 
 void DeviceStream::finalize() {
     releaseTempObjects();

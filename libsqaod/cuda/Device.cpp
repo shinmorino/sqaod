@@ -7,6 +7,7 @@ using namespace sqaod_cuda;
 void Device::initialize(int devNo){
     devNo_ = devNo;
     memStore_.initialize();
+    defaultDeviceStream_.set(NULL, memStore_);
     devObjAllocatorFP32_.initialize(memStore_, defaultDeviceStream_);
     devObjAllocatorFP64_.initialize(memStore_, defaultDeviceStream_);
 }
@@ -40,7 +41,8 @@ void Device::releaseStream(DeviceStream *stream) {
     Streams::iterator it = std::find(streams_.begin(), streams_.end(), stream);
     assert(it != streams_.end());
     streams_.erase(it);
-    delete stream;
+    if (stream != &defaultDeviceStream_)
+        delete stream;
 }
 
 /* sync on device */
