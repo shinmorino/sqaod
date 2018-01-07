@@ -16,6 +16,7 @@ namespace sqaod {
 
 
 #define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
+#define THROW(msg) throw std::runtime_error(msg);
 
     
 template<class real>
