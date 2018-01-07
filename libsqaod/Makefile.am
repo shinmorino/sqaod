@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS=foreign
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS=common cpu
+SUBDIRS=common cpu cuda
 
 lib_LTLIBRARIES=libsqaod.la
 
