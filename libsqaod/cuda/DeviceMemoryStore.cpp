@@ -6,14 +6,35 @@
  * FixedSizedChunks
  */
 
+#ifdef _MSC_VER
+// https ://stackoverflow.com/questions/355967/how-to-use-msvc-intrinsics-to-get-the-equivalent-of-this-gcc-code
+#include <intrin.h>
+uint32_t __inline __builtin_ctz(uint32_t value)
+{	unsigned long trailing_zero = 0;
+	if (_BitScanForward(&trailing_zero, value))
+		return trailing_zero;
+	else
+		return 32;
+}
+uint32_t __inline __builtin_ctzll(uint64_t value)
+{
+	unsigned long trailing_zero = 0;
+	if (_BitScanForward64(&trailing_zero, value))
+		return trailing_zero;
+	else
+		return 64;
+}
+
+#endif
+
 bool HeapBitmap::acquire(uintptr_t *addr) {
     if (freeRegions_.empty())
         return false;
     
     RegionMap::iterator regionIt = freeRegions_.begin();
     int iChunk = __builtin_ctz(regionIt->second);
-    regionIt->second |= (1 << iChunk);
-    *addr = ((regionIt->first << nActiveBits_) + iChunk) << sizeInPo2_;
+    regionIt->second ^= (1 << iChunk);
+    *addr = (regionIt->first << (sizeInPo2_ + nActiveBits_)) + (iChunk << sizeInPo2_);
     if (isRegionFull(regionIt->second))
         freeRegions_.erase(regionIt);
     return true;
@@ -25,11 +46,11 @@ bool HeapBitmap::tryRelease(uintptr_t addr, bool *regionReleased) {
     if (it == regions_.end())
         return false;
 
-    int bitmapIdx = (addr >> sizeInPo2_) & ((1 << nActiveBits_) - 1);
+	int bitmapIdx = (addr >> sizeInPo2_) & mask_;
     it->second ^= (1 << bitmapIdx);
     if (isRegionEmpty(it->second)) {
         regions_.erase(it);
-        int nErased = freeRegions_.erase(it->first);
+        size_t nErased = freeRegions_.erase(it->first);
         assert(nErased == 1);
         *regionReleased = true;
     }
@@ -37,37 +58,38 @@ bool HeapBitmap::tryRelease(uintptr_t addr, bool *regionReleased) {
 }
 
 void HeapBitmap::addRegion(uintptr_t addr) {
-    freeRegions_[addr] = mask_;
-    regions_[addr] = mask_;
+	uintptr_t regionIdx = addr >> (sizeInPo2_ + nActiveBits_);
+	freeRegions_[regionIdx] = mask_;
+    regions_[regionIdx] = mask_;
 }
 
 void FixedSizedChunks::initialize() {
-    bitmapLayers_[ 0].set(5,  0); /*    4 byte / chunk, 128 bytes / region */
-    bitmapLayers_[ 1].set(5,  1); /*    8 byte / chunk, 256 bytes / region */
-    bitmapLayers_[ 2].set(5,  2); /*   16 byte / chunk, 512 bytes / region */
-    bitmapLayers_[ 3].set(5,  3); /*   32 byte / chunk,   1 K / region */
-    bitmapLayers_[ 4].set(5,  4); /*   64 byte / chunk    2 K / region */
-    bitmapLayers_[ 5].set(5,  5); /*  128 byte / chunk,   4 K / region */
-    bitmapLayers_[ 6].set(5,  6); /*  256 byte / chunk,   8 K / region */
-    bitmapLayers_[ 7].set(5,  7); /*  512 byte / chunk,  16 K / region */
-    bitmapLayers_[ 8].set(5,  8); /*   1k byte / chunk,  32 K / region */
-    bitmapLayers_[ 9].set(4,  9); /*   2k byte / chunk,  64 K / region */
-    bitmapLayers_[10].set(3, 10); /*   4k byte / chunk, 128 K / region */
-    bitmapLayers_[11].set(2, 11); /*   8k byte / chunk, 256 K / region */
-    bitmapLayers_[12].set(1, 12); /*  16k byte / chunk, 512 K / region */
-    bitmapLayers_[13].set(5, 13); /*  32k byte / chunk,   1 M / region */
+    bitmapLayers_[ 0].set(5,  2); /*    4 byte / chunk, 128 bytes / region */
+    bitmapLayers_[ 1].set(5,  3); /*    8 byte / chunk, 256 bytes / region */
+    bitmapLayers_[ 2].set(5,  4); /*   16 byte / chunk, 512 bytes / region */
+    bitmapLayers_[ 3].set(5,  5); /*   32 byte / chunk,   1 K / region */
+    bitmapLayers_[ 4].set(5,  6); /*   64 byte / chunk    2 K / region */
+    bitmapLayers_[ 5].set(5,  7); /*  128 byte / chunk,   4 K / region */
+    bitmapLayers_[ 6].set(5,  8); /*  256 byte / chunk,   8 K / region */
+    bitmapLayers_[ 7].set(5,  9); /*  512 byte / chunk,  16 K / region */
+    bitmapLayers_[ 8].set(5, 10); /*   1k byte / chunk,  32 K / region */
+    bitmapLayers_[ 9].set(4, 11); /*   2k byte / chunk,  64 K / region */
+    bitmapLayers_[10].set(3, 12); /*   4k byte / chunk, 128 K / region */
+    bitmapLayers_[11].set(2, 13); /*   8k byte / chunk, 256 K / region */
+    bitmapLayers_[12].set(1, 14); /*  16k byte / chunk, 512 K / region */
+    bitmapLayers_[13].set(5, 15); /*  32k byte / chunk,   1 M / region */
 }
 
 void FixedSizedChunks::finalize() {
     for (int idx = 0; idx < nBitmapLayers; ++idx)
-        bitmapLayers_[ 0].clear();
+        bitmapLayers_[idx].clear();
 }
 
 void FixedSizedChunks::addHeap(uintptr_t pv, size_t size) {
     const int mega = (1 << 20);
     assert(size % mega == 0);
     
-    int nChunks = size / (1 << 20);
+    int nChunks = size / mega;
     for (int idx = 0; idx < nChunks; ++idx)
         bitmapLayers_[nBitmapLayers - 1].addRegion(pv + mega * idx);
 }
@@ -119,20 +141,24 @@ void FixedSizedChunks::deallocate(uintptr_t addr) {
 
 
 HeapBitmap *FixedSizedChunks::allocateRegion(int layerIdx) {
-    HeapBitmap &childLayer = bitmapLayers_[layerIdx];
-    int parentLayerIdx = layerIdx + childLayer.nActiveBits();
-    if (layerIdx < nBitmapLayers) {
-        assert(parentLayerIdx < nBitmapLayers);
-        HeapBitmap &parentLayer = bitmapLayers_[parentLayerIdx];
-        uintptr_t addr;
-        if (parentLayer.acquire(&addr)) {
-            childLayer.addRegion(addr);
-            return &childLayer;
-        }
-        return allocateRegion(parentLayerIdx);
-    }
-    /* No room to allocate new region. */
-    return NULL;
+	HeapBitmap &thisLayer = bitmapLayers_[layerIdx];
+	int parentLayerIdx = layerIdx + thisLayer.nActiveBits();
+	if (nBitmapLayers <= parentLayerIdx) {
+		/* No parent.  No room to allocate new region. */
+		return NULL;
+	}
+
+	HeapBitmap &parentLayer = bitmapLayers_[parentLayerIdx];
+	uintptr_t addr;
+	/* ask parent to provide heap */
+	if (!parentLayer.acquire(&addr)) {
+		/* allocating region in layer */
+		if (allocateRegion(parentLayerIdx) == NULL)
+			return NULL;
+		parentLayer.acquire(&addr);
+	}
+	thisLayer.addRegion(addr);
+	return &thisLayer;
 }
 
 
@@ -151,7 +177,7 @@ void FreeHeapMap::addFreeHeap(uintptr_t heap, size_t size) {
 uintptr_t FreeHeapMap::acquire(size_t size) {
     RegionMap::iterator it = freeRegions_.begin();
     for ( ; it != freeRegions_.end(); ++it) {
-        if (size < it->second)
+        if (size <= it->second)
             break;
     }
     if (it == freeRegions_.end())
@@ -246,7 +272,7 @@ void DeviceMemoryStore::deallocate(void *pv) {
         throwOnError(cudaFree(pv));
         break;
     }
-    heapMap_.erase(it);
+    !!!!! heapMap_.erase(it);
 }
 
 uintptr_t DeviceMemoryStore::cudaMalloc(size_t size) {
@@ -257,18 +283,19 @@ uintptr_t DeviceMemoryStore::cudaMalloc(size_t size) {
 }
 
 void DeviceMemoryStore::cudaFree(void *pv) {
-    throwOnError(cudaFree(pv));
+    throwOnError(::cudaFree(pv));
 }
 
 uintptr_t DeviceMemoryStore::allocFromFreeHeap(size_t size) {
+	/* FIXME: round up size */
     uintptr_t addr = freeHeapMap_.acquire(size);
     if (addr == (uintptr_t)-1) {
         uintptr_t newHeap = cudaMalloc(size);
         d_mems_.pushBack((void*)newHeap);
         freeHeapMap_.addFreeHeap(newHeap, size);
         addr = fixedSizedChunks_.allocate(size);
-    }
-    heapMap_[addr + size] = HeapProp(addr, freeHeapMap);
+		!! heapMap_[addr + size] = HeapProp(addr, freeHeapMap);
+	}
     return addr;
 }
 
@@ -279,12 +306,14 @@ void DeviceMemoryStore::deallocateToFreeHeap(uintptr_t addr, size_t size) {
 uintptr_t DeviceMemoryStore::allocFromFixedSizedChunks(size_t size) {
     uintptr_t addr = fixedSizedChunks_.allocate(size);
     if (addr == (uintptr_t)-1) {
-        size_t size = 16 * (1 << 20);
-        uintptr_t newHeap = allocFromFreeHeap(size);
-        fixedSizedChunks_.addHeap(reinterpret_cast<uintptr_t>(newHeap), size);
+		/* FIXME: give more appropriate size. */
+        size_t newHeapSize = 16 * (1 << 20);
+        uintptr_t newHeap = allocFromFreeHeap(newHeapSize);
+		/* register heap map this region to tell which module to deallocate given pointers. */
+		heapMap_[newHeap + newHeapSize] = HeapProp(newHeap, fixedSizeSeries);
+		fixedSizedChunks_.addHeap(newHeap, newHeapSize);
         addr = fixedSizedChunks_.allocate(size);
-    }
-    heapMap_[addr + size] = HeapProp(addr, fixedSizeSeries);
+	}
     return addr;
 }
 
