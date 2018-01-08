@@ -2,6 +2,7 @@
 #define SQAOD_CUDA_DEVICEMEMORYSTORE_H__
 
 #include <map>
+#include <set>
 #include <common/Array.h>
 #include <assert.h>
 
@@ -9,15 +10,21 @@
 
 class HeapBitmap {
     typedef uint32_t  RegionBitmap;
+    typedef std::set<uintptr_t> FreeRegions;
     typedef std::map<uintptr_t, RegionBitmap> RegionMap;
 
 public:
+    enum {
+        nChunksInRegionInPo2 = 5,
+        nChunksInRegion = 32,
+        regionMask = 0x1fu,
+    };
+
     HeapBitmap() { }
 
-    void set(int nActiveBits, int sizeInPo2)  {
-        nActiveBits_ = nActiveBits;
-        sizeInPo2_ = sizeInPo2;
-        mask_ = RegionBitmap((1ull << nActiveBits) - 1);
+    void set(int chunkSizeShift)  {
+        addrShift_ = nChunksInRegionInPo2 + chunkSizeShift;
+        chunkSizeShift_ = chunkSizeShift;
     }
 
     void clear() {
@@ -26,27 +33,23 @@ public:
     }
     
     bool acquire(uintptr_t *addr);
-    bool tryRelease(uintptr_t addr, bool *regionReleased);
+    bool release(uintptr_t addr);
 
     void addRegion(uintptr_t addr);
-
-    int nActiveBits() const { return nActiveBits_; }
     
 private:
     bool isRegionFull(RegionBitmap region) const {
         return region == 0;
     }
     bool isRegionEmpty(RegionBitmap region) const {
-        return (region & mask_) == mask_;
+        return (region & regionMask) == regionMask;
     }
 
-    RegionMap freeRegions_;
+    FreeRegions freeRegions_;
     RegionMap regions_;
-    int nActiveBits_;
-    int sizeInPo2_;
-    RegionBitmap mask_;
+    int addrShift_;
+    int chunkSizeShift_;
 };
-
 
 
 class FixedSizedChunks {
@@ -54,48 +57,46 @@ public:
     void initialize();
     void finalize();
 
-    void addHeap(uintptr_t pv, size_t size);
+    size_t newHeapSize(size_t reqSize) const;
+
+    void addFreeHeap(uintptr_t pv, size_t size);
     
-    uintptr_t allocate(size_t size);
-    void deallocate(uintptr_t addr);
+    uintptr_t acquire(size_t *size);
+    void release(uintptr_t addr, size_t size);
 
 private:
-    HeapBitmap *allocateRegion(int layerIdx);
-
-    enum { nBitmapLayers = 14 };
+    enum { nBitmapLayers = 11 };
     HeapBitmap bitmapLayers_[nBitmapLayers];
+
+    typedef std::map<uintptr_t, size_t> AllocatedChunks;
 };
 
 
-
-
-class FreeHeapMap {
+class HeapMap {
 public:
-    FreeHeapMap();
+    HeapMap();
+    
+    void finalize();
 
-    void clearRegions() {
-        freeRegions_.clear();
-    }
-
+    size_t newHeapSize();
     void addFreeHeap(uintptr_t addr, size_t size);
     
-    uintptr_t acquire(size_t size);
-    
+    uintptr_t acquire(size_t *size);    
     void release(uintptr_t addr, size_t size);
     
 private:
     typedef std::map<uintptr_t, size_t> RegionMap;
     RegionMap freeRegions_;
+    size_t currentHeapSize_;
 };
-
 
 
 class DeviceMemoryStore {
     /* Memory chunks whose capacity is less than / equals to 256 MBytes are managed by memory store.
      * Chunks larger than 512 MB directly use cudaMalloc()/cudaFree(). */ 
     enum {
-        ChunkSizeToUseMalloc = 32 * (1 << 20), /* 32 M */
-        SmallChunkSize = 1024,            /* 32 K */
+        ChunkSizeToUseMalloc = 64 * (1 << 20), /* 64 M */
+        SmallChunkSize = 4 * (1 << 10),        /*  4 K */
     };
 public:
     void initialize();
@@ -108,32 +109,43 @@ private:
     uintptr_t cudaMalloc(size_t size);
     void cudaFree(void *pv);
 
-    uintptr_t allocFromFreeHeap(size_t size);
-    void deallocateToFreeHeap(uintptr_t addr, size_t size);
+    uintptr_t allocFromHeapMap(size_t *size);
+    void deallocateInHeapMap(uintptr_t addr, size_t size);
     
-    uintptr_t allocFromFixedSizedChunks(size_t size);
-    void deallocateInFixedSizedChunks(uintptr_t addr);
+    uintptr_t allocFromFixedSizedChunks(size_t *size);
+    void deallocateInFixedSizedChunks(uintptr_t addr, size_t);
     
-    enum MemSource {
-        fixedSizeSeries = 0,
-        freeHeapMap = 1,
-        fromCudaMalloc = 2,
-    };
-    struct HeapProp {
-        HeapProp() { }
-        HeapProp(size_t _size, enum MemSource _src)
-                : size(_size), src(_src) { }
-        size_t size;
-        enum MemSource src;
-    };
-
-    FreeHeapMap freeHeapMap_;
-    FixedSizedChunks fixedSizedChunks_;
-    
-    typedef std::map<uintptr_t, HeapProp> HeapMap;
+    /* Custom memory region manager */
     HeapMap heapMap_;
-
+    FixedSizedChunks fixedSizedChunks_;
+    /* Chunks allocated by cudaMalloc(). */
     sqaod::ArrayType<void*> d_mems_;
+
+    enum HeapSource {
+        fromNone = 0,
+        fromFixedSizedSeries = 1,
+        fromHeapMap = 2,
+        fromCudaMalloc = 3,
+    };
+
+    struct ChunkProp {
+        ChunkProp() { }
+        ChunkProp(uintptr_t _addr, size_t _size, enum HeapSource _src)
+                : addr(_addr), size(_size), src(_src) { }
+        uintptr_t addr;
+        size_t size;
+        enum HeapSource src;
+    };
+
+    struct ChunkPropLess {
+        bool operator()(const ChunkProp &lhs, const ChunkProp &rhs) const {
+            return lhs.addr < rhs.addr;
+        }
+    };
+
+    /* FIXME: use hash_map ? */
+    typedef std::set<ChunkProp, ChunkPropLess> ChunkPropSet;
+    ChunkPropSet chunkPropSet_;
 };
 
 
