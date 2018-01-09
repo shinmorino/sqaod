@@ -11,11 +11,16 @@
 
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 
-#pragma warning(push)
-#pragma warning(disable:4267)
-#include <Eigen/Core>
-#pragma warning(pop)
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable:4267)
+#endif
 
+#include <Eigen/Core>
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <common/Array.h>
 
