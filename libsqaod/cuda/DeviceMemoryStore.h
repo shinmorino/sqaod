@@ -23,8 +23,8 @@ public:
     HeapBitmap() { }
 
     void set(int chunkSizeShift)  {
-        addrShift_ = nChunksInRegionInPo2 + chunkSizeShift;
         chunkSizeShift_ = chunkSizeShift;
+        regionSize_ = nChunksInRegion << chunkSizeShift_;
     }
 
     void clear() {
@@ -47,8 +47,8 @@ private:
 
     FreeRegions freeRegions_;
     RegionMap regions_;
-    int addrShift_;
     int chunkSizeShift_;
+    int regionSize_;
 };
 
 
@@ -65,6 +65,10 @@ public:
     void release(uintptr_t addr, size_t size);
 
 private:
+    static
+    int layerIdxFromSize(size_t size);
+
+
     enum { nBitmapLayers = 11 };
     HeapBitmap bitmapLayers_[nBitmapLayers];
 

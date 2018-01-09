@@ -12,7 +12,11 @@ struct DeviceObjectAllocatorType {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
-    
+
+    void *allocate(size_t size);
+
+    void deallocate(void *pv);
+
     void allocate(DeviceMatrix *mat, int rows, int cols);
 
     void allocate(DeviceMatrix *mat, const sqaod::Dim &dim);
@@ -22,7 +26,7 @@ struct DeviceObjectAllocatorType {
     void allocate(DeviceScalar *sc);
     
     void deallocate(DeviceObject &obj);
-    
+
     /* Device Const */
     const DeviceScalar &d_const(const real &c) const;
 

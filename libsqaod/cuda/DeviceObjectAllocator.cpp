@@ -10,6 +10,16 @@ const int DeviceObjectAllocatorType<real>::nHostConsts_ = sizeof(hostConsts_) / 
 
 
 template<class real>
+void *DeviceObjectAllocatorType<real>::allocate(size_t size) {
+    return memStore_->allocate(size);
+}
+
+template<class real>
+void DeviceObjectAllocatorType<real>::deallocate(void *pv) {
+    return memStore_->deallocate(pv);
+}
+
+template<class real>
 void DeviceObjectAllocatorType<real>::allocate(DeviceMatrix *mat, int rows, int cols) {
     mat->d_data = (real*)memStore_->allocate(sizeof(real) * rows * cols);
     mat->rows = rows;

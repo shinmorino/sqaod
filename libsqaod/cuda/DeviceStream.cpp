@@ -26,7 +26,7 @@ DeviceStream::~DeviceStream() {
 }
 
 void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore) {
-    stream = stream;
+    stream_ = stream;
     memStore_ = &memStore;
     throwOnError(cublasCreate(&cublasHandle_));
     throwOnError(cublasSetStream(cublasHandle_, stream));
@@ -47,6 +47,7 @@ void DeviceStream::finalize() {
 /* sync on stream */
 void DeviceStream::synchronize() {
     throwOnError(cudaStreamSynchronize(stream_));
+    releaseTempObjects();
 }
 
 void DeviceStream::releaseTempObjects() {

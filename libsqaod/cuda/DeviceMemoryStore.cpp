@@ -1,7 +1,6 @@
 #include "DeviceMemoryStore.h"
 #include "cudafuncs.h"
 
-
 /*
  * FixedSizedChunks
  */
@@ -18,14 +17,17 @@ uint32_t __inline __builtin_ctz(uint32_t value) {
     else
         return 32;
 }
-uint32_t __inline __builtin_ctzll(uint64_t value) {
-    unsigned long trailing_zero = 0;
-    if (_BitScanForward64(&trailing_zero, value))
-        return trailing_zero;
-    else
-        return 64;
+uint32_t __inline __builtin_clzll(uint64_t value) {
+    if (value == 0) return 64;
+    unsigned long idx; // bit pos of the first bit set(1) from MSB to LSB.
+    _BitScanReverse64(&idx, value);
+    return 63 - idx;
 }
+/* Effective after Haswell */
+/* #define __builtin_clzll __lzcnt64 */
+
 #endif
+
 
 bool HeapBitmap::acquire(uintptr_t *addr) {
     if (freeRegions_.empty())
@@ -34,22 +36,26 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
     RegionMap::iterator rit = regions_.find(key);
     int iChunk = __builtin_ctz(rit->second);
     rit->second ^= (1 << iChunk);
-    *addr = (key << addrShift_) + (iChunk << chunkSizeShift_);
+    *addr = (key - regionSize_) + (iChunk << chunkSizeShift_);
     if (isRegionFull(rit->second))
         freeRegions_.erase(key);
     return true;
 }
 
 bool HeapBitmap::release(uintptr_t addr) {
-    uintptr_t key = addr >> addrShift_;
-    RegionMap::iterator it = regions_.find(key);
-    assert(it != regions_.end());
+    RegionMap::iterator it = regions_.lower_bound(addr);
+    if (it == regions_.end())
+        abort();
+    if (it->first <= addr)
+        abort();
 
+    uintptr_t key = it->first;
     if (isRegionFull(it->second)) {
         /* will have a vacant chunk, thus, add to freeRegions */
         freeRegions_.insert(key);
     }
-    int chunkIdx = (addr >> chunkSizeShift_) & regionMask;
+    uintptr_t regionBegin = key - regionSize_;
+    int chunkIdx = ((addr - regionBegin) >> chunkSizeShift_) & regionMask;
     it->second ^= (1 << chunkIdx);
     if (!isRegionEmpty(it->second))
         return false;
@@ -61,23 +67,23 @@ bool HeapBitmap::release(uintptr_t addr) {
 }
 
 void HeapBitmap::addRegion(uintptr_t addr) {
-    uintptr_t key = addr >> addrShift_;
+    uintptr_t key = addr + regionSize_;
     freeRegions_.insert(key);
     regions_[key] = regionMask;
 }
 
 void FixedSizedChunks::initialize() {
-    bitmapLayers_[ 0].set( 2); /*    4 byte / chunk, 128 bytes / region */
-    bitmapLayers_[ 1].set( 3); /*    8 byte / chunk, 256 bytes / region */
-    bitmapLayers_[ 2].set( 4); /*   16 byte / chunk, 512 bytes / region */
-    bitmapLayers_[ 3].set( 5); /*   32 byte / chunk,   1 K / region */
-    bitmapLayers_[ 4].set( 6); /*   64 byte / chunk    2 K / region */
-    bitmapLayers_[ 5].set( 7); /*  128 byte / chunk,   4 K / region */
-    bitmapLayers_[ 6].set( 8); /*  256 byte / chunk,   8 K / region */
-    bitmapLayers_[ 7].set( 9); /*  512 byte / chunk,  16 K / region */
-    bitmapLayers_[ 8].set(10); /*   1k byte / chunk,  32 K / region */
-    bitmapLayers_[ 9].set(11); /*   2k byte / chunk,  64 K / region */
-    bitmapLayers_[10].set(12); /*   4k byte / chunk, 128 K / region */
+    bitmapLayers_[ 0].set( 2); /*    4 byte / chunk, 128 bytes / region parent : 5 */
+    bitmapLayers_[ 1].set( 3); /*    8 byte / chunk, 256 bytes / region parent : 6 */
+    bitmapLayers_[ 2].set( 4); /*   16 byte / chunk, 512 bytes / region parent : 7 */
+    bitmapLayers_[ 3].set( 5); /*   32 byte / chunk,   1 K     / region parent : 8  */
+    bitmapLayers_[ 4].set( 6); /*   64 byte / chunk    2 K     / region parent : 9  */
+    bitmapLayers_[ 5].set( 7); /*  128 byte / chunk,   4 K     / region parent : 10 */
+    bitmapLayers_[ 6].set( 8); /*  256 byte / chunk,   8 K     / region */
+    bitmapLayers_[ 7].set( 9); /*  512 byte / chunk,  16 K     / region */
+    bitmapLayers_[ 8].set(10); /*   1k byte / chunk,  32 K     / region */
+    bitmapLayers_[ 9].set(11); /*   2k byte / chunk,  64 K     / region */
+    bitmapLayers_[10].set(12); /*   4k byte / chunk, 128 K     / region */
 }
 
 void FixedSizedChunks::finalize() {
@@ -86,38 +92,56 @@ void FixedSizedChunks::finalize() {
 }
 
 size_t FixedSizedChunks::newHeapSize(size_t reqSize) const {
+    int layerIdx = layerIdxFromSize(reqSize);
+    if (layerIdx <= 5)
+        return reqSize * HeapBitmap::nChunksInRegion * HeapBitmap::nChunksInRegion;
     return reqSize * HeapBitmap::nChunksInRegion;
 }
 
 void FixedSizedChunks::addFreeHeap(uintptr_t pv, size_t size) {
     assert(size % (1 << 7) == 0);
-    int layerIdx = __builtin_ctzll(size) - 7; // log2(32 * 4)
+    int layerIdx = layerIdxFromSize(size / HeapBitmap::nChunksInRegion);
     bitmapLayers_[layerIdx].addRegion(pv);
 }
 
 uintptr_t FixedSizedChunks::acquire(size_t *size) {
-    int size4 = (*size + 3) / 4;
-    *size = size4 * 4; /* round up to multiple of 4. */
-    /* find appropriate slices */
-    int layerIdx = __builtin_ctzll(size4);
+    /* get the idx for the appropriate layer */
+    int layerIdx = layerIdxFromSize(*size);
+    *size = 1ull << (layerIdx + 2); /* round up to power of 2. */
     assert((0 <= layerIdx) && (layerIdx < nBitmapLayers));
     
     HeapBitmap &bitmap = bitmapLayers_[layerIdx];
     uintptr_t addr;
     if (bitmap.acquire(&addr))
         return addr;
+    if (5 < layerIdx)
+        return -1;
+    
+    const int parentLayerIdx = layerIdx + 5;
+    HeapBitmap &parentBitmap = bitmapLayers_[parentLayerIdx];
+    if (parentBitmap.acquire(&addr)) {
+        bitmap.addRegion(addr);
+        bool res = bitmap.acquire(&addr);
+        assert(res);
+        return addr;
+    }
+
     return (uintptr_t)-1;
 }
 
 void FixedSizedChunks::release(uintptr_t addr, size_t size) {
-    size = (size + 3) / 4; /* round up to multiple of 4. */
-    int layerIdx = __builtin_ctzll(size);
+    int layerIdx = layerIdxFromSize(size);
     bool regionReleased = bitmapLayers_[layerIdx].release(addr);
     /* process releasing region */
     if (regionReleased) {
         /* FIXME: bitmap reagion is empty,
          * returning a region to parent memory store. */
     }
+}
+
+int FixedSizedChunks::layerIdxFromSize(size_t size) {
+    size_t size4 = (size + 3) / 4;
+    return int(sizeof(size_t) * 8 - __builtin_clzll(size4 - 1));
 }
 
 /*
@@ -141,7 +165,8 @@ void HeapMap::addFreeHeap(uintptr_t heap, size_t size) {
 }
 
 uintptr_t HeapMap::acquire(size_t *size) {
-    *size &= ((size_t)-1) - 255;
+    *size += 511;
+    *size &= ((size_t)-1) - 511;
     RegionMap::iterator it = freeRegions_.begin();
     for ( ; it != freeRegions_.end(); ++it) {
         if (*size <= it->second)
@@ -179,7 +204,7 @@ void HeapMap::release(uintptr_t addr, size_t size) {
     it = freeRegions_.lower_bound(addr);
     if (it != freeRegions_.end()) {
         if (addr + size == it->first) {
-            int newSize = size + it->second;
+            size_t newSize = size + it->second;
             freeRegions_.erase(it);
             freeRegions_[addr] = newSize;
             return;
@@ -202,7 +227,8 @@ void DeviceMemoryStore::finalize() {
     fixedSizedChunks_.finalize();
     heapMap_.finalize();
     for (size_t idx = 0; idx < d_mems_.size(); ++idx)
-        deallocate(d_mems_[idx]);
+        cudaFree(d_mems_[idx]);
+    d_mems_.clear();
 }
 
 
