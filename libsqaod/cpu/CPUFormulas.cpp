@@ -206,7 +206,19 @@ void BGFuncs<real>::calculate_E(Vector *E,
 
 template<class real>
 void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
-                                const EigenMatrix &b0, const EigenMatrix &b1, const EigenMatrix &W,
+    const Vector &b0, const Vector &b1, const Matrix &W,
+    PackedBits xBegin0, PackedBits xEnd0,
+    PackedBits xBegin1, PackedBits xEnd1) {
+
+    batchSearch(E, xPairs, b0.mapToRowVector(), b1.mapToRowVector(), W.map(), xBegin0, xEnd0, xBegin1, xEnd1);
+}
+    
+
+
+
+template<class real>
+void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
+                                const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W,
                                 PackedBits xBegin0, PackedBits xEnd0,
                                 PackedBits xBegin1, PackedBits xEnd1) {
     int nBatch0 = int(xEnd0 - xBegin0);
