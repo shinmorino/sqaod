@@ -149,7 +149,7 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         int neibour0 = (m_ + y - 1) % m_;
         int neibour1 = (y + 1) % m_;
         dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
-        real threshold = (dE < real(0.)) ? 1. : std::exp(-dE / kT);
+        real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
         if (threshold > random_.random<real>())
             matQ_(y, x) = - qyx;
     }
