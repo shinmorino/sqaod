@@ -44,9 +44,11 @@
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-
+#include <time.h>
 /* smorino : Modified */
-
+void Random::seed() {
+    seed((unsigned long)time(NULL));
+}
 
 #include <stdio.h>
 

@@ -120,7 +120,7 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::initAnneal() {
     if (!(annState_ & annRandSeedGiven))
-        seed((unsigned long long)time(NULL));
+        random_.seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N0_ + N1_) / 4);

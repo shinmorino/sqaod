@@ -95,7 +95,7 @@ void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::initAnneal() {
     if (!(annState_ & annRandSeedGiven))
-        seed((unsigned long long)time(NULL));
+        random_.seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N_) / 4);

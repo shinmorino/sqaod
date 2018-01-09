@@ -8,6 +8,8 @@ public:
         mti = N + 1;
     }
 
+    void seed();
+
     void seed(unsigned long s);
 
     void initByArray(unsigned long initKey[], int keyLength);
