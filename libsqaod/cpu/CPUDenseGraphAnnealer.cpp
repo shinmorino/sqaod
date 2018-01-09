@@ -1,7 +1,6 @@
 #include "CPUDenseGraphAnnealer.h"
 #include "CPUFormulas.h"
 #include <common/Common.h>
-#include <time.h>
 
 namespace sqd = sqaod;
 
@@ -95,8 +94,8 @@ void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::initAnneal() {
-    if (!(annState_ & annRandSeedGiven)) /* FIXME: add defaultSeed function to provide seed library-wide. */
-        seed((unsigned long)time(NULL));
+    if (!(annState_ & annRandSeedGiven))
+        seed((unsigned long long)time(NULL));
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N_) / 4);
@@ -150,7 +149,7 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         int neibour0 = (m_ + y - 1) % m_;
         int neibour1 = (y + 1) % m_;
         dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
-        real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+        real threshold = (dE < real(0.)) ? 1. : std::exp(-dE / kT);
         if (threshold > random_.random<real>())
             matQ_(y, x) = - qyx;
     }

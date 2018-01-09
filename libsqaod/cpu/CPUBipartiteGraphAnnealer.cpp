@@ -35,8 +35,8 @@ void CPUBipartiteGraphAnnealer<real>::getProblemSize(int *N0, int *N1, int *m) c
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector &b1,
                                                  const Matrix &W, OptimizeMethod om) {
-    N0_ = (int)b0.size;
-    N1_ = (int)b1.size;
+    N0_ = b0.size;
+    N1_ = b1.size;
     h0_.resize(N0_);
     h1_.resize(N1_);
     J_.resize(N1_, N0_);

@@ -18,7 +18,7 @@ public:
 
     double randomf64();
 
-    float randomf32();
+    double randomf32();
 
     template<class real>
     real random();

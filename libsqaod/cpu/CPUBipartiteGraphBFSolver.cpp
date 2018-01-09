@@ -65,8 +65,8 @@ template<class real>
 void CPUBipartiteGraphBFSolver<real>::initSearch() {
     minE_ = FLT_MAX;
     xPackedPairs_.clear();
-    x0max_ = 1ull << N0_;
-    x1max_ = 1ull << N1_;
+    x0max_ = 1 << N0_;
+    x1max_ = 1 << N1_;
 }
 
 template<class real>
@@ -80,7 +80,7 @@ void CPUBipartiteGraphBFSolver<real>::finSearch() {
         xPairs_.pushBack(BitsPairArray::ValueType(x0, x1));
     }
     real tmpE = (om_ == optMaximize) ? -minE_ : minE_;
-    E_.resize((SizeType)xPackedPairs_.size());
+    E_.resize(xPackedPairs_.size());
     E_.mapToRowVector().array() = tmpE;
 }
 

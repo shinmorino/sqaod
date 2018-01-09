@@ -43,7 +43,6 @@ template<class real>
 struct BGFuncs {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenMappedMatrixType<real> EigenMappedMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
     typedef EigenMappedRowVectorType<real> EigenMappedRowVector;
@@ -91,7 +90,7 @@ struct BGFuncs {
 
     static
     void batchSearch(real *E, PackedBitsPairArray *xList,
-                     const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W,
+                     const EigenMatrix &b0, const EigenMatrix &b1, const EigenMatrix &W,
                      PackedBits xBegin0, PackedBits xEnd0,
                      PackedBits xBegin1, PackedBits xEnd1);
 };

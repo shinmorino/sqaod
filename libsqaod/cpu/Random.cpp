@@ -143,9 +143,9 @@ unsigned long Random::randInt(int high) {
 
 
 /* generates a random number on [0,1)-real-interval */
-float Random::randomf32(void)
+double Random::randomf32(void)
 {
-    return randInt32()* float(1./4294967296.); 
+    return randInt32()*(1.0/4294967296.0); 
     /* divided by 2^32 */
 }
 
