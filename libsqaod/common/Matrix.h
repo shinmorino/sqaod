@@ -11,7 +11,12 @@
 
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 
+#pragma warning(push)
+#pragma warning(disable:4267)
 #include <Eigen/Core>
+#pragma warning(pop)
+
+
 #include <common/Array.h>
 
 namespace sqaod {
