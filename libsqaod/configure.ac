@@ -14,6 +14,20 @@ LT_INIT([disable-static])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([m4])
 
+
+# CUDA macros
+# https://tschoonj.github.io/blog/2014/05/10/building-a-cuda-device-function-library-with-autotools/
+# https://www.gnu.org/software/automake/manual/html_node/Usage-of-Conditionals.html
+
+AC_ARG_ENABLE([cuda],
+[  --enable-cuda    enable CUDA solvers],
+[case "${enableval}" in
+  yes) cuda=true ;;
+  no)  cuda=false ;;
+  *) cuda_prefix="/usr/local/cuda";;
+esac],[cuda=false])
+AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
+
 AC_PROG_CC
 AC_PROG_CXX
 #if test x$prefix = xNONE ; then
@@ -24,13 +38,14 @@ AC_PROG_CXX
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
-CFLAGS="-std=c++11 -O2 -Wall -ggdb"
-#CFLAGS="-std=c++11 -Wall -ggdb"
+#CFLAGS="-std=c++11 -O2 -Wall -ggdb"
+CFLAGS="-std=c++11 -Wall -ggdb"
 CXXFLAGS=$CFLAGS
 
 AC_SUBST([CFLAGS], $CFLAGS)
 AC_SUBST([CXXFLAGS], $CFLAGS)
 
-
 AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
+AM_COND_IF([CUDA_ENABLED],
+           [AC_CONFIG_FILES([cuda/Makefile])])
 AC_OUTPUT
