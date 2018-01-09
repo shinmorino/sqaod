@@ -22,8 +22,8 @@ void sqaod::unpackBits(Bits *unpacked, const PackedBits packed, int N) {
 
 template<class real>
 bool sqaod::isSymmetric(const MatrixType<real> &W) {
-    for (int j = 0; j < W.rows; ++j) {
-        for (int i = 0; i < j + 1; ++i)
+    for (SizeType j = 0; j < W.rows; ++j) {
+        for (SizeType i = 0; i < j + 1; ++i)
             if (W(i, j) != W(j, i))
                 return false;
     }
@@ -40,11 +40,11 @@ bool sqaod::isSymmetric(const MatrixType<real> &W) {
 
 
 template
-void ::sqaod::createBitsSequence<double>(double *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence<double>(double *bits, int nBits, PackedBits bBegin, PackedBits bEnd);
 template
-void ::sqaod::createBitsSequence<float>(float *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence<float>(float *bits, int nBits, PackedBits bBegin, PackedBits bEnd);
 template
-void ::sqaod::createBitsSequence<char>(char *bits, int nBits, int bBegin, int bEnd);
+void ::sqaod::createBitsSequence<char>(char *bits, int nBits, PackedBits bBegin, PackedBits bEnd);
 
 template
 bool ::sqaod::isSymmetric<float>(const sqaod::MatrixType<float> &W);

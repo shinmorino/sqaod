@@ -9,6 +9,8 @@
 #  undef __CUDACC_VER__
 #endif
 
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
+
 #include <Eigen/Core>
 #include <common/Array.h>
 
@@ -37,11 +39,11 @@ typedef EigenMatrixType<char> EigenBitMatrix;
 /* light-weight matrix classes for C++ API */
     
 struct Dim {
-    Dim(int _rows, int _cols) {
+    Dim(SizeType _rows, SizeType _cols) {
         rows = _rows;
         cols = _cols;
     }
-    int rows, cols;
+    SizeType rows, cols;
 };
 
 template<class V>
@@ -54,7 +56,7 @@ struct MatrixType {
         resetState();
     }
 
-    MatrixType(int _rows, int _cols) {
+    MatrixType(SizeType _rows, SizeType _cols) {
         resetState();
         allocate(_rows, _cols);
     }
@@ -105,7 +107,7 @@ struct MatrixType {
         mapped = false;
     }
     
-    void set(V *_data, int _rows, int _cols) {
+    void set(V *_data, SizeType _rows, SizeType _cols) {
         if (!mapped)
             free();
         mapped = true;
@@ -145,7 +147,7 @@ struct MatrixType {
         src.data = nullptr;
     }
     
-    void allocate(int _rows, int _cols) {
+    void allocate(SizeType _rows, SizeType _cols) {
         assert(!mapped);
         rows = _rows;
         cols = _cols;
@@ -160,7 +162,7 @@ struct MatrixType {
         data = nullptr;
     }
     
-    void resize(int _rows, int _cols) {
+    void resize(SizeType _rows, SizeType _cols) {
         assert(!mapped); /* mapping state not allowed */
         if ((_rows != rows) || (_cols != cols)) {
             ::free(data);
@@ -168,11 +170,11 @@ struct MatrixType {
         }
     }
 
-    V &operator()(int r, int c) {
+    V &operator()(IdxType r, IdxType c) {
         return data[r * cols + c];
     }
     
-    const V &operator()(int r, int c) const {
+    const V &operator()(IdxType r, IdxType c) const {
         return data[r * cols + c];
     }
     
@@ -191,7 +193,7 @@ struct MatrixType {
         return newMat;
     }
     
-    int rows, cols;
+    SizeType rows, cols;
     V *data;
     bool mapped;
 };
@@ -211,7 +213,7 @@ struct VectorType {
         resetState();
     }
 
-    VectorType(int _size) {
+    VectorType(SizeType _size) {
         resetState();
         allocate(_size);
     }
@@ -257,7 +259,7 @@ struct VectorType {
         mapped = false;
     }
     
-    void set(V *_data, int _size) {
+    void set(V *_data, SizeType _size) {
         if (!mapped)
             free();
         mapped = true;
@@ -303,7 +305,7 @@ struct VectorType {
         src.data = nullptr;
     }
     
-    void allocate(int _size) {
+    void allocate(SizeType _size) {
         assert(!mapped);
         /* FIXME: alligned mem allocator */
         size = _size;
@@ -318,7 +320,7 @@ struct VectorType {
         data = nullptr;
     }
     
-    void resize(int _size) {
+    void resize(SizeType _size) {
         assert(!mapped);
         if (_size != size) {
             ::free(data);
@@ -326,11 +328,11 @@ struct VectorType {
         }
     }
 
-    V &operator()(int idx) {
+    V &operator()(IdxType idx) {
         return data[idx];
     }
     
-    const V &operator()(int idx) const {
+    const V &operator()(IdxType idx) const {
         return data[idx];
     }
     
@@ -358,7 +360,7 @@ struct VectorType {
         return newVec;
     }
     
-    int size;
+    SizeType size;
     V *data;
     bool mapped;
 };

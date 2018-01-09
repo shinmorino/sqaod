@@ -6,6 +6,10 @@
 
 namespace sqaod {
 
+/* FIXME: create a seperate file to store macros and typedefs. */
+typedef unsigned int SizeType;
+typedef int IdxType;
+
 template<class V> struct ValueProp { enum { POD = false }; };
 template<> struct ValueProp<char> { enum { POD = true }; };
 template<> struct ValueProp<unsigned char> { enum { POD = true }; };
