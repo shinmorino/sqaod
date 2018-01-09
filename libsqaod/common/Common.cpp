@@ -5,8 +5,8 @@
 
 
 template<class real>
-void sqaod::createBitsSequence(real *bits, int nBits, int bBegin, int bEnd) {
-    for (int b = bBegin; b < bEnd; ++b) {
+void sqaod::createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd) {
+    for (PackedBits b = bBegin; b < bEnd; ++b) {
         for (int pos = nBits - 1; pos != -1; --pos)
             bits[pos] = ((b >> pos) & 1);
         bits += nBits;

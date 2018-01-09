@@ -21,7 +21,7 @@ enum AnnealerState {
 
     
 template<class real>
-void createBitsSequence(real *bits, int nBits, int bBegin, int bEnd);
+void createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd);
     
 void unpackBits(Bits *unpacked, const PackedBits packed, int N);
     
