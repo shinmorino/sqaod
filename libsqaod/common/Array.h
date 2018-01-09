@@ -74,7 +74,6 @@ public:
         size_ = 0;
     }
 
-
     void pushBack(const V &v) {
         if (size_ == capacity_)
             reserve(capacity_ * 2);

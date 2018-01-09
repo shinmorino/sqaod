@@ -57,19 +57,19 @@ void CPUDenseGraphBFSolver<real>::initSearch() {
     minE_ = FLT_MAX;
     packedXList_.clear();
     xList_.clear();
-    xMax_ = 1 << N_;
+    xMax_ = 1ull << N_;
 }
 
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::finSearch() {
     xList_.clear();
-    for (size_t idx = 0; idx < packedXList_.size(); ++idx) {
+    for (int idx = 0; idx < packedXList_.size(); ++idx) {
         Bits bits;
         unpackBits(&bits, packedXList_[idx], N_);
         xList_.pushBack(bits);
     }
-    E_.resize(packedXList_.size());
+    E_.resize((SizeType)packedXList_.size());
     E_.mapToRowVector().array() = (om_ == optMaximize) ? - minE_ : minE_;
 }
 

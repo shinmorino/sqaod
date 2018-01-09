@@ -27,8 +27,6 @@ public:
 
     void setNumTrotters(int m);
 
-    real get_minE() const;
-
     const Vector &get_E() const;
 
     const BitsArray &get_x() const;

@@ -8,5 +8,9 @@
 *.so.0
 .deps
 .libs
+*.obj
+Debug
+Release
+x86
 
 
