@@ -2,6 +2,7 @@
 
 using namespace sqaod_cuda;
 using sqaod::Dim;
+using sqaod::SizeType;
 
 template<class real>
 void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
@@ -198,16 +199,16 @@ sqaod::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp
 }
 
 template<class real>
-uint DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp opA,
-                                           const DeviceVector &x) {
+SizeType DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp opA,
+                                               const DeviceVector &x) {
     Dim Adim = getMatrixShape(A, opA);
     THROW_IF(Adim.cols != x.size, "Shape does not match on matrix-vector multiplication.");  
     return A.rows;
 }
 
 template<class real>
-uint DeviceMathType<real>::getProductShape(const DeviceVector &x,
-                                           const DeviceMatrix &A, MatrixOp opA) {
+SizeType DeviceMathType<real>::getProductShape(const DeviceVector &x,
+                                               const DeviceMatrix &A, MatrixOp opA) {
     Dim Adim = getMatrixShape(A, opA);
     THROW_IF(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
     return A.cols;

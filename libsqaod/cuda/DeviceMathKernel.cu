@@ -1,7 +1,9 @@
-#include "DeviceMath.h"
 #include "cudafuncs.h"
+#include "DeviceMath.h"
 
+using sqaod::SizeType;
 using namespace sqaod_cuda;
+
 
 namespace {
 
@@ -31,14 +33,14 @@ AddAssignOp<real> AddAssign(real mulFactor) {
 
 
 template<class real>  static __global__
-void scaleKernel(real *d_y, real alpha, const real *d_x, uint size) {
+void scaleKernel(real *d_y, real alpha, const real *d_x, SizeType size) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < size)
         d_y[gid] += alpha * d_x[gid];
 }
 
 template<class real>
-void DeviceMathType<real>::scale(real *d_y, real alpha, const real *d_x, uint size) {
+void DeviceMathType<real>::scale(real *d_y, real alpha, const real *d_x, SizeType size) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
     addKernel<<<gridDim, blockDim>>>(d_y, alpha, d_x, size);
@@ -47,7 +49,7 @@ void DeviceMathType<real>::scale(real *d_y, real alpha, const real *d_x, uint si
 
 template<class real, template<class> class assignOp>
 static __global__
-void scaleBroadcastKernel(real *d_y, real alpha, const real *d_c, uint size,
+void scaleBroadcastKernel(real *d_y, real alpha, const real *d_c, SizeType size,
                           assignOp<real> assign) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < size)
@@ -55,7 +57,7 @@ void scaleBroadcastKernel(real *d_y, real alpha, const real *d_c, uint size,
 }
 
 template<class real>
-void DeviceMathType<real>::scaleBroadcast(real *d_y, real alpha, const real *d_c, uint size,
+void DeviceMathType<real>::scaleBroadcast(real *d_y, real alpha, const real *d_c, SizeType size,
                                           real addAssignFactor) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
@@ -68,19 +70,19 @@ void DeviceMathType<real>::scaleBroadcast(real *d_y, real alpha, const real *d_c
 }
 
 template<class real, template<class> class assignOp>  static __global__
-void scaleBroadcastVectorKernel(real *d_A, real alpha, const real *d_x, uint size,
+void scaleBroadcastVectorKernel(real *d_A, real alpha, const real *d_x, SizeType size,
                                 assignOp<real> assign) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
     if (gidx < size) {
-        uint pos = gidx + size * gidy;
+        SizeType pos = gidx + size * gidy;
         assign(d_A[pos], alpha * d_x[gidx]);
     }
 }
 
 template<class real>
-void DeviceMathType<real>::scaleBroadcastVector(real *d_A, real alpha, const real *d_x, uint size,
-                                                uint nBatch, real addAssignFactor) {
+void DeviceMathType<real>::scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
+                                                SizeType nBatch, real addAssignFactor) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x), divru(nBatch, blockDim.y));
     if (addAssignFactor == 0.)

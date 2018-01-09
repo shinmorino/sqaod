@@ -52,7 +52,7 @@ const DeviceScalarType<real> &DeviceObjectAllocatorType<real>::d_const(const rea
     if (c == 0.)
         return *d_zero_;
     const real *pos = std::find(hostConsts_, hostConsts_ + nHostConsts_, c);
-    int idx = pos - hostConsts_;
+    int idx = int(pos - hostConsts_);
     THROW_IF(idx == nHostConsts_, "Constant not registered.");
     return *constReg_[idx];
 }
@@ -83,5 +83,5 @@ void DeviceObjectAllocatorType<real>::finalize() {
     d_consts_ = NULL;
 }
 
-template class sqaod_cuda::DeviceObjectAllocatorType<float>;
-template class sqaod_cuda::DeviceObjectAllocatorType<double>;
+template struct sqaod_cuda::DeviceObjectAllocatorType<float>;
+template struct sqaod_cuda::DeviceObjectAllocatorType<double>;

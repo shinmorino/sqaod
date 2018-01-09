@@ -26,7 +26,7 @@ enum BatchOp {
 
 template<class real>
 struct DeviceMathType {
-    typedef unsigned int uint;
+    typedef sqaod::SizeType SizeType;
     
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
@@ -83,8 +83,8 @@ struct DeviceMathType {
     sqaod::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);
     sqaod::Dim getProductShape(const DeviceMatrix &A, MatrixOp opA,
                                const DeviceMatrix &B, MatrixOp opB);
-    uint getProductShape(const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
-    uint getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
+    SizeType getProductShape(const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
+    SizeType getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
 
     /* Device Const */
     const DeviceScalar &d_const(real c);
@@ -94,35 +94,35 @@ struct DeviceMathType {
     /* temporary objects */
     DeviceMatrix *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);
     DeviceMatrix *tempDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
-    DeviceVector *tempDeviceVector(uint size, const char *signature = NULL);
+    DeviceVector *tempDeviceVector(SizeType size, const char *signature = NULL);
     DeviceScalar *tempDeviceScalar(const char *signature = NULL);
-    void *tempAllocate(uint size);
+    void *tempAllocate(SizeType size);
     /* objects on heap */
     DeviceMatrix *newDeviceMatrix(int rows, int cols, const char *signature = NULL);
     DeviceMatrix *newDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
-    DeviceVector *newDeviceVector(uint size, const char *signature = NULL);
+    DeviceVector *newDeviceVector(SizeType size, const char *signature = NULL);
     DeviceScalar *newDeviceScalar(const char *signature = NULL);
-    void *allocate(uint size);
+    void *allocate(size_t size);
 
     /* CUDA funcs */
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
 
-    void scale(real *d_y, real alpha, const real *d_x, uint size);
-    void scaleBroadcast(real *d_x, real alpha, const real *d_c, uint size, real addAssignFactor);
-    void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, uint size,
-                              uint nBatch, real addAssignFactor);
-    void scaleBroadcastScalars(real *d_A, real alpha, const real *d_x, uint size,
-                               uint nBatch, real addAssignFactor);
+    void scale(real *d_y, real alpha, const real *d_x, SizeType size);
+    void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
+    void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
+                              SizeType nBatch, real addAssignFactor);
+    void scaleBroadcastScalars(real *d_A, real alpha, const real *d_x, SizeType size,
+                               SizeType nBatch, real addAssignFactor);
 
-    void sum(real *d_dst, real alpha, const real *d_x, uint size, real addAssignFactor);
-    void sumGather(real *d_dst, real alpha, const real *d_x, uint size, uint stride, int offset);
-    void sumBatched(real *d_x, real alpha, const real *d_A, uint size, uint nBatch);
-    void dot(real *d_c, real alpha, const real *d_x, const real *d_y, uint size,
+    void sum(real *d_dst, real alpha, const real *d_x, SizeType size, real addAssignFactor);
+    void sumGather(real *d_dst, real alpha, const real *d_x, SizeType size, SizeType stride, int offset);
+    void sumBatched(real *d_x, real alpha, const real *d_A, SizeType size, SizeType nBatch);
+    void dot(real *d_c, real alpha, const real *d_x, const real *d_y, SizeType size,
              real addAssignFactor);
-    void dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, uint size,
-                    uint nBatch, real addAssignFactor);
+    void dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType size,
+                    SizeType nBatch, real addAssignFactor);
 
-    void min(real *d_min, const real *d_values, uint size);
+    void min(real *d_min, const real *d_values, SizeType size);
 
     /* BLAS */
     void gemv(MatrixOp op, const DeviceScalar &d_alpha,
@@ -172,7 +172,7 @@ DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(const sqaod::Dim 
 }
 
 template<class real> inline
-DeviceVectorType<real> *DeviceMathType<real>::tempDeviceVector(uint size,
+DeviceVectorType<real> *DeviceMathType<real>::tempDeviceVector(SizeType size,
                                                                const char *signature) {
     return devStream_->tempDeviceVector<real>(size, signature);
 }
@@ -183,7 +183,7 @@ DeviceScalarType<real> *DeviceMathType<real>::tempDeviceScalar(const char *signa
 }
 
 template<class real> inline
-void *DeviceMathType<real>::tempAllocate(uint size) {
+void *DeviceMathType<real>::tempAllocate(SizeType size) {
     return devStream_->allocate(size);
 }
 
