@@ -116,7 +116,7 @@ PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    int N, m;
+    sqaod::SizeType N, m;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->getProblemSize(&N, &m);
     else if (isFloat32(dtype))
@@ -124,14 +124,14 @@ PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     else
         RAISE_INVALID_DTYPE(dtype);
 
-    return Py_BuildValue("ii", N, m);
+    return Py_BuildValue("II", N, m);
 }
     
 extern "C"
 PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    int m = 0;
-    if (!PyArg_ParseTuple(args, "OiO", &objExt, &m, &dtype))
+    sqaod::SizeType m = 0;
+    if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
         return NULL;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->setNumTrotters(m);
@@ -174,7 +174,7 @@ template<class real>
 PyObject *internal_dg_annealer_get_x(PyObject *objExt) {
     sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    int N, m;
+    sqaod::SizeType N, m;
     ann->getProblemSize(&N, &m);
     const sqaod::BitsArray &xList = ann->get_x();
     PyObject *list = PyList_New(xList.size());
@@ -264,7 +264,7 @@ template<class real>
 PyObject *internal_dg_annealer_get_q(PyObject *objExt) {
     sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    int N, m;
+    sqaod::SizeType N, m;
     ann->getProblemSize(&N, &m);
     const sqaod::BitsArray &qList = ann->get_q();
     PyObject *list = PyList_New(qList.size());

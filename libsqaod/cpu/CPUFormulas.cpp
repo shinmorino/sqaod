@@ -156,22 +156,12 @@ void BGFuncs<real>::calculate_hJc(Vector *h0, Vector *h1, Matrix *J, real *c,
     const EigenMappedMatrix eW(W.map());
     EigenMappedRowVector eh0(h0->mapToRowVector()), eh1(h1->mapToRowVector());
     EigenMappedMatrix eJ(J->map());
+    // calculate_hJc(&eh0, &eh1, &eJ, c, eb0, eb1, W);
 
     eJ = real(0.25) * eW;
     eh0 = real(0.25) * eW.colwise().sum()+ real(0.5) * eb0;
     eh1 = real(0.25) * eW.rowwise().sum().transpose() + real(0.5) * eb1;
     *c = real(0.25) * eW.sum() + real(0.5) * (eb0.sum() + eb1.sum());
-}
-
-
-template<class real>
-void BGFuncs<real>::calculate_hJc(EigenMatrix *h0, EigenMatrix *h1, EigenMatrix *J, real *c,
-                                  const EigenMatrix &b0, const EigenMatrix &b1, const EigenMatrix &W) {
-
-    *J = real(0.25) * W;
-    *h0 = real(0.25) * W.colwise().sum().transpose() + real(0.5) * b0;
-    *h1 = real(0.25) * W.rowwise().sum() + real(0.5) * b1;
-    *c = real(0.25) * W.sum() + real(0.5) * (b0.sum() + b1.sum());
 }
 
 
@@ -212,9 +202,18 @@ void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
 
     batchSearch(E, xPairs, b0.mapToRowVector(), b1.mapToRowVector(), W.map(), xBegin0, xEnd0, xBegin1, xEnd1);
 }
-    
 
+/* Eigen versions */
 
+template<class real>
+void BGFuncs<real>::calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenMatrix *J, real *c,
+                                  const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W) {
+
+    *J = real(0.25) * W;
+    *h0 = real(0.25) * W.colwise().sum().transpose() + real(0.5) * b0;
+    *h1 = real(0.25) * W.rowwise().sum() + real(0.5) * b1;
+    *c = real(0.25) * W.sum() + real(0.5) * (b0.sum() + b1.sum());
+}
 
 template<class real>
 void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,

@@ -46,7 +46,7 @@ void CPUBipartiteGraphBFSolver<real>::setProblem(const Vector &b0, const Vector 
 }
 
 template<class real>
-void CPUBipartiteGraphBFSolver<real>::setTileSize(int tileSize0, int tileSize1) {
+void CPUBipartiteGraphBFSolver<real>::setTileSize(SizeType tileSize0, SizeType tileSize1) {
     tileSize0_ = tileSize0;
     tileSize1_ = tileSize1;
 }
@@ -98,8 +98,8 @@ void CPUBipartiteGraphBFSolver<real>::searchRange(PackedBits iBegin0, PackedBits
 
 template<class real>
 void CPUBipartiteGraphBFSolver<real>::search() {
-    int iStep0 = (int)std::min((unsigned long long)tileSize0_, x0max_);
-    int iStep1 = (int)std::min((unsigned long long)tileSize1_, x1max_);
+    PackedBits iStep0 = std::min(tileSize0_, x0max_);
+    PackedBits iStep1 = std::min(tileSize1_, x1max_);
 
     initSearch();
     for (PackedBits iTile1 = 0; iTile1 < x1max_; iTile1 += iStep1) {

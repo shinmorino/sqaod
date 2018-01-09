@@ -21,11 +21,11 @@ public:
 
     void seed(unsigned long seed);
 
-    void getProblemSize(int *N, int *m) const;
+    void getProblemSize(SizeType *N, SizeType *m) const;
 
     void setProblem(const Matrix &W, OptimizeMethod om);
 
-    void setNumTrotters(int m);
+    void setNumTrotters(SizeType m);
 
     const Vector &get_E() const;
 
@@ -52,7 +52,7 @@ private:
     int annState_;
     
     Random random_;
-    int N_, m_;
+    SizeType N_, m_;
     OptimizeMethod om_;
     Vector E_;
     BitsArray bitsX_;

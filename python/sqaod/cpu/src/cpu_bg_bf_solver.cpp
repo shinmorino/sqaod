@@ -120,8 +120,8 @@ PyObject *bg_bf_solver_set_problem(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *bg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    int tileSize0, tileSize1;
-    if (!PyArg_ParseTuple(args, "OiiO", &objExt, &tileSize0, &tileSize1, &dtype))
+    sqaod::SizeType tileSize0, tileSize1;
+    if (!PyArg_ParseTuple(args, "OIIO", &objExt, &tileSize0, &tileSize1, &dtype))
         return NULL;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->setTileSize(tileSize0, tileSize1);

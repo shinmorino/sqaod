@@ -23,7 +23,7 @@ void CPUDenseGraphBFSolver<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::getProblemSize(int *N) const {
+void CPUDenseGraphBFSolver<real>::getProblemSize(SizeType *N) const {
     *N = N_;
 }
 
@@ -38,7 +38,7 @@ void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om)
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::setTileSize(int tileSize) {
+void CPUDenseGraphBFSolver<real>::setTileSize(SizeType tileSize) {
     tileSize_ = tileSize;
 }
 
@@ -64,7 +64,7 @@ void CPUDenseGraphBFSolver<real>::initSearch() {
 template<class real>
 void CPUDenseGraphBFSolver<real>::finSearch() {
     xList_.clear();
-    for (int idx = 0; idx < packedXList_.size(); ++idx) {
+    for (int idx = 0; idx < (int)packedXList_.size(); ++idx) {
         Bits bits;
         unpackBits(&bits, packedXList_[idx], N_);
         xList_.pushBack(bits);
@@ -84,10 +84,10 @@ void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigne
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::search() {
-    int iStep = (int)std::min((unsigned long long)tileSize_, xMax_);
+    PackedBits iStep = std::min(tileSize_, xMax_);
 
     initSearch();
-    for (unsigned long long iTile = 0; iTile < xMax_; iTile += iStep) {
+    for (PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
         searchRange(iTile, iTile + iStep);
     }
     finSearch();

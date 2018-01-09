@@ -115,8 +115,8 @@ PyObject *dg_bf_solver_set_problem(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *dg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    int tileSize;
-    if (!PyArg_ParseTuple(args, "OiO", &objExt, &tileSize, &dtype))
+    sqaod::SizeType tileSize;
+    if (!PyArg_ParseTuple(args, "OIO", &objExt, &tileSize, &dtype))
         return NULL;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->setTileSize(tileSize);
@@ -131,7 +131,7 @@ PyObject *dg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_dg_bf_solver_get_x(PyObject *objExt) {
-    int N;
+    sqaod::SizeType N;
     sqd::CPUDenseGraphBFSolver<real> *sol = pyobjToCppObj<real>(objExt);
     const sqd::BitsArray &xList = sol->get_x();
     sol->getProblemSize(&N);

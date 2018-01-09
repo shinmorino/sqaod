@@ -22,7 +22,7 @@ void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(int *N, int *m) const {
+void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N, SizeType *m) const {
     *N = N_;
     *m = m_;
 }
@@ -46,7 +46,7 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMetho
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(int m) {
+void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(SizeType m) {
     m_ = m;
     bitsX_.reserve(m_);
     bitsQ_.reserve(m_);
@@ -87,7 +87,7 @@ const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_q() const {
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
     real *q = matQ_.data();
-    for (int idx = 0; idx < N_ * m_; ++idx)
+    for (int idx = 0; idx < IdxType(N_ * m_); ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
     annState_ |= annQSet;
 }
@@ -125,7 +125,7 @@ template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
-    for (int idx = 0; idx < m_; ++idx) {
+    for (int idx = 0; idx < IdxType(m_); ++idx) {
         EigenBitMatrix eq = matQ_.transpose().col(idx).template cast<char>();
         bitsQ_.pushBack(Bits(eq));
         Bits x = Bits((eq.array() + 1) / 2);
@@ -140,7 +140,7 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
         
-    for (int loop = 0; loop < N_ * m_; ++loop) {
+    for (int loop = 0; loop < IdxType(N_ * m_); ++loop) {
         int x = random_.randInt(N_);
         int y = random_.randInt(m_);
         real qyx = matQ_(y, x);

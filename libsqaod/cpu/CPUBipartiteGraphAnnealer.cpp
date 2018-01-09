@@ -26,7 +26,7 @@ void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::getProblemSize(int *N0, int *N1, int *m) const {
+void CPUBipartiteGraphAnnealer<real>::getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const {
     *N0 = N0_;
     *N1 = N1_;
     *m = m_;
@@ -54,7 +54,7 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::setNumTrotters(int nTrotters) {
+void CPUBipartiteGraphAnnealer<real>::setNumTrotters(SizeType nTrotters) {
     THROW_IF(nTrotters <= 0, "nTrotters must be a positive integer.");
     m_ = nTrotters;
     matQ0_.resize(m_, N0_);
@@ -77,10 +77,6 @@ void CPUBipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     annState_ |= annQSet;
 }
 
-template<class real>
-real CPUBipartiteGraphAnnealer<real>::get_minE() const {
-    return E_.mapToRowVector().minCoeff();
-}
 
 template<class real>
 const VectorType<real> &CPUBipartiteGraphAnnealer<real>::get_E() const {
@@ -106,10 +102,10 @@ const BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::randomize_q() {
     real *q = matQ0_.data();
-    for (int idx = 0; idx < N0_ * m_; ++idx)
+    for (int idx = 0; idx < IdxType(N0_ * m_); ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
     q = matQ1_.data();
-    for (int idx = 0; idx < N1_ * m_; ++idx)
+    for (int idx = 0; idx < IdxType(N1_ * m_); ++idx)
         q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
     annState_ |= annQSet;
 }
@@ -157,7 +153,7 @@ annealHalfStep(int N, EigenMatrix &qAnneal,
     real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
 
-    for (int loop = 0; loop < N * m_; ++loop) {
+    for (int loop = 0; loop < IdxType(N * m_); ++loop) {
         int iq = random_.randInt(N);
         int im = random_.randInt(m_);
         real q = qAnneal(im, iq);
@@ -177,7 +173,7 @@ void CPUBipartiteGraphAnnealer<real>::syncBits() {
     bitsPairX_.clear();
     bitsPairQ_.clear();
     Bits x0, x1;
-    for (int idx = 0; idx < m_; ++idx) {
+    for (int idx = 0; idx < IdxType(m_); ++idx) {
         EigenBitMatrix eq0 = matQ0_.transpose().col(idx).template cast<char>();
         EigenBitMatrix eq1 = matQ1_.transpose().col(idx).template cast<char>();
         bitsPairQ_.pushBack(BitsPairArray::ValueType(Bits(eq0), Bits(eq1)));

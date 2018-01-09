@@ -86,8 +86,8 @@ struct BGFuncs {
     
     /* Eigen ver */
     static
-    void calculate_hJc(EigenMatrix *h0, EigenMatrix *h1, EigenMatrix *J, real *c,
-                       const EigenMatrix &b0, const EigenMatrix &b1, const EigenMatrix &W);
+    void calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenMatrix *J, real *c,
+                       const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W);
 
     static
     void batchSearch(real *E, PackedBitsPairArray *xList,

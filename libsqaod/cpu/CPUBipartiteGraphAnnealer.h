@@ -21,19 +21,17 @@ public:
 
     void seed(unsigned long seed);
 
-    void getProblemSize(int *N0, int *N1, int *m) const;
+    void getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const;
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W, OptimizeMethod om);
 
-    void setNumTrotters(int nTrotters);
+    void setNumTrotters(SizeType nTrotters);
 
     const Vector &get_E() const;
 
     const BitsPairArray &get_x() const;
 
     void set_x(const Bits &x0, const Bits &x1);
-
-    real get_minE() const;
 
     /* Ising machine / spins */
 
@@ -60,7 +58,7 @@ private:
     int annState_;
 
     Random random_;
-    int N0_, N1_, m_;
+    SizeType N0_, N1_, m_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
     real c_;

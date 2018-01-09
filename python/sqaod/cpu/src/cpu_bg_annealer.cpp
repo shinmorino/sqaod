@@ -121,7 +121,7 @@ PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    int N0, N1, m;
+    sqaod::SizeType N0, N1, m;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1, &m);
     else if (isFloat32(dtype))
@@ -129,14 +129,14 @@ PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     else
         RAISE_INVALID_DTYPE(dtype);
 
-    return Py_BuildValue("iii", N0, N1, m);
+    return Py_BuildValue("III", N0, N1, m);
 }
     
 extern "C"
 PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    int m = 0;
-    if (!PyArg_ParseTuple(args, "OiO", &objExt, &m, &dtype))
+    sqaod::SizeType m = 0;
+    if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
         return NULL;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->setNumTrotters(m);
@@ -153,7 +153,7 @@ template<class real>
 PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
     sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    int N0, N1, m;
+    sqaod::SizeType N0, N1, m;
     ann->getProblemSize(&N0, &N1, &m);
     const sqd::BitsPairArray &xPairList = ann->get_x();
 
@@ -215,7 +215,7 @@ template<class real>
 PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
     sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    int N0, N1, m;
+    sqaod::SizeType N0, N1, m;
     ann->getProblemSize(&N0, &N1, &m);
     const sqd::BitsPairArray &xPairList = ann->get_q();
 

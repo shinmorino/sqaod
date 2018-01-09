@@ -26,7 +26,7 @@ public:
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
                     OptimizeMethod om);
 
-    void setTileSize(int tileSize0, int tileSize1);
+    void setTileSize(SizeType tileSize0, SizeType tileSize1);
 
     const BitsPairArray &get_x() const;
 
@@ -43,12 +43,12 @@ public:
     
 private:    
     Random random_;
-    int N0_, N1_;
+    SizeType N0_, N1_;
     EigenRowVector b0_, b1_;
     EigenMatrix W_;
     OptimizeMethod om_;
-    int tileSize0_, tileSize1_;
-    unsigned long long x0max_, x1max_;
+    PackedBits tileSize0_, tileSize1_;
+    PackedBits x0max_, x1max_;
     real minE_;
     Vector E_;
     PackedBitsPairArray xPackedPairs_;
