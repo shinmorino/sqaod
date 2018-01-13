@@ -17,13 +17,14 @@ struct DeviceCopy {
     using HostVectorType = sqaod::VectorType<V>;
     
     template<class V>
-    void copy(V *d_buf, const V *v, size_t nElms) const;
+    void copy(V *d_buf, const V *v, sqaod::SizeType nElms) const;
 
     template<class V>
-    void broadcastCopy(V *d_buf, V v, size_t nElms) const;
+    void copyBroadcast(V *d_buf, V v, sqaod::SizeType nElms) const;
 
     template<class V>
-    void scatterBroadcastCopy(V *d_buf, const V &v, size_t size, int stride, int offset) const;
+    void copyBroadcastStrided(V *d_buf, const V &v, sqaod::SizeType size,
+                              sqaod::SizeType stride, sqaod::IdxType offset) const;
 
     /* HostMatrix <-> DeviceMatrix */
     
@@ -40,8 +41,8 @@ struct DeviceCopy {
     void operator()(DeviceMatrixType<V> *dst, const V &src) const;
     
     template<class V>
-    void operator()(DeviceMatrixType<V> *dst, const V &src, size_t size,
-                    int offset, int stride) const;
+    void operator()(DeviceMatrixType<V> *dst, const V &src, sqaod::SizeType size,
+                    sqaod::SizeType stride, sqaod::IdxType offset) const;
     
     /* HostVector <-> DeviceVector */
     
@@ -69,14 +70,20 @@ struct DeviceCopy {
     void operator()(sqaod::PackedBitsArray *dst, const DevicePackedBitsArray &src) const;
 
 
-    DeviceCopy();
-    DeviceCopy(DeviceStream &stream);
+    DeviceCopy(DeviceStream *stream = NULL);
     
-    void setStream(DeviceStream &stream);
+    void setDeviceStream(DeviceStream *stream = NULL);
     
 private:
-    DeviceStream *devStream_;
+    cudaStream_t stream_;
 };
+
+template<class V> inline
+void DeviceCopy::operator()(DeviceMatrixType<V> *dst, const HostMatrixType<V> &src) const {
+    copy(dst->d_data, src.data, src.rows * src.cols);
+    dst->rows = src.rows;
+    dst->cols = src.cols;
+}
 
 template<class V> inline
 void DeviceCopy::operator()(HostMatrixType<V> *dst, const DeviceMatrixType<V> &src) const {
@@ -94,13 +101,13 @@ void DeviceCopy::operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> 
 
 template<class V> inline
 void DeviceCopy::operator()(DeviceMatrixType<V> *dst, const V &src) const {
-    broadcastCopy(dst->d_dst, src, dst->rows * dst->cols);
+    copyBroadcast(dst->d_dst, src, dst->rows * dst->cols);
 }
 
 template<class V> inline
-void DeviceCopy::operator()(DeviceMatrixType<V> *dst, const V &src, size_t size,
-                            int stride, int offset) const {
-    scatterBroadcastCopy(dst->d_data, src, size, stride, offset);
+void DeviceCopy::operator()(DeviceMatrixType<V> *dst, const V &src, sqaod::SizeType size,
+                            sqaod::SizeType stride, sqaod::IdxType offset) const {
+    copyBroadcastStrided(dst->d_data, src, size, stride, offset);
 }
     
 template<class V> inline

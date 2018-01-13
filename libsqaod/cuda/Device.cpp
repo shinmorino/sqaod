@@ -8,8 +8,8 @@ void Device::initialize(int devNo){
     devNo_ = devNo;
     memStore_.initialize();
     defaultDeviceStream_.set(NULL, memStore_);
-    devObjAllocatorFP32_.initialize(memStore_, defaultDeviceStream_);
-    devObjAllocatorFP64_.initialize(memStore_, defaultDeviceStream_);
+    devObjAllocatorFP32_.initialize(&memStore_, &defaultDeviceStream_);
+    devObjAllocatorFP64_.initialize(&memStore_, &defaultDeviceStream_);
 }
 
 void Device::finalize() {
@@ -24,16 +24,16 @@ void Device::finalize() {
 }
 
 
-DeviceStream &Device::newDeviceStream() {
+DeviceStream *Device::newDeviceStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));
     DeviceStream *deviceStream = new DeviceStream(stream, memStore_);
     streams_.pushBack(deviceStream);
-    return *deviceStream;
+    return deviceStream;
 }
 
-DeviceStream &Device::defaultDeviceStream() {
-    return defaultDeviceStream_;
+DeviceStream *Device::defaultDeviceStream() {
+    return &defaultDeviceStream_;
 }
 
 void Device::releaseStream(DeviceStream *stream) {

@@ -17,13 +17,14 @@ struct DeviceObject {
 template<class V>
 struct DeviceMatrixType : DeviceObject {
     typedef V ValueType;
-
+    typedef sqaod::SizeType SizeType;
+    
     DeviceMatrixType() {
         d_data = NULL;
-        rows = cols = -1;
+        rows = cols = (SizeType)-1;
     }
     
-    DeviceMatrixType(V *_d_data, int _rows, int _cols) {
+    DeviceMatrixType(V *_d_data, SizeType _rows, SizeType _cols) {
         d_data = _d_data;
         rows = _rows;
         cols = _cols;
@@ -34,7 +35,7 @@ struct DeviceMatrixType : DeviceObject {
 
     sqaod::Dim dim() const { return sqaod::Dim(rows, cols); }
 
-    int rows, cols;
+    SizeType rows, cols;
     V *d_data;
 
 private:
@@ -46,13 +47,14 @@ private:
 template<class V>
 struct DeviceVectorType : DeviceObject {
     typedef V ValueType;
-
+    typedef sqaod::SizeType SizeType;
+    
     DeviceVectorType() {
         d_data = NULL;
-        size = -1;
+        size = (SizeType)-1;
     }
 
-    DeviceVectorType(V *_d_data, int _size) {
+    DeviceVectorType(V *_d_data, SizeType _size) {
         d_data = _d_data;
         size = _size;
     }
@@ -60,7 +62,7 @@ struct DeviceVectorType : DeviceObject {
     virtual ~DeviceVectorType() {
     }
     
-    int size;
+    SizeType size;
     V *d_data;
 
 private:

@@ -9,6 +9,8 @@
 
 namespace sqaod_cuda {
 
+class Device;
+
 enum MatrixOp {
     opNone,
     opTranspose,
@@ -57,7 +59,7 @@ struct DeviceMathType {
     /* dot(row, row) */
     void dotBatched(DeviceVector *z,
                     real alpha, const DeviceMatrix &A, MatrixOp opA,
-                    const DeviceMatrix &B, MatrixOp opB, real addAssignFactor = 0.);
+                    const DeviceMatrix &B, MatrixOp opB);
     
     void mvProduct(DeviceVector *y,
                    real alpha, const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
@@ -114,12 +116,18 @@ struct DeviceMathType {
     void gemm(MatrixOp opA, MatrixOp opB,
               const DeviceScalar &d_alpha, const DeviceMatrix &A, const DeviceMatrix &B,
               const DeviceScalar &d_beta, DeviceMatrix &C);
+
+
+    DeviceMathType();
+    DeviceMathType(Device &device, DeviceStream *devStream = NULL);
+
+    void assignDevice(Device &device, DeviceStream *devStream = NULL);
     
 private:
     DeviceMathKernels devKernels_;
     DeviceCopy devCopy_;
-    DeviceStream *devStream_;
     DeviceObjectAllocator *devAlloc_;
+    DeviceStream *devStream_;
 };
 
 

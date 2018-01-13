@@ -58,15 +58,13 @@ const DeviceScalarType<real> &DeviceObjectAllocatorType<real>::d_const(const rea
 }
 
 template<class real>
-void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore &memStore,
-                                                 DeviceStream &devStream) {
-    memStore_ = &memStore;
-    DeviceCopy devCopy(devStream);
+void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore *memStore,
+                                                 DeviceStream *devStream) {
+    memStore_ = memStore;
     
-    d_consts_ = (real*)memStore.allocate(sizeof(real) * nHostConsts_);
-    devCopy.copy(d_consts_, hostConsts_, nHostConsts_);
-    devStream.synchronize();
-    
+    d_consts_ = (real*)memStore_->allocate(sizeof(real) * nHostConsts_);
+    DeviceCopy(devStream).copy(d_consts_, hostConsts_, nHostConsts_);
+
     for (int idx = 0; idx < nHostConsts_; ++idx)
         constReg_.pushBack(new DeviceScalar(&d_consts_[idx]));
     d_one_ = &d_const(1.);

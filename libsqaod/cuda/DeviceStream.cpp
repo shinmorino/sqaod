@@ -60,7 +60,7 @@ void DeviceStream::releaseTempObjects() {
     tempObjects_.clear();
 }
 
-void *DeviceStream::allocate(size_t size) {
+void *DeviceStream::allocate(size_t size, const char *signature) {
     void *d_pv = memStore_->allocate(size);
     tempObjects_.pushBack(new PlainDeviceObject(d_pv));
     return d_pv;

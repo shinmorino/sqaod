@@ -24,6 +24,12 @@ void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector
 }
 
 template<class real>
+void DeviceMathType<real>::scale(DeviceMatrix *B, real alpha, const DeviceMatrix &A) {
+    // THROW_IF(y->size != x.size, "Vector length does not match.");  FIXME: add input checks.
+    devKernels_.scale(B->d_data, alpha, A.d_data, A.rows * A.cols);
+}
+
+template<class real>
 void DeviceMathType<real>::scaleBroadcast(DeviceVector *y, real alpha, const DeviceScalar &x,
                                           real addAssignFactor) {
     devKernels_.scaleBroadcast(y->d_data, alpha, x.d_data, y->size, addAssignFactor);
@@ -92,7 +98,7 @@ void DeviceMathType<real>::dot(DeviceScalar *z,
 template<class real>
 void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
                                       const DeviceMatrix &A, MatrixOp opA,
-                                      const DeviceMatrix &B, MatrixOp opB, real addAssignFactor) {
+                                      const DeviceMatrix &B, MatrixOp opB) {
     const DeviceMatrix *dMat0, *dMat1;
     if (opA == opTranspose) {
         DeviceMatrix *dAt;
@@ -114,8 +120,7 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
         assert(opB == opNone);
         dMat1 = &B;
     }
-    devKernels_.dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows,
-                           addAssignFactor);
+    devKernels_.dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows);
 }
 
 template<class real>
@@ -226,8 +231,9 @@ template<class real>
 void DeviceMathType<real>::gemv(MatrixOp op, const DeviceScalar &d_alpha,
                                 const DeviceMatrix &A, const DeviceVector &x,
                                 const DeviceScalar &d_beta, DeviceVector &y) {
+    /* transpose since A is in row-major format, though cublas accepts column-major format. */
     cublasOperation_t cop = (op == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    devKernels_.gemv(cop, A.rows, A.cols,
+    devKernels_.gemv(cop, A.cols, A.rows,
                      d_alpha.d_data, A.d_data, x.d_data,
                      d_beta.d_data, y.d_data);
 }
@@ -236,15 +242,40 @@ template<class real>
 void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
                                 const DeviceScalar &d_alpha, const DeviceMatrix &A, const DeviceMatrix &B,
                                 const DeviceScalar &d_beta, DeviceMatrix &C) {
-    cublasOperation_t copA = (opA == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    cublasOperation_t copB = (opB == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    /* To get C in row-major format, actual calculation is CT = BT x AT.
+     * We need to transpose to fix column-major format, and transpose again to get C in row-major format, thus, copA, copA is not transposed. */
+    cublasOperation_t copA = (opA == opNone) ? CUBLAS_OP_N : CUBLAS_OP_T;
+    cublasOperation_t copB = (opB == opNone) ? CUBLAS_OP_N : CUBLAS_OP_T;
     Dim dimA = getMatrixShape(A, opA);
-    Dim dimProduct = getProductShape(A, opA, B, opB);
-    devKernels_.gemm(copA, copB, dimProduct.rows, dimProduct.cols, dimA.cols,
-                     d_alpha.d_data, A.d_data, B.d_data,
+    Dim dimProduct = getProductShape(A, opA, B, opB); // needed to transpose.
+    devKernels_.gemm(copA, copB, dimProduct.cols, dimProduct.rows, dimA.cols,
+                     d_alpha.d_data, B.d_data, A.d_data,
                      d_beta.d_data, C.d_data);
 }
 
+
+template<class real>
+DeviceMathType<real>::DeviceMathType() {
+    devStream_ = NULL;
+}
+
+template<class real>
+DeviceMathType<real>::DeviceMathType(Device &device, DeviceStream *devStream){
+    assignDevice(device, devStream);
+}
+
+#include "Device.h"
+
+template<class real>
+void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream) {
+    devKernels_.setDeviceStream(devStream);
+    devCopy_.setDeviceStream(devStream);
+    devAlloc_ = device.deviceObjectAllocator<real>();
+    if (devStream != NULL)
+        devStream_ = devStream;
+    else
+        devStream_ = device.defaultDeviceStream();
+}
 
 
 template struct sqaod_cuda::DeviceMathType<float>;

@@ -21,7 +21,7 @@ class DeviceStream {
 public:
     void finalize();
     
-    void *allocate(size_t size);
+    void *allocate(size_t size, const char *signature = NULL);
 
     template<class V>
     DeviceMatrixType<V> *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);

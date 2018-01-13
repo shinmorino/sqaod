@@ -10,7 +10,7 @@ cd eigen
 git checkout 3.3.4
 cd ..
 ./autogen.sh
-./configure --prefix=/usr
+./configure #--prefix=/usr
 make
 sudo make install
 
