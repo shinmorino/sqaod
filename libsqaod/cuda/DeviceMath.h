@@ -5,6 +5,7 @@
 #include <cuda/DeviceObjectAllocator.h>
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceCopy.h>
+#include <cuda/DeviceMathKernels.h>
 
 namespace sqaod_cuda {
 
@@ -32,6 +33,7 @@ struct DeviceMathType {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceObjectAllocatorType<real> DeviceObjectAllocator;
+    typedef DeviceMathKernelsType<real> DeviceMathKernels;
 
     void setToDiagonals(DeviceMatrix *V, real v);
     
@@ -78,6 +80,7 @@ struct DeviceMathType {
                     const DeviceMatrix &x, MatrixOp opx);
 
     void min(DeviceScalar *s, const DeviceMatrix &A);
+    void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
     
     /* get matrix shape resulting from matrix arithmetic */
     sqaod::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);
@@ -104,26 +107,6 @@ struct DeviceMathType {
     DeviceScalar *newDeviceScalar(const char *signature = NULL);
     void *allocate(size_t size);
 
-    /* CUDA funcs */
-    void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
-
-    void scale(real *d_y, real alpha, const real *d_x, SizeType size);
-    void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
-    void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
-                              SizeType nBatch, real addAssignFactor);
-    void scaleBroadcastScalars(real *d_A, real alpha, const real *d_x, SizeType size,
-                               SizeType nBatch, real addAssignFactor);
-
-    void sum(real *d_dst, real alpha, const real *d_x, SizeType size, real addAssignFactor);
-    void sumGather(real *d_dst, real alpha, const real *d_x, SizeType size, SizeType stride, int offset);
-    void sumBatched(real *d_x, real alpha, const real *d_A, SizeType size, SizeType nBatch);
-    void dot(real *d_c, real alpha, const real *d_x, const real *d_y, SizeType size,
-             real addAssignFactor);
-    void dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType size,
-                    SizeType nBatch, real addAssignFactor);
-
-    void min(real *d_min, const real *d_values, SizeType size);
-
     /* BLAS */
     void gemv(MatrixOp op, const DeviceScalar &d_alpha,
               const DeviceMatrix &A, const DeviceVector &x,
@@ -133,6 +116,7 @@ struct DeviceMathType {
               const DeviceScalar &d_beta, DeviceMatrix &C);
     
 private:
+    DeviceMathKernels devKernels_;
     DeviceCopy devCopy_;
     DeviceStream *devStream_;
     DeviceObjectAllocator *devAlloc_;

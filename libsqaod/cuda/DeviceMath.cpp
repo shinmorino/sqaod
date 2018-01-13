@@ -13,20 +13,20 @@ void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
 template<class real>
 void DeviceMathType<real>::scale(DeviceScalar *y, real alpha, const DeviceScalar &x,
                                  real addAssignFactor) {
-    scale(y->d_data, alpha, x.d_data, addAssignFactor);
+    devKernels_.scale(y->d_data, alpha, x.d_data, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector &x,
                                  real addAssignFactor) {
     THROW_IF(y->size != x.size, "Vector length does not match.");
-    scale(y->d_data, alpha, x.d_data, addAssignFactor);
+    devKernels_.scale(y->d_data, alpha, x.d_data, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scaleBroadcast(DeviceVector *y, real alpha, const DeviceScalar &x,
                                           real addAssignFactor) {
-    scaleBroadcast(y->d_data, alpha, x.d_data, y->size, addAssignFactor);
+    devKernels_.scaleBroadcast(y->d_data, alpha, x.d_data, y->size, addAssignFactor);
 }
 
 template<class real>
@@ -34,11 +34,13 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
                                           BatchOp op, real addAssignFactor) {
     if (op == opRowwise) {
         THROW_IF(A->cols != x.size, "Cols of matrix does not match vector length.");
-        scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->cols, addAssignFactor);
+        devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->cols,
+                                         addAssignFactor);
     }
     else if (op == opColwise) {
         THROW_IF(A->rows != x.size, "Rows of matrix does not match vector length.");
-        scaleBroadcastScalars(A->d_data, alpha, x.d_data, x.size, A->cols, addAssignFactor);
+        devKernels_.scaleBroadcastScalars(A->d_data, alpha, x.d_data, x.size, A->cols,
+                                          addAssignFactor);
     }
     else {
         THROW("Unknown matrix op.");
@@ -48,19 +50,19 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
 template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceVector &x,
                                real addAssignFactor) {
-    sum(s->d_data, alpha, x.d_data, x.size, addAssignFactor);
+    devKernels_.sum(s->d_data, alpha, x.d_data, x.size, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceMatrix &dmat,
                                real addAssignFactor) {
-    sum(s->d_data, alpha, dmat.d_data, dmat.rows * dmat.cols, addAssignFactor);
+    devKernels_.sum(s->d_data, alpha, dmat.d_data, dmat.rows * dmat.cols, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::sumDiagonals(DeviceScalar *s, const DeviceMatrix &dmat) {
     int nElms = std::min(dmat.rows, dmat.cols);
-    sumGather(s->d_data, 1., dmat.d_data, nElms, dmat.cols + 1, 0);
+    devKernels_.sumGather(s->d_data, 1., dmat.d_data, nElms, dmat.cols + 1, 0);
 }
 
 template<class real>
@@ -76,7 +78,7 @@ void DeviceMathType<real>::sumBatched(DeviceVector *vec,
         assert(op == opRowwise);
         dmat = &A;
     }
-    sumBatched(vec->d_data, 1., dmat->d_data, dmat->cols, dmat->rows);
+    devKernels_.sumBatched(vec->d_data, 1., dmat->d_data, dmat->cols, dmat->rows);
 }
 
 template<class real>
@@ -84,7 +86,7 @@ void DeviceMathType<real>::dot(DeviceScalar *z,
                                real alpha, const DeviceVector &x, const DeviceVector &y,
                                real addAssignFactor) {
     THROW_IF(x.size != y.size, "Vector length does not match.");
-    dot(z->d_data, alpha, x.d_data, y.d_data, x.size, addAssignFactor);
+    devKernels_.dot(z->d_data, alpha, x.d_data, y.d_data, x.size, addAssignFactor);
 }
 
 template<class real>
@@ -112,8 +114,8 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
         assert(opB == opNone);
         dMat1 = &B;
     }
-    dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows,
-               addAssignFactor);
+    devKernels_.dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows,
+                           addAssignFactor);
 }
 
 template<class real>
@@ -176,8 +178,14 @@ void DeviceMathType<real>::mmmProduct(DeviceMatrix *z, real alpha,
 
 template<class real>
 void DeviceMathType<real>::min(DeviceScalar *s, const DeviceMatrix &A) {
-    min(s->d_data, A.d_data, A.rows * A.cols);
+    devKernels_.min(s->d_data, A.d_data, A.rows * A.cols);
 }
+
+template<class real>
+void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
+    devKernels_.transpose(dAt->d_data, A.d_data, A.rows, A.cols);
+}
+
 
 /* Matrix shape */
 template<class real>
@@ -213,6 +221,31 @@ SizeType DeviceMathType<real>::getProductShape(const DeviceVector &x,
     THROW_IF(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
     return A.cols;
 }
+
+template<class real>
+void DeviceMathType<real>::gemv(MatrixOp op, const DeviceScalar &d_alpha,
+                                const DeviceMatrix &A, const DeviceVector &x,
+                                const DeviceScalar &d_beta, DeviceVector &y) {
+    cublasOperation_t cop = (op == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    devKernels_.gemv(cop, A.rows, A.cols,
+                     d_alpha.d_data, A.d_data, x.d_data,
+                     d_beta.d_data, y.d_data);
+}
+
+template<class real>
+void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
+                                const DeviceScalar &d_alpha, const DeviceMatrix &A, const DeviceMatrix &B,
+                                const DeviceScalar &d_beta, DeviceMatrix &C) {
+    cublasOperation_t copA = (opA == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    cublasOperation_t copB = (opB == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    Dim dimA = getMatrixShape(A, opA);
+    Dim dimProduct = getProductShape(A, opA, B, opB);
+    devKernels_.gemm(copA, copB, dimProduct.rows, dimProduct.cols, dimA.cols,
+                     d_alpha.d_data, A.d_data, B.d_data,
+                     d_beta.d_data, C.d_data);
+}
+
+
 
 template struct sqaod_cuda::DeviceMathType<float>;
 template struct sqaod_cuda::DeviceMathType<double>;
