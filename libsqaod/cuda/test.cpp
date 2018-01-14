@@ -48,7 +48,7 @@ void testDeviceMath() {
     
     DeviceMatrix dA, dB, dC;
 
-    HostMatrix hMat; // = HostMatrix::zeros(10, 10);
+    HostMatrix hMat = HostMatrix::zeros(10, 10);
     devCopy(&dA, hMat);
     devMath.setToDiagonals(&dA, real(1.));
     devStream->synchronize();
@@ -56,7 +56,8 @@ void testDeviceMath() {
     devMath.scale(&dB, 10., dA);
     devStream->synchronize();
     
-
+    
+    
 };
 
 
