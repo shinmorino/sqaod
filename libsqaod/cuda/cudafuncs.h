@@ -3,8 +3,9 @@
 
 #include <stdlib.h>
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 
-
+/* FIXME: undef somewhere. */
 #ifdef _DEBUG
 #define DEBUG_SYNC {throwOnError(cudaGetLastError()); throwOnError(cudaDeviceSynchronize()); }
 #else
@@ -14,9 +15,14 @@
 
 namespace sqaod_cuda {
 
-#define throwOnError(expr) expr
+inline bool _valid(cudaError_t cuerr) { return cuerr == cudaSuccess; }
+void _throwError(cudaError_t status, const char *file, unsigned long line, const char *expr);
 
-void throwError(const char *message);
+inline bool _valid(cublasStatus_t cublasStatus) { return cublasStatus == CUBLAS_STATUS_SUCCESS; }
+void _throwError(cublasStatus_t status, const char *file, unsigned long line, const char *expr);
+
+#define throwOnError(expr) { auto status = (expr); if (!sqaod_cuda::_valid(status)) { sqaod_cuda::_throwError(status, __FILE__, __LINE__, #expr); } }
+
 
 
 template<class V>

@@ -4,13 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utility>
-#include <assert.h>
+#include <common/defines.h>
+
 
 namespace sqaod {
-
-/* FIXME: create a seperate file to store macros and typedefs. */
-typedef unsigned int SizeType;
-typedef int IdxType;
 
 template<class V> struct ValueProp { enum { POD = false }; };
 template<> struct ValueProp<char> { enum { POD = true }; };

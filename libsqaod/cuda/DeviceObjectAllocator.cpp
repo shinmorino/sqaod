@@ -53,7 +53,7 @@ const DeviceScalarType<real> &DeviceObjectAllocatorType<real>::d_const(const rea
         return *d_zero_;
     const real *pos = std::find(hostConsts_, hostConsts_ + nHostConsts_, c);
     int idx = int(pos - hostConsts_);
-    THROW_IF(idx == nHostConsts_, "Constant not registered.");
+    abortIf(idx == nHostConsts_, "Constant not registered.");
     return *constReg_[idx];
 }
 

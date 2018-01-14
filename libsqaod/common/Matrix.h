@@ -22,15 +22,11 @@
 #pragma warning(pop)
 #endif
 
+#include <common/defines.h>
 #include <common/Array.h>
 
 namespace sqaod {
 
-
-#define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
-#define THROW(msg) throw std::runtime_error(msg);
-
-    
 template<class real>
 using EigenMatrixType = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 template<class real>
@@ -131,7 +127,7 @@ struct MatrixType {
         if (this == &src)
             return;
         if ((rows != src.rows) || (cols != src.cols)) {
-            THROW_IF(mapped, "Unable to resize mapped matrix.");
+            abortIf(mapped, "Unable to resize mapped matrix.");
             free();
         }
         if (data == nullptr)
@@ -292,7 +288,7 @@ struct VectorType {
         if (this == &src)
             return;
         if (size != src.size) {
-            THROW_IF(mapped, "Unable to resize mapped vector.");
+            abortIf(mapped, "Unable to resize mapped vector.");
             free();
         }
         if (data == nullptr)

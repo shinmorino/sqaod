@@ -19,7 +19,7 @@ void DeviceMathType<real>::scale(DeviceScalar *y, real alpha, const DeviceScalar
 template<class real>
 void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector &x,
                                  real addAssignFactor) {
-    THROW_IF(y->size != x.size, "Vector length does not match.");
+    throwErrorIf(y->size != x.size, "Vector length does not match.");
     devKernels_.scale(y->d_data, alpha, x.d_data, addAssignFactor);
 }
 
@@ -39,17 +39,17 @@ template<class real>
 void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const DeviceVector &x,
                                           BatchOp op, real addAssignFactor) {
     if (op == opRowwise) {
-        THROW_IF(A->cols != x.size, "Cols of matrix does not match vector length.");
+        throwErrorIf(A->cols != x.size, "Cols of matrix does not match vector length.");
         devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->cols,
                                          addAssignFactor);
     }
     else if (op == opColwise) {
-        THROW_IF(A->rows != x.size, "Rows of matrix does not match vector length.");
+        throwErrorIf(A->rows != x.size, "Rows of matrix does not match vector length.");
         devKernels_.scaleBroadcastScalars(A->d_data, alpha, x.d_data, x.size, A->cols,
                                           addAssignFactor);
     }
     else {
-        THROW("Unknown matrix op.");
+        abort("Unknown matrix op.");
     }
 }
     
@@ -91,7 +91,7 @@ template<class real>
 void DeviceMathType<real>::dot(DeviceScalar *z,
                                real alpha, const DeviceVector &x, const DeviceVector &y,
                                real addAssignFactor) {
-    THROW_IF(x.size != y.size, "Vector length does not match.");
+    throwErrorIf(x.size != y.size, "Vector length does not match.");
     devKernels_.dot(z->d_data, alpha, x.d_data, y.d_data, x.size, addAssignFactor);
 }
 
@@ -207,7 +207,7 @@ sqaod::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp
                                                  const DeviceMatrix &B, MatrixOp opB) {
     Dim Adim = getMatrixShape(A, opA);
     Dim Bdim = getMatrixShape(B, opB);
-    THROW_IF(Adim.cols != Bdim.rows, "Shpee does not match on matrix-matrix multiplication.");
+    throwErrorIf(Adim.cols != Bdim.rows, "Shpee does not match on matrix-matrix multiplication.");
     return Dim(B.rows, A.cols);
 }
 
@@ -215,7 +215,7 @@ template<class real>
 SizeType DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp opA,
                                                const DeviceVector &x) {
     Dim Adim = getMatrixShape(A, opA);
-    THROW_IF(Adim.cols != x.size, "Shape does not match on matrix-vector multiplication.");  
+    throwErrorIf(Adim.cols != x.size, "Shape does not match on matrix-vector multiplication.");  
     return A.rows;
 }
 
@@ -223,7 +223,7 @@ template<class real>
 SizeType DeviceMathType<real>::getProductShape(const DeviceVector &x,
                                                const DeviceMatrix &A, MatrixOp opA) {
     Dim Adim = getMatrixShape(A, opA);
-    THROW_IF(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
+    throwErrorIf(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
     return A.cols;
 }
 
