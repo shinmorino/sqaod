@@ -199,6 +199,12 @@ struct MatrixType {
         newMat.map() = map().cast<newV>();
         return newMat;
     }
+
+    static
+    MatrixType<V> eye(SizeType dim);
+
+    static
+    MatrixType<V> zeros(SizeType rows, SizeType cols);
     
     SizeType rows, cols;
     V *data;
