@@ -45,12 +45,22 @@ typedef EigenMatrixType<char> EigenBitMatrix;
 /* light-weight matrix classes for C++ API */
     
 struct Dim {
-    Dim() { }
+    Dim() {
+        rows = cols == (SizeType)-1;
+    }
     Dim(SizeType _rows, SizeType _cols) {
         rows = _rows;
         cols = _cols;
     }
     SizeType rows, cols;
+
+    friend bool operator==(const Dim &lhs, const Dim &rhs) {
+        return (lhs.rows == rhs.rows) && (lhs.rows == rhs.rows);
+    }
+    friend bool operator!=(const Dim &lhs, const Dim &rhs) {
+        return !(lhs == rhs);
+    }
+    
 };
 
 template<class V>
