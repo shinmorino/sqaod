@@ -68,11 +68,11 @@ struct NpVectorType {
         PyArrayObject *arr = (PyArrayObject*)pyObj;
         real *data = (real*)PyArray_DATA(arr);
         int size;
-        THROW_IF(3 <= PyArray_NDIM(arr), "ndarray is not 1-diemsional.");
+        throwErrorIf(3 <= PyArray_NDIM(arr), "ndarray is not 1-diemsional.");
         if (PyArray_NDIM(arr) == 2) {
             int rows = PyArray_SHAPE(arr)[0];
             int cols = PyArray_SHAPE(arr)[1];
-            THROW_IF((rows != 1) && (cols != 1), "ndarray is not 1-diemsional.");
+            throwErrorIf((rows != 1) && (cols != 1), "ndarray is not 1-diemsional.");
             size = std::max(rows, cols);
         }
         else /*if (PyArray_NDIM(arr) == 1) */  {
@@ -102,15 +102,15 @@ struct NpScalarRefType {
     NpScalarRefType(PyObject *pyObj) {
         obj = pyObj;
         PyArrayObject *arr = (PyArrayObject*)pyObj;
-        THROW_IF(3 <= PyArray_NDIM(arr), "not a scalar.");
+        throwErrorIf(3 <= PyArray_NDIM(arr), "not a scalar.");
         if (PyArray_NDIM(arr) == 2) {
             int rows = PyArray_SHAPE(arr)[0];
             int cols = PyArray_SHAPE(arr)[1];
-            THROW_IF((rows != 1) || (cols != 1), "not a scalar.");
+            throwErrorIf((rows != 1) || (cols != 1), "not a scalar.");
         }
         else if (PyArray_NDIM(arr) == 1) {
             int size = PyArray_SHAPE(arr)[0];
-            THROW_IF(size != 1, "not a scalar.");
+            throwErrorIf(size != 1, "not a scalar.");
         }
         data = (real*)PyArray_DATA(arr);
     }
