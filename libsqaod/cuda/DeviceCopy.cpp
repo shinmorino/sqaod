@@ -1,6 +1,7 @@
 #include "DeviceCopy.h"
 #include "cudafuncs.h"
 #include "Device.h"
+#include "Assertion.h"
 
 using namespace sqaod_cuda;
 using sqaod::SizeType;
@@ -37,6 +38,7 @@ set(Device &device, DeviceStream *devStream) {
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const HostMatrix &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
+    assertSameShape(*dst, src, __func__);
     copy(dst->d_data, src.data, src.rows * src.cols);
 }
 
@@ -44,31 +46,34 @@ template<class real> void DeviceCopyType<real>::
 operator()(HostMatrix *dst, const DeviceMatrix &src) const {
     if (dst->data == NULL)
         dst->resize(src.dim());
+    assertSameShape(*dst, src, __func__);
     copy(dst->data, src.d_data, src.rows * src.cols);
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const DeviceMatrix &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
+    assertSameShape(*dst, src, __func__);
     copy(dst->d_data, src.d_data, src.rows * src.cols);
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const real &src) const {
-    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
+    assertValidMatrix(*dst, __func__);
     copyBroadcast(dst->d_data, src, dst->rows * dst->cols);
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const real &src, sqaod::SizeType size,
            sqaod::SizeType stride, sqaod::IdxType offset) const {
-    abortIf(dst->d_data == NULL, "DeviceMatrix is empty");
+    assertValidMatrix(*dst, __func__);
     copyBroadcastStrided(dst->d_data, src, size, stride, offset);
 }
     
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const HostVector &src) {
-    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
+    devAlloc_->allocateIfNull(dst, src.size);
+    assertSameShape(*dst, src, __func__);
     copy(dst->d_data, src.data, src.size);
 }
     
@@ -76,20 +81,21 @@ template<class real> void DeviceCopyType<real>::
 operator()(HostVector *dst, const DeviceVector &src) const {
     if (dst->data == NULL)
         dst->allocate(src.size);
+    assertSameShape(*dst, src, __func__);
     copy(dst->data, src.d_data, src.size);
     dst->size = src.size;
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const DeviceVector &src) {
-    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
+    devAlloc_->allocateIfNull(dst, src.size);
+    assertSameShape(*dst, src, __func__);
     copy(dst->d_data, src.d_data, src.size);
-    dst->size = src.size;
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const real &src) const {
-    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
+    assertValidVector(*dst, __func__);
     copyBroadcast(dst->d_data, src, 1);
 }
 
@@ -97,7 +103,7 @@ operator()(DeviceVector *dst, const real &src) const {
     
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceScalar *dst, const real &src) {
-    devAlloc_->allocateIfNull(dst);
+    assertValidScalar(*dst, __func__);
     copy(dst->d_data, &src, 1);
 }
 

@@ -1,4 +1,5 @@
 #include "DeviceMath.h"
+#include "Assertion.h"
 
 using namespace sqaod_cuda;
 using sqaod::Dim;
@@ -6,6 +7,7 @@ using sqaod::SizeType;
 
 template<class real>
 void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
+    assertValidMatrix(*A, __func__);
     SizeType size = std::min(A->rows, A->cols);
     devCopy_(A, v, size, A->rows + 1, 0);
 }
@@ -13,34 +15,39 @@ void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
 template<class real>
 void DeviceMathType<real>::scale(DeviceScalar *y, real alpha, const DeviceScalar &x,
                                  real addAssignFactor) {
+    devAlloc_->allocateIfNull(y);
     devKernels_.scale(y->d_data, alpha, x.d_data, 1, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector &x,
                                  real addAssignFactor) {
-    throwErrorIf(y->size != x.size, "Vector length does not match.");
+    devAlloc_->allocateIfNull(y, x.size);
+    assertSameShape(*y, x, __func__);
     devKernels_.scale(y->d_data, alpha, x.d_data, x.size, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceMatrix *B, real alpha, const DeviceMatrix &A) {
     devAlloc_->allocateIfNull(B, A.dim());
-    // THROW_IF(y->size != x.size, "Vector length does not match.");  FIXME: add input checks.
+    assertSameShape(*B, A, __func__);
     devKernels_.scale(B->d_data, alpha, A.d_data, A.rows * A.cols, real(0.));
 }
 
 template<class real>
 void DeviceMathType<real>::scaleBroadcast(DeviceVector *y, real alpha, const DeviceScalar &x,
                                           real addAssignFactor) {
+    assertValidScalar(x, __func__);
+    assertValidVector(*y, __func__);
     devKernels_.scaleBroadcast(y->d_data, alpha, x.d_data, y->size, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const DeviceVector &x,
                                           BatchOp op, real addAssignFactor) {
+    assertValidMatrix(*A, __func__);
     if (op == opRowwise) {
-        throwErrorIf(A->cols != x.size, "Cols of matrix does not match vector length.");
+        abortIf(A->cols != x.size, "Cols of matrix does not match vector length.");
         devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->cols,
                                          addAssignFactor);
     }
@@ -57,6 +64,7 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
 template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceVector &x,
                                real addAssignFactor) {
+    devAlloc_->allocateIfNull(s);
     devKernels_.sum(s->d_data, alpha, x.d_data, x.size, addAssignFactor);
 }
 
@@ -95,7 +103,8 @@ template<class real>
 void DeviceMathType<real>::dot(DeviceScalar *z,
                                real alpha, const DeviceVector &x, const DeviceVector &y,
                                real addAssignFactor) {
-    throwErrorIf(x.size != y.size, "Vector length does not match.");
+    devAlloc_->allocateIfNull(z);
+    assertSameShape(x, y, __func__);
     devKernels_.dot(z->d_data, alpha, x.d_data, y.d_data, x.size, addAssignFactor);
 }
 
@@ -124,12 +133,19 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
         assert(opB == opNone);
         dMat1 = &B;
     }
+    assertSameShape(*dMat0, *dMat1, __func__);
+    devAlloc_->allocateIfNull(z, dMat0->rows);
+    assertValidVector(*z, dMat0->rows, __func__);
     devKernels_.dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows);
 }
 
 template<class real>
 void DeviceMathType<real>::mvProduct(DeviceVector *y, real alpha,
                                      const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x) {
+    SizeType size = getProductShape(A, opA, x);
+    devAlloc_->allocateIfNull(y, size);
+    assertValidVector(*y, size, __func__);
+    
     const DeviceScalar &d_alpha = d_const(alpha);
     gemv(opA, d_alpha, A, x, d_zero(), *y);
 }
@@ -141,6 +157,9 @@ void DeviceMathType<real>::vmProduct(DeviceVector *y, real alpha,
     const DeviceScalar &d_alpha = d_const(alpha);
     const DeviceScalar &d_factor = d_const(addAssignFactor);
     opA = (opA == opNone) ? opTranspose : opNone;
+    SizeType size = getProductShape(A, opA, x);
+    devAlloc_->allocateIfNull(y, size);
+    assertValidVector(*y, size, __func__);
     gemv(opA, d_alpha, A, x, d_factor, *y);
 }
 
@@ -148,6 +167,11 @@ template<class real>
 void DeviceMathType<real>::mmProduct(DeviceMatrix *C, real alpha,
                                      const DeviceMatrix &A, MatrixOp opA,
                                      const DeviceMatrix &B, MatrixOp opB) {
+    Dim dim = getProductShape(A, opA, B, opB);
+    abortIf(dim == Dim(), "shape mismatch on matrix-matrix multiplication.");
+    devAlloc_->allocateIfNull(C, dim);
+    assertValidMatrix(*C, dim, __func__);
+
     const DeviceScalar &d_alpha = d_const(alpha);
     gemm(opA, opB, d_alpha, A, B, d_zero(), *C);
 }
@@ -158,6 +182,8 @@ void DeviceMathType<real>::vmvProduct(DeviceScalar *z, real alpha,
                                       const DeviceVector &x) {
     DeviceVector *Ax = tempDeviceVector(A.rows);
     gemv(opNone, d_one(), A, x, d_zero(), *Ax);
+
+    devAlloc_->allocateIfNull(z);
     dot(z, 1., y, *Ax);
 }
 
@@ -167,9 +193,16 @@ void DeviceMathType<real>::batchedVmvProduct(DeviceVector *z, real alpha,
                                              const DeviceMatrix &A,
                                              const DeviceMatrix &x) {
     Dim dim = getProductShape(x, opNone, A, opTranspose);
+    abortIf(dim == Dim(), "shape mismatch on batched VxMxV product.");
+        
     DeviceMatrix *Ax = tempDeviceMatrix(dim);
+    dim = getProductShape(*Ax, opNone, y, opNone);
+    abortIf(dim == Dim(), "shape mismatch on batched VxMxV product.");
+    devAlloc_->allocateIfNull(z, A.rows);
+    assertValidVector(*z, A.rows, __func__);
+    
     gemm(opTranspose, opNone, d_one(), x, A, d_zero(), *Ax);
-    dotBatched(z, alpha, *Ax, opNone, x, opNone);
+    dotBatched(z, alpha, *Ax, opNone, y, opNone);
 }
 
 template<class real>
@@ -177,22 +210,23 @@ void DeviceMathType<real>::mmmProduct(DeviceMatrix *z, real alpha,
                                       const DeviceMatrix &y, MatrixOp opy,
                                       const DeviceMatrix &A, MatrixOp opA,
                                       const DeviceMatrix &x, MatrixOp opx) {
-    const DeviceScalar &d_alpha = d_const(alpha);
-    
     Dim dimAx = getProductShape(A, opA, x, opx);
     DeviceMatrix *Ax =  tempDeviceMatrix(dimAx);
-    gemm(opA, opx, d_one(), A, x, d_zero(), *Ax);
-    gemm(opy, opNone, d_alpha, y, *Ax, d_zero(), *z);
+    mmProduct(Ax, 1., A, opA, x, opx);
+    mmProduct(z, 1., y, opy, *Ax, opNone);
 }
 
 template<class real>
 void DeviceMathType<real>::min(DeviceScalar *s, const DeviceMatrix &A) {
+    devAlloc_->allocateIfNull(s);
     devKernels_.min(s->d_data, A.d_data, A.rows * A.cols);
 }
 
 template<class real>
 void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
-    devAlloc_->allocate(dAt, A.cols, A.rows);
+    Dim dim = getMatrixShape(A, opTranspose);
+    devAlloc_->allocateIfNull(dAt, dim);
+    assertValidMatrix(*dAt, dim, __func__);
     devKernels_.transpose(dAt->d_data, A.d_data, A.rows, A.cols);
 }
 
@@ -212,7 +246,8 @@ sqaod::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp
                                                  const DeviceMatrix &B, MatrixOp opB) {
     Dim Adim = getMatrixShape(A, opA);
     Dim Bdim = getMatrixShape(B, opB);
-    throwErrorIf(Adim.cols != Bdim.rows, "Shpee does not match on matrix-matrix multiplication.");
+    if (Adim.cols != Bdim.rows)
+        return Dim();
     return Dim(B.rows, A.cols);
 }
 
