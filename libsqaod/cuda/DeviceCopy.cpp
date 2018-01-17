@@ -55,20 +55,20 @@ operator()(DeviceMatrix *dst, const DeviceMatrix &src) {
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const real &src) const {
-    abortIf(dst->d_data == NULL);
+    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
     copyBroadcast(dst->d_data, src, dst->rows * dst->cols);
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceMatrix *dst, const real &src, sqaod::SizeType size,
            sqaod::SizeType stride, sqaod::IdxType offset) const {
-    abortIf(dst->d_data == NULL);
+    abortIf(dst->d_data == NULL, "DeviceMatrix is empty");
     copyBroadcastStrided(dst->d_data, src, size, stride, offset);
 }
     
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const HostVector &src) {
-    abortIf(dst->d_data == NULL);
+    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
     copy(dst->d_data, src.data, src.size);
 }
     
@@ -82,14 +82,14 @@ operator()(HostVector *dst, const DeviceVector &src) const {
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const DeviceVector &src) {
-    abortIf(dst->d_data == NULL);
+    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
     copy(dst->d_data, src.d_data, src.size);
     dst->size = src.size;
 }
 
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceVector *dst, const real &src) const {
-    abortIf(dst->d_data == NULL);
+    abortIf(dst->d_data == NULL, "DeviceMatrix is empty.");
     copyBroadcast(dst->d_data, src, 1);
 }
 

@@ -10,6 +10,8 @@
 
 namespace sqaod_cuda {
 
+class Device;
+
 template<class real>
 struct DeviceCopyType {
 

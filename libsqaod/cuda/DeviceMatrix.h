@@ -3,6 +3,7 @@
 #define SQAOD_CUDA_CUDA_MATRIX_H__
 
 #include <common/Matrix.h>
+#include <cuda/DeviceObject.h>
 
 namespace sqaod_cuda {
 
