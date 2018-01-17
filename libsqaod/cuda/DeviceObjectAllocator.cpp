@@ -63,7 +63,7 @@ void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore *memStore,
     memStore_ = memStore;
     
     d_consts_ = (real*)memStore_->allocate(sizeof(real) * nHostConsts_);
-    DeviceCopy(devStream).copy(d_consts_, hostConsts_, nHostConsts_);
+    DeviceCopyType<real>().copy(d_consts_, hostConsts_, nHostConsts_);
 
     for (int idx = 0; idx < nHostConsts_; ++idx)
         constReg_.pushBack(new DeviceScalar(&d_consts_[idx]));

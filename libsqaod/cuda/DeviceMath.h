@@ -125,7 +125,7 @@ struct DeviceMathType {
     
 private:
     DeviceMathKernels devKernels_;
-    DeviceCopy devCopy_;
+    DeviceCopyType<real> devCopy_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;
 };

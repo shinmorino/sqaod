@@ -39,7 +39,6 @@ struct DeviceObjectAllocatorType {
 
 private:
     DeviceMemoryStore *memStore_;
-    DeviceCopy devCopy_;
     static const real hostConsts_[];
     static const int nHostConsts_;
     real *d_consts_;
