@@ -177,6 +177,10 @@ struct MatrixType {
         }
     }
 
+    void resize(const Dim &dim) {
+        resize(dim.rows, dim.cols);
+    }
+
     V &operator()(IdxType r, IdxType c) {
         return data[r * cols + c];
     }
