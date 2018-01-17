@@ -17,6 +17,7 @@ void Device::finalize() {
         (*it)->finalize();
         delete *it;
     }
+    defaultDeviceStream_.finalize();
     streams_.clear();
     devObjAllocatorFP32_.finalize();
     devObjAllocatorFP64_.finalize();
@@ -24,7 +25,7 @@ void Device::finalize() {
 }
 
 
-DeviceStream *Device::newDeviceStream() {
+DeviceStream *Device::newStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));
     DeviceStream *deviceStream = new DeviceStream(stream, memStore_);
@@ -32,7 +33,7 @@ DeviceStream *Device::newDeviceStream() {
     return deviceStream;
 }
 
-DeviceStream *Device::defaultDeviceStream() {
+DeviceStream *Device::defaultStream() {
     return &defaultDeviceStream_;
 }
 

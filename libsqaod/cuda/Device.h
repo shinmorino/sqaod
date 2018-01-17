@@ -12,15 +12,18 @@ class DeviceStream;
 
 class Device {
 public:
+    template<class real>
+    using ObjectAllocator = DeviceObjectAllocatorType<real>;
+
     void initialize(int devNo);
     void finalize();
 
     template<class real>
-    DeviceObjectAllocatorType<real> *deviceObjectAllocator();
+    DeviceObjectAllocatorType<real> *objectAllocator();
     
-    DeviceStream *newDeviceStream();
+    DeviceStream *newStream();
 
-    DeviceStream *defaultDeviceStream();
+    DeviceStream *defaultStream();
 
     void releaseStream(DeviceStream *stream);
 
@@ -41,12 +44,12 @@ private:
 
 
 template<> inline
-DeviceObjectAllocatorType<float> *Device::deviceObjectAllocator<float>() {
+DeviceObjectAllocatorType<float> *Device::objectAllocator<float>() {
     return &devObjAllocatorFP32_;
 }
 
 template<> inline
-DeviceObjectAllocatorType<double> *Device::deviceObjectAllocator<double>() {
+DeviceObjectAllocatorType<double> *Device::objectAllocator<double>() {
     return &devObjAllocatorFP64_;
 }
 

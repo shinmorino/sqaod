@@ -268,13 +268,13 @@ DeviceMathType<real>::DeviceMathType(Device &device, DeviceStream *devStream){
 
 template<class real>
 void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream) {
-    devKernels_.setDeviceStream(devStream);
-    devCopy_.setDeviceStream(devStream);
-    devAlloc_ = device.deviceObjectAllocator<real>();
-    if (devStream != NULL)
-        devStream_ = devStream;
-    else
-        devStream_ = device.defaultDeviceStream();
+    if (devStream == NULL)
+        devStream = device.defaultStream();
+    devStream_ = devStream;
+
+    devAlloc_ = device.objectAllocator<real>();
+    devCopy_.set(device, devStream);
+    devKernels_.setStream(devStream);
 }
 
 

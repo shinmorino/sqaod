@@ -32,7 +32,7 @@ public:
     template<class V>
     DeviceScalarType<V> *tempDeviceScalar(const char *signature = NULL);
 
-    cudaStream_t getStream() const {
+    cudaStream_t getCudaStream() const {
         return stream_;
     }
 
