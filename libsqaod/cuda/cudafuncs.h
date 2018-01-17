@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <curand.h>
 
 /* FIXME: undef somewhere. */
 #ifdef _DEBUG
@@ -20,6 +21,9 @@ void _throwError(cudaError_t status, const char *file, unsigned long line, const
 
 inline bool _valid(cublasStatus_t cublasStatus) { return cublasStatus == CUBLAS_STATUS_SUCCESS; }
 void _throwError(cublasStatus_t status, const char *file, unsigned long line, const char *expr);
+
+inline bool _valid(curandStatus_t cublasStatus) { return cublasStatus == CURAND_STATUS_SUCCESS; }
+void _throwError(curandStatus_t status, const char *file, unsigned long line, const char *expr);
 
 #define throwOnError(expr) { auto status = (expr); if (!sqaod_cuda::_valid(status)) { sqaod_cuda::_throwError(status, __FILE__, __LINE__, #expr); } }
 
