@@ -3,8 +3,9 @@
 
 #include <map>
 #include <set>
+#include <cuda/DeviceObject.h>
 #include <common/Array.h>
-#include <assert.h>
+
 
 /* ToDo: This implementatin is enough for now.  Will be reconsidered when needed. */
 

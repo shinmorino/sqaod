@@ -6,12 +6,6 @@
 
 namespace sqaod_cuda {
 
-struct DeviceObject {
-    virtual ~DeviceObject() { }
-    virtual void *get_data() = 0;
-};
-
-
 /* light-weight matrix classes for C++ API */
 
 template<class V>
@@ -40,7 +34,11 @@ struct DeviceMatrixType : DeviceObject {
 
 private:
     DeviceMatrixType(const DeviceMatrixType<V>&);
-    virtual void *get_data() { return d_data; }
+    virtual void get_data(void **ppv) { 
+        *ppv = d_data;
+        d_data = NULL;
+        rows = cols = (SizeType)-1;
+    }
 };
     
 
@@ -67,7 +65,11 @@ struct DeviceVectorType : DeviceObject {
 
 private:
     DeviceVectorType(const DeviceVectorType<V>&);
-    virtual void *get_data() { return d_data; }
+    virtual void get_data(void **ppv) { 
+        *ppv = d_data;
+        d_data = NULL;
+        size = (SizeType)-1;
+    }
 };
 
 
@@ -90,7 +92,10 @@ struct DeviceScalarType : DeviceObject {
     V *d_data;
 private:
     DeviceScalarType(const DeviceScalarType<V>&);
-    virtual void *get_data() { return d_data; }
+    virtual void get_data(void **ppv) { 
+        *ppv = d_data;
+        d_data = NULL;
+    }
 };
 
 typedef DeviceVectorType<char> DeviceBits;

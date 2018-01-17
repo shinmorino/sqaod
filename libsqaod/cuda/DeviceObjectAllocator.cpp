@@ -1,4 +1,5 @@
 #include "DeviceObjectAllocator.h"
+#include "DeviceCopy.h"
 
 using namespace sqaod_cuda;
 using sqaod::Dim;
@@ -39,7 +40,8 @@ void DeviceObjectAllocatorType<real>::allocate(DeviceScalarType<real> *sc) {
 
 template<class real>
 void DeviceObjectAllocatorType<real>::deallocate(DeviceObject &obj) {
-    void *pv = obj.get_data();
+    void *pv;
+    obj.get_data(&pv);
     memStore_->deallocate(pv);
 }
 

@@ -5,7 +5,7 @@
 #include <cuda/DeviceObjectAllocator.h>
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceCopy.h>
-#include <cuda/DeviceMathKernels.h>
+#include <cuda/DeviceKernels.h>
 
 namespace sqaod_cuda {
 
@@ -102,12 +102,6 @@ struct DeviceMathType {
     DeviceVector *tempDeviceVector(SizeType size, const char *signature = NULL);
     DeviceScalar *tempDeviceScalar(const char *signature = NULL);
     void *tempAllocate(SizeType size);
-    /* objects on heap */
-    DeviceMatrix *newDeviceMatrix(int rows, int cols, const char *signature = NULL);
-    DeviceMatrix *newDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
-    DeviceVector *newDeviceVector(SizeType size, const char *signature = NULL);
-    DeviceScalar *newDeviceScalar(const char *signature = NULL);
-    void *allocate(size_t size);
 
     /* BLAS */
     void gemv(MatrixOp op, const DeviceScalar &d_alpha,

@@ -1,7 +1,6 @@
 #ifndef CUDA_DEVICEMATHKERNELS_H__
 #define CUDA_DEVICEMATHKERNELS_H__
 
-#include <cuda/DeviceObjectAllocator.h>
 #include <cuda/DeviceStream.h>
 
 namespace sqaod_cuda {
@@ -10,7 +9,7 @@ template<class real>
 struct DeviceMathKernelsType {
     typedef sqaod::SizeType SizeType;
     
-    void scale(real *d_y, real alpha, const real *d_x, SizeType size);
+    void scale(real *d_y, real alpha, const real *d_x, SizeType size, real addAssignFactor);
     void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
     void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
                               SizeType nBatch, real addAssignFactor);
@@ -39,12 +38,29 @@ struct DeviceMathKernelsType {
     
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
-    void setDeviceStream(DeviceStream *devStream);
-    
+    void setStream(DeviceStream *devStream);
+
 private:
     cudaStream_t stream_;
     DeviceStream *devStream_;
 };
+
+
+struct DeviceCopyKernels {
+
+    template<class V>
+    void copyBroadcast(V *d_buf, const V &v, sqaod::SizeType nElms) const;
+
+    template<class V>
+    void copyBroadcastStrided(V *d_buf, const V &v, sqaod::SizeType size,
+                              sqaod::SizeType stride, sqaod::IdxType offset) const;
+
+    void setCUDAStream(cudaStream_t stream);
+
+private:
+    cudaStream_t stream_;
+};
+    
 
 
 }  // namespace sqaod_cuda

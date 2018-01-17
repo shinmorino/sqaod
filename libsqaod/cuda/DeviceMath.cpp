@@ -6,27 +6,28 @@ using sqaod::SizeType;
 
 template<class real>
 void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
-    size_t size = std::min(A->rows, A->cols);
+    SizeType size = std::min(A->rows, A->cols);
     devCopy_(A, v, size, A->rows + 1, 0);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceScalar *y, real alpha, const DeviceScalar &x,
                                  real addAssignFactor) {
-    devKernels_.scale(y->d_data, alpha, x.d_data, addAssignFactor);
+    devKernels_.scale(y->d_data, alpha, x.d_data, 1, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector &x,
                                  real addAssignFactor) {
     throwErrorIf(y->size != x.size, "Vector length does not match.");
-    devKernels_.scale(y->d_data, alpha, x.d_data, addAssignFactor);
+    devKernels_.scale(y->d_data, alpha, x.d_data, x.size, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceMatrix *B, real alpha, const DeviceMatrix &A) {
+    devAlloc_->allocateIfNull(B, A.dim());
     // THROW_IF(y->size != x.size, "Vector length does not match.");  FIXME: add input checks.
-    devKernels_.scale(B->d_data, alpha, A.d_data, A.rows * A.cols);
+    devKernels_.scale(B->d_data, alpha, A.d_data, A.rows * A.cols, real(0.));
 }
 
 template<class real>
@@ -49,7 +50,7 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
                                           addAssignFactor);
     }
     else {
-        abort("Unknown matrix op.");
+        abort_("Unknown matrix op.");
     }
 }
     
@@ -62,11 +63,13 @@ void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceVector &
 template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceMatrix &dmat,
                                real addAssignFactor) {
+    devAlloc_->allocateIfNull(s);
     devKernels_.sum(s->d_data, alpha, dmat.d_data, dmat.rows * dmat.cols, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::sumDiagonals(DeviceScalar *s, const DeviceMatrix &dmat) {
+    devAlloc_->allocateIfNull(s);
     int nElms = std::min(dmat.rows, dmat.cols);
     devKernels_.sumGather(s->d_data, 1., dmat.d_data, nElms, dmat.cols + 1, 0);
 }
@@ -84,6 +87,7 @@ void DeviceMathType<real>::sumBatched(DeviceVector *vec,
         assert(op == opRowwise);
         dmat = &A;
     }
+    devAlloc_->allocateIfNull(vec, dmat->rows);
     devKernels_.sumBatched(vec->d_data, 1., dmat->d_data, dmat->cols, dmat->rows);
 }
 
@@ -188,6 +192,7 @@ void DeviceMathType<real>::min(DeviceScalar *s, const DeviceMatrix &A) {
 
 template<class real>
 void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
+    devAlloc_->allocate(dAt, A.cols, A.rows);
     devKernels_.transpose(dAt->d_data, A.d_data, A.rows, A.cols);
 }
 

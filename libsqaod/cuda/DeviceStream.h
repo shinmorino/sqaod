@@ -1,12 +1,16 @@
 #ifndef CUDA_DEVICE_STREAM_H__
 #define CUDA_DEVICE_STREAM_H__
 
-#include <cuda/DeviceMatrix.h>
-#include <cuda/DeviceMemoryStore.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <cuda/DeviceMemoryStore.h>
+
 
 namespace sqaod_cuda {
+
+template<class real> struct DeviceMatrixType;
+template<class real> struct DeviceVectorType;
+template<class real> struct DeviceScalarType;
 
 
 class DeviceStream {

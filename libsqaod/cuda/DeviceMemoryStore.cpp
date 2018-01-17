@@ -45,7 +45,7 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
 bool HeapBitmap::release(uintptr_t addr) {
     RegionMap::iterator it = regions_.lower_bound(addr);
     if ((it == regions_.end()) || (it->first <= addr))
-        abort("trying to release a chunk that not allocated.");
+        abort_("trying to release a chunk that not allocated.");
 
     uintptr_t key = it->first;
     if (isRegionFull(it->second)) {
@@ -252,7 +252,7 @@ void DeviceMemoryStore::deallocate(void *pv) {
     uintptr_t addr = reinterpret_cast<uintptr_t>(pv);
     ChunkPropSet::iterator it = chunkPropSet_.find(ChunkProp(addr, 0, fromNone));
     if (it == chunkPropSet_.end())
-        abort("trying to release a chunk that not allocated.");
+        abort_("trying to release a chunk that not allocated.");
     // THROW_IF(it == chunkPropSet_.end());
     const ChunkProp &chunk = *it;
     
@@ -267,7 +267,7 @@ void DeviceMemoryStore::deallocate(void *pv) {
         throwOnError(::cudaFree(pv));
         break;
     default:
-        abort("Must not reach."); // Must not reach here.
+        abort_("Must not reach."); // Must not reach here.
     }
     chunkPropSet_.erase(it);
 }

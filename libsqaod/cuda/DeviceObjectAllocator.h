@@ -2,8 +2,8 @@
 #define SQAOD_CUDA_DEVICEOBJECTALLOCATOR_H__
 
 #include <cuda/DeviceMatrix.h>
-#include <cuda/DeviceCopy.h>
 #include <cuda/DeviceMemoryStore.h>
+#include <cuda/DeviceStream.h>
 
 namespace sqaod_cuda {
 
@@ -24,6 +24,12 @@ struct DeviceObjectAllocatorType {
     void allocate(DeviceVector *vec, int size);
 
     void allocate(DeviceScalar *sc);
+
+    void allocateIfNull(DeviceMatrixType<real> *mat, const sqaod::Dim &dim);
+
+    void allocateIfNull(DeviceVectorType<real> *vec, const sqaod::SizeType size);
+
+    void allocateIfNull(DeviceScalarType<real> *sc);
     
     void deallocate(DeviceObject &obj);
 
@@ -49,6 +55,25 @@ private:
     const DeviceScalar *d_one_;
     const DeviceScalar *d_zero_;
 };
+
+
+template<class real>
+void DeviceObjectAllocatorType<real>::allocateIfNull(DeviceMatrixType<real> *mat, const sqaod::Dim &dim) {
+    if (mat->d_data == NULL)
+        allocate(mat, dim);
+}
+
+template<class real>
+void DeviceObjectAllocatorType<real>::allocateIfNull(DeviceVectorType<real> *vec, const sqaod::SizeType size) {
+    if (vec->d_data == NULL)
+        allocate(vec, size);
+}
+
+template<class real>
+void DeviceObjectAllocatorType<real>::allocateIfNull(DeviceScalarType<real> *sc) {
+    if (sc->d_data == NULL)
+        allocate(sc);
+}
 
 
 template<class real> inline

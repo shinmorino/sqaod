@@ -1,3 +1,4 @@
+#include <common/Matrix.h>
 #include "DeviceStream.h"
 #include "cudafuncs.h"
 
@@ -7,8 +8,8 @@ namespace {
 
 struct PlainDeviceObject : DeviceObject {
     PlainDeviceObject(void *d_pv) : d_data(d_pv) { }
-    virtual void *get_data() {
-        return d_data;
+    void get_data(void **pv) {
+        *pv = d_data;
     }
     void *d_data;
 };
@@ -34,7 +35,7 @@ void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore) {
 
 
 void DeviceStream::finalize() {
-    releaseTempObjects();
+    synchronize();
     if (cublasHandle_ != NULL)
         throwOnError(cublasDestroy(cublasHandle_));
     if (stream_ != NULL)
@@ -53,7 +54,8 @@ void DeviceStream::synchronize() {
 void DeviceStream::releaseTempObjects() {
     for (DeviceObjects::iterator it = tempObjects_.begin();
          it != tempObjects_.end(); ++it) {
-        void *pv = (*it)->get_data();
+        void *pv;
+        (*it)->get_data(&pv);
         memStore_->deallocate(pv);
         delete *it;
     }
