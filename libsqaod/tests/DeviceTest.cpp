@@ -53,8 +53,8 @@ template<class real>
 void DeviceTest::tests() {
     Device device;
 
-    device.initialize()
-    auto *alloc = device_.objectAllocator<real>();
+    device.initialize();
+    auto *alloc = device.objectAllocator<real>();
 
     testcase("matrix alloc/dealloc") {
         DeviceMatrixType<real> mat;
@@ -79,7 +79,7 @@ void DeviceTest::tests() {
         alloc->deallocate(sc);
     }
 
-    DeviceStream *defStream = device_.defaultStream();
+    DeviceStream *defStream = device.defaultStream();
 
     testcase("tmp object alloc/dealloc") {
         DeviceMatrixType<real> *tmpMat = defStream->tempDeviceMatrix<real>(10, 10);

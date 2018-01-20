@@ -48,4 +48,5 @@ AC_SUBST([CXXFLAGS], $CFLAGS)
 AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
 AM_COND_IF([CUDA_ENABLED],
            [AC_CONFIG_FILES([cuda/Makefile])])
+AC_CONFIG_FILES([tests/Makefile])
 AC_OUTPUT

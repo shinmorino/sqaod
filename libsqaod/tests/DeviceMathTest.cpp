@@ -34,7 +34,6 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
     DeviceMathType<real> devMath(device_);
     DeviceCopyType<real> devCopy(device_);
-    DeviceStream *devStream = device_.defaultStream();
 
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;

@@ -2,7 +2,7 @@
 #define MINIMAL_TESTSUITE_H__
 
 #include <string>
-#include <iosfwd>
+#include <iostream>
 
 
 class MinimalTestSuite {
