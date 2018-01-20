@@ -28,23 +28,40 @@ uint32_t __inline __builtin_clzll(uint64_t value) {
 
 #endif
 
+// #define DEBUG_ALLOC
 
 bool HeapBitmap::acquire(uintptr_t *addr) {
     if (freeRegions_.empty())
         return false;
     uintptr_t key = *freeRegions_.begin();
     RegionMap::iterator rit = regions_.find(key);
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, rit->first - regionSize_, rit->first - 1, rit->second);
+#endif
     int iChunk = __builtin_ctz(rit->second);
     rit->second ^= (1 << iChunk);
     *addr = (key - regionSize_) + (iChunk << chunkSizeShift_);
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Region: %3d, Chunk, %d, addr: %I64x\n", regionSize_, iChunk, *addr);
+#endif
     if (isRegionFull(rit->second))
         freeRegions_.erase(key);
     return true;
 }
 
 bool HeapBitmap::release(uintptr_t addr) {
-    RegionMap::iterator it = regions_.lower_bound(addr);
-    if ((it == regions_.end()) || (it->first <= addr))
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Region: %3d, addr: %I64x\n", regionSize_, addr);
+    for (RegionMap::iterator it = regions_.begin(); it != regions_.end(); ++it)
+        fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, it->first - regionSize_, it->first - 1, it->second);
+#endif
+    RegionMap::iterator it = regions_.upper_bound(addr);
+    if (it == regions_.end())
+        abort_("trying to release a chunk that not allocated.");
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, it->first - regionSize_, it->first - 1, it->second);
+#endif
+    if (it->first <= addr)
         abort_("trying to release a chunk that not allocated.");
 
     uintptr_t key = it->first;
@@ -177,7 +194,10 @@ uintptr_t HeapMap::acquire(size_t *size) {
     uintptr_t newAddr = addr + *size;
     size_t newSize = it->second - *size;
     freeRegions_.erase(it);
-    freeRegions_[newAddr] = newSize;
+    /* Exactly the same size as requested by size found. 
+     * No need to register to freeRegions. */
+    if (newSize != 0)
+        freeRegions_[newAddr] = newSize;
 
     return addr;
 }
@@ -249,6 +269,11 @@ void *DeviceMemoryStore::allocate(size_t size) {
 }
 
 void DeviceMemoryStore::deallocate(void *pv) {
+    if (pv == NULL) {
+        /* FIXME: Add message. */
+        return;
+    }
+
     uintptr_t addr = reinterpret_cast<uintptr_t>(pv);
     ChunkPropSet::iterator it = chunkPropSet_.find(ChunkProp(addr, 0, fromNone));
     if (it == chunkPropSet_.end())
