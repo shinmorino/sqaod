@@ -9,11 +9,6 @@ using sqaod::IdxType;
 
 
 
-template<class real> void DeviceCopyType<real>::
-copyBroadcastStrided(real *d_buf, const real &v, SizeType size, SizeType stride, IdxType offset) const {
-    kernels_.copyBroadcastStrided(d_buf, v, size, stride, offset);
-}
-
 template<class real> 
 DeviceCopyType<real>::DeviceCopyType() {
     devAlloc_ = NULL;
@@ -32,6 +27,11 @@ set(Device &device, DeviceStream *devStream) {
         stream_ = devStream->getCudaStream();
     else
         stream_ = NULL;
+}
+
+template<class real> void DeviceCopyType<real>::
+synchronize() const {
+    throwOnError(cudaStreamSynchronize(stream_));
 }
 
 
@@ -82,8 +82,8 @@ operator()(HostVector *dst, const DeviceVector &src) const {
     if (dst->data == NULL)
         dst->allocate(src.size);
     assertSameShape(*dst, src, __func__);
-    copy(dst->data, src.d_data, src.size);
     dst->size = src.size;
+    copy(dst->data, src.d_data, src.size);
 }
 
 template<class real> void DeviceCopyType<real>::
@@ -103,6 +103,7 @@ operator()(DeviceVector *dst, const real &src) const {
     
 template<class real> void DeviceCopyType<real>::
 operator()(DeviceScalar *dst, const real &src) {
+    devAlloc_->allocateIfNull(dst);
     assertValidScalar(*dst, __func__);
     copy(dst->d_data, &src, 1);
 }

@@ -64,12 +64,15 @@ struct DeviceCopyType {
 
     void operator()(sqaod::PackedBitsArray *dst, const DevicePackedBitsArray &src) const;
 
+    void synchronize() const;
+
     DeviceCopyType();
 
     DeviceCopyType(Device &device, DeviceStream *stream = NULL);
     
     void set(Device &device, DeviceStream *stream = NULL);
     
+
 private:
     typedef DeviceObjectAllocatorType<real> DeviceObjectAllocator;
     DeviceObjectAllocator *devAlloc_;
@@ -86,6 +89,11 @@ void DeviceCopyType<real>::copy(V *d_buf, const V *v, sqaod::SizeType nElms) con
 template<class real> template<class V> inline
 void DeviceCopyType<real>::copyBroadcast(V *d_buf, const V &v, sqaod::SizeType size) const {
     kernels_.copyBroadcast(d_buf, v, size);
+}
+
+template<class real> void DeviceCopyType<real>::
+copyBroadcastStrided(real *d_buf, const real &v, sqaod::SizeType size, sqaod::SizeType stride, sqaod::IdxType offset) const {
+    kernels_.copyBroadcastStrided(d_buf, v, size, stride, offset);
 }
 
 
