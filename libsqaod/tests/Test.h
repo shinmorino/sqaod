@@ -1,15 +1,13 @@
-#ifndef INTEGRALIMAGE_TESTS_H__
-#define INTEGRALIMAGE_TESTS_H__
+#ifndef TESTS_H__
+#define TESTS_H__
 
-#include "LibImageProcDemoTests/MinimalTestSuite.h"
-#include <LibImageProcDemo/Image.h>
-#include <LibImageProcDemo/IntegralImage.h>
+#include "MinimalTestSuite.h"
 
 
-class IntegralImageTests : public MinimalTestSuite {
+class Tests : public MinimalTestSuite {
 public:
-    IntegralImageTests(void);
-    ~IntegralImageTests(void);
+    Tests(void);
+    ~Tests(void);
 
     virtual void setUp();
 
@@ -17,9 +15,6 @@ public:
     
     virtual void run(std::ostream &ostm);
 
-private:
-    HostImage<float> image_;
-    IntegralImage integralImage_;
 };
 
 #endif

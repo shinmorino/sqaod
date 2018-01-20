@@ -3,32 +3,37 @@
 
 #include <string>
 #include <iosfwd>
-#include <LibImageProcDemo/Image.h>
+
 
 class MinimalTestSuite {
 public:
     MinimalTestSuite(const std::string &testName)
-        : testName_(testName) { }
+        : testName_(testName) {  }
 
-    virtual void setUp() { }
-
-    virtual void tearDown() { }
+    void reset(int curNo) {
+        testNo_ = 0;
+        curNo_ = curNo;
+    }
     
-    virtual void run(std::ostream &ostm) { }
-
     void success();
 
     void fail(const char *filename, unsigned long lineno);
 
+protected:
+    int testNo_;
+    int curNo_;
+
 private:
     std::string testName_;
-
 
 /* static members */
 public:
     static
     int summarize();
 
+    template<class T>
+    friend void runTest();
+    
 private:
     static int okCount_;
     static int failCount_;
@@ -37,24 +42,24 @@ private:
 template<class T>
 void runTest() {
     T t;
-    t.setUp();
+
+    t.reset(-1);
     t.run(std::cerr);
-    t.tearDown();
-}
-
-
-
-bool compare(const DeviceImage<float> &gpu, const HostImage<float> &cpu, std::ostream &ostm);
-bool compare(const char *caption, const DeviceImage<float> &gpu, const HostImage<float> &cpu, float tolerance, std::ostream &ostm);
-
-
-inline
-float normErr(float vObs, float vExp) {
-    return (fabs(vObs / vExp - 1.f));
+    int nTests = t.testNo_;
+    
+    for (t.curNo_ = 0; t.curNo_ < nTests; ++t.curNo_) {
+        t.setUp();
+        t.reset(t.curNo_);
+        t.run(std::cerr);
+        t.tearDown();
+    }
 }
 
 
 #define TEST_ASSERT(x) { if (x) success(); else fail(__FILE__, __LINE__); }
+#define TEST_SUCCESS   { success(); }
+#define TEST_FAIL      { fail(__FILE__, __LINE__); }
+#define testcase(name) if ((testNo_++) == curNo_)
 
 
 #endif
