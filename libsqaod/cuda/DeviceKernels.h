@@ -29,13 +29,13 @@ struct DeviceMathKernelsType {
     void min(real *d_min, const real *d_values, SizeType size);
 
     void gemv(cublasOperation_t op, int M, int N,
-              const real *d_alpha, const real *d_A, const real *d_x,
-              const real *d_beta, real *d_y);
-
+        const real *d_alpha, const real *d_A, const real *d_x,
+        const real *d_beta, real *d_y);
+ 
     void gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
-              const real *d_alpha, const real *d_A, const real *d_B,
-              const real *d_beta, real *d_C);
-    
+              const real *d_alpha, const real *d_A, int lda, const real *d_B, int ldb,
+              const real *d_beta, real *d_C, int ldc);
+
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
     void setStream(DeviceStream *devStream);

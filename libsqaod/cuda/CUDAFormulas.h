@@ -27,7 +27,7 @@ struct CUDADGFuncs {
                      const DeviceMatrix &q);
 
 
-    void setDeviceStream(DeviceStream *stream);
+    void assignDevice(Device &device, DeviceStream *stream = NULL);
     DeviceMath devMath;
 };
 
@@ -65,8 +65,8 @@ struct CUDABGFuncs {
                      const DeviceScalar &c,
                      const DeviceMatrix &q0, const DeviceMatrix &q1);
 
-    void setDeviceStream(DeviceStream *stream);
-    DeviceMath devMath;
+      void assignDevice(Device &device, DeviceStream *stream = NULL);
+      DeviceMath devMath;
 };
 
 }

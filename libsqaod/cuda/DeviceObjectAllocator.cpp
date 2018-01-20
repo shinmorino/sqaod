@@ -69,8 +69,13 @@ void DeviceObjectAllocatorType<real>::initialize(DeviceMemoryStore *memStore,
 
     for (int idx = 0; idx < nHostConsts_; ++idx)
         constReg_.pushBack(new DeviceScalar(&d_consts_[idx]));
-    d_one_ = &d_const(1.);
-    d_zero_ = &d_const(0.);
+
+    const real *pos = std::find(hostConsts_, hostConsts_ + nHostConsts_, 0.);
+    int idx = int(pos - hostConsts_);
+    d_zero_ = constReg_[idx];
+    pos = std::find(hostConsts_, hostConsts_ + nHostConsts_, 1.);
+    idx = int(pos - hostConsts_);
+    d_one_ = constReg_[idx];
 }
 
 template<class real>

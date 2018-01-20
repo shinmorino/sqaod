@@ -49,12 +49,41 @@ struct AddAssignDevPtr {
 
 
 template<class real>
+struct Mul{
+    __device__ Mul(real &_d_value, real _alpha) : d_value(_d_value), alpha(_alpha) { }
+    __forceinline__
+    __device__ real operator=(const real &v) const {
+        return d_value = alpha * v;
+    }
+    real &d_value;
+    real alpha;
+};
+
+template<class real>
+struct MulOutDevPtr {
+    typedef real value_type;
+
+    MulOutDevPtr(real *_d_data, real _alpha) : d_data(_d_data), alpha(_alpha) { }
+    typedef Mul<real> Ref;
+    __device__ Ref operator*() const {
+        return Ref(*d_data, alpha);
+    }
+    __device__ Ref operator[](SizeType idx) const {
+        return Ref(d_data[idx], alpha);
+    }
+
+    real *d_data;
+    real alpha;
+};
+
+
+
+template<class real>
 struct StridedInPtr {
     typedef real value_type;
     typedef StridedInPtr SelfType;
     __host__ __device__
     StridedInPtr(const real *_d_data, SizeType _stride, IdxType _offset) : d_data(_d_data), stride(_stride), offset(_offset) { }
-    typedef AddAssign<real> Ref;
     __device__ const real &operator[](SizeType idx) const {
         return d_data[offset + idx * stride];
     }
@@ -86,6 +115,8 @@ namespace std {
 template<class real>
 struct iterator_traits<AddAssignDevPtr<real> > : dev_iterator_traits<AddAssignDevPtr<real>, real> { };
 template<class real>
+struct iterator_traits<MulOutDevPtr<real> > : dev_iterator_traits<MulOutDevPtr<real>, real> { };
+template<class real>
 struct iterator_traits<StridedInPtr<real>> : dev_iterator_traits<StridedInPtr<real>, real> { };
 
 }
@@ -108,7 +139,7 @@ void DeviceMathKernelsType<real>::scale(real *d_y, real alpha, const real *d_x, 
         scaleKernel <<<gridDim, blockDim, 0, stream_ >>> (d_y, alpha, d_x, size);
     }
     else {
-        AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, real(1.));
+        AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, 1.);
         scaleKernel <<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, size);
     }
     DEBUG_SYNC;
@@ -202,11 +233,12 @@ sum(real *d_sum, real alpha, const real *d_x, SizeType size, real addAssignFacto
                            d_x, d_sum, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
     if (addAssignFactor == 0.) {
+        MulOutDevPtr<real> outPtr(d_sum, alpha);
         cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
-                               d_x, d_sum, size, stream_, CUB_DEBUG);
+                               d_x, outPtr, size, stream_, CUB_DEBUG);
     }
     else {
-        AddAssignDevPtr<real> outPtr(d_sum, addAssignFactor, real(1.));
+        AddAssignDevPtr<real> outPtr(d_sum, addAssignFactor, alpha);
         cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
                                d_x, outPtr, size, stream_, CUB_DEBUG);
     }
@@ -240,14 +272,16 @@ struct Linear {
 
 template<class real> void DeviceMathKernelsType<real>::
 sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBatch) {
+    MulOutDevPtr<real> outPtr(d_sum, alpha);
+
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
-                                    d_A, d_sum, nBatch,
+                                    d_A, outPtr, nBatch,
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
     cub::DeviceSegmentedReduce::Sum(d_temp_storage, temp_storage_bytes,
-                                    d_A, d_sum, nBatch,
+                                    d_A, outPtr, nBatch,
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
@@ -289,17 +323,23 @@ dot(real *d_c, real alpha, const real *d_x, const real *d_y, SizeType size,
     real addAssignFactor) {
 
     InDotPtr<real> inPtr(d_x, d_y);
-    size_t temp_storage_bytes;
-    cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
-                           inPtr, d_c, size, stream_, CUB_DEBUG);
-    void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
-
     if (addAssignFactor == 0.) {
+        MulOutDevPtr<real> outPtr(d_c, alpha);
+        size_t temp_storage_bytes;
+        cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
+                               inPtr, outPtr, size, stream_, CUB_DEBUG);
+        void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
+
         cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
-                               inPtr, d_c, size, stream_, CUB_DEBUG);
+                               inPtr, outPtr, size, stream_, CUB_DEBUG);
     }
     else {
-        AddAssignDevPtr<real> outPtr(d_c, addAssignFactor, real(1.));
+        AddAssignDevPtr<real> outPtr(d_c, addAssignFactor, alpha);
+        size_t temp_storage_bytes;
+        cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
+                               inPtr, outPtr, size, stream_, CUB_DEBUG);
+        void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
+
         cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
                                inPtr, outPtr, size, stream_, CUB_DEBUG);
     }
@@ -312,15 +352,15 @@ dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType siz
            SizeType nBatch) {
     
     InDotPtr<real> inPtr(d_x, d_y);
-    
+    MulOutDevPtr<real> outPtr(d_z, alpha);
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
-                                    inPtr, d_z, nBatch,
+                                    inPtr, outPtr, nBatch,
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
     cub::DeviceSegmentedReduce::Sum(d_temp_storage, temp_storage_bytes,
-                                    inPtr, d_z, nBatch,
+                                    inPtr, outPtr, nBatch,
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
@@ -328,11 +368,10 @@ dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType siz
 
 template <class real>
 __global__ static void
-transposeKernel(real *d_At, const real *d_A, SizeType rows, SizeType cols) {
+transposeKernel(real *d_At, const real *d_A, SizeType cols, SizeType rows) {
 
-
-    int inTileLeft = blockDim.x * blockIdx.x * 32;
-    int inTileTop = blockDim.y * blockIdx.y * 32;
+    int inTileLeft = blockDim.x * blockIdx.x;
+    int inTileTop = blockDim.y * blockIdx.y;
     
     int xIn = inTileLeft + threadIdx.x;
     int yIn = inTileTop + threadIdx.y;
@@ -347,16 +386,16 @@ transposeKernel(real *d_At, const real *d_A, SizeType rows, SizeType cols) {
     int yOut = inTileLeft + threadIdx.y;
     real vOut = tile[threadIdx.x][threadIdx.y];
     
-    if ((xOut < cols) && (yOut < rows))
-        d_At[xOut + cols * yOut] = vOut;
+    if ((xOut < rows) && (yOut < cols))
+        d_At[xOut + rows * yOut] = vOut;
 }
 
 
 template<class real> void DeviceMathKernelsType<real>::
 transpose(real *d_At, const real *d_A, SizeType rows, SizeType cols) {
     dim3 blockDim(32, 32);
-    dim3 gridDim(divru(rows, 32u), divru(cols, 32u));
-    transposeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At, d_A, rows, cols);
+    dim3 gridDim(divru(cols, 32u), divru(rows, 32u));
+    transposeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At, d_A, cols, rows);
     DEBUG_SYNC;
 }
 
@@ -372,32 +411,33 @@ min(real *d_min, const real *d_values, SizeType size) {
     DEBUG_SYNC;
 }
 
+
 template<> void DeviceMathKernelsType<double>::
 gemv(cublasOperation_t op, int M, int N,
      const double *d_alpha, const double *d_A, const double *d_x,
      const double *d_beta, double *d_y) {
-    throwOnError(cublasDgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, N, d_x, 1, d_beta, d_y, 1));
+    throwOnError(cublasDgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, M, d_x, 1, d_beta, d_y, 1));
 }
 
 template<> void DeviceMathKernelsType<float>::
 gemv(cublasOperation_t op, int M, int N,
      const float *d_alpha, const float *d_A, const float *d_x,
      const float *d_beta, float *d_y) {
-    throwOnError(cublasSgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, N, d_x, 1, d_beta, d_y, 1));
+    throwOnError(cublasSgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, M, d_x, 1, d_beta, d_y, 1));
 }
 
 template<> void DeviceMathKernelsType<double>::
 gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
-     const double *d_alpha, const double *d_A, const double *d_B,
-     const double *d_beta, double *d_C) {
-    throwOnError(cublasDgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, M, d_B, K, d_beta, d_C, M));
+     const double *d_alpha, const double *d_A, int lda, const double *d_B, int ldb,
+     const double *d_beta, double *d_C, int ldc) {
+    throwOnError(cublasDgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, lda, d_B, ldb, d_beta, d_C, ldc));
 }
 
 template<> void DeviceMathKernelsType<float>::
 gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
-     const float *d_alpha, const float *d_A, const float *d_B,
-     const float *d_beta, float *d_C) {
-    throwOnError(cublasSgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, M, d_B, K, d_beta, d_C, M));
+     const float *d_alpha, const float *d_A, int lda, const float *d_B, int ldb,
+     const float *d_beta, float *d_C, int ldc) {
+    throwOnError(cublasSgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, lda, d_B, ldb, d_beta, d_C, ldc));
 }
 
 template<class real> DeviceMathKernelsType<real>::

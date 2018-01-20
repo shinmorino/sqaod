@@ -16,7 +16,7 @@ void CUDADGFuncs<real>::calculate_E(DeviceScalar *E,
 template<class real>
 void CUDADGFuncs<real>::calculate_E(DeviceVector *E,
                                     const DeviceMatrix &W, const DeviceMatrix &x) {
-    devMath.batchedVmvProduct(E, 1., x, W, x);
+    devMath.vmvProductBatched(E, 1., x, W, x);
 }
 
 
@@ -44,8 +44,13 @@ template<class real>
 void CUDADGFuncs<real>::calculate_E(DeviceVector *E,
                                     const DeviceVector &h, const DeviceMatrix &J,
                                     const DeviceScalar &c, const DeviceMatrix &q) {
-    devMath.batchedVmvProduct(E, 1., q, J, q);
+    devMath.vmvProductBatched(E, 1., q, J, q);
     devMath.scaleBroadcast(E, 1., c, 1.);
+}
+
+template<class real>
+void CUDADGFuncs<real>::assignDevice(Device &device, DeviceStream *stream) {
+    devMath.assignDevice(device, stream);
 }
 
 
@@ -68,7 +73,7 @@ void CUDABGFuncs<real>::calculate_E(DeviceVector *E,
                                     const DeviceMatrix &W,
                                     const DeviceMatrix &x0, const DeviceMatrix &x1) {
 
-    devMath.batchedVmvProduct(E, 1., x1, W, x0);
+    devMath.vmvProductBatched(E, 1., x1, W, x0);
     DeviceVector *bx0 = devMath.tempDeviceVector(x0.rows, __func__);
     DeviceVector *bx1 = devMath.tempDeviceVector(x1.rows, __func__);
     devMath.vmProduct(bx0, 1., b0, x0, opTranspose);
@@ -127,12 +132,16 @@ void CUDABGFuncs<real>::calculate_E(DeviceVector *E,
                                       const DeviceVector &h0, const DeviceVector &h1,
                                       const DeviceMatrix &J, const DeviceScalar &c,
                                       const DeviceMatrix &q0, const DeviceMatrix &q1) {
-    devMath.batchedVmvProduct(E, 1., q1, J, q0);
+    devMath.vmvProductBatched(E, 1., q1, J, q0);
     devMath.vmProduct(E, 1., h0, q0, opTranspose, 1.);
     devMath.vmProduct(E, 1., h1, q1, opTranspose, 1.);
     devMath.scaleBroadcast(E, 1., c, 1.);
 }
 
+template<class real>
+void CUDABGFuncs<real>::assignDevice(Device &device, DeviceStream *stream) {
+    devMath.assignDevice(device, stream);
+}
 
 
 template struct CUDADGFuncs<double>;

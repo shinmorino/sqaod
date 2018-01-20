@@ -12,11 +12,16 @@ class DeviceStream;
 
 class Device {
 public:
+    Device(int devNo = -1);
+    ~Device();
+
     template<class real>
     using ObjectAllocator = DeviceObjectAllocatorType<real>;
 
-    void initialize(int devNo);
+    void initialize(int devNo = 0);
     void finalize();
+
+    /* FIXME: add activate method. */
 
     template<class real>
     DeviceObjectAllocatorType<real> *objectAllocator();

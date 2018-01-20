@@ -48,12 +48,12 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
     assertValidMatrix(*A, __func__);
     if (op == opRowwise) {
         abortIf(A->cols != x.size, "Cols of matrix does not match vector length.");
-        devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->cols,
+        devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->rows,
                                          addAssignFactor);
     }
     else if (op == opColwise) {
         throwErrorIf(A->rows != x.size, "Rows of matrix does not match vector length.");
-        devKernels_.scaleBroadcastScalars(A->d_data, alpha, x.d_data, x.size, A->cols,
+        devKernels_.scaleBroadcastScalars(A->d_data, alpha, x.d_data, A->cols, x.size,
                                           addAssignFactor);
     }
     else {
@@ -87,16 +87,20 @@ void DeviceMathType<real>::sumBatched(DeviceVector *vec,
                                       real alpha, const DeviceMatrix &A, BatchOp op) {
     const DeviceMatrix *dmat;
     if (op == opColwise) {
-        DeviceMatrix *transposed = tempDeviceMatrix(A.dim());
+        Dim trDim = A.dim().transpose();
+        DeviceMatrix *transposed = tempDeviceMatrix(trDim);
         transpose(transposed, A);
         dmat = transposed;
     }
-    else {
-        assert(op == opRowwise);
+    else if (op == opRowwise) {
         dmat = &A;
     }
+    else {
+        abort_("Invalid BatchOp.");
+    }
     devAlloc_->allocateIfNull(vec, dmat->rows);
-    devKernels_.sumBatched(vec->d_data, 1., dmat->d_data, dmat->cols, dmat->rows);
+    assertValidVector(*vec, dmat->rows, __func__);
+    devKernels_.sumBatched(vec->d_data, alpha, dmat->d_data, dmat->cols, dmat->rows);
 }
 
 template<class real>
@@ -115,7 +119,7 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
     const DeviceMatrix *dMat0, *dMat1;
     if (opA == opTranspose) {
         DeviceMatrix *dAt;
-        dAt = tempDeviceMatrix(A.rows, A.cols);
+        dAt = tempDeviceMatrix(A.dim().transpose());
         transpose(dAt, A);
         dMat0 = dAt;
     }
@@ -125,9 +129,9 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
     }
     if (opB == opTranspose) {
         DeviceMatrix *dBt;
-        dBt = tempDeviceMatrix(B.rows, B.cols);
+        dBt = tempDeviceMatrix(B.dim().transpose());
         transpose(dBt, A);
-        dMat0 = dBt;
+        dMat1 = dBt;
     }
     else {
         assert(opB == opNone);
@@ -145,7 +149,6 @@ void DeviceMathType<real>::mvProduct(DeviceVector *y, real alpha,
     SizeType size = getProductShape(A, opA, x);
     devAlloc_->allocateIfNull(y, size);
     assertValidVector(*y, size, __func__);
-    
     const DeviceScalar &d_alpha = d_const(alpha);
     gemv(opA, d_alpha, A, x, d_zero(), *y);
 }
@@ -184,24 +187,27 @@ void DeviceMathType<real>::vmvProduct(DeviceScalar *z, real alpha,
     gemv(opNone, d_one(), A, x, d_zero(), *Ax);
 
     devAlloc_->allocateIfNull(z);
-    dot(z, 1., y, *Ax);
+    dot(z, alpha, y, *Ax);
 }
 
 template<class real>
-void DeviceMathType<real>::batchedVmvProduct(DeviceVector *z, real alpha,
+void DeviceMathType<real>::vmvProductBatched(DeviceVector *z, real alpha,
                                              const DeviceMatrix &y,
                                              const DeviceMatrix &A,
                                              const DeviceMatrix &x) {
+    abortIf(A.rows != A.cols, "M must be a square matrix for VxMxV product.");
+    abortIf(x.rows != y.rows, "shape mismatch on batched VxMxV product.");
+    abortIf((x.cols != y.cols) || (x.cols != A.rows), "shape mismatch on batched VxMxV product.");
+
     Dim dim = getProductShape(x, opNone, A, opTranspose);
     abortIf(dim == Dim(), "shape mismatch on batched VxMxV product.");
         
     DeviceMatrix *Ax = tempDeviceMatrix(dim);
-    dim = getProductShape(*Ax, opNone, y, opNone);
-    abortIf(dim == Dim(), "shape mismatch on batched VxMxV product.");
-    devAlloc_->allocateIfNull(z, A.rows);
-    assertValidVector(*z, A.rows, __func__);
+    abortIf(Ax->cols != y.cols, "shape mismatch on batched VxMxV product.");
+    devAlloc_->allocateIfNull(z, x.rows);
+    assertValidVector(*z, x.rows, __func__);
     
-    gemm(opTranspose, opNone, d_one(), x, A, d_zero(), *Ax);
+    gemm(opNone, opTranspose, d_one(), x, A, d_zero(), *Ax);
     dotBatched(z, alpha, *Ax, opNone, y, opNone);
 }
 
@@ -248,7 +254,7 @@ sqaod::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp
     Dim Bdim = getMatrixShape(B, opB);
     if (Adim.cols != Bdim.rows)
         return Dim();
-    return Dim(B.rows, A.cols);
+    return Dim(Adim.rows, Bdim.cols);
 }
 
 template<class real>
@@ -256,7 +262,7 @@ SizeType DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp o
                                                const DeviceVector &x) {
     Dim Adim = getMatrixShape(A, opA);
     throwErrorIf(Adim.cols != x.size, "Shape does not match on matrix-vector multiplication.");  
-    return A.rows;
+    return Adim.rows;
 }
 
 template<class real>
@@ -264,7 +270,7 @@ SizeType DeviceMathType<real>::getProductShape(const DeviceVector &x,
                                                const DeviceMatrix &A, MatrixOp opA) {
     Dim Adim = getMatrixShape(A, opA);
     throwErrorIf(Adim.rows != x.size, "Shape does not match on vector-matrix multiplication.");  
-    return A.cols;
+    return Adim.cols;
 }
 
 template<class real>
@@ -286,11 +292,18 @@ void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
      * We need to transpose to fix column-major format, and transpose again to get C in row-major format, thus, copA, copA is not transposed. */
     cublasOperation_t copA = (opA == opNone) ? CUBLAS_OP_N : CUBLAS_OP_T;
     cublasOperation_t copB = (opB == opNone) ? CUBLAS_OP_N : CUBLAS_OP_T;
-    Dim dimA = getMatrixShape(A, opA);
-    Dim dimProduct = getProductShape(A, opA, B, opB); // needed to transpose.
-    devKernels_.gemm(copA, copB, dimProduct.cols, dimProduct.rows, dimA.cols,
-                     d_alpha.d_data, B.d_data, A.d_data,
-                     d_beta.d_data, C.d_data);
+    Dim Adim = getMatrixShape(A, opA);
+    Dim Bdim = getMatrixShape(B, opB);
+    abortIf(Adim.cols != Bdim.rows, "shape mismatch on matrix-matrix multiplication");
+
+    /* leading diimension */
+    int ldb = B.cols;
+    int lda = A.cols;
+    int ldc = Bdim.cols;
+
+    devKernels_.gemm(copB, copA, Bdim.cols, Adim.rows, Adim.cols,
+                     d_alpha.d_data, B.d_data, ldb, A.d_data, lda,
+                     d_beta.d_data, C.d_data, ldc);
 }
 
 

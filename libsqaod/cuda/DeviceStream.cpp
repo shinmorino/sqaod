@@ -16,9 +16,11 @@ struct PlainDeviceObject : DeviceObject {
 
 }
 
+DeviceStream::DeviceStream() : stream_(NULL), memStore_(NULL), cublasHandle_(NULL) {
+}
 
 DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore) :
-        stream_(NULL), memStore_(NULL) {
+        stream_(NULL), memStore_(NULL), cublasHandle_(NULL) {
     set(stream, memStore);
 }
 
@@ -31,6 +33,7 @@ void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore) {
     memStore_ = &memStore;
     throwOnError(cublasCreate(&cublasHandle_));
     throwOnError(cublasSetStream(cublasHandle_, stream));
+    cublasSetPointerMode(cublasHandle_, CUBLAS_POINTER_MODE_DEVICE);
 }
 
 

@@ -73,7 +73,7 @@ struct DeviceMathType {
                     real alpha, const DeviceVector &y,
                     const DeviceMatrix &A, const DeviceVector &x);
 
-    void batchedVmvProduct(DeviceVector *z, real alpha,
+    void vmvProductBatched(DeviceVector *z, real alpha,
                            const DeviceMatrix &y, const DeviceMatrix &A, const DeviceMatrix &x);
 
     void mmmProduct(DeviceMatrix *z, real alpha,

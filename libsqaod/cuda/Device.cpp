@@ -4,6 +4,17 @@
 
 using namespace sqaod_cuda;
 
+Device::Device(int devNo) {
+    devNo_ = -1;
+    if (devNo != -1)
+        initialize(devNo);
+}
+
+Device::~Device() {
+    if (devNo_ != -1)
+        finalize();
+}
+
 void Device::initialize(int devNo){
     devNo_ = devNo;
     memStore_.initialize();
@@ -13,15 +24,15 @@ void Device::initialize(int devNo){
 }
 
 void Device::finalize() {
-    for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it) {
-        (*it)->finalize();
+    synchronize();
+    for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it)
         delete *it;
-    }
     defaultDeviceStream_.finalize();
     streams_.clear();
     devObjAllocatorFP32_.finalize();
     devObjAllocatorFP64_.finalize();
     memStore_.finalize();
+    devNo_ = -1;
 }
 
 
@@ -52,4 +63,5 @@ void Device::synchronize() {
     for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it) {
         (*it)->releaseTempObjects();
     }
+    defaultDeviceStream_.releaseTempObjects();
 }

@@ -16,7 +16,7 @@ template<class real> struct DeviceScalarType;
 class DeviceStream {
     friend class Device;
 
-    DeviceStream() { }
+    DeviceStream();
     DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore);
     ~DeviceStream();
     
