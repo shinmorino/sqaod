@@ -50,21 +50,27 @@ void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorTyp
 template<class real>
 bool operator==(const DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
     sqaod::MatrixType<real> copied;
-    DeviceCopyType<real>()(&copied, dmat, true);
+    DeviceCopyType<real> devCopy;
+    devCopy(&copied, dmat);
+    devCopy.synchronize();
     return copied.map() == hmat.map();
 }
 
 template<class real>
 bool operator==(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec) {
     sqaod::VectorType<real> copied;
-    DeviceCopyType<real>()(&copied, dvec, true);
+    DeviceCopyType<real> devCopy;
+    devCopy(&copied, dvec);
+    devCopy.synchronize();
     return copied.mapToRowVector() == hvec.mapToRowVector();
 }
 
 template<class real>
 bool operator==(const DeviceScalarType<real> &dsc, const real &hsc) {
     real copied;
-    DeviceCopyType<real>()(&copied, dsc, true);
+    DeviceCopyType<real> devCopy;
+    devCopy(&copied, dsc);
+    devCopy.synchronize();
     return copied == hsc;
 }
 
