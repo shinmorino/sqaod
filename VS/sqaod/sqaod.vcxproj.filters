@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{1f750058-48cf-4831-9267-8628f560c3cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpu">
+      <UniqueIdentifier>{0e81ff01-f552-4c21-83ba-2d9ce9740fad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cuda">
+      <UniqueIdentifier>{233c1d4f-0002-49d1-a7bf-d5fb2b487958}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\libsqaod\cuda\cudafuncs.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\Device.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceArray.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceMatrix.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceMemoryStore.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceObjectAllocator.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceStream.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSolver.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\Array.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\Common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\Matrix.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\Random.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceMath.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\defines.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceObject.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\undef.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceKernels.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceCopy.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\CUDAFormulas.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceMemoryStore.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceObjectAllocator.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceStream.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUFormulas.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSolver.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\Common.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\Random.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceMath.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\defines.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceCopy.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\Matrix.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\cudafuncs.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\CUDAFormulas.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>
