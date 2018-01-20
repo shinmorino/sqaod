@@ -3,7 +3,7 @@
 #define CPU_BIPARTITEGRAPH_ANNEALER_H__
 
 #include <common/Common.h>
-#include <cpu/Random.h>
+#include <cpu/CPURandom.h>
 
 
 namespace sqaod {
@@ -57,7 +57,7 @@ private:
                         const EigenMatrix &qFixed, real G, real kT);
     int annState_;
 
-    Random random_;
+    CPURandom random_;
     SizeType N0_, N1_, m_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;

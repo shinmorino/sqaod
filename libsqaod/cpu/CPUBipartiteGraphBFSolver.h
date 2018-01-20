@@ -3,7 +3,6 @@
 #define CPU_BIPARTITEGRAPH_BF_SOLVER_H__
 
 #include <common/Common.h>
-#include <cpu/Random.h>
 
 
 namespace sqaod {
@@ -18,8 +17,6 @@ class CPUBipartiteGraphBFSolver {
 public:
     CPUBipartiteGraphBFSolver();
     ~CPUBipartiteGraphBFSolver();
-
-    void seed(unsigned long seed);
 
     void getProblemSize(int *N0, int *N1) const;
 
@@ -42,7 +39,6 @@ public:
     void search();
     
 private:    
-    Random random_;
     SizeType N0_, N1_;
     EigenRowVector b0_, b1_;
     EigenMatrix W_;

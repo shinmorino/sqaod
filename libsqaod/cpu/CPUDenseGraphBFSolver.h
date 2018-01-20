@@ -3,7 +3,6 @@
 #define CPU_DENSEGRAPHANNEALER_H__
 
 #include <common/Common.h>
-#include <cpu/Random.h>
 
 namespace sqaod {
 
@@ -17,8 +16,6 @@ class CPUDenseGraphBFSolver {
 public:
     CPUDenseGraphBFSolver();
     ~CPUDenseGraphBFSolver();
-
-    void seed(unsigned long seed);
 
     void getProblemSize(SizeType *N) const;
 
@@ -39,7 +36,6 @@ public:
     void search();
     
 private:    
-    Random random_;
     SizeType N_;
     OptimizeMethod om_;
     PackedBits tileSize_;

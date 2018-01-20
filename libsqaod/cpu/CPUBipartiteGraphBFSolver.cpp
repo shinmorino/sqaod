@@ -19,11 +19,6 @@ CPUBipartiteGraphBFSolver<real>::~CPUBipartiteGraphBFSolver() {
 
 
 template<class real>
-void CPUBipartiteGraphBFSolver<real>::seed(unsigned long seed) {
-    random_.seed(seed);
-}
-
-template<class real>
 void CPUBipartiteGraphBFSolver<real>::getProblemSize(int *N0, int *N1) const {
     *N0 = N0_;
     *N1 = N1_;

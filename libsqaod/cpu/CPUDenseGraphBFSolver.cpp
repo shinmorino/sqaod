@@ -16,12 +16,6 @@ template<class real>
 CPUDenseGraphBFSolver<real>::~CPUDenseGraphBFSolver() {
 }
 
-
-template<class real>
-void CPUDenseGraphBFSolver<real>::seed(unsigned long seed) {
-    random_.seed(seed);
-}
-
 template<class real>
 void CPUDenseGraphBFSolver<real>::getProblemSize(SizeType *N) const {
     *N = N_;

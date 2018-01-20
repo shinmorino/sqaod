@@ -2,9 +2,11 @@
 #ifndef CPU_RANDOM_H__
 #define CPU_RANDOM_H__
 
-class Random {
+namespace sqaod {
+
+class CPURandom {
 public:
-    Random() {
+    CPURandom() {
         mti = N + 1;
     }
 
@@ -39,13 +41,14 @@ private:
 
 
 template<> inline
-float Random::random<float>() {
+float CPURandom::random<float>() {
     return randomf32();
 }
 template<> inline
-double Random::random<double>() {
+double CPURandom::random<double>() {
     return randomf64();
 }
 
+}
 
 #endif

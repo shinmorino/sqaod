@@ -3,7 +3,7 @@
 #define CPU_DENSEGRAPHANNEALER_H__
 
 #include <common/Common.h>
-#include <cpu/Random.h>
+#include <cpu/CPURandom.h>
 
 namespace sqaod {
 
@@ -51,7 +51,7 @@ private:
     void syncBits();
     int annState_;
     
-    Random random_;
+    CPURandom random_;
     SizeType N_, m_;
     OptimizeMethod om_;
     Vector E_;
