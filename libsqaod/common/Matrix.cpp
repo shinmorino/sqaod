@@ -20,6 +20,31 @@ MatrixType<real> MatrixType<real>::zeros(SizeType rows, SizeType cols) {
     return mat;
 }
 
+template<class real>
+MatrixType<real> MatrixType<real>::ones(SizeType rows, SizeType cols) {
+    MatrixType<real> mat(rows, cols);
+    mat.map() = EigenMatrix::Ones(rows, cols);
+    return mat;
+}
+
 template struct sqaod::MatrixType<float>;
 template struct sqaod::MatrixType<double>;
+
+
+template<class real>
+VectorType<real> VectorType<real>::zeros(SizeType size) {
+    VectorType<real> vec(size);
+    vec.mapToRowVector() = EigenRowVector::Zero(size);
+    return vec;
+}
+
+template<class real>
+VectorType<real> VectorType<real>::ones(SizeType size) {
+    VectorType<real> vec(size);
+    vec.mapToRowVector() = EigenRowVector::Ones(size);
+    return vec;
+}
+
+template struct sqaod::VectorType<float>;
+template struct sqaod::VectorType<double>;
 

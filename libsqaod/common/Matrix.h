@@ -52,6 +52,11 @@ struct Dim {
         rows = _rows;
         cols = _cols;
     }
+
+    Dim transpose() const {
+        return Dim(cols, rows);
+    }
+
     SizeType rows, cols;
 
     friend bool operator==(const Dim &lhs, const Dim &rhs) {
@@ -214,15 +219,29 @@ struct MatrixType {
         return newMat;
     }
 
+    SizeType rows, cols;
+    V *data;
+    bool mapped;
+
+    /* static initializers */
     static
     MatrixType<V> eye(SizeType dim);
 
     static
     MatrixType<V> zeros(SizeType rows, SizeType cols);
-    
-    SizeType rows, cols;
-    V *data;
-    bool mapped;
+
+    static
+    MatrixType<V> zeros(const Dim &dim) {
+        return zeros(dim.rows, dim.cols);
+    }
+
+    static
+    MatrixType<V> ones(SizeType rows, SizeType cols);
+
+    static
+    MatrixType<V> ones(const Dim &dim) {
+        return ones(dim.rows, dim.cols);
+    }
 };
     
 
@@ -390,6 +409,14 @@ struct VectorType {
     SizeType size;
     V *data;
     bool mapped;
+
+    /* static initializers */
+    static
+    VectorType<V> zeros(SizeType size);
+
+    static
+    VectorType<V> ones(SizeType size);
+
 };
     
 
