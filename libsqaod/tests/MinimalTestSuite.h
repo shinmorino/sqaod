@@ -3,7 +3,7 @@
 
 #include <string>
 #include <iostream>
-
+#include <stdexcept>
 
 class MinimalTestSuite {
 public:
@@ -50,7 +50,12 @@ void runTest() {
     for (t.curNo_ = 0; t.curNo_ < nTests; ++t.curNo_) {
         t.setUp();
         t.reset(t.curNo_);
-        t.run(std::cerr);
+        try {
+            t.run(std::cerr);
+        }
+        catch (const std::exception &e) {
+            std::cerr << e.what() << std::endl;
+        }
         t.tearDown();
     }
 }
