@@ -45,6 +45,7 @@ void CUDADGFuncs<real>::calculate_E(DeviceVector *E,
                                     const DeviceVector &h, const DeviceMatrix &J,
                                     const DeviceScalar &c, const DeviceMatrix &q) {
     devMath.vmvProductBatched(E, 1., q, J, q);
+    devMath.vmProduct(E, 1., h, q, opTranspose, 1.);
     devMath.scaleBroadcast(E, 1., c, 1.);
 }
 
@@ -62,7 +63,7 @@ void CUDABGFuncs<real>::calculate_E(DeviceScalar *E,
                                       const DeviceVector &b0, const DeviceVector &b1,
                                       const DeviceMatrix &W,
                                       const DeviceVector &x0, const DeviceVector &x1) {
-    devMath.vmvProduct(E, 1., x0, W, x0);
+    devMath.vmvProduct(E, 1., x1, W, x0);
     devMath.dot(E, 1., b0, x0, 1.);
     devMath.dot(E, 1., b1, x1, 1.);
 }

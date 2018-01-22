@@ -40,7 +40,7 @@ void DGFuncs<real>::calculate_hJc(Vector *h, Matrix *J, real *c, const Matrix &W
     prepVector(h, W.rows, __func__);
     prepMatrix(J, W.dim(), __func__);
     validateScalar(c, __func__);
-    
+
     const EigenMappedMatrix eW = W.map();
     EigenMappedMatrix eJ(J->map());
     EigenMappedRowVector eh(h->mapToRowVector());
@@ -71,8 +71,8 @@ void DGFuncs<real>::calculate_E(real *E,
 template<class real>
 void DGFuncs<real>::calculate_E(Vector *E,
                                 const Vector &h, const Matrix &J, real c, const Matrix &q) {
-    validateScalar(E, __func__);
     isingModelShapeCheck(h, J, c, q, __func__);
+    prepVector(E, q.rows, __func__);
     
     const EigenMappedRowVector eh(h.mapToRowVector());
     const EigenMappedMatrix eJ(J.map()), eq(q.map());

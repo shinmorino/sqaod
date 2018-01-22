@@ -195,20 +195,19 @@ void DeviceMathType<real>::vmvProductBatched(DeviceVector *z, real alpha,
                                              const DeviceMatrix &y,
                                              const DeviceMatrix &A,
                                              const DeviceMatrix &x) {
-    abortIf(A.rows != A.cols, "M must be a square matrix for VxMxV product.");
     abortIf(x.rows != y.rows, "shape mismatch on batched VxMxV product.");
-    abortIf((x.cols != y.cols) || (x.cols != A.rows), "shape mismatch on batched VxMxV product.");
+    abortIf((y.cols != A.rows) || (A.cols != x.cols), "shape mismatch on batched VxMxV product.");
 
     Dim dim = getProductShape(x, opNone, A, opTranspose);
     abortIf(dim == Dim(), "shape mismatch on batched VxMxV product.");
         
-    DeviceMatrix *Ax = tempDeviceMatrix(dim);
-    abortIf(Ax->cols != y.cols, "shape mismatch on batched VxMxV product.");
+    DeviceMatrix *xA = tempDeviceMatrix(dim);
+    abortIf(xA->cols != y.cols, "shape mismatch on batched VxMxV product.");
     devAlloc_->allocateIfNull(z, x.rows);
     assertValidVector(*z, x.rows, __func__);
     
-    gemm(opNone, opTranspose, d_one(), x, A, d_zero(), *Ax);
-    dotBatched(z, alpha, *Ax, opNone, y, opNone);
+    gemm(opNone, opTranspose, d_one(), x, A, d_zero(), *xA);
+    dotBatched(z, alpha, *xA, opNone, y, opNone);
 }
 
 template<class real>

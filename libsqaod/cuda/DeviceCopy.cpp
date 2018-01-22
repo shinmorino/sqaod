@@ -82,7 +82,6 @@ operator()(HostVector *dst, const DeviceVector &src) const {
     if (dst->data == NULL)
         dst->allocate(src.size);
     assertSameShape(*dst, src, __func__);
-    dst->size = src.size;
     copy(dst->data, src.d_data, src.size);
 }
 
