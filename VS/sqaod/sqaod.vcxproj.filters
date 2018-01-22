@@ -57,9 +57,6 @@
     <ClInclude Include="..\..\libsqaod\common\Matrix.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\libsqaod\cpu\Random.h">
-      <Filter>cpu</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\DeviceMath.h">
       <Filter>cuda</Filter>
     </ClInclude>
@@ -80,6 +77,9 @@
     </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\CUDAFormulas.h">
       <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPURandom.h">
+      <Filter>cpu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -113,9 +113,6 @@
     <ClCompile Include="..\..\libsqaod\common\Common.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libsqaod\cpu\Random.cpp">
-      <Filter>cpu</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\libsqaod\cuda\DeviceMath.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
@@ -133,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="..\..\libsqaod\cuda\CUDAFormulas.cpp">
       <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPURandom.cpp">
+      <Filter>cpu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
