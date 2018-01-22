@@ -17,6 +17,7 @@ Device::~Device() {
 
 void Device::initialize(int devNo){
     devNo_ = devNo;
+    throwOnError(cudaSetDevice(devNo));
     memStore_.initialize();
     defaultDeviceStream_.set(NULL, memStore_);
     devObjAllocatorFP32_.initialize(&memStore_, &defaultDeviceStream_);
