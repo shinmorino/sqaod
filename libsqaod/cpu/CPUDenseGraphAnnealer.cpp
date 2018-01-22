@@ -29,7 +29,7 @@ void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N, SizeType *m) 
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod om) {
-    THROW_IF(!isSymmetric(W), "W is not symmetric.");
+    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
     h_.resize(1, N_);
     J_.resize(N_, N_);
@@ -47,6 +47,7 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMetho
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(SizeType m) {
+    throwErrorIf(m <= 0, "# trotters must be a positive integer.");
     m_ = m;
     bitsX_.reserve(m_);
     bitsQ_.reserve(m_);

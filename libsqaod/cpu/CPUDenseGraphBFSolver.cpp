@@ -23,7 +23,7 @@ void CPUDenseGraphBFSolver<real>::getProblemSize(SizeType *N) const {
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om) {
-    THROW_IF(!isSymmetric(W), "W is not symmetric.");
+    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
     W_ = W.map();
     om_ = om;
