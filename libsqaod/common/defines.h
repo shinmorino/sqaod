@@ -1,8 +1,6 @@
 #ifndef SQAOD_COMMON_DEFINES_H__
 #define SQAOD_COMMON_DEFINES_H__
 
-#include <assert.h>
-
 
 #ifdef __GNUC__
 #define FORMATATTR(stringIdx, firstToCheck) __attribute__((format(printf, stringIdx, firstToCheck)))
@@ -40,5 +38,14 @@ void _throwError(const char *file, unsigned long line, Args... args) {
 #define abortIf(cond, ...) if (cond) sqaod::_abort(__FILE__, __LINE__, __VA_ARGS__)
 #define throwError(...) throw sqaod::_throwError(__FILE__, __LINE__, __VA_ARGS__)
 #define throwErrorIf(cond, ...) if (cond) sqaod::_throwError(__FILE__, __LINE__, __VA_ARGS__)
+
+
+#ifndef _DEBUG
+#  ifndef NDEBUG
+#    define NDEBUG
+#  endif
+#endif
+
+#include <assert.h> /* Here's the only place to include assert.h */
 
 #endif
