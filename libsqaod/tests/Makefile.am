@@ -2,7 +2,7 @@ check_PROGRAMS=test
 
 AM_CPPFLAGS=-I/usr/local/cuda/include -I$(abs_top_srcdir)/eigen -I$(abs_top_srcdir)/cub  # FIXME: cofnigrue cuda path.
 
-test_SOURCES=main.cpp MinimalTestSuite.cpp
+test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp
 test_LDADD=
 LIBS=
 
