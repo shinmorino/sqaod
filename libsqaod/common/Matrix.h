@@ -197,10 +197,14 @@ struct MatrixType {
     }
 
     V &operator()(IdxType r, IdxType c) {
+        assert((0 <= r) && (r < (IdxType)rows));
+        assert((0 <= c) && (c < (IdxType)cols));
         return data[r * cols + c];
     }
     
     const V &operator()(IdxType r, IdxType c) const {
+        assert((0 <= r) && (r < (IdxType)rows));
+        assert((0 <= c) && (c < (IdxType)cols));
         return data[r * cols + c];
     }
     
