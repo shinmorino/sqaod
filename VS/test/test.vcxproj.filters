@@ -5,11 +5,15 @@
     <ClCompile Include="..\..\libsqaod\tests\MinimalTestSuite.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\DeviceTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\DeviceMathTest.cpp" />
+    <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.cpp" />
+    <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libsqaod\tests\MinimalTestSuite.h" />
     <ClInclude Include="..\..\libsqaod\tests\DeviceTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\DeviceMathTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\utils.h" />
+    <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.h" />
+    <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.h" />
   </ItemGroup>
 </Project>
