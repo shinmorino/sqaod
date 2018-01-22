@@ -42,7 +42,7 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
     rit->second ^= (1 << iChunk);
     *addr = (key - regionSize_) + (iChunk << chunkSizeShift_);
 #ifdef DEBUG_ALLOC
-    fprintf(stderr, "Region: %3d, Chunk, %d, addr: %I64x\n", regionSize_, iChunk, *addr);
+    fprintf(stderr, "Acquire Region: %3d, Chunk, %d, addr: %I64x\n", regionSize_, iChunk, *addr);
 #endif
     if (isRegionFull(rit->second))
         freeRegions_.erase(key);
@@ -51,7 +51,7 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
 
 bool HeapBitmap::release(uintptr_t addr) {
 #ifdef DEBUG_ALLOC
-    fprintf(stderr, "Region: %3d, addr: %I64x\n", regionSize_, addr);
+    fprintf(stderr, "Release: Region: %3d, addr: %I64x\n", regionSize_, addr);
     for (RegionMap::iterator it = regions_.begin(); it != regions_.end(); ++it)
         fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, it->first - regionSize_, it->first - 1, it->second);
 #endif
@@ -244,6 +244,7 @@ void DeviceMemoryStore::initialize() {
 void DeviceMemoryStore::finalize() {
     fixedSizedChunks_.finalize();
     heapMap_.finalize();
+    chunkPropSet_.clear();
     for (size_t idx = 0; idx < d_mems_.size(); ++idx)
         cudaFree(d_mems_[idx]);
     d_mems_.clear();
@@ -255,14 +256,23 @@ void *DeviceMemoryStore::allocate(size_t size) {
     uintptr_t addr;
     if (ChunkSizeToUseMalloc < size) {
         addr = cudaMalloc(size);
+#ifdef DEBUG_ALLOC
+        assert(chunkPropSet_.find(ChunkProp(addr, 0, fromNone)) == chunkPropSet_.end());
+#endif
         chunkPropSet_.insert(ChunkProp(addr, size, fromCudaMalloc));
     }
     else if (SmallChunkSize < size) {
         addr = allocFromHeapMap(&size);
+#ifdef DEBUG_ALLOC
+        assert(chunkPropSet_.find(ChunkProp(addr, 0, fromNone)) == chunkPropSet_.end());
+#endif
         chunkPropSet_.insert(ChunkProp(addr, size, fromHeapMap));
     }
     else {
         addr = allocFromFixedSizedChunks(&size);
+#ifdef DEBUG_ALLOC
+        assert(chunkPropSet_.find(ChunkProp(addr, 0, fromNone)) == chunkPropSet_.end());
+#endif
         chunkPropSet_.insert(ChunkProp(addr, size, fromFixedSizedSeries));
     }
     return reinterpret_cast<void*>(addr);
@@ -316,6 +326,9 @@ uintptr_t DeviceMemoryStore::allocFromHeapMap(size_t *size) {
         heapMap_.addFreeHeap(newHeap, newHeapSize);
         addr = heapMap_.acquire(size);
     }
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Aqruied Heapmap: %I64x, %zd.\n", addr, *size);
+#endif
     return addr;
 }
 
