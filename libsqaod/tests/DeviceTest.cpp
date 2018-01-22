@@ -1,6 +1,8 @@
 #include "DeviceTest.h"
 #include <vector>
 
+using namespace sqaod_cuda;
+
 DeviceTest::DeviceTest(void) : MinimalTestSuite("DeviceTest") {
 }
 

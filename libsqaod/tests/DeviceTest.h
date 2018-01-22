@@ -4,7 +4,6 @@
 #include "MinimalTestSuite.h"
 #include <cuda/Device.h>
 
-using namespace sqaod_cuda;
 
 class DeviceTest : public MinimalTestSuite {
 public:

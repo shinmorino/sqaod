@@ -4,8 +4,6 @@
 #include "MinimalTestSuite.h"
 #include <cuda/Device.h>
 
-using namespace sqaod_cuda;
-
 class DeviceMathTest : public MinimalTestSuite {
 public:
     DeviceMathTest(void);
@@ -20,7 +18,7 @@ private:
     template<class real>
     void tests(const sqaod::Dim &dim);
 
-    Device device_;
+    sqaod_cuda::Device device_;
 };
 
 #endif
