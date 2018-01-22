@@ -25,7 +25,7 @@ public:
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W, OptimizeMethod om);
 
-    void setNumTrotters(SizeType nTrotters);
+    void setNumTrotters(SizeType m);
 
     const Vector &get_E() const;
 
