@@ -22,9 +22,9 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_ARG_ENABLE([cuda],
 [  --enable-cuda    enable CUDA solvers],
 [case "${enableval}" in
-  yes) cuda=true ;;
+  yes) cuda=true; cuda_prefix="/usr/local/cuda" ;;
   no)  cuda=false ;;
-  *) cuda_prefix="/usr/local/cuda";;
+  *) cuda_prefix=$enableval;;
 esac],[cuda=false])
 AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
 
@@ -38,9 +38,13 @@ AC_PROG_CXX
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
+
 #CFLAGS="-std=c++11 -O2 -Wall -ggdb"
-CFLAGS="-std=c++11 -Wall -ggdb"
+CFLAGS="-std=c++11 -Wall -ggdb -Wno-format-security"
+AM_COND_IF([CUDA_ENABLED],
+	[CFLAGS="$CFLAGS -I$cuda_prefix"])
 CXXFLAGS=$CFLAGS
+
 
 AC_SUBST([CFLAGS], $CFLAGS)
 AC_SUBST([CXXFLAGS], $CFLAGS)
