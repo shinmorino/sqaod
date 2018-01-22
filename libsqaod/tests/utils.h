@@ -2,7 +2,10 @@
 
 #include <common/Matrix.h>
 #include <iostream>
+#include <cpu/CPURandom.h>
 
+namespace sq = sqaod;
+using namespace sqaod_cuda;
 
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat) {
@@ -121,3 +124,62 @@ sqaod::VectorType<real> testVecBalanced(const sqaod::SizeType size) {
     return hvec;
 }
 
+
+template<class real>
+sqaod::MatrixType<real> testMatSymmetric(const sq::SizeType dim) {
+    sq::MatrixType<real> mat(dim, dim);
+
+    int v = -2;
+
+    for (sq::SizeType irow = 0; irow < dim; ++irow) {
+        for (sq::SizeType icol = irow; icol < dim; ++icol) {
+            mat(icol, irow) = mat(irow, icol) = (real)v;
+            if (++v == 3)
+                v = -2;
+        }
+    }
+
+    return mat;
+}
+
+template<class real>
+sqaod::MatrixType<real> createRandomSymmetricMatrix(const sq::SizeType dim) {
+    sq::MatrixType<real> mat(dim, dim);
+
+    sq::CPURandom random;
+    random.seed(1);
+    for (sq::SizeType irow = 0; irow < dim; ++irow) {
+        for (sq::SizeType icol = irow; icol < dim; ++icol) {
+            mat(icol, irow) = mat(irow, icol) = random.random<real>();
+        }
+    }
+
+    return mat;
+}
+
+template<class real>
+sqaod::VectorType<real> randomizeBits(const sq::SizeType size) {
+    sq::VectorType<real> vec(size);
+
+    sq::CPURandom random;
+    random.seed(2);
+    for (sq::SizeType idx = 0; idx < size; ++idx) {
+        vec(idx) = (real)random.randInt(2);
+    }
+
+    return vec;
+}
+
+template<class real>
+sqaod::MatrixType<real> randomizeBits(const sq::Dim &dim) {
+    sq::MatrixType<real> mat(dim);
+
+    sq::CPURandom random;
+    random.seed(2);
+    for (sq::SizeType irow = 0; irow < dim.rows; ++irow) {
+        for (sq::SizeType icol = 0; icol < dim.cols; ++icol) {
+            mat(irow, icol) = (real)random.randInt(2);
+        }
+    }
+    return mat;
+}
