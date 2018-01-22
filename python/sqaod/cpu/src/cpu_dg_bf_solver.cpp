@@ -69,23 +69,6 @@ PyObject *dg_bf_solver_delete(PyObject *module, PyObject *args) {
     return Py_None;    
 }
 
-extern "C"
-PyObject *dg_bf_solver_rand_seed(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    unsigned long long seed;
-    if (!PyArg_ParseTuple(args, "OKO", &objExt, &seed, &dtype))
-        return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->seed(seed);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->seed(seed);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-    
-    Py_INCREF(Py_None);
-    return Py_None;    
-}
-    
 
 template<class real>
 void internal_dg_bf_solver_set_problem(PyObject *objExt, PyObject *objW, int opt) {
@@ -259,7 +242,6 @@ static
 PyMethodDef cpu_dg_bf_solver_methods[] = {
 	{"new_bf_solver", dg_bf_solver_create, METH_VARARGS},
 	{"delete_bf_solver", dg_bf_solver_delete, METH_VARARGS},
-	{"rand_seed", dg_bf_solver_rand_seed, METH_VARARGS},
 	{"set_problem", dg_bf_solver_set_problem, METH_VARARGS},
 	{"set_solver_preference", dg_bf_solver_set_solver_preference, METH_VARARGS},
 	{"get_x", dg_bf_solver_get_x, METH_VARARGS},
