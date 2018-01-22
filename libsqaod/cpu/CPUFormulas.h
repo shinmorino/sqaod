@@ -3,9 +3,6 @@
 
 #include <common/Common.h>
 
-
-#define THROW_IF(cond, msg) if (cond) throw std::runtime_error(msg);
-
 namespace sqaod {
     
 template<class real>
