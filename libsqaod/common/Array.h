@@ -5,6 +5,7 @@
 #include <string.h>
 #include <utility>
 #include <common/defines.h>
+#include <common/Matrix.h>
 
 
 namespace sqaod {
@@ -162,9 +163,10 @@ private:
 };
 
 
-typedef unsigned long long PackedBits;
 typedef ArrayType<PackedBits> PackedBitsArray;
 typedef ArrayType<std::pair<PackedBits, PackedBits> > PackedBitsPairArray;
+typedef ArrayType<Bits> BitsArray;
+typedef ArrayType<std::pair<Bits, Bits> > BitsPairArray;
 
 }
 

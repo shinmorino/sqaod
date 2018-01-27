@@ -23,7 +23,7 @@
 #endif
 
 #include <common/defines.h>
-#include <common/Array.h>
+
 
 namespace sqaod {
 
@@ -424,10 +424,9 @@ struct VectorType {
 };
     
 
+
 typedef VectorType<char> Bits;
 typedef MatrixType<char> BitMatrix;
-typedef ArrayType<Bits> BitsArray;
-typedef ArrayType<std::pair<Bits, Bits> > BitsPairArray;
 
 //typedef VectorType<char> Spins;
 //typedef std::vector<Bits> SpinsArray;

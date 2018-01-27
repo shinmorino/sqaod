@@ -1,6 +1,7 @@
 #ifndef SQAOD_COMMON_DEFINES_H__
 #define SQAOD_COMMON_DEFINES_H__
 
+#include <stdarg.h>
 
 #ifdef __GNUC__
 #define FORMATATTR(stringIdx, firstToCheck) __attribute__((format(printf, stringIdx, firstToCheck)))
@@ -13,6 +14,9 @@ namespace sqaod {
 
 typedef unsigned int SizeType;
 typedef int IdxType;
+
+typedef unsigned long long PackedBits;
+
 
 void __abort(const char *file, unsigned long line);
 void __abort(const char *file, unsigned long line, const char *format, ...) FORMATATTR(3, 4);
