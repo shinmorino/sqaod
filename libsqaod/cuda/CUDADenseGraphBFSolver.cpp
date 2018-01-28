@@ -1,5 +1,6 @@
 #include "CUDADenseGraphBFSolver.h"
 #include "CUDAFormulas.h"
+#include "Device.h"
 #include <cmath>
 
 #include <float.h>
@@ -8,7 +9,7 @@
 
 
 using namespace sqaod_cuda;
-using namespace sqaod;
+namespace sq = sqaod;
 
 template<class real>
 CUDADenseGraphBFSolver<real>::CUDADenseGraphBFSolver() {
@@ -21,37 +22,43 @@ CUDADenseGraphBFSolver<real>::~CUDADenseGraphBFSolver() {
 
 
 template<class real>
-void CUDADenseGraphBFSolver<real>::getProblemSize(int *N) const {
+void CUDADenseGraphBFSolver<real>::assignDevice(Device &device) {
+    batchSearch_.assignDevice(device);
+}
+
+template<class real>
+void CUDADenseGraphBFSolver<real>::getProblemSize(sqaod::SizeType *N) const {
     *N = N_;
 }
 
 template<class real>
-void CUDADenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om) {
-    THROW_IF(!isSymmetric(W), "W is not symmetric.");
+void CUDADenseGraphBFSolver<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
+    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
     W_ = W;
     om_ = om;
-    if (om_ == optMaximize)
+    if (om_ == sq::optMaximize)
         W_.map().array() *= real(-1.);
 }
 
 template<class real>
-void CUDADenseGraphBFSolver<real>::setTileSize(int tileSize) {
+void CUDADenseGraphBFSolver<real>::setTileSize(sqaod::SizeType tileSize) {
     tileSize_ = tileSize;
 }
 
 template<class real>
-const BitsArray &CUDADenseGraphBFSolver<real>::get_x() const {
+const sq::BitsArray &CUDADenseGraphBFSolver<real>::get_x() const {
     return xList_;
 }
 
 template<class real>
-const VectorType<real> &CUDADenseGraphBFSolver<real>::get_E() const {
+const sq::VectorType<real> &CUDADenseGraphBFSolver<real>::get_E() const {
     return E_;
 }
 
 template<class real>
 void CUDADenseGraphBFSolver<real>::initSearch() {
+    batchSearch_.setProblem(W_, tileSize_);
     Emin_ = std::numeric_limits<real>::max();
     xList_.clear();
     xMax_ = 1 << N_;
@@ -60,38 +67,17 @@ void CUDADenseGraphBFSolver<real>::initSearch() {
 
 template<class real>
 void CUDADenseGraphBFSolver<real>::finSearch() {
+    batchSearch_.synchronize();
+    const PackedBitsArray &packedXmin = batchSearch_.get_xMins();
+    sqaod::SizeType nXMin = std::min(tileSize_, (sqaod::SizeType)packedXmin.size());
+    
     xList_.clear();
-    devCopy_(&packedXmin_, d_xMin_);
-    stream_->synchronize();
-    E_.resize(packedXmin_.size());
-    E_.mapToRowVector().array() = (om_ == optMaximize) ? - Emin_ : Emin_;
-    for (size_t idx = 0; idx < packedXmin_.size(); ++idx) {
-        Bits bits;
-        unpackBits(&bits, packedXmin_[idx], N_);
+    E_.resize(nXMin);
+    E_.mapToRowVector().array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
+    for (size_t idx = 0; idx < nXMin; ++idx) {
+        sq::Bits bits;
+        unpackBits(&bits, packedXmin[idx], N_);
         xList_.pushBack(bits); // FIXME: apply move
-    }
-}
-
-
-template<class real>
-void CUDADenseGraphBFSolver<real>::batchCalculate_E(unsigned long long iBegin, unsigned long long iEnd) {
-    iBegin = std::min(std::max(0ULL, iBegin), xMax_);
-    iEnd = std::min(std::max(0ULL, iEnd), xMax_);
-    batchSearch_.calculate_E(iBegin, iEnd);
-}
-
-template<class real>
-void CUDADenseGraphBFSolver<real>::updateXmins() {
-    /* FIXME: delayed copy */
-    if (batchSearch_.get_Emin() < Emin_) {
-        batchSearch_.partition_xMin();
-        batchSearch_.sync(); // ToDo: remove sync
-        DevicePackedBitsArray::swap(&d_xMin_, batchSearch_.get_xMin());
-    }
-    if (batchSearch_.get_Emin() == Emin_) {
-        batchSearch_.partition_xMin();
-        batchSearch_.sync(); // ToDo: remove sync
-        d_xMin_.append(*batchSearch_.get_xMin());
     }
 }
 
@@ -101,9 +87,20 @@ void CUDADenseGraphBFSolver<real>::search() {
     int iStep = (int)std::min((unsigned long long)tileSize_, xMax_);
 
     initSearch();
-    for (unsigned long long iTile = 0; iTile < xMax_; iTile += iStep) {
-        batchCalculate_E(iTile, iTile + iStep);
-        updateXmins();
+    for (sq::PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
+        /* FIXME: Use multiple searchers, multi GPU */
+        sq::PackedBits iBegin = std::min(std::max(0ULL, iTile), xMax_);
+        sq::PackedBits iEnd = std::min(std::max(0ULL, iTile + iStep), xMax_);
+        batchSearch_.calculate_E(iBegin, iEnd);
+        batchSearch_.synchronize();
+        real newEmin = batchSearch_.get_Emin();
+        if (newEmin < Emin_) {
+            batchSearch_.partition_xMins(false);
+            Emin_ = newEmin;
+        }
+        else if (batchSearch_.get_Emin() == Emin_) {
+            batchSearch_.partition_xMins(true);
+        }
     }
     finSearch();
 }

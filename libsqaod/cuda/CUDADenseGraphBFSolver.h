@@ -28,13 +28,13 @@ public:
     CUDADenseGraphBFSolver();
     ~CUDADenseGraphBFSolver();
 
-    void seed(unsigned long seed);
-
+    void assignDevice(Device &device);
+    
     void setProblem(const Matrix &W, sqaod::OptimizeMethod om);
 
-    void getProblemSize(int *N) const;
+    void getProblemSize(sqaod::SizeType *N) const;
     
-    void setTileSize(int tileSize);
+    void setTileSize(sqaod::SizeType tileSize);
     
     const sqaod::BitsArray &get_x() const;
 
@@ -46,33 +46,22 @@ public:
 
     void finSearch();
 
-    void batchCalculate_E(unsigned long long iBegin, unsigned long long iEnd);
-
-    void updateXmins();
-
     void search();
     
 private:    
     int N_;
     Matrix W_;
     sqaod::OptimizeMethod om_;
-    int tileSize_;
-    unsigned long long xMax_;
+    sqaod::SizeType tileSize_;
+    sqaod::PackedBits xMax_;
 
     Vector E_;
     sqaod::BitsArray xList_;
-    sqaod::PackedBitsArray packedXmin_;
     real Emin_;
     
-    DevicePackedBitsArray d_xMin_;
     DeviceBatchSearch batchSearch_;
-    
-    DeviceCopy devCopy_;
-
-    DeviceStream *stream_;
 };
 
 }
 
 #endif
-
