@@ -3,7 +3,7 @@
 #define DEVICERANDOM_H__
 
 #include <cuda_runtime.h>
-#include <curand_mtgp32_host.h>
+#include <curand_mtgp32.h>
 
 
 namespace sqaod_cuda {
