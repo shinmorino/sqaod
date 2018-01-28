@@ -475,7 +475,7 @@ template<class V> void DeviceCopyKernels::
 copyBroadcast(V *d_buf, const V &v, sqaod::SizeType size) const {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
-    copyBroadcastKernel<<<gridDim, blockDim>>>(d_buf, v, size);
+    copyBroadcastKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, v, size);
     DEBUG_SYNC;
 }
 
@@ -495,7 +495,7 @@ template<class V> void DeviceCopyKernels::
 copyBroadcastStrided(V *d_buf, const V &v, SizeType size, SizeType stride, IdxType offset) const {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
-    copyBroadcastStridedKernel<<<gridDim, blockDim>>>(d_buf, v, size, stride, offset);
+    copyBroadcastStridedKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, v, size, stride, offset);
     DEBUG_SYNC;
 }
 
