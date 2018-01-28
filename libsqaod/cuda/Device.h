@@ -16,6 +16,8 @@ public:
     Device(int devNo = -1);
     ~Device();
 
+    typedef DeviceObjectAllocator ObjectAllocator;
+    
     void initialize(int devNo = 0);
     void finalize();
 

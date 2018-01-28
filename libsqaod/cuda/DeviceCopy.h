@@ -78,9 +78,7 @@ struct DeviceCopy {
     
     template<class V>
     void operator()(sqaod::ArrayType<V> *dst, const DeviceArrayType<V> &src) const;
-
-    /* Host scalar ref <-> Device Scalar */
-
+    
     void synchronize() const;
 
     DeviceCopy();
