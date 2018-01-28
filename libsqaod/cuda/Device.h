@@ -5,6 +5,7 @@
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceMemoryStore.h>
 #include <cuda/DeviceObjectAllocator.h>
+#include <cuda/DeviceConstScalars.h>
 
 namespace sqaod_cuda {
 
@@ -15,16 +16,15 @@ public:
     Device(int devNo = -1);
     ~Device();
 
-    template<class real>
-    using ObjectAllocator = DeviceObjectAllocatorType<real>;
-
     void initialize(int devNo = 0);
     void finalize();
 
     /* FIXME: add activate method. */
 
+    DeviceObjectAllocator *objectAllocator();
+
     template<class real>
-    DeviceObjectAllocatorType<real> *objectAllocator();
+    const DeviceConstScalarsType<real> *constScalars() const;
     
     DeviceStream *newStream();
 
@@ -42,20 +42,26 @@ private:
     Streams streams_;
 
     /* Object allocators */
-    DeviceObjectAllocatorType<float> devObjAllocatorFP32_;
-    DeviceObjectAllocatorType<double> devObjAllocatorFP64_;
+    DeviceObjectAllocator devObjAllocator_;
     DeviceStream defaultDeviceStream_;
+    DeviceConstScalarsType<double> devConstScalarsFP64_;
+    DeviceConstScalarsType<float> devConstScalarsFP32_;
 };
 
 
-template<> inline
-DeviceObjectAllocatorType<float> *Device::objectAllocator<float>() {
-    return &devObjAllocatorFP32_;
+inline
+DeviceObjectAllocator *Device::objectAllocator() {
+    return &devObjAllocator_;
 }
 
 template<> inline
-DeviceObjectAllocatorType<double> *Device::objectAllocator<double>() {
-    return &devObjAllocatorFP64_;
+const DeviceConstScalarsType<double> *Device::constScalars<double>() const {
+    return &devConstScalarsFP64_;
+}
+
+template<> inline
+const DeviceConstScalarsType<float> *Device::constScalars<float>() const {
+    return &devConstScalarsFP32_;
 }
 
 

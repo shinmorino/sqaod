@@ -6,6 +6,7 @@
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceCopy.h>
 #include <cuda/DeviceKernels.h>
+#include <cuda/DeviceConstScalars.h>
 
 namespace sqaod_cuda {
 
@@ -34,9 +35,9 @@ struct DeviceMathType {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
-    typedef DeviceObjectAllocatorType<real> DeviceObjectAllocator;
     typedef DeviceMathKernelsType<real> DeviceMathKernels;
-
+    typedef DeviceConstScalarsType<real> DeviceConstScalars;
+    
     void setToDiagonals(DeviceMatrix *V, real v);
     
     void scale(DeviceScalar *y, real alpha, const DeviceScalar &x, real addAssignFactor = 0.);
@@ -82,6 +83,8 @@ struct DeviceMathType {
                     const DeviceMatrix &x, MatrixOp opx);
 
     void min(DeviceScalar *s, const DeviceMatrix &A);
+    void min(DeviceScalar *s, const DeviceVector &x);
+
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
     
     /* get matrix shape resulting from matrix arithmetic */
@@ -119,8 +122,9 @@ struct DeviceMathType {
     
 private:
     DeviceMathKernels devKernels_;
-    DeviceCopyType<real> devCopy_;
+    DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
+    const DeviceConstScalars *devConst_;
     DeviceStream *devStream_;
 };
 
@@ -131,17 +135,17 @@ private:
 /* Device Const */
 template<class real> inline
 const DeviceScalarType<real> &DeviceMathType<real>::d_const(real c) {
-    return devAlloc_->d_const(c);
+    return devConst_->d_const(c);
 }
 
 template<class real> inline
 const DeviceScalarType<real> &DeviceMathType<real>::d_one() {
-    return devAlloc_->d_one();
+    return devConst_->d_one();
 }
 
 template<class real> inline
 const DeviceScalarType<real> &DeviceMathType<real>::d_zero() {
-    return devAlloc_->d_zero();
+    return devConst_->d_zero();
 }
 
 /* temporary objects */

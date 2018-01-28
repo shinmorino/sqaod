@@ -19,9 +19,10 @@ void Device::initialize(int devNo){
     devNo_ = devNo;
     throwOnError(cudaSetDevice(devNo));
     memStore_.initialize();
+    devObjAllocator_.set(&memStore_);
     defaultDeviceStream_.set(NULL, memStore_);
-    devObjAllocatorFP32_.initialize(&memStore_, &defaultDeviceStream_);
-    devObjAllocatorFP64_.initialize(&memStore_, &defaultDeviceStream_);
+    devConstScalarsFP64_.initialize(devObjAllocator_, defaultDeviceStream_);
+    devConstScalarsFP32_.initialize(devObjAllocator_, defaultDeviceStream_);
 }
 
 void Device::finalize() {
@@ -30,8 +31,7 @@ void Device::finalize() {
         delete *it;
     defaultDeviceStream_.finalize();
     streams_.clear();
-    devObjAllocatorFP32_.finalize();
-    devObjAllocatorFP64_.finalize();
+    // devObjAllocator_.finalize();
     memStore_.finalize();
     devNo_ = -1;
 }

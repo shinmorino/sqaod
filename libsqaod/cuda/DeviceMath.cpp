@@ -228,6 +228,12 @@ void DeviceMathType<real>::min(DeviceScalar *s, const DeviceMatrix &A) {
 }
 
 template<class real>
+void DeviceMathType<real>::min(DeviceScalar *s, const DeviceVector &x) {
+    devAlloc_->allocateIfNull(s);
+    devKernels_.min(s->d_data, x.d_data, x.size);
+}
+
+template<class real>
 void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
     Dim dim = getMatrixShape(A, opTranspose);
     devAlloc_->allocateIfNull(dAt, dim);
@@ -324,8 +330,9 @@ void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream)
         devStream = device.defaultStream();
     devStream_ = devStream;
 
-    devAlloc_ = device.objectAllocator<real>();
-    devCopy_.set(device, devStream);
+    devAlloc_ = device.objectAllocator();
+    devConst_ = device.constScalars<real>();
+    devCopy_.assignDevice(device, devStream);
     devKernels_.setStream(devStream);
 }
 
