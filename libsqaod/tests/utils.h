@@ -10,7 +10,7 @@ using namespace sqaod_cuda;
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat) {
     sqaod::MatrixType<real> hmat;
-    DeviceCopyType<real>()(&hmat, dmat);
+    DeviceCopy()(&hmat, dmat);
     ostm << hmat.map() << std::endl;
     return ostm;
 }
@@ -18,7 +18,7 @@ std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat)
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec) {
     sqaod::VectorType<real> hvec;
-    DeviceCopyType<real>()(&hvec, dvec);
+    DeviceCopy()(&hvec, dvec);
     ostm << hvec.mapToRowVector() << std::endl;
     return ostm;
 }
@@ -26,7 +26,7 @@ std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec)
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds) {
     real hs;
-    DeviceCopyType<real>()(&hs, ds);
+    DeviceCopy()(&hs, ds);
     ostm << hs << std::endl;
     return ostm;
 }
@@ -53,7 +53,7 @@ void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorTyp
 template<class real>
 bool operator==(const DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
     sqaod::MatrixType<real> copied;
-    DeviceCopyType<real> devCopy;
+    DeviceCopy devCopy;
     devCopy(&copied, dmat);
     devCopy.synchronize();
     return copied.map() == hmat.map();
@@ -62,7 +62,7 @@ bool operator==(const DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real
 template<class real>
 bool operator==(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec) {
     sqaod::VectorType<real> copied;
-    DeviceCopyType<real> devCopy;
+    DeviceCopy devCopy;
     devCopy(&copied, dvec);
     devCopy.synchronize();
     return copied.mapToRowVector() == hvec.mapToRowVector();
@@ -71,7 +71,7 @@ bool operator==(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real
 template<class real>
 bool operator==(const DeviceScalarType<real> &dsc, const real &hsc) {
     real copied;
-    DeviceCopyType<real> devCopy;
+    DeviceCopy devCopy;
     devCopy(&copied, dsc);
     devCopy.synchronize();
     return copied == hsc;

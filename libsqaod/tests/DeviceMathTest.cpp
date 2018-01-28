@@ -33,7 +33,7 @@ template<class real>
 void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
     DeviceMathType<real> devMath(device_);
-    DeviceCopyType<real> devCopy(device_);
+    DeviceCopy devCopy(device_);
 
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
@@ -45,7 +45,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
     typedef DeviceScalarType<real> DeviceScalar;
 
 
-    auto *alloc = device_.objectAllocator<real>();
+    auto *alloc = device_.objectAllocator();
     
     DeviceMatrix dA, dB, dC, dD;
     DeviceVector dx, dy, dz;
@@ -54,7 +54,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
     testcase("test zeros/eye") {
         sq::Dim dim1(dim.rows, dim.rows);
         alloc->allocate(&dA, dim1);
-        devCopy(&dA, 0.); /* create zero matrix */
+        devCopy(&dA, (real)0.); /* create zero matrix */
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::zeros(dim1));
 
@@ -121,13 +121,13 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         alloc->allocate(&da);
 
         /* initialize */
-        devCopy(&da, 0.);
+        devCopy(&da, (real)0.);
         devMath.scaleBroadcast(&dx, 1., da);
         HostVector x = HostVector::zeros(dim.rows);
         device_.synchronize();
         TEST_ASSERT(dx == x);
 
-        devCopy(&da, 1.);
+        devCopy(&da, (real)1.);
         devMath.scaleBroadcast(&dx, 2., da);
         x = HostVector::ones(dim.rows);
         x.mapToRowVector() *= 2.;

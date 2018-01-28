@@ -33,7 +33,7 @@ void DeviceTest::run(std::ostream &ostm) {
     testcase("device alloc/dealloc") {
         Device device;
         device.initialize(0);
-        auto *alloc = device.objectAllocator<float>();
+        auto *alloc = device.objectAllocator();
 
         std::vector<void*> pvlist;
         for (int size = 4; size < (1 << 20); size *= 2) {
@@ -56,7 +56,7 @@ void DeviceTest::tests() {
     Device device;
 
     device.initialize();
-    auto *alloc = device.objectAllocator<real>();
+    auto *alloc = device.objectAllocator();
 
     testcase("matrix alloc/dealloc") {
         DeviceMatrixType<real> mat;

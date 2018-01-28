@@ -34,15 +34,15 @@ void CUDAFormulasBGFuncTest::tests() {
 
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
-    typedef sq::EigenMatrixType<real> EigenMatrix;
-    typedef sq::EigenRowVectorType<real> EigenRowVector;
-    typedef sq::EigenColumnVectorType<real> EigenColumnVector;
+    // typedef sq::EigenMatrixType<real> EigenMatrix;
+    // typedef sq::EigenRowVectorType<real> EigenRowVector;
+    // typedef sq::EigenColumnVectorType<real> EigenColumnVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
 
-    DeviceCopyType<real> devCopy(device_);
-    DeviceStream *devStream = device_.defaultStream();
+    DeviceCopy devCopy(device_);
+    // DeviceStream *devStream = device_.defaultStream();
 
     typedef sq::BGFuncs<real> BGF;
     CUDABGFuncs<real> devFuncs;
