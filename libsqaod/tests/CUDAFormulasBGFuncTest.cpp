@@ -43,7 +43,6 @@ void CUDAFormulasBGFuncTest::tests() {
 
     DeviceCopyType<real> devCopy(device_);
     DeviceStream *devStream = device_.defaultStream();
-    Device::ObjectAllocator<real> *alloc = device_.objectAllocator<real>();
 
     typedef sq::BGFuncs<real> BGF;
     CUDABGFuncs<real> devFuncs;

@@ -366,11 +366,20 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         TEST_ASSERT(dx == HostVector(2. * z));
     }
 
-    testcase("min") {
+    testcase("min matrix") {
         HostMatrix A = testMatBalanced<real>(dim);
         real vMin = A.map().minCoeff();
         devCopy(&dA, A);
         devMath.min(&da, dA);
+        device_.synchronize();
+        TEST_ASSERT(da == vMin);
+    }
+
+    testcase("min") {
+        HostVector x = testVecBalanced<real>(dim.rows);
+        real vMin = x.mapToRowVector().minCoeff();
+        devCopy(&dx, x);
+        devMath.min(&da, dx);
         device_.synchronize();
         TEST_ASSERT(da == vMin);
     }
