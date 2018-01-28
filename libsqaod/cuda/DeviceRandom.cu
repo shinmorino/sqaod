@@ -1,29 +1,43 @@
 #include "DeviceRandom.h"
 #include "cudafuncs.h"
-#include <assert.h>
-#include <cuda_runtime.h>
+#include <curand_mtgp32_host.h>
 #include <curand_mtgp32_kernel.h>
+
 
 /* FIXME: use multiple states utilize more threads.
  *         use memory store */
 
 using namespace sqaod_cuda;
 
-static const int mega = 1024 * 1024;
+static const sqaod::SizeType mega = 1024 * 1024;
     
+DeviceRandom::DeviceRandom(Device &device, DeviceStream *devStream) {
+    assignDevice(device, devStream);
+}
+
 DeviceRandom::DeviceRandom() {
+    bufLen_ = -1;
     d_buffer_ = NULL;
 }
+
 
 DeviceRandom::~DeviceRandom() {
     if (d_buffer_ != NULL)
         deallocate();
 }
-    
-void DeviceRandom::allocate(int nNums) {
+
+void DeviceRandom::assignDevice(Device &device, DeviceStream *devStream) {
+    devAlloc_ = device.objectAllocator();
+    if (devStream == NULL)
+        devStream = device.defaultStream();
+    stream_ = devStream->getCudaStream();
+}
+
+
+void DeviceRandom::allocate(sqaod::SizeType nNums) {
     assert(d_buffer_ == NULL);
     bufLen_ = roundUp(nNums, mega) * 2;
-    throwOnError(cudaMalloc(&d_buffer_, sizeof(int) * bufLen_));
+    d_buffer_ = (int*)devAlloc_->allocate(sizeof(int) * bufLen_);
 }
         
 
@@ -41,10 +55,6 @@ void DeviceRandom::setSeed(unsigned long long seed) {
                                              MTGPDC_PARAM_TABLE,
                                              d_kernelParams_, 200, seed));
 }
-    
-void DeviceRandom::reset() {
-    begin_ = end_ = 0;
-}
 
 
 __global__
@@ -60,22 +70,22 @@ static void randGenKernel(int *d_buffer, int offset, int nNums, int bufLen,
     }
 }
 
-int DeviceRandom::getNRands() const {
+sqaod::SizeType DeviceRandom::getNRands() const {
     return (end_ - begin_ + bufLen_) % bufLen_;
 }
     
 
-void DeviceRandom::generate(cudaStream_t stream) {
+void DeviceRandom::generate() {
     /* mega must be a multiple of 51200 ( = 256 * 20 ) */
-    int nToGenerate = bufLen - roundUp(getNRands(), (int)randsGenSize);
-    randGenKernel<<<20, 256, 0, stream>>>(d_buffer_, end_, nToGenerate, bufLen_, d_randStates_);
+    int nToGenerate = bufLen - roundUp(getNRands(), (sqaod::SizeType)randsGenSize);
+    randGenKernel<<<20, 256, 0, stream_>>>(d_buffer_, end_, nToGenerate, bufLen_, d_randStates_);
     DEBUG_SYNC;
     end_ = (end_ + nToGenerate) % bufLen_;
 }
 
-const int *DeviceRandom::get(int nRands, int *offset, cudaStream_t stream) {
+const int *DeviceRandom::get(sqaod::SizeType nRands, sqaod::IdxType *offset) {
     if (getNRands() < nRands)
-        generate(stream);
+        generate();
     assert(getNRands() < nRands);
       
     *offset = begin_;
