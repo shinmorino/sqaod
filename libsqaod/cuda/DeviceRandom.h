@@ -16,11 +16,6 @@ public:
 
     void assignDevice(Device &device, DeviceStream *devStreram = NULL);
     
-    enum {
-        bufLen = 16 * 1024 * 1024,
-        randsGenSize = 256 * 20
-    };
-    
     void allocate(sqaod::SizeType nNums);
 
     void deallocate();
@@ -37,7 +32,7 @@ private:
     DeviceObjectAllocator *devAlloc_;
     cudaStream_t stream_;
     
-    int bufLen_;
+    int bufSize_;
     
     curandStateMtgp32_t *d_randStates_;
     mtgp32_kernel_params_t *d_kernelParams_;
