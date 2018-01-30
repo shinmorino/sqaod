@@ -8,7 +8,6 @@
 #include <cuda/DeviceCopy.h>
 #include <cuda/DeviceMath.h>
 #include <cuda/DeviceRandom.h>
-#include <cuda/DeviceAlgorithm.h>
 #include <cuda/DeviceDenseGraphBatchSearch.h>
 
 namespace sqaod_cuda {
@@ -26,11 +25,14 @@ class CUDADenseGraphBFSolver {
     
 public:
     CUDADenseGraphBFSolver();
+
+    CUDADenseGraphBFSolver(Device &device);
+
     ~CUDADenseGraphBFSolver();
 
     void assignDevice(Device &device);
     
-    void setProblem(const Matrix &W, sqaod::OptimizeMethod om);
+    void setProblem(const Matrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
     void getProblemSize(sqaod::SizeType *N) const;
     
@@ -46,6 +48,8 @@ public:
 
     void finSearch();
 
+    void searchRange(sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+
     void search();
     
 private:    
@@ -58,8 +62,9 @@ private:
     Vector E_;
     sqaod::BitsArray xList_;
     real Emin_;
-    
+    DevicePackedBitsArray h_packedXmin_;
     DeviceBatchSearch batchSearch_;
+    DeviceCopy devCopy_;
 };
 
 }

@@ -5,7 +5,7 @@
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
 #include <cuda/DeviceObjectAllocator.h>
-#include <cuda/DeviceAlgorithm.h>
+#include <cuda/DeviceBFKernels.h>
 
 namespace sqaod_cuda {
 
@@ -19,11 +19,14 @@ class DeviceDenseGraphBatchSearch {
     typedef DeviceScalarType<sqaod::SizeType> DeviceSize;
     typedef CUDADGFuncs<real> DGFuncs;
     typedef sqaod::MatrixType<real> HostMatrix;
+    typedef DeviceBFKernelsType<real> DeviceBFKernels;
     
 public:
     DeviceDenseGraphBatchSearch();
 
     void assignDevice(Device &device);
+
+    void deallocate();
     
     void setProblem(const HostMatrix &W, sqaod::SizeType tileSize);
     
@@ -36,30 +39,30 @@ public:
         return *h_Emin_.d_data;
     }
 
-    const PackedBitsArray &get_xMins() const {
-        return h_xMins_;
+    const DevicePackedBitsArray &get_xMins() const {
+        return d_xMins_;
     }
     
     void synchronize();
-    
+
 private:
     DeviceMatrix d_W_;
     sqaod::SizeType tileSize_;
+
+    /* starting x of batch calculation */
+    sqaod::PackedBits xBegin_;
 
     /* calculate_E */
     DeviceMatrix d_bitsMat_;
     DeviceVector d_Ebatch_;
     DeviceScalar h_Emin_; /* host mem */
-    DevicePackedBitsArray d_bitsSeq_;
     /* partition */
     DevicePackedBitsArray d_xMins_;
-    sqaod::PackedBitsArray h_xMins_;
     DeviceSize h_nXMins_;
-    sqaod::SizeType nXMins_;
     /* lower level objects. */
     DGFuncs dgFuncs_;
     DeviceCopy devCopy_;
-    DeviceAlgorithm devAlgo_;
+    DeviceBFKernels kernels_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;
 };
