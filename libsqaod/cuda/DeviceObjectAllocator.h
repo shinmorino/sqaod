@@ -15,6 +15,9 @@ struct DeviceObjectAllocator {
     void deallocate(void *pv);
 
     template<class V>
+    void allocate(V **v, size_t size);
+
+    template<class V>
     void allocate(DeviceMatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols);
 
     template<class V>
