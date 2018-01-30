@@ -2,7 +2,6 @@
 #define CUDA_DEVICE_H__
 
 #include <common/Array.h>
-#include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceMemoryStore.h>
 #include <cuda/DeviceObjectAllocator.h>
 #include <cuda/DeviceConstScalars.h>
