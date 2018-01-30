@@ -114,7 +114,7 @@ void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList,
         else {
             Emin = eEbatch(idx);
             xList->clear();
-            xList->pushBack(idx);
+            xList->pushBack(xBegin + idx);
         }
     }
     *E = Emin;
