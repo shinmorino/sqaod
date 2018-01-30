@@ -137,6 +137,42 @@ public:
         return data_;
     }
     
+    bool operator==(const ArrayType &rhs) const {
+        if (size_ != rhs.size_)
+            return false;
+        if (ValueProp<V>::POD) {
+            return memcmp(data_, rhs.data_, sizeof(V) * size_) == 0;
+        }
+        else {
+            for (size_t idx = 0; idx < size_; ++idx) {
+                if (data_[idx] != rhs.data_[idx])
+                    return false;
+            }
+            return true;
+        }
+    }
+
+    bool operator!=(const ArrayType &rhs) const {
+        return !operator==(rhs);
+    }
+
+    void insert(iterator first, iterator last) {
+        size_t nElms = last - first;
+        if (capacity_ < size_ + nElms)
+            reserve(capacity_ * 2);
+        if (ValueProp<V>::POD) {
+            memcpy(&data_[size_], first, sizeof(V) * nElms);
+            size_ += nElms;
+        }
+        else {
+            for (iterator it = first; it != last; ++it) {
+                new (&data_[size_]) V(*it);
+                ++size_;
+            }
+        }
+    }
+
+
 private:
     void erase() {
         if (!ValueProp<V>::POD) {

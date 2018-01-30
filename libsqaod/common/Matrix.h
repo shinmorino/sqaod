@@ -386,6 +386,16 @@ struct VectorType {
         return data[idx];
     }
     
+    bool operator==(const VectorType<V> &rhs) const {
+        if (size != rhs.size)
+            return false;
+        return memcmp(data, rhs.data, sizeof(V) * size) == 0;
+    }
+
+    bool operator!=(const VectorType<V> &rhs) const {
+        return !operator==(rhs);
+    }
+
     EigenMappedRowVector mapToRowVector() {
         return EigenMappedRowVector(data, 1, size);
     }
