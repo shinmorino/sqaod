@@ -3,7 +3,7 @@ SUFFIXES = .cu .cpp
 noinst_LTLIBRARIES=libcuda.la
 check_PROGRAMS=test
 
-libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceAlgorithm.cu DeviceRandom.cpp  # DeviceBipartiteGraphBatchSearch.cpp 
+libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceBFKernels.cu DeviceRandom.cpp DeviceRandomKernel.cu  # DeviceBipartiteGraphBatchSearch.cpp 
 AM_CPPFLAGS=-I/usr/local/cuda/include -I$(abs_top_srcdir)/eigen -I$(abs_top_srcdir)/cub  # FIXME: cofnigrue cuda path.
 
 # check
