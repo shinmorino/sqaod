@@ -8,7 +8,7 @@ namespace sqaod_cuda {
 
     
 enum {
-    randsGenSize = CURAND_NUM_MTGP32_PARAMS * THREAD_NUM
+    randGenSize = CURAND_NUM_MTGP32_PARAMS * THREAD_NUM
 };
 
 

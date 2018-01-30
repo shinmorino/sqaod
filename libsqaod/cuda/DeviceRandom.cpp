@@ -16,8 +16,11 @@ DeviceRandom::DeviceRandom(Device &device, DeviceStream *devStream) {
 }
 
 DeviceRandom::DeviceRandom() {
-    bufSize_ = -1;
+    requiredSize_ = -1;
     d_buffer_ = NULL;
+    d_randStates_ = NULL;
+    d_kernelParams_ = NULL;
+    begin_ = end_ = 0;
 }
 
 DeviceRandom::~DeviceRandom() {
@@ -33,44 +36,59 @@ void DeviceRandom::assignDevice(Device &device, DeviceStream *devStream) {
 }
 
 
-void DeviceRandom::allocate(sqaod::SizeType nNums) {
+void DeviceRandom::setRequiredSize(sqaod::SizeType requiredSize) {
     assert(d_buffer_ == NULL);
-    bufSize_ = roundUp(nNums, mega) * 2;
-    d_buffer_ = (int*)devAlloc_->allocate(sizeof(int) * bufSize_);
+    requiredSize_ = requiredSize;
+    /* Should give 2 chunks, 1 is for roundUp(), other is not to make size == 0 when filled up. */
+    internalBufSize_ = roundUp(requiredSize_, (sqaod::SizeType)randGenSize)+ randGenSize * 2;
 }
         
 
 void DeviceRandom::deallocate() {
-    cudaFree(d_buffer_);
+    assert(d_buffer_ != NULL);
+    devAlloc_->deallocate(d_buffer_);
+    devAlloc_->deallocate(d_randStates_);
+    devAlloc_->deallocate(d_kernelParams_);
+
     d_buffer_ = NULL;
+    d_randStates_ = NULL;
+    d_kernelParams_ = NULL;
 }
 
-void DeviceRandom::setSeed(unsigned long long seed) {
-    if (d_randStates_ == NULL)
-        d_randStates_ = (curandStateMtgp32_t*)devAlloc_->allocate(sizeof(curandStateMtgp32_t) * 200);
-    if (d_kernelParams_ == NULL)
-        d_kernelParams_ =
-                (mtgp32_kernel_params_t*)devAlloc_->allocate(sizeof(mtgp32_kernel_params_t) * 200);
+void DeviceRandom::seed(unsigned long long seed) {
+    if (d_buffer_ != NULL)
+        deallocate();
+    d_buffer_ = (int*)devAlloc_->allocate(sizeof(int) * internalBufSize_);
+    d_randStates_ = (curandStateMtgp32_t*)devAlloc_->allocate(sizeof(curandStateMtgp32_t) * CURAND_NUM_MTGP32_PARAMS);
+    d_kernelParams_ = (mtgp32_kernel_params_t*)devAlloc_->allocate(sizeof(mtgp32_kernel_params_t) * CURAND_NUM_MTGP32_PARAMS);
     deviceRandomMakeKernelState(d_randStates_, d_kernelParams_, seed, stream_);
 }
 
 sqaod::SizeType DeviceRandom::getNRands() const {
-    return (end_ - begin_ + bufSize_) % bufSize_;
+    return (end_ - begin_ + internalBufSize_) % internalBufSize_;
 }
     
 
 void DeviceRandom::generate() {
-    /* mega must be a multiple of 51200 ( = 256 * 20 ) */
-    int nToGenerate = bufSize_ - roundUp(getNRands(), (sqaod::SizeType)randsGenSize);
-    end_ = (end_ + nToGenerate) % bufSize_;
+    int nToGenerate = requiredSize_ - getNRands();
+    nToGenerate = roundUp(nToGenerate, (int)randGenSize);
+    if (0 <= nToGenerate) {
+        deviceGenRand(d_buffer_, begin_, end_, nToGenerate, internalBufSize_, d_randStates_, stream_);
+        end_ = (end_ + nToGenerate) % internalBufSize_;
+    }
 }
 
-const int *DeviceRandom::get(sqaod::SizeType nRands, sqaod::IdxType *offset) {
+const int *DeviceRandom::get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap) {
     if (getNRands() < nRands)
         generate();
-    assert(getNRands() < nRands);
+    assert(nRands <= getNRands());
       
     *offset = begin_;
-    begin_ = (begin_ + nRands) % bufSize_;
+    *posToWrap = internalBufSize_;
+    begin_ = (begin_ + nRands) % internalBufSize_;
     return d_buffer_;
+}
+
+void DeviceRandom::synchronize() {
+    throwOnError(cudaStreamSynchronize(stream_));
 }

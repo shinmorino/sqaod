@@ -15,24 +15,27 @@ public:
     ~DeviceRandom();
 
     void assignDevice(Device &device, DeviceStream *devStreram = NULL);
-    
-    void allocate(sqaod::SizeType nNums);
 
     void deallocate();
+
+    void setRequiredSize(sqaod::SizeType requiredSize);
     
-    void setSeed(unsigned long long seed);
+    void seed(unsigned long long seed);
 
     sqaod::SizeType getNRands() const;
     
     void generate();
+
+    const int *get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap);
     
-    const int *get(sqaod::SizeType nRands, sqaod::IdxType *offset);
-    
+    void synchronize();
+
 private:
     DeviceObjectAllocator *devAlloc_;
     cudaStream_t stream_;
     
-    int bufSize_;
+    sqaod::SizeType requiredSize_;
+    sqaod::SizeType internalBufSize_;
     
     curandStateMtgp32_t *d_randStates_;
     mtgp32_kernel_params_t *d_kernelParams_;
