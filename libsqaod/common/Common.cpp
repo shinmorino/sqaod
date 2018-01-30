@@ -7,16 +7,17 @@
 template<class real>
 void sqaod::createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd) {
     for (PackedBits b = bBegin; b < bEnd; ++b) {
-        for (int pos = nBits - 1; pos != -1; --pos)
-            bits[pos] = real((b >> pos) & 1);
+        for (int pos = 0; pos < nBits; ++pos)
+            bits[pos] = real((b >> (nBits - 1 - pos)) & 1);
         bits += nBits;
     }
 }
 
 void sqaod::unpackBits(Bits *unpacked, const PackedBits packed, int N) {
     unpacked->resize(N);
-    for (int pos = N - 1; pos != -1; --pos)
-        (*unpacked)(pos) = (packed >> pos) & 1;
+    for (int pos = 0; pos < N; ++pos) {
+        (*unpacked)(pos) = (packed >> (N - 1 - pos)) & 1;
+    }
 }
 
 
