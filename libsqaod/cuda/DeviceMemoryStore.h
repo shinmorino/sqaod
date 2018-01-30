@@ -107,10 +107,14 @@ public:
     void initialize();
     void finalize();
     
+    void useManagedMemory(bool use);
+
     void *allocate(size_t size);
     void deallocate(void *pv);
 
 private:
+    bool useManagedMemory_;
+
     uintptr_t cudaMalloc(size_t size);
     void cudaFree(void *pv);
 

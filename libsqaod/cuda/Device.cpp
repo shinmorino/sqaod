@@ -36,6 +36,9 @@ void Device::finalize() {
     devNo_ = -1;
 }
 
+void Device::useManagedMemory(bool use) {
+    memStore_.useManagedMemory(use);
+}
 
 DeviceStream *Device::newStream() {
     cudaStream_t stream;

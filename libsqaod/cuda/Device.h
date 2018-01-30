@@ -20,6 +20,8 @@ public:
     void initialize(int devNo = 0);
     void finalize();
 
+    void useManagedMemory(bool use);
+
     /* FIXME: add activate method. */
 
     DeviceObjectAllocator *objectAllocator();

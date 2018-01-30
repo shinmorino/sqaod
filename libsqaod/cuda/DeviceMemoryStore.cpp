@@ -250,6 +250,9 @@ void DeviceMemoryStore::finalize() {
     d_mems_.clear();
 }
 
+void DeviceMemoryStore::useManagedMemory(bool use) {
+    useManagedMemory_ = use;
+}
 
 void *DeviceMemoryStore::allocate(size_t size) {
     /* FIXME: Parameterize */
@@ -309,7 +312,13 @@ void DeviceMemoryStore::deallocate(void *pv) {
 
 uintptr_t DeviceMemoryStore::cudaMalloc(size_t size) {
     uintptr_t addr;
-    throwOnError(::cudaMalloc(reinterpret_cast<void**>(&addr), size));
+    if (!useManagedMemory_) {
+        throwOnError(::cudaMalloc(reinterpret_cast<void**>(&addr), size));
+    }
+    else {
+        throwOnError(::cudaMallocManaged(reinterpret_cast<void**>(&addr), size));
+    }
+    
     d_mems_.pushBack((void*)addr);
     return addr;
 }
