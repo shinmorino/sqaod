@@ -24,17 +24,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\DeviceMathTest.cpp" />
+    <ClCompile Include="..\..\libsqaod\tests\DeviceRandomTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\DeviceTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\main.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\MinimalTestSuite.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\DeviceMathTest.h" />
+    <ClInclude Include="..\..\libsqaod\tests\DeviceRandomTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\DeviceTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\MinimalTestSuite.h" />
     <ClInclude Include="..\..\libsqaod\tests\utils.h" />
