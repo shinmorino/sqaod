@@ -428,11 +428,11 @@ DeviceMathKernelsType(DeviceStream *devStream) {
     devStream_ = devStream;
     stream_ = NULL;
     if (devStream != NULL)
-        setStream(devStream);
+        assignStream(devStream);
 }
 
 template<class real> void DeviceMathKernelsType<real>::
-setStream(DeviceStream *devStream) {
+assignStream(DeviceStream *devStream) {
     devStream_ = devStream;
     stream_ = NULL;
     if (devStream_ != NULL)
@@ -483,8 +483,15 @@ copyBroadcastStrided(V *d_buf, const V &v, SizeType size, SizeType stride, IdxTy
 }
 
 
-void DeviceCopyKernels::setCUDAStream(cudaStream_t stream) {
-    stream_ = stream;
+DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
+    stream_ = NULL;
+    if (stream != NULL)
+        assignStream(stream);
+}
+
+
+void DeviceCopyKernels::assignStream(DeviceStream *stream) {
+    stream_ = stream->getCudaStream();
 }
 
 
