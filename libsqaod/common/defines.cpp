@@ -24,7 +24,7 @@ void sqaod::__abort(const char *file, unsigned long line, const char *format, ..
 }
 
 void sqaod::__throwError(const char *file, unsigned long line) {
-    __throwError(file, line, "abort");
+    __throwError(file, line, "Error");
 }
 
 void sqaod::__throwError(const char *file, unsigned long line, const char *format, ...) {
