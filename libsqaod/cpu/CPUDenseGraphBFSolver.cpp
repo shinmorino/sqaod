@@ -78,9 +78,8 @@ void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigne
 
 template<class real>
 void CPUDenseGraphBFSolver<real>::search() {
-    PackedBits iStep = std::min(tileSize_, xMax_);
-
     initSearch();
+    PackedBits iStep = std::min(tileSize_, xMax_);
     for (PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
         searchRange(iTile, iTile + iStep);
     }
