@@ -3,6 +3,8 @@
 #include "DeviceMathTest.h"
 #include "CUDAFormulasDGFuncTest.h"
 #include "CUDAFormulasBGFuncTest.h"
+#include "DeviceRandomTest.h"
+#include "CUDADenseGraphBFSolverTest.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
@@ -10,5 +12,8 @@ int main(int argc, char* argv[]) {
     runTest<DeviceMathTest>();
     runTest<CUDAFormulasDGFuncTest>();
     runTest<CUDAFormulasBGFuncTest>();
+    runTest<DeviceRandomTest>();
+    runTest<CUDADenseGraphBFSolverTest>();
+    cudaDeviceReset();
     return MinimalTestSuite::summarize();
 }

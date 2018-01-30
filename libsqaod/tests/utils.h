@@ -32,6 +32,22 @@ std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds) {
 }
 
 template<class real>
+std::ostream &operator<<(std::ostream &ostm, const ArrayType<real> &arr) {
+    for (int idx = 0; idx < (int)arr.size(); ++idx)
+        ostm << arr[idx] << ", ";
+    ostm << std::endl;
+    return ostm;
+}
+
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const VectorType<real> &vec) {
+    for (int idx = 0; idx < (int)vec.size; ++idx)
+        ostm << (int)vec.data[idx] << ", "; /* FIXME: add [] operator */
+    ostm << std::endl;
+    return ostm;
+}
+
+template<class real>
 void show(const sqaod_cuda::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
     std::cerr << std::endl 
         << "Device" << std::endl
@@ -77,6 +93,26 @@ bool operator==(const DeviceScalarType<real> &dsc, const real &hsc) {
     return copied == hsc;
 }
 
+template<class real>
+bool operator==(const DeviceArrayType<real> &dsc, const sq::ArrayType<real> &hsc) {
+    DeviceArrayType<real> copied;
+    HostObjectAllocator().allocate(&copied, dsc.size);
+    DeviceCopy devCopy;
+    devCopy(&copied, dsc);
+    devCopy.synchronize();
+    if (copied.size != hsc.size()) {
+        HostObjectAllocator().deallocate(copied);
+        return false;
+    }
+    for (int idx = 0; idx < (int)copied.size; ++idx) {
+        if (copied[idx] != hsc[idx]) {
+            HostObjectAllocator().deallocate(copied);
+            return false;
+        }
+    }
+    HostObjectAllocator().deallocate(copied);
+    return true;
+}
 
 template<class real>
 sqaod::MatrixType<real> testMat(const sqaod::Dim &dim) {
