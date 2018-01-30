@@ -5,12 +5,19 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <curand.h>
+#include <iterator>
 
 /* FIXME: undef somewhere. */
 #ifdef _DEBUG
 #define DEBUG_SYNC {throwOnError(cudaGetLastError()); throwOnError(cudaDeviceSynchronize()); }
 #else
 #define DEBUG_SYNC
+#endif
+
+#ifdef _DEBUG
+#define CUB_DEBUG (false)
+#else
+#define CUB_DEBUG (false)
 #endif
 
 
@@ -39,7 +46,15 @@ inline V roundUp(const V &v, const V &base) {
     return ((v + base - 1) / base) * base;
 }
 
-
+/* base class for CUB iteratos */
+template<class V>
+struct base_iterator_traits {
+    using difference_type   = ptrdiff_t;
+    typedef V                 value_type;
+    using pointer           = V*;
+    using reference         = V&;
+    using iterator_category = std::random_access_iterator_tag;
+};
 
 }
 

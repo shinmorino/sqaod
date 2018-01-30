@@ -6,12 +6,6 @@ using sqaod::SizeType;
 using sqaod::IdxType;
 using namespace sqaod_cuda;
 
-#ifdef _DEBUG
-#define CUB_DEBUG (true)
-#else
-#define CUB_DEBUG (false)
-#endif
-
 
 /* FIXME: add __forceinline__ for device funcs/methods. */
 
@@ -97,27 +91,16 @@ struct StridedInPtr {
     IdxType offset;
 };
 
-
-template<class type, class real>
-struct dev_iterator_traits {
-    using difference_type   = ptrdiff_t;
-    typedef real              value_type;
-    using pointer           = real*;
-    using reference         = real&;
-    using iterator_category = std::random_access_iterator_tag;
-};
-
-
 }
 
 namespace std {
 
 template<class real>
-struct iterator_traits<AddAssignDevPtr<real> > : dev_iterator_traits<AddAssignDevPtr<real>, real> { };
+struct iterator_traits<AddAssignDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
 template<class real>
-struct iterator_traits<MulOutDevPtr<real> > : dev_iterator_traits<MulOutDevPtr<real>, real> { };
+struct iterator_traits<MulOutDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
 template<class real>
-struct iterator_traits<StridedInPtr<real>> : dev_iterator_traits<StridedInPtr<real>, real> { };
+struct iterator_traits<StridedInPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
 
 }
 
@@ -313,7 +296,7 @@ struct InDotPtr {
 namespace std {
 
 template<class real>
-struct iterator_traits<InDotPtr<real>> : dev_iterator_traits<InDotPtr<real>, real> { };
+struct iterator_traits<InDotPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
 
 }
 
