@@ -76,8 +76,8 @@ bool HeapBitmap::release(uintptr_t addr) {
         return false;
         
     regions_.erase(it);
-    size_t nErased = freeRegions_.erase(key);
-    assert(nErased == 1);
+    assert(freeRegions_.find(key) != freeRegions_.end());
+    freeRegions_.erase(key);
     return true;
 }
 
@@ -137,7 +137,7 @@ uintptr_t FixedSizedChunks::acquire(size_t *size) {
     if (parentBitmap.acquire(&addr)) {
         bitmap.addRegion(addr);
         bool res = bitmap.acquire(&addr);
-        assert(res);
+        abortIf(!res, "bitmap.acquire() failed.");
         return addr;
     }
 
