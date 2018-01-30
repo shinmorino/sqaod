@@ -19,7 +19,7 @@ public:
 
     void getProblemSize(SizeType *N) const;
 
-    void setProblem(const Matrix &W, OptimizeMethod om);
+    void setProblem(const Matrix &W, OptimizeMethod om = optMinimize);
 
     void setTileSize(SizeType tileSize);
 
