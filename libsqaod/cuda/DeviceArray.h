@@ -14,19 +14,29 @@ struct DeviceArrayType : DeviceObject {
         DeviceArrayType newArr;
         newArr.d_data = arr.d_data;
         size = arr.size;
-        bufferSize = arr.bufferSize;
-        arr.d_data = NULL;
+        capacity = arr.capacity;
+        arr.d_data = nullptr;
+        arr.size = (sqaod::SizeType)-1;
+        arr.capacity = (sqaod::SizeType)-1;
     }
-    
+
+    V &operator[](sqaod::IdxType idx) {
+        return d_data[idx];
+    }
+
+    const V &operator[](sqaod::IdxType idx) const {
+        return d_data[idx];
+    }
+
     V *d_data;
-    size_t bufferSize;
-    size_t size;
+    sqaod::SizeType capacity;
+    sqaod::SizeType size;
 
 private:
     DeviceArrayType(const DeviceArrayType<V>&);
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
-        d_data = NULL;
+        d_data = nullptr;
         size = (sqaod::SizeType)-1;
     }
 };

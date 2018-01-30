@@ -74,10 +74,7 @@ struct DeviceCopy {
 
     /* Host array <-> Device Array */
     template<class V>
-    void operator()(DeviceArrayType<V> *dst, const sqaod::ArrayType<V> &src);
-    
-    template<class V>
-    void operator()(sqaod::ArrayType<V> *dst, const DeviceArrayType<V> &src) const;
+    void operator()(DeviceArrayType<V> *dst, const DeviceArrayType<V> &src);
     
     void synchronize() const;
 
@@ -189,17 +186,11 @@ operator()(V *dst, const DeviceScalarType<V> &src) const {
 
 /* Packed bits */
 template<class V> void DeviceCopy::
-operator()(sqaod::ArrayType<V> *dst, const DeviceArrayType<V> &src) const {
-    assert(!"not implemented.");
-    // copy(dst->data_, src.d_data, src.size);
-    // dst->size_ = src.size;
-}
-
-template<class V> void DeviceCopy::
-operator()(DeviceArrayType<V> *dst, const sqaod::ArrayType<V> &src) {
-    assert(!"not implemented.");
-    // copy(dst->data_, src.d_data, src.size);
-    // dst->size_ = src.size;
+operator()(DeviceArrayType<V> *dst, const DeviceArrayType<V> &src) {
+    devAlloc_->allocateIfNull(dst, src.capacity);
+    throwErrorIf(dst->capacity < src.size, "Array capacity is too small.");
+    copy(dst->d_data, src.d_data, src.size);
+    dst->size = src.size;
 }
 
 }

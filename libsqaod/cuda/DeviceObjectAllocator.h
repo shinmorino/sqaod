@@ -27,7 +27,7 @@ struct DeviceObjectAllocator {
     void allocate(DeviceScalarType<V> *sc);
 
     template<class V>
-    void allocate(DeviceArrayType<V> *arr, sqaod::SizeType size);
+    void allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity);
     
     template<class V>
     void allocateIfNull(DeviceMatrixType<V> *mat, const sqaod::Dim &dim);
@@ -51,6 +51,10 @@ private:
     DeviceMemoryStore *memStore_;
 };
 
+template<class V>
+void DeviceObjectAllocator::allocate(V **v, size_t size) {
+    *v = (V*)allocate(sizeof(V) * size);
+}
 
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, const sqaod::Dim &dim) {
@@ -76,9 +80,9 @@ void DeviceObjectAllocator::allocate(DeviceScalarType<V> *sc) {
 }
 
 template<class V>
-void DeviceObjectAllocator::allocate(DeviceArrayType<V> *arr, sqaod::SizeType size) {
-    arr->d_data = (V*)allocate(sizeof(V) * size);
-    arr->size = size;
+void DeviceObjectAllocator::allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity) {
+    arr->d_data = (V*)allocate(sizeof(V) * capacity);
+    arr->capacity = capacity;
 }
 
 template<class V> inline

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <common/Matrix.h>
-#include <common/Array.h>
 #include <cuda/DeviceMatrix.h>
+#include <cuda/DeviceArray.h>
 
 namespace sqaod_cuda {
 
@@ -25,7 +25,7 @@ struct HostObjectAllocator {
     void allocate(DeviceScalarType<V> *sc);
 
     template<class V>
-    void allocate(sqaod::ArrayType<V> *arr, sqaod::SizeType size);
+    void allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity);
     
     template<class V>
     void allocateIfNull(sqaod::MatrixType<V> *mat, const sqaod::Dim &dim);
@@ -37,7 +37,7 @@ struct HostObjectAllocator {
     void allocateIfNull(DeviceScalarType<V> *sc);
 
     template<class V>
-    void allocateIfNull(sqaod::ArrayType<V> *arr, sqaod::SizeType size);
+    void allocateIfNull(DeviceArrayType<V> *arr, sqaod::SizeType capacity);
     
     template<class T>
     void deallocate(T &obj);
@@ -68,9 +68,10 @@ void HostObjectAllocator::allocate(DeviceScalarType<V> *sc) {
 }
 
 template<class V> inline
-void HostObjectAllocator::allocate(sqaod::ArrayType<V> *arr, sqaod::SizeType size) {
-    arr->data = (V*)allocate(sizeof(V) * size);
-    arr->size = size;
+void HostObjectAllocator::allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity) {
+    arr->d_data = (V*)allocate(sizeof(V) * capacity);
+    arr->capacity = capacity;
+    arr->size = 0;
 }
 
 template<class V> inline
@@ -92,15 +93,15 @@ void HostObjectAllocator::allocateIfNull(DeviceScalarType<V> *sc) {
 }
 
 template<class V> inline
-void HostObjectAllocator::allocateIfNull(sqaod::ArrayType<V> *arr, sqaod::SizeType size) {
+void HostObjectAllocator::allocateIfNull(DeviceArrayType<V> *arr, sqaod::SizeType size) {
     if (arr->data == NULL)
         allocate(arr, size);
 }
 
 template<class T>
 void HostObjectAllocator::deallocate(T &obj) {
-    deallocate(obj.data);
-    obj.data = NULL;
+    deallocate((void*)obj.d_data);
+    obj.d_data = NULL;
 }
 
 
