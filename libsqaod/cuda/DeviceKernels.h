@@ -38,7 +38,7 @@ struct DeviceMathKernelsType {
 
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
-    void setStream(DeviceStream *devStream);
+    void assignStream(DeviceStream *devStream);
 
 private:
     cudaStream_t stream_;
@@ -55,7 +55,9 @@ struct DeviceCopyKernels {
     void copyBroadcastStrided(V *d_buf, const V &v, sqaod::SizeType size,
                               sqaod::SizeType stride, sqaod::IdxType offset) const;
 
-    void setCUDAStream(cudaStream_t stream);
+    DeviceCopyKernels(DeviceStream *stream = NULL);
+
+    void assignStream(DeviceStream *stream);
 
 private:
     cudaStream_t stream_;

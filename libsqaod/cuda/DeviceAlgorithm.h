@@ -19,17 +19,22 @@ struct DeviceAlgorithm {
     template<class V>
     void generateBitsSequence(V *d_data, int N,
                               sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
-    
+
+    template<class V>
+    void createXListAndFlags(V *d_data, int N,
+                             sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+
     template<class real>
-    void partition_Emin(sqaod::PackedBits *d_bitsListMin, sqaod::SizeType *d_nMin,
-                        const real Emin,  const real *d_Ebatch,
-                        const sqaod::PackedBits *d_bitsList, sqaod::SizeType len);
+    void partition(sqaod::PackedBits *d_out, sqaod::SizeType *d_nOut,
+                   const sqaod::PackedBits *d_in, const char *d_flags, sqaod::SizeType nIn);
 
     template<class V>
     void randomize(V *d_data, const int *d_random, sqaod::SizeType N);
     
-    
-    void assignDevice(Device &device, DeviceStream *devStream = NULL);
+
+    DeviceAlgorithm(DeviceStream *devStream = NULL);
+
+    void assignStream(DeviceStream *devStream);
     
 private:
     cudaStream_t stream_;

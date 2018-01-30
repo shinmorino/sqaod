@@ -70,9 +70,14 @@ partition_Emin(sqaod::PackedBits *d_bitsListMin, sq::SizeType *d_nMin,
                           d_bitsList, d_bitsListMin, d_nMin, len, selOp);
 }
 
-void DeviceAlgorithm::assignDevice(Device &device, DeviceStream *devStream) {
-    if (devStream == NULL)
-        devStream = device.defaultStream();
+DeviceAlgorithm::DeviceAlgorithm(DeviceStream *devStream) {
+    devStream_ = NULL;
+    stream_ = NULL;
+    if (devStream != NULL)
+        assignStream(devStream);
+}
+
+void DeviceAlgorithm::assignStream(DeviceStream *devStream) {
     devStream_ = devStream;
     stream_ = devStream->getCudaStream();
 }

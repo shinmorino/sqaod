@@ -16,10 +16,10 @@ DeviceCopy::DeviceCopy(Device &device, DeviceStream *devStream) {
 
 void DeviceCopy::assignDevice(Device &device, DeviceStream *devStream) {
     devAlloc_ = device.objectAllocator();
-    if (devStream != NULL)
-        stream_ = devStream->getCudaStream();
-    else
-        stream_ = NULL;
+    if (devStream == NULL)
+        devStream = device.defaultStream();
+    kernels_.assignStream(devStream);
+    stream_ = devStream->getCudaStream();
 }
 
 void DeviceCopy::synchronize() const {

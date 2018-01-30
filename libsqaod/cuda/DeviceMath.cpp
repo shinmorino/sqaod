@@ -333,7 +333,7 @@ void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream)
     devAlloc_ = device.objectAllocator();
     devConst_ = device.constScalars<real>();
     devCopy_.assignDevice(device, devStream);
-    devKernels_.setStream(devStream);
+    devKernels_.assignStream(devStream);
 }
 
 
