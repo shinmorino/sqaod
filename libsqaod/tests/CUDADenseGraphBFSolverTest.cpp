@@ -225,24 +225,4 @@ void CUDADenseGraphBFSolverTest::tests() {
         // std::cerr << cpuX[0];
         // std::cerr << cudaX[0];
     }
-#if 0
-    testcase("perf trial") {
-        for (int N = 16; N <= 30; N += 2) {
-            MatrixType W = testMatSymmetric<real>(N);
-            TEST_ASSERT(sqaod::isSymmetric(W));
-
-            CUDADenseGraphBFSolver<real> cudaSolver;
-            cudaSolver.assignDevice(device_);
-            cudaSolver.setProblem(W);
-
-            sq::SizeType tileSize = 1 << (N - 12);
-            cudaSolver.setTileSize(tileSize);
-            cudaSolver.initSearch();
-            for (int idx = 0; idx < 1; ++idx) {
-                cudaSolver.searchRange(idx * tileSize, (idx + 1) * tileSize);
-            }
-            cudaSolver.finSearch();
-        }
-    }
-#endif
 }

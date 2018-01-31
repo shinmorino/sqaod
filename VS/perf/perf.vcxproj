@@ -10,35 +10,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\sqaod\sqaod.vcxproj">
-      <Project>{0aeeda6a-f70a-4abc-addc-3fd4bf15255b}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\DeviceMathTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\DeviceRandomTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\DeviceTest.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\main.cpp" />
-    <ClCompile Include="..\..\libsqaod\tests\MinimalTestSuite.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\DeviceMathTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\DeviceRandomTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\DeviceTest.h" />
-    <ClInclude Include="..\..\libsqaod\tests\MinimalTestSuite.h" />
-    <ClInclude Include="..\..\libsqaod\tests\utils.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{527F1650-4C0D-4EE3-80E0-0A231528B7EC}</ProjectGuid>
+    <ProjectGuid>{22AA07B4-B476-4A7C-860B-4FC23EC132AC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>test</RootNamespace>
+    <RootNamespace>perf</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -57,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -86,7 +61,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cublas.lib;cudart.lib</AdditionalDependencies>
+      <AdditionalDependencies>cublas.lib;curand.lib;cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -105,11 +80,19 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>cublas.lib;cudart.lib</AdditionalDependencies>
+      <AdditionalDependencies>cublas.lib;curand.lib;cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\libsqaod\tests\perf.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\sqaod\sqaod.vcxproj">
+      <Project>{0aeeda6a-f70a-4abc-addc-3fd4bf15255b}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.targets" />
   </ImportGroup>
 </Project>
