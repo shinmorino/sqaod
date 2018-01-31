@@ -1,10 +1,12 @@
-check_PROGRAMS=test
+check_PROGRAMS=test perf
 
 LDADD=
 LIBS=
 
 
 test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp
+perf_SOURCES=perf.cpp
+
 
 if CUDA_ENABLED
   test_SOURCES+=DeviceMathTest.cpp DeviceTest.cpp
