@@ -21,6 +21,9 @@ class DenseGraphBFSolver :
         dg_bf_solver.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
 
+    def set_solver_preference(self, tile_size) :
+        dg_bf_solver.set_solver_preference(self._ext, tile_size, self.dtype)
+        
     def get_optimize_dir(self) :
         return self._optimize
 
