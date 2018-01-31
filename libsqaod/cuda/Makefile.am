@@ -4,14 +4,13 @@ noinst_LTLIBRARIES=libcuda.la
 check_PROGRAMS=test
 
 libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cpp DeviceBFKernels.cu DeviceRandom.cpp DeviceRandomKernel.cu  # DeviceBipartiteGraphBatchSearch.cpp 
-AM_CPPFLAGS=-I/usr/local/cuda/include -I$(abs_top_srcdir)/eigen -I$(abs_top_srcdir)/cub  # FIXME: cofnigrue cuda path.
 
 # check
 test_SOURCES=test.cpp
 test_LDADD=libcuda.la $(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
-LIBS=-L/usr/local/cuda/lib64 -lcublas -lcudart
+LIBS=-L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand
 
-NVCC=/usr/local/cuda/bin/nvcc
+NVCC=@NVCC@
 
 
 .cu.o:

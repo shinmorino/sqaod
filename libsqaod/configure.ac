@@ -2,7 +2,7 @@
 AC_INIT(libsqaod, 0.0.dev0, shin.morino@gmail.com)    
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([config.h.in])
+AC_CONFIG_SRCDIR([configure.ac])
 
 LT_INIT([disable-static])
 
@@ -11,7 +11,7 @@ LT_INIT([disable-static])
 # automake complaining about lack of confdefs.h.in.
 # autoheader doesn't help
 #AC_CONFIG_HEADERS([config.h] [confdefs.h])
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([config/config.h])
 AC_CONFIG_MACRO_DIRS([m4])
 
 
@@ -20,14 +20,37 @@ AC_CONFIG_MACRO_DIRS([m4])
 # https://www.gnu.org/software/automake/manual/html_node/Usage-of-Conditionals.html
 
 AC_ARG_ENABLE([cuda],
-[  --enable-cuda    enable CUDA solvers],
+[  --enable-cuda    enable CUDA solvers. [[default=no]]],
 [case "${enableval}" in
   yes) cuda=true; cuda_prefix="/usr/local/cuda" ;;
   no)  cuda=false ;;
-  *) cuda_prefix=$enableval;;
+  *) cuda=true; cuda_prefix=$enableval;;
 esac],[cuda=false])
 AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
 
+AC_ARG_WITH([blas],
+[  --with-blas    use CPU blas.  [[default=yes]]],
+[case "${withval}" in
+  yes) blas=true ;;
+  *)  blas=false ;;
+esac],[blas=true])
+AM_CONDITIONAL([WITH_BLAS], [test x${blas} = xtrue])
+
+blasdef='#define SQAOD_WITH_BLAS' 
+if test x$blas = xfalse
+then
+  blasdef="/* ${blasdef} */"
+fi
+AC_SUBST([DEFINE_SQAOD_WITH_BLAS], ${blasdef})
+
+cudadef='#define SQAOD_CUDA_ENABLED' 
+if test x$cuda = xfalse
+then
+  cudadef="/* ${cudadef} */"
+fi
+AC_SUBST([DEFINE_SQAOD_CUDA_ENABLED], ${cudadef})
+AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
+AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
 AC_PROG_CC
 AC_PROG_CXX
 #if test x$prefix = xNONE ; then
@@ -38,18 +61,15 @@ AC_PROG_CXX
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
-
-#CFLAGS="-std=c++11 -O2 -Wall -ggdb"
-CFLAGS="-std=c++11 -Wall -ggdb -Wno-format-security"
-AM_COND_IF([CUDA_ENABLED],
-	[CFLAGS="$CFLAGS -I$cuda_prefix"])
-CXXFLAGS=$CFLAGS
-
-
+CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir}"
 AC_SUBST([CFLAGS], $CFLAGS)
-AC_SUBST([CXXFLAGS], $CFLAGS)
 
-AC_CONFIG_FILES([Makefile common/Makefile cpu/Makefile])
+CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/eigen"
+AM_COND_IF([CUDA_ENABLED],
+	[CXXFLAGS="$CXXFLAGS -I${cuda_prefix}/include -I\${abs_top_srcdir}/cub"])
+AC_SUBST([CXXFLAGS], $CXXFLAGS)
+
+AC_CONFIG_FILES([Makefile config/sqaod_config.h common/Makefile cpu/Makefile])
 AM_COND_IF([CUDA_ENABLED],
            [AC_CONFIG_FILES([cuda/Makefile])])
 AC_CONFIG_FILES([tests/Makefile])

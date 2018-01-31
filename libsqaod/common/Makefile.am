@@ -1,5 +1,7 @@
-
 noinst_LTLIBRARIES=libcommon.la
+libcommon_la_SOURCES=sqaod_config.h defines.cpp Matrix.cpp Common.cpp
 
-libcommon_la_SOURCES=defines.cpp Matrix.cpp Common.cpp
-AM_CPPFLAGS=-I$(abs_top_srcdir)/eigen
+defines.cpp: sqaod_config.h
+sqaod_config.h: $(top_srcdir)/config/sqaod_config.h
+	@if ! diff $@ $<  >/dev/null 2>&1 ; then cp $< $@ ; fi
+

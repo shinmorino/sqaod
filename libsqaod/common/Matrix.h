@@ -1,13 +1,7 @@
 #ifndef COMMON_MATRIX_H__
 #define COMMON_MATRIX_H__
 
-#define EIGEN_NO_CUDA 1
-#ifdef __CUDACC__
-#  undef __CUDACC__
-#endif
-#ifdef __CUDACC_VER__
-#  undef __CUDACC_VER__
-#endif
+#include <common/defines.h>
 
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 
@@ -16,13 +10,16 @@
 #  pragma warning(disable:4267)
 #endif
 
+#ifdef SQAOD_WITH_BLAS
+#  define EIGEN_USE_BLAS
+#endif
+
 #include <Eigen/Core>
 
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
-#include <common/defines.h>
 #include <common/Array.h>
 
 
