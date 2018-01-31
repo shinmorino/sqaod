@@ -77,7 +77,7 @@ def create_bits_sequence(vals, nbits) :
         iseq = 0
         for v in vals :
             for pos in range(nbits) :
-                x[iseq][pos] = np.int8(v >> pos & 1)
+                x[iseq][pos] = np.int8(v >> (nbits - 1 - pos) & 1)
             iseq += 1
         return x
     vals = np.int32(vals)
