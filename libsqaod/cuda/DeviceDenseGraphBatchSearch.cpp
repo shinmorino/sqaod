@@ -1,5 +1,4 @@
 #include "DeviceDenseGraphBatchSearch.h"
-#include "DeviceAlgorithm.h"
 #include "Device.h"
 
 using namespace sqaod_cuda;
