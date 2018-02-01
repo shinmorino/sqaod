@@ -96,6 +96,7 @@ void DeviceMathType<real>::sumBatched(DeviceVector *vec,
         dmat = &A;
     }
     else {
+        dmat = NULL; /* to supress warning with g++ */
         abort_("Invalid BatchOp.");
     }
     devAlloc_->allocateIfNull(vec, dmat->rows);

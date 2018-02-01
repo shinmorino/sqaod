@@ -1,6 +1,7 @@
 #include "Device.h"
 #include "DeviceStream.h"
 #include "cudafuncs.h"
+#include <algorithm>
 
 using namespace sqaod_cuda;
 

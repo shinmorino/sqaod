@@ -1,5 +1,6 @@
 #include "DeviceConstScalars.h"
 #include "DeviceCopy.h"
+#include <algorithm>
 
 using namespace sqaod_cuda;
 
