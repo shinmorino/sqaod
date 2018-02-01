@@ -33,7 +33,7 @@ void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *
     NpVector E(objE);
     NpVectorType<char> x(objX);
     /* do the native job */
-    sqd::DGFuncs<real>::calculate_E(E.vec.data, W, x.vec.cast<real>());
+    sqd::DGFuncs<real>::calculate_E(E.vec.data, W, sqd::cast<real>(x.vec));
 }
 
     
@@ -66,7 +66,7 @@ void internal_dense_graph_batch_calculate_E(PyObject *objE, PyObject *objW, PyOb
     NpVector E(objE); 
     const NpBitMatrix x(objX);
     /* do the native job */
-    sqd::DGFuncs<real>::calculate_E(&E, W, x.mat.cast<real>());
+    sqd::DGFuncs<real>::calculate_E(&E, W, sqd::cast<real>(x.mat));
 }
 
 extern "C"
@@ -135,7 +135,7 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     const NpBitVector q(objQ);
     /* do the native job */
-    sqd::DGFuncs<real>::calculate_E(&E, h, J, c, q.vec.cast<real>());
+    sqd::DGFuncs<real>::calculate_E(&E, h, J, c, sqd::cast<real>(q.vec));
 }
     
 
@@ -171,7 +171,7 @@ void internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
     NpConstScalar c(objC);
     const NpBitMatrix q(objQ);
     /* do the native job */
-    sqd::DGFuncs<real>::calculate_E(&E, h, J, c, q.mat.cast<real>());
+    sqd::DGFuncs<real>::calculate_E(&E, h, J, c, sqd::cast<real>(q.mat));
 }
 
 extern "C"
@@ -210,7 +210,7 @@ internal_bipartite_graph_calculate_E(PyObject *objE,
     const NpBitVector x0(objX0), x1(objX1);
     /* do the native job */
     sqd::BGFuncs<real>::calculate_E(&E, b0, b1, W,
-                                    x0.vec.cast<real>(), x1.vec.cast<real>());
+                                    sqd::cast<real>(x0.vec), sqd::cast<real>(x1.vec));
 }
     
 extern "C"
@@ -245,7 +245,7 @@ internal_bipartite_graph_batch_calculate_E(PyObject *objE,
     const NpMatrix W(objW);
     const NpBitMatrix x0(objX0), x1(objX1);
     sqd::BGFuncs<real>::calculate_E(&E, b0, b1, W,
-                                    x0.mat.cast<real>(), x1.mat.cast<real>());
+                                    sqd::cast<real>(x0.mat), sqd::cast<real>(x1.mat));
 }
     
 extern "C"
@@ -280,7 +280,7 @@ internal_bipartite_graph_batch_calculate_E_2d(PyObject *objE,
     const NpMatrix W(objW);
     const NpBitMatrix x0(objX0), x1(objX1);
     sqd::BGFuncs<real>::calculate_E_2d(&E, b0, b1, W,
-                                       x0.mat.cast<real>(), x1.mat.cast<real>());
+                                       sqd::cast<real>(x0.mat), sqd::cast<real>(x1.mat));
 }
     
 extern "C"
@@ -356,7 +356,7 @@ internal_bipartite_graph_calculate_E_from_qbits(PyObject *objE,
     const NpBitVector q0(objQ0), q1(objQ1);
     /* do the native job */
     sqd::BGFuncs<real>::calculate_E(E.vec.data, h0, h1, J, c,
-                                    q0.vec.cast<real>(), q1.vec.cast<real>());
+                                    sqd::cast<real>(q0.vec), sqd::cast<real>(q1.vec));
 }
     
 extern "C"
@@ -394,7 +394,7 @@ internal_bipartite_graph_batch_calculate_E_from_qbits(PyObject *objE,
     const NpBitMatrix q0(objQ0), q1(objQ1);
     /* do the native job */
     sqd::BGFuncs<real>::calculate_E(&E, h0, h1, J, c,
-                                    q0.mat.cast<real>(), q1.mat.cast<real>());
+                                    sqd::cast<real>(q0.mat), sqd::cast<real>(q1.mat));
 }
 
 extern "C"
