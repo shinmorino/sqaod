@@ -121,7 +121,7 @@ if __name__ == '__main__' :
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau
-
+        ann.fin_anneal()
         ann.calculate_E()
         E = ann.get_E()
         q = ann.get_q() 
