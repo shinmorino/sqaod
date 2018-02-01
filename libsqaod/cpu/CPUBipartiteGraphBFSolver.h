@@ -3,7 +3,7 @@
 #define CPU_BIPARTITEGRAPH_BF_SOLVER_H__
 
 #include <common/Common.h>
-
+#include <common/EigenBridge.h>
 
 namespace sqaod {
 

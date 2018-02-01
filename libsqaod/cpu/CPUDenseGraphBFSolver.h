@@ -3,6 +3,7 @@
 #define CPU_DENSEGRAPHANNEALER_H__
 
 #include <common/Common.h>
+#include <common/EigenBridge.h>
 
 namespace sqaod {
 

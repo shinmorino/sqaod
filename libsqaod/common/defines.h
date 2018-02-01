@@ -12,12 +12,6 @@
 
 namespace sqaod {
 
-typedef unsigned int SizeType;
-typedef int IdxType;
-
-typedef unsigned long long PackedBits;
-
-
 void __abort(const char *file, unsigned long line);
 void __abort(const char *file, unsigned long line, const char *format, ...) FORMATATTR(3, 4);
 

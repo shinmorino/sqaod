@@ -2,7 +2,6 @@
 #include "CUDAFormulas.h"
 #include "Device.h"
 #include <cmath>
-
 #include <float.h>
 #include <algorithm>
 #include <limits>
@@ -44,7 +43,7 @@ void CUDADenseGraphBFSolver<real>::setProblem(const Matrix &W, sq::OptimizeMetho
     W_ = W;
     om_ = om;
     if (om_ == sq::optMaximize)
-        W_.map().array() *= real(-1.);
+        W_ *= real(-1.);
 }
 
 template<class real>
@@ -83,7 +82,8 @@ void CUDADenseGraphBFSolver<real>::finSearch() {
     
     xList_.clear();
     E_.resize(nXMin);
-    E_.mapToRowVector().array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
+    if (om_ == sq::optMaximize)
+        E_ *= real(-1.);
     for (sqaod::IdxType idx = 0; idx < (sqaod::IdxType)nXMin; ++idx) {
         sq::Bits bits;
         unpackBits(&bits, h_packedXmin_[idx], N_);

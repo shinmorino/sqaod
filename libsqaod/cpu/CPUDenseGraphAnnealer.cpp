@@ -34,8 +34,8 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMetho
     h_.resize(1, N_);
     J_.resize(N_, N_);
 
-    Vector h(h_);
-    Matrix J(J_);
+    Vector h(mapFrom(h_));
+    Matrix J(mapFrom(J_));
     DGFuncs<real>::calculate_hJc(&h, &J, &c_, W);
     om_ = om;
     if (om_ == sqd::optMaximize) {
@@ -68,15 +68,15 @@ const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
-    EigenRowVector ex = x.mapToRowVector().cast<real>();
+    EigenRowVector ex = mapToRowVector(cast<real>(x));
     matQ_.rowwise() = (ex.array() * 2 - 1).matrix();
     annState_ |= annQSet;
 }
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
-    h->mapToRowVector() = h_;
-    J->map() = J_;
+    mapToRowVector(*h) = h_;
+    mapTo(*J) = J_;
     *c = c_;
 }
 
@@ -115,9 +115,9 @@ void sqd::CPUDenseGraphAnnealer<real>::finAnneal() {
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::calculate_E() {
-    DGFuncs<real>::calculate_E(&E_, h_, J_, c_, matQ_);
+    DGFuncs<real>::calculate_E(&E_, mapFrom(h_), mapFrom(J_), c_, mapFrom(matQ_));
     if (om_ == sqd::optMaximize)
-        E_.mapToRowVector() *= real(-1.);
+        mapToRowVector(E_) *= real(-1.);
 }
 
 
@@ -127,10 +127,9 @@ void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
     for (int idx = 0; idx < IdxType(m_); ++idx) {
-        EigenBitMatrix eq = matQ_.transpose().col(idx).template cast<char>();
-        bitsQ_.pushBack(Bits(eq));
-        Bits x = Bits((eq.array() + 1) / 2);
-        bitsX_.pushBack(x);
+        Bits q = extractRow<char>(matQ_, idx);
+        bitsQ_.pushBack(q);
+        bitsX_.pushBack(x_from_q(q));
     }
 }
 

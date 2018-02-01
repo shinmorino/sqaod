@@ -5,6 +5,7 @@
 #include <string.h>
 #include <utility>
 #include <common/defines.h>
+#include <common/types.h>
 
 
 namespace sqaod {

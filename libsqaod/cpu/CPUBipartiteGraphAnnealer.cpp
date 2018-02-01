@@ -40,8 +40,8 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
     h0_.resize(N0_);
     h1_.resize(N1_);
     J_.resize(N1_, N0_);
-    Vector h0(h0_), h1(h1_);
-    Matrix J(J_);
+    Vector h0(mapFrom(h0_)), h1(mapFrom(h1_));
+    Matrix J(mapFrom(J_));
     BGFuncs<real>::calculate_hJc(&h0, &h1, &J, &c_, b0, b1, W);
     
     om_ = om;
@@ -70,8 +70,8 @@ const BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
-    EigenRowVector ex0 = x0.mapToRowVector().cast<real>();
-    EigenRowVector ex1 = x0.mapToRowVector().cast<real>();
+    EigenRowVector ex0 = mapToRowVector(x0).cast<real>();
+    EigenRowVector ex1 = mapToRowVector(x1).cast<real>();
     matQ0_.rowwise() = (ex0.array() * 2 - 1).matrix();
     matQ1_.rowwise() = (ex1.array() * 2 - 1).matrix();
     annState_ |= annQSet;
@@ -87,9 +87,9 @@ const VectorType<real> &CPUBipartiteGraphAnnealer<real>::get_E() const {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::get_hJc(Vector *h0, Vector *h1,
                                               Matrix *J, real *c) const {
-    h0->mapToRowVector() = h0_;
-    h1->mapToRowVector() = h1_;
-    J->map() = J_;
+    mapToRowVector(*h0) = h0_;
+    mapToRowVector(*h1) = h1_;
+    mapTo(*J) = J_;
     *c = c_;
 }
 
@@ -112,9 +112,10 @@ void CPUBipartiteGraphAnnealer<real>::randomize_q() {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::calculate_E() {
-    BGFuncs<real>::calculate_E(&E_, h0_, h1_, J_, c_, matQ0_, matQ1_);
+    BGFuncs<real>::calculate_E(&E_, mapFrom(h0_), mapFrom(h1_), mapFrom(J_), c_,
+                               mapFrom(matQ0_), mapFrom(matQ1_));
     if (om_ == optMaximize)
-        E_.mapToRowVector() *= real(-1.);
+        mapToRowVector(E_) *= real(-1.);
 }
 
 template<class real>
@@ -174,11 +175,10 @@ void CPUBipartiteGraphAnnealer<real>::syncBits() {
     bitsPairQ_.clear();
     Bits x0, x1;
     for (int idx = 0; idx < IdxType(m_); ++idx) {
-        EigenBitMatrix eq0 = matQ0_.transpose().col(idx).template cast<char>();
-        EigenBitMatrix eq1 = matQ1_.transpose().col(idx).template cast<char>();
-        bitsPairQ_.pushBack(BitsPairArray::ValueType(Bits(eq0), Bits(eq1)));
-        Bits x0 = Bits((eq0.array() + 1) / 2);
-        Bits x1 = Bits((eq1.array() + 1) / 2);
+        Bits q0 = extractRow<char>(matQ0_, idx);
+        Bits q1 = extractRow<char>(matQ1_, idx);
+        bitsPairQ_.pushBack(BitsPairArray::ValueType(q0, q1));
+        Bits x0 = x_from_q(q0), x1 = x_from_q(q1);
         bitsPairX_.pushBack(BitsPairArray::ValueType(x0, x1));
     }
 }

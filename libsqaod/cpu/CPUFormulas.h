@@ -2,6 +2,7 @@
 #define CPUFORMULAS_H__
 
 #include <common/Common.h>
+#include <common/EigenBridge.h>
 
 namespace sqaod {
     
@@ -31,6 +32,7 @@ struct DGFuncs {
     void calculate_E(Vector *E,
                      const Vector &h, const Matrix &J, real c, const Matrix &q);
     
+
     static
     void batchSearch(real *E, PackedBitsArray *xList,
                      const Matrix &W, PackedBits xBegin, PackedBits xEnd);

@@ -2,75 +2,18 @@
 #define COMMON_MATRIX_H__
 
 #include <common/defines.h>
-
-#define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
-
-#ifdef _MSC_VER
-#  pragma warning(push)
-#  pragma warning(disable:4267)
-#endif
-
-#ifdef SQAOD_WITH_BLAS
-#  define EIGEN_USE_BLAS
-#endif
-
-#include <Eigen/Core>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
+#include <common/types.h>
+#include <common/UniformOp.h>
 #include <common/Array.h>
-
 
 namespace sqaod {
 
-template<class real>
-using EigenMatrixType = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-template<class real>
-using EigenRowVectorType = Eigen::Matrix<real, 1, Eigen::Dynamic>;
-template<class real>
-using EigenColumnVectorType = Eigen::Matrix<real, Eigen::Dynamic, 1>;
-template<class real>
-using EigenMappedMatrixType = Eigen::Map<EigenMatrixType<real>>;
-template<class real>
-using EigenMappedRowVectorType = Eigen::Map<EigenRowVectorType<real>>;
-template<class real>
-using EigenMappedColumnVectorType = Eigen::Map<EigenColumnVectorType<real>>;
-
-typedef EigenMatrixType<char> EigenBitMatrix;
-    
 /* light-weight matrix classes for C++ API */
-    
-struct Dim {
-    Dim() {
-        rows = cols == (SizeType)-1;
-    }
-    Dim(SizeType _rows, SizeType _cols) {
-        rows = _rows;
-        cols = _cols;
-    }
-
-    Dim transpose() const {
-        return Dim(cols, rows);
-    }
-
-    SizeType rows, cols;
-
-    friend bool operator==(const Dim &lhs, const Dim &rhs) {
-        return (lhs.rows == rhs.rows) && (lhs.rows == rhs.rows);
-    }
-    friend bool operator!=(const Dim &lhs, const Dim &rhs) {
-        return !(lhs == rhs);
-    }
-    
-};
 
 template<class V>
 struct MatrixType {
     typedef V ValueType;
-    typedef EigenMatrixType<V> EigenMatrix;
-    typedef EigenMappedMatrixType<V> EigenMappedMatrix;
+    typedef MatrixType<V> Matrix;
     
     MatrixType() {
         resetState();
@@ -86,14 +29,6 @@ struct MatrixType {
         allocate(dim.rows, dim.cols);
     }
 
-    /* mapping */
-    MatrixType(EigenMatrix &matrix) {
-        rows = matrix.rows();
-        cols = matrix.cols();
-        data = matrix.data();
-        mapped = true;
-    }
-
     MatrixType(const MatrixType<V> &mat) {
         resetState();
         copyFrom(mat);
@@ -102,6 +37,13 @@ struct MatrixType {
     MatrixType(MatrixType<V> &&mat) noexcept {
         resetState();
         moveFrom(static_cast<MatrixType<V>&>(mat));
+    }
+
+    MatrixType(V *_data, SizeType _rows, SizeType _cols) {
+        data = _data;
+        rows = _rows;
+        cols = _cols;
+        mapped = true;
     }
     
     virtual ~MatrixType() {
@@ -127,7 +69,7 @@ struct MatrixType {
         mapped = false;
     }
     
-    void set(V *_data, SizeType _rows, SizeType _cols) {
+    void map(V *_data, SizeType _rows, SizeType _cols) {
         if (!mapped)
             free();
         mapped = true;
@@ -151,20 +93,15 @@ struct MatrixType {
     void moveFrom(MatrixType<V> &src) {
         if (this == &src)
             return;
-        if (src.mapped) {
-            copyFrom(src);
-            return;
-        }
         if (data != nullptr)
             free();
         /* updating this */
         rows = src.rows;
         cols = src.cols;
         data = src.data;
-        mapped = false;
+        mapped = src.mapped;
         /* clean up src */
-        src.rows = src.cols = -1;
-        src.data = nullptr;
+        src.resetState();
     }
     
     void allocate(SizeType _rows, SizeType _cols) {
@@ -206,21 +143,6 @@ struct MatrixType {
         return data[r * cols + c];
     }
     
-    EigenMappedMatrix map() {
-        return EigenMappedMatrix(data, rows, cols);
-    }
-
-    const EigenMappedMatrix map() const {
-        return EigenMappedMatrix(data, rows, cols);
-    }
-
-    template<class newV>
-    sqaod::MatrixType<newV> cast() const {
-        MatrixType<newV> newMat(dim());
-        newMat.map() = map().cast<newV>();
-        return newMat;
-    }
-
     SizeType rows, cols;
     V *data;
     bool mapped;
@@ -245,17 +167,26 @@ struct MatrixType {
         return ones(dim.rows, dim.cols);
     }
 };
-    
+
+/* Matrix operator */
+template<class V>
+MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v) {
+    multiply(mat.data, mat.rows * mat.cols, v);
+    return mat;
+}
+
+template<class newV, class V>
+sqaod::MatrixType<newV> cast(const MatrixType<V> &mat) {
+    MatrixType<newV> newMat(mat.dim());
+    cast(newMat.data, mat.data, mat.rows * mat.cols);
+    return newMat;
+}
+
+
 
 template<class V>
 struct VectorType {
     typedef V ValueType;
-    typedef EigenMatrixType<V> EigenMatrix;
-    typedef EigenRowVectorType<V> EigenRowVector;
-    typedef EigenColumnVectorType<V> EigenColumnVector;
-    typedef EigenMappedMatrixType<V> EigenMappedMatrix;
-    typedef EigenMappedRowVectorType<V> EigenMappedRowVector;
-    typedef EigenMappedColumnVectorType<V> EigenMappedColumnVector;
 
     VectorType() {
         resetState();
@@ -264,26 +195,6 @@ struct VectorType {
     VectorType(SizeType _size) {
         resetState();
         allocate(_size);
-    }
-
-    VectorType(EigenMatrix &matrix) {
-        assert((matrix.rows() == 1) || (matrix.cols() == 1));
-        size = std::max(matrix.rows(), matrix.cols());
-        data = matrix.data();
-        mapped = true;
-    }
-    
-    VectorType(const EigenMatrix &matrix) {
-        assert((matrix.rows() == 1) || (matrix.cols() == 1));
-        resetState();
-        allocate(std::max(matrix.rows(), matrix.cols()));
-        memcpy(data, matrix.data(), sizeof(V) * size);
-    }
-    
-    VectorType(EigenRowVector &vec) {
-        size = vec.cols();
-        data = vec.data();
-        mapped = true;
     }
 
     VectorType(const VectorType<V> &vec) {
@@ -296,6 +207,12 @@ struct VectorType {
         moveFrom(static_cast<VectorType<V>&>(vec));
     }
     
+    VectorType(V *_data, SizeType _size) {
+        data = _data;
+        size = _size;
+        mapped = true;
+    }
+
     virtual ~VectorType() {
         if (!mapped)
             free();
@@ -393,30 +310,6 @@ struct VectorType {
     bool operator!=(const VectorType<V> &rhs) const {
         return !operator==(rhs);
     }
-
-    EigenMappedRowVector mapToRowVector() {
-        return EigenMappedRowVector(data, 1, size);
-    }
-
-    const EigenMappedRowVector mapToRowVector() const {
-        return EigenMappedRowVector(data, 1, size);
-    }
-    
-    EigenMappedColumnVector mapToColumnVector() {
-        return EigenMappedColumnVector(data, size, 1);
-    }
-
-    const EigenMappedColumnVector mapToColumnVector() const {
-        return EigenMappedColumnVector(data, size, 1);
-    }
-
-    template<class newV>
-    sqaod::VectorType<newV> cast() const {
-        sqaod::VectorType<newV> newVec(size);
-        // sqaod::EigenMappedRowVectorType<real> ev = vec.mapToRowVector();
-        newVec.mapToRowVector() = mapToRowVector().cast<newV>();;
-        return newVec;
-    }
     
     SizeType size;
     V *data;
@@ -430,6 +323,26 @@ struct VectorType {
     VectorType<V> ones(SizeType size);
 
 };
+
+
+
+/* Vector operator */
+
+template<class V>
+VectorType<V> &operator*=(VectorType<V> &vec, const V &v) {
+    multiply(vec.data, vec.size, v);
+    return vec;
+}
+
+/* cast */
+template<class newV, class V>
+sqaod::VectorType<newV> cast(const VectorType<V> &vec) {
+    VectorType<newV> newVec(vec.size);
+    cast(newVec.data, vec.data, vec.size);
+    return newVec;
+}
+
+
 
 typedef VectorType<char> Bits;
 typedef MatrixType<char> BitMatrix;

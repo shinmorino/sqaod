@@ -14,8 +14,8 @@ void DGFuncs<real>::calculate_E(real *E,
     validateScalar(E, __func__);
     quboShapeCheck(W, x, __func__);
     
-    const EigenMappedMatrix eW(W.map());
-    EigenMappedColumnVector ex(x.mapToColumnVector()); 
+    const EigenMappedMatrix eW(mapTo(W));
+    EigenMappedColumnVector ex(mapToColumnVector(x)); 
     EigenMappedMatrix eE(E, 1, 1);
     eE = ex.transpose() * (eW * ex);
 }
@@ -26,10 +26,10 @@ void DGFuncs<real>::calculate_E(Vector *E, const Matrix &W, const Matrix &x) {
     prepVector(E, x.rows, __func__);
     quboShapeCheck(W, x, __func__);
 
-    EigenMappedMatrix ex(x.map());
-    EigenMatrix eWx = W.map() * ex.transpose();
+    EigenMappedMatrix ex(mapTo(x));
+    EigenMatrix eWx = mapTo(W) * ex.transpose();
     EigenMatrix prod = eWx.transpose().cwiseProduct(ex);
-    EigenMappedColumnVector eE(E->mapToColumnVector());
+    EigenMappedColumnVector eE(mapToColumnVector(*E));
     eE = prod.rowwise().sum(); 
 }
 
@@ -41,9 +41,9 @@ void DGFuncs<real>::calculate_hJc(Vector *h, Matrix *J, real *c, const Matrix &W
     prepMatrix(J, W.dim(), __func__);
     validateScalar(c, __func__);
 
-    const EigenMappedMatrix eW = W.map();
-    EigenMappedMatrix eJ(J->map());
-    EigenMappedRowVector eh(h->mapToRowVector());
+    const EigenMappedMatrix eW(mapTo(W));
+    EigenMappedMatrix eJ(mapTo(*J));
+    EigenMappedRowVector eh(mapToRowVector(*h));
     
     eh = real(0.5) * eW.colwise().sum();
 
@@ -62,9 +62,9 @@ void DGFuncs<real>::calculate_E(real *E,
     validateScalar(E, __func__);
     isingModelShapeCheck(h, J, c, q, __func__);
 
-    const EigenMappedRowVector eh(h.mapToRowVector());
-    const EigenMappedMatrix eJ(J.map());
-    const EigenMappedColumnVector eq(q.mapToColumnVector());
+    const EigenMappedRowVector eh(mapToRowVector(h));
+    const EigenMappedMatrix eJ(mapTo(J));
+    const EigenMappedColumnVector eq(mapToColumnVector(q));
     *E = c + (eh * eq + eq.transpose() * (eJ * eq))(0, 0);
 }
 
@@ -74,9 +74,9 @@ void DGFuncs<real>::calculate_E(Vector *E,
     isingModelShapeCheck(h, J, c, q, __func__);
     prepVector(E, q.rows, __func__);
     
-    const EigenMappedRowVector eh(h.mapToRowVector());
-    const EigenMappedMatrix eJ(J.map()), eq(q.map());
-    EigenMappedColumnVector eE(E->mapToColumnVector());
+    const EigenMappedRowVector eh(mapToRowVector(h));
+    const EigenMappedMatrix eJ(mapTo(J)), eq(mapTo(q));
+    EigenMappedColumnVector eE(mapToColumnVector(*E));
     
     EigenMatrix tmp = eJ * eq.transpose();
     /* FIXME: further optimization might be required. */
@@ -91,7 +91,7 @@ void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList,
                                 const Matrix &W, PackedBits xBegin, PackedBits xEnd) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric, %s.");
 
-    const EigenMappedMatrix eW(W.map());
+    const EigenMappedMatrix eW(mapTo(W));
     int nBatch = int(xEnd - xBegin);
     int N = eW.rows();
 
@@ -130,9 +130,9 @@ void BGFuncs<real>::calculate_E(real *E,
     quboShapeCheck(b0, b1, W, x0, x1, __func__);
     validateScalar(E, __func__);
     
-    const EigenMappedRowVector eb0(b0.mapToRowVector()), eb1(b1.mapToRowVector());
-    const EigenMappedMatrix eW(W.map());
-    const EigenMappedColumnVector ex0(x0.mapToColumnVector()), ex1(x1.mapToColumnVector());
+    const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
+    const EigenMappedMatrix eW(mapTo(W));
+    const EigenMappedColumnVector ex0(mapToColumnVector(x0)), ex1(mapToColumnVector(x1));
     EigenMatrix prod = (eW * ex0);
     *E = (eb0 * ex0 + eb1 * ex1 + ex1.transpose() * (eW * ex0))(0, 0);
 }
@@ -145,9 +145,9 @@ void BGFuncs<real>::calculate_E(Vector *E,
     prepVector(E, x1.rows, __func__);
 
     throwErrorIf(E == NULL, "E is NULL.");
-    EigenMappedRowVector eE(E->mapToRowVector());
-    const EigenMappedRowVector eb0(b0.mapToRowVector()), eb1(b1.mapToRowVector());
-    const EigenMappedMatrix eW(W.map()), ex0(x0.map()), ex1(x1.map());
+    EigenMappedRowVector eE(mapToRowVector(*E));
+    const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
+    const EigenMappedMatrix eW(mapTo(W)), ex0(mapTo(x0)), ex1(mapTo(x1));
 
     EigenMatrix tmp = eW * ex0.transpose();
     /* FIXME: further optimization might be required. */
@@ -163,9 +163,9 @@ void BGFuncs<real>::calculate_E_2d(Matrix *E,
     quboShapeCheck_2d(b0, b1, W, x0, x1, __func__);
     prepMatrix(E, Dim(x1.rows, x0.rows), __func__);
     
-    EigenMappedMatrix eE(E->map());
-    const EigenMappedRowVector eb0(b0.mapToRowVector()), eb1(b1.mapToRowVector());
-    const EigenMappedMatrix eW(W.map()), ex0(x0.map()), ex1(x1.map());
+    EigenMappedMatrix eE(mapTo(*E));
+    const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
+    const EigenMappedMatrix eW(mapTo(W)), ex0(mapTo(x0)), ex1(mapTo(x1));
 
     EigenMatrix ebx0 = eb0 * ex0.transpose();
     EigenMatrix ebx1 = (eb1 * ex1.transpose()).transpose(); /* FIXME: reduce transpose */
@@ -187,10 +187,10 @@ void BGFuncs<real>::calculate_hJc(Vector *h0, Vector *h1, Matrix *J, real *c,
     validateScalar(c, __func__);
     quboShapeCheck(*h0, *h1, *J, __func__);
 
-    const EigenMappedRowVector eb0(b0.mapToRowVector()), eb1(b1.mapToRowVector());
-    const EigenMappedMatrix eW(W.map());
-    EigenMappedRowVector eh0(h0->mapToRowVector()), eh1(h1->mapToRowVector());
-    EigenMappedMatrix eJ(J->map());
+    const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
+    const EigenMappedMatrix eW(mapTo(W));
+    EigenMappedRowVector eh0(mapToRowVector(*h0)), eh1(mapToRowVector(*h1));
+    EigenMappedMatrix eJ(mapTo(*J));
     // calculate_hJc(&eh0, &eh1, &eJ, c, eb0, eb1, W);
     
     eJ = real(0.25) * eW;
@@ -207,9 +207,9 @@ void BGFuncs<real>::calculate_E(real *E,
     isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
     validateScalar(E, __func__);
     
-    const EigenMappedRowVector eh0(h0.mapToRowVector()), eh1(h1.mapToRowVector());
-    const EigenMappedMatrix eJ(J.map());
-    const EigenMappedColumnVector eq0(q0.mapToColumnVector()), eq1(q1.mapToColumnVector());
+    const EigenMappedRowVector eh0(mapToRowVector(h0)), eh1(mapToRowVector(h1));
+    const EigenMappedMatrix eJ(mapTo(J));
+    const EigenMappedColumnVector eq0(mapToColumnVector(q0)), eq1(mapToColumnVector(q1));
     *E = (eh0 * eq0 + eh1 * eq1 + eq1.transpose() * (eJ * eq0))(0, 0) + c;
 }
 
@@ -221,10 +221,10 @@ void BGFuncs<real>::calculate_E(Vector *E,
     isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
     prepVector(E, q0.rows, __func__);
 
-    const EigenMappedRowVector eh0(h0.mapToRowVector()), eh1(h1.mapToRowVector());
-    const EigenMappedMatrix eJ(J.map());
-    const EigenMappedMatrix eq0(q0.map()), eq1(q1.map());
-    EigenMappedRowVector eE(E->mapToRowVector());
+    const EigenMappedRowVector eh0(mapToRowVector(h0)), eh1(mapToRowVector(h1));
+    const EigenMappedMatrix eJ(mapTo(J));
+    const EigenMappedMatrix eq0(mapTo(q0)), eq1(mapTo(q1));
+    EigenMappedRowVector eE(mapToRowVector(*E));
 
     EigenMatrix tmp = eJ * eq0.transpose();
     /* FIXME: further optimization might be required. */
@@ -241,7 +241,8 @@ void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
     PackedBits xBegin0, PackedBits xEnd0,
     PackedBits xBegin1, PackedBits xEnd1) {
 
-    batchSearch(E, xPairs, b0.mapToRowVector(), b1.mapToRowVector(), W.map(), xBegin0, xEnd0, xBegin1, xEnd1);
+    batchSearch(E, xPairs, mapToRowVector(b0), mapToRowVector(b1), mapTo(W),
+                xBegin0, xEnd0, xBegin1, xEnd1);
 }
 
 /* Eigen versions */

@@ -1,6 +1,5 @@
 /* -*- c++ -*- */
-#ifndef SQAOD_CUDA_DENSE_GRAPH_BF_SOLVER_H__
-#define SQAOD_CUDA_DENSE_GRAPH_BF_SOLVER_H__
+#pragma once
 
 #include <common/Common.h>
 #include <cuda/DeviceMatrix.h>
@@ -68,5 +67,3 @@ private:
 };
 
 }
-
-#endif

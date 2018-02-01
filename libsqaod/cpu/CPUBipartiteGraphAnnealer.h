@@ -3,8 +3,8 @@
 #define CPU_BIPARTITEGRAPH_ANNEALER_H__
 
 #include <common/Common.h>
+#include <common/EigenBridge.h>
 #include <cpu/CPURandom.h>
-
 
 namespace sqaod {
 

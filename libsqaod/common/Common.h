@@ -29,6 +29,21 @@ void unpackBits(Bits *unpacked, const PackedBits packed, int N);
 template<class real>
 bool isSymmetric(const MatrixType<real> &W);
 
+template<class V> inline
+MatrixType<char> x_from_q(const MatrixType<V> &q) {
+    MatrixType<char> x(q.size);
+    x_from_q(x.data, q.data, q.rows * q.cols);
+    return x;
+}
+
+template<class V> inline
+VectorType<char> x_from_q(const VectorType<V> &q) {
+    VectorType<char> x(q.size);
+    x_from_q(x.data, q.data, x.size);
+    return x;
+}
+
+
 }
 
 #endif

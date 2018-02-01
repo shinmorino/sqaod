@@ -25,7 +25,7 @@ template<class real>
 void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
-    W_ = W.map();
+    W_ = mapTo(W);
     om_ = om;
     if (om_ == optMaximize)
         W_ *= real(-1.);
@@ -64,7 +64,7 @@ void CPUDenseGraphBFSolver<real>::finSearch() {
         xList_.pushBack(bits);
     }
     E_.resize((SizeType)packedXList_.size());
-    E_.mapToRowVector().array() = (om_ == optMaximize) ? - minE_ : minE_;
+    mapToRowVector(E_).array() = (om_ == optMaximize) ? - minE_ : minE_;
 }
 
 
@@ -72,7 +72,7 @@ template<class real>
 void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
     iBegin = std::min(std::max(0ULL, iBegin), xMax_);
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
-    DGFuncs<real>::batchSearch(&minE_, &packedXList_, W_, iBegin, iEnd);
+    DGFuncs<real>::batchSearch(&minE_, &packedXList_, mapFrom(W_), iBegin, iEnd);
     /* FIXME: add max limits of # min vectors. */
 }
 

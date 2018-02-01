@@ -29,9 +29,9 @@ void CPUBipartiteGraphBFSolver<real>::setProblem(const Vector &b0, const Vector 
                                                  const Matrix &W, OptimizeMethod om) {
     N0_ = b0.size;
     N1_ = b1.size;
-    b0_ = b0.mapToRowVector();
-    b1_ = b1.mapToRowVector();
-    W_ = W.map();
+    b0_ = mapToRowVector(b0);
+    b1_ = mapToRowVector(b1);
+    W_ = mapTo(W);
     om_ = om;
     if (om_ == optMaximize) {
         W_ *= real(-1.);
@@ -76,7 +76,7 @@ void CPUBipartiteGraphBFSolver<real>::finSearch() {
     }
     real tmpE = (om_ == optMaximize) ? -minE_ : minE_;
     E_.resize((SizeType)xPackedPairs_.size());
-    E_.mapToRowVector().array() = tmpE;
+    mapToRowVector(E_).array() = tmpE;
 }
 
 template<class real>
