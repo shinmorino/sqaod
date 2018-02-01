@@ -8,6 +8,7 @@
 #include <numpy/arrayscalars.h>
 #include <common/Matrix.h>
 #include <common/Common.h>
+#include <algorithm>
 
 
 template<class real>
@@ -17,7 +18,7 @@ struct NpMatrixType {
         PyArrayObject *arr = (PyArrayObject*)pyObj;
         real *data = (real*)PyArray_DATA(arr);
         assert(PyArray_NDIM(arr) == 2);
-        mat.set(data, PyArray_SHAPE(arr)[0], PyArray_SHAPE(arr)[1]);
+        mat.map(data, PyArray_SHAPE(arr)[0], PyArray_SHAPE(arr)[1]);
     }
 
     void allocate(int nRows, int nCols) {
