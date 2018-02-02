@@ -17,6 +17,9 @@ Device::~Device() {
 }
 
 void Device::initialize(int devNo){
+    if (devNo_ != -1) /* already initialized */
+        throwErrorIf(devNo_ != devNo, "Trying to initialize Device that is already initialized.");
+
     devNo_ = devNo;
     throwOnError(cudaSetDevice(devNo));
     memStore_.initialize();
