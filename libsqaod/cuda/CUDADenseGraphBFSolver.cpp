@@ -82,6 +82,7 @@ void CUDADenseGraphBFSolver<real>::finSearch() {
     
     xList_.clear();
     E_.resize(nXMin);
+    E_ = Emin_;
     if (om_ == sq::optMaximize)
         E_ *= real(-1.);
     for (sqaod::IdxType idx = 0; idx < (sqaod::IdxType)nXMin; ++idx) {
