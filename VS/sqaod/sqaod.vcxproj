@@ -14,8 +14,10 @@
     <ClInclude Include="..\..\libsqaod\common\Array.h" />
     <ClInclude Include="..\..\libsqaod\common\Common.h" />
     <ClInclude Include="..\..\libsqaod\common\defines.h" />
+    <ClInclude Include="..\..\libsqaod\common\EigenBridge.h" />
     <ClInclude Include="..\..\libsqaod\common\Matrix.h" />
     <ClInclude Include="..\..\libsqaod\common\undef.h" />
+    <ClInclude Include="..\..\libsqaod\common\UniformOp.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.h" />
@@ -37,8 +39,8 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceMemoryStore.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceObject.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceObjectAllocator.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.cuh" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.h" />
-    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandomKernel.cuh" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceStream.h" />
     <ClInclude Include="..\..\libsqaod\cuda\HostObjectAllocator.h" />
   </ItemGroup>
@@ -46,6 +48,7 @@
     <ClCompile Include="..\..\libsqaod\common\Common.cpp" />
     <ClCompile Include="..\..\libsqaod\common\defines.cpp" />
     <ClCompile Include="..\..\libsqaod\common\Matrix.cpp" />
+    <ClCompile Include="..\..\libsqaod\common\UniformOp.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.cpp" />
@@ -58,18 +61,17 @@
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceConstScalars.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceCopy.cpp" />
-    <ClCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceMath.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceMemoryStore.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceObjectAllocator.cpp" />
-    <ClCompile Include="..\..\libsqaod\cuda\DeviceRandom.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceStream.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceBFKernels.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu" />
-    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandomKernel.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0AEEDA6A-F70A-4ABC-ADDC-3FD4BF15255B}</ProjectGuid>

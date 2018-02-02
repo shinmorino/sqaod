@@ -87,9 +87,6 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.h">
       <Filter>cuda</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandomKernel.cuh">
-      <Filter>cuda</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.h">
       <Filter>cuda</Filter>
     </ClInclude>
@@ -101,6 +98,15 @@
     </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\DeviceBFKernels.h">
       <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.cuh">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\UniformOp.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\EigenBridge.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -158,27 +164,27 @@
     <ClCompile Include="..\..\libsqaod\cuda\DeviceConstScalars.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libsqaod\cuda\DeviceRandom.cpp">
-      <Filter>cuda</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.cpp">
-      <Filter>cuda</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp">
       <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\UniformOp.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandomKernel.cu">
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBFKernels.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBFKernels.cu">
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
   </ItemGroup>
