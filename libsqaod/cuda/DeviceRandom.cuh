@@ -1,27 +1,6 @@
 #pragma once
 
-#include <common/defines.h>
 #include <cuda_runtime.h>
-#include <curand_mtgp32.h>
-
-namespace sqaod_cuda {
-
-    
-enum {
-    randGenSize = CURAND_NUM_MTGP32_PARAMS * THREAD_NUM
-};
-
-
-void deviceRandomMakeKernelState(curandStateMtgp32_t *d_randStates_,
-                                 mtgp32_kernel_params_t *kernelParams,
-                                 unsigned long long seed, cudaStream_t stream);
-
-void deviceGenRand(int *d_buffer, int begin, int end, int nToGenerate, int bufSize,
-                   curandStateMtgp32_t *d_randStates, cudaStream_t stream);
-
-
-
-}
 
 
 namespace {

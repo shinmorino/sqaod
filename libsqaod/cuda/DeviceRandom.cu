@@ -1,22 +1,26 @@
 #include "DeviceRandom.h"
-#include "DeviceRandomKernel.cuh"
 #include "cudafuncs.h"
-
+#include <curand_mtgp32_host.h>
+#include <curand_mtgp32_kernel.h>
 
 
 /* FIXME: use multiple states utilize more threads.
  *         use memory store */
 
 using namespace sqaod_cuda;
-
-static const sqaod::SizeType mega = 1024 * 1024;
+namespace sq = sqaod;
     
+enum {
+    randGenSize = CURAND_NUM_MTGP32_PARAMS * THREAD_NUM
+};
+
+
 DeviceRandom::DeviceRandom(Device &device, DeviceStream *devStream) {
     assignDevice(device, devStream);
 }
 
 DeviceRandom::DeviceRandom() {
-    requiredSize_ = -1;
+    requiredSize_ = (sq::SizeType)-1;
     d_buffer_ = NULL;
     d_randStates_ = NULL;
     d_kernelParams_ = NULL;
@@ -58,22 +62,41 @@ void DeviceRandom::deallocate() {
 void DeviceRandom::seed(unsigned long long seed) {
     if (d_buffer_ != NULL)
         deallocate();
-    d_buffer_ = (int*)devAlloc_->allocate(sizeof(int) * internalBufSize_);
-    d_randStates_ = (curandStateMtgp32_t*)devAlloc_->allocate(sizeof(curandStateMtgp32_t) * CURAND_NUM_MTGP32_PARAMS);
-    d_kernelParams_ = (mtgp32_kernel_params_t*)devAlloc_->allocate(sizeof(mtgp32_kernel_params_t) * CURAND_NUM_MTGP32_PARAMS);
-    deviceRandomMakeKernelState(d_randStates_, d_kernelParams_, seed, stream_);
+    devAlloc_->allocate(&d_buffer_, internalBufSize_);
+    devAlloc_->allocate(&d_randStates_, CURAND_NUM_MTGP32_PARAMS);
+    devAlloc_->allocate(&d_kernelParams_, CURAND_NUM_MTGP32_PARAMS);
+    /* synchronous */
+    throwOnError(curandMakeMTGP32KernelState(
+                         d_randStates_, MTGPDC_PARAM_TABLE,
+                         d_kernelParams_, CURAND_NUM_MTGP32_PARAMS, seed));
 }
 
 sqaod::SizeType DeviceRandom::getNRands() const {
     return (end_ - begin_ + internalBufSize_) % internalBufSize_;
 }
-    
+
+
+__global__
+static void genRandKernel(int *d_buffer, int offset, int nNums, int bufLen,
+                          curandStateMtgp32_t *d_state) {
+    /* bufLen must be 2^n */
+    int gid = blockDim.x * blockIdx.x + threadIdx.x;
+    offset = (offset + gid) % bufLen;
+    for (int idx = 0; idx < nNums; idx += randGenSize) {
+        int r = curand(&d_state[blockIdx.x]);
+        d_buffer[offset] = r;
+        offset = (offset + randGenSize) % bufLen;
+    }
+}
+
 
 void DeviceRandom::generate() {
     int nToGenerate = requiredSize_ - getNRands();
     nToGenerate = roundUp(nToGenerate, (int)randGenSize);
     if (0 <= nToGenerate) {
-        deviceGenRand(d_buffer_, begin_, end_, nToGenerate, internalBufSize_, d_randStates_, stream_);
+        genRandKernel<<<CURAND_NUM_MTGP32_PARAMS, THREAD_NUM, 0, stream_>>>
+                (d_buffer_, end_, nToGenerate, internalBufSize_, d_randStates_);
+        DEBUG_SYNC;
         end_ = (end_ + nToGenerate) % internalBufSize_;
     }
 }

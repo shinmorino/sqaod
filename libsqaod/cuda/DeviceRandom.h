@@ -19,6 +19,8 @@ public:
     void deallocate();
 
     void setRequiredSize(sqaod::SizeType requiredSize);
+
+    void seed();
     
     void seed(unsigned long long seed);
 
@@ -31,6 +33,16 @@ public:
     void synchronize();
 
 private:
+
+void deviceRandomMakeKernelState(curandStateMtgp32_t *d_randStates_,
+                                 mtgp32_kernel_params_t *kernelParams,
+                                 unsigned long long seed, cudaStream_t stream);
+
+void deviceGenRand(int *d_buffer, int begin, int end, int nToGenerate, int bufSize,
+                   curandStateMtgp32_t *d_randStates, cudaStream_t stream);
+
+
+
     DeviceObjectAllocator *devAlloc_;
     cudaStream_t stream_;
     
