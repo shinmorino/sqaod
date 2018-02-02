@@ -73,6 +73,12 @@ VectorType<V> mapFrom(EigenRowVectorType<V> &vec) {
 }
 
 template<class V>
+VectorType<V> mapFrom(EigenColumnVectorType<V> &vec) {
+    assert(vec.cols() == 1);
+    return VectorType<V>(vec.data(), vec.rows());
+}
+
+template<class V>
 EigenMappedRowVectorType<V> mapToRowVector(VectorType<V> &vec) {
     return EigenMappedRowVectorType<V>(vec.data, 1, vec.size);
 }

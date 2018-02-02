@@ -68,16 +68,16 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dA, hMat);
         devMath.scale(&dB, 10., dA);
         device_.synchronize();
-        hMat.map() *= 10.;
+        hMat *= (real)10.;
         TEST_ASSERT(dB == hMat);
 
         devMath.sum(&da, real(3.), dB);
         device_.synchronize();
-        TEST_ASSERT(da == real(3. * hMat.map().sum()));
+        TEST_ASSERT(da == real(3. * hMat.sum()));
         /* mulAddAssign */
         devMath.sum(&da, real(3.), dB, 1.);
         device_.synchronize();
-        TEST_ASSERT(da == real(6. * hMat.map().sum()));
+        TEST_ASSERT(da == real(6. * hMat.sum()));
     }
 
     testcase("vec scale/sum") {
@@ -86,20 +86,20 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
         devMath.scale(&dy, 10., dx);
         device_.synchronize();
-        hVec.mapToRowVector() *= 10.;
+        hVec *= (real)10.;
         TEST_ASSERT(dy == hVec);
 
         devMath.scale(&dy, 10., dx, 1.);
         device_.synchronize();
-        hVec.mapToRowVector() *= 2.;
+        hVec *= (real)2.;
         TEST_ASSERT(dy == hVec);
 
         devMath.sum(&da, real(3.), dy);
         device_.synchronize();
-        TEST_ASSERT(da == real(3. * hVec.mapToRowVector().sum()));
+        TEST_ASSERT(da == real(3. * hVec.sum()));
         /* mulAddAssign */
         devMath.sum(&da, real(3.), dy, 2.);
-        TEST_ASSERT(da == real((3. + 6.) * hVec.mapToRowVector().sum()));
+        TEST_ASSERT(da == real((3. + 6.) * hVec.sum()));
     }
 
     testcase("scalar scale") {
@@ -130,11 +130,11 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&da, (real)1.);
         devMath.scaleBroadcast(&dx, 2., da);
         x = HostVector::ones(dim.rows);
-        x.mapToRowVector() *= 2.;
+        x *= (real)2.;
         TEST_ASSERT(dx == x);
 
         devMath.scaleBroadcast(&dx, 2., da, 1.);
-        x.mapToRowVector() *= 2.;
+        x *= (real)2.;
         TEST_ASSERT(dx == x);
     }
 
@@ -150,22 +150,22 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dy, y);
 
         devMath.scaleBroadcast(&dA, 1., dx, opRowwise);
-        hmat.map().rowwise() = x.mapToRowVector();
+        sq::mapTo(hmat).rowwise() = sq::mapToRowVector(x);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
         devMath.scaleBroadcast(&dA, 2., dx, opRowwise, 2.);
-        hmat.map().rowwise() = 4. * x.mapToRowVector();
+        sq::mapTo(hmat).rowwise() = 4. * sq::mapToRowVector(x);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
         devMath.scaleBroadcast(&dA, 1., dy, opColwise);
-        hmat.map().colwise() = y.mapToColumnVector();
+        sq::mapTo(hmat).colwise() = sq::mapToColumnVector(y);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
         devMath.scaleBroadcast(&dA, 2., dy, opColwise, 2.);
-        hmat.map().colwise() = 4. * y.mapToColumnVector();
+        sq::mapTo(hmat).colwise() = 4. * sq::mapToColumnVector(y);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
     }
@@ -179,11 +179,11 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dA, hmat);
         devMath.sum(&da, 1., dA);
         device_.synchronize();
-        TEST_ASSERT(da == hmat.map().sum());
+        TEST_ASSERT(da == hmat.sum());
 
         devMath.sum(&da, 2., dA, 2.);
         device_.synchronize();
-        TEST_ASSERT(da == real(4. * hmat.map().sum()));
+        TEST_ASSERT(da == real(4. * hmat.sum()));
     }
 
     testcase("vector sum") {
@@ -194,11 +194,11 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dx, hvec);
         devMath.sum(&da, 1., dx);
         device_.synchronize();
-        TEST_ASSERT(da == hvec.mapToRowVector().sum());
+        TEST_ASSERT(da == hvec.sum());
 
         devMath.sum(&da, 2., dx, 2.);
         device_.synchronize();
-        TEST_ASSERT(da == real(4. * hvec.mapToRowVector().sum()));
+        TEST_ASSERT(da == real(4. * hvec.sum()));
     }
 
     testcase("diagonal sum") {
@@ -209,7 +209,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dA, hmat);
         devMath.sumDiagonals(&da, dA);
         device_.synchronize();
-        TEST_ASSERT(da == hmat.map().diagonal().sum());
+        TEST_ASSERT(da == sq::mapTo(hmat).diagonal().sum());
     }
     testcase("sum batched") {
         alloc->allocate(&dA, dim);
@@ -226,13 +226,13 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devMath.sumBatched(&dx, 2., dA, opRowwise);
 
         HostVector hvec(dim.rows);
-        hvec.mapToRowVector() = 2. * hmat.map().rowwise().sum();
+        mapToRowVector(hvec) = 2. * sq::mapTo(hmat).rowwise().sum();
         device_.synchronize();
         TEST_ASSERT(dx == hvec);
 
         devMath.sumBatched(&dy, 2., dA, opColwise);
         hvec.resize(dim.cols);
-        hvec.mapToColumnVector() = 2. * hmat.map().colwise().sum();
+        mapToColumnVector(hvec) = 2. * sq::mapTo(hmat).colwise().sum();
         device_.synchronize();
         TEST_ASSERT(dy == hvec);
     }
@@ -248,7 +248,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dy, y);
         devMath.dot(&da, 2., dx, dy);
         device_.synchronize();
-        real product = x.mapToColumnVector().dot(y.mapToColumnVector());
+        real product = mapToColumnVector(x).dot(mapToColumnVector(y));
         TEST_ASSERT(da == real(2. * product));
 
         devMath.dot(&da, 2., dx, dy, 1.);
@@ -268,17 +268,17 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, B);
         devMath.dotBatched(&dx, 2., dA, opNone, dB, opNone);
 
-        EigenMatrix eAB = A.map().array() * B.map().array();
+        EigenMatrix eAB = sq::mapTo(A).array() * sq::mapTo(B).array();
         EigenRowVector vec = 2. * eAB.rowwise().sum();
         device_.synchronize();
 
-        TEST_ASSERT(dx == HostVector(vec));
+        TEST_ASSERT(dx == sq::mapFrom(vec));
 
         devMath.dotBatched(&dy, 2., dA, opTranspose, dB, opTranspose);
         vec = 2. * eAB.colwise().sum();
         device_.synchronize();
 
-        TEST_ASSERT(dy == HostVector(vec));
+        TEST_ASSERT(dy == sq::mapFrom(vec));
     }
 
     testcase("transpose") {
@@ -287,7 +287,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devMath.transpose(&dB, dA);
         device_.synchronize();
         HostMatrix hTrans(hMat.dim().transpose());
-        hTrans.map() = hMat.map().transpose();
+        sq::mapTo(hTrans) = sq::mapTo(hMat).transpose();
         TEST_ASSERT(dB == hTrans);
     }
 
@@ -297,33 +297,34 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dA, A);
         devCopy(&dx, x);
         devMath.mvProduct(&dy, 0.5, dA, opNone, dx);
-        EigenRowVector y = 0.5 * A.map() * x.mapToColumnVector();
+        EigenRowVector y = 0.5 * sq::mapTo(A) * sq::mapToColumnVector(x);
         device_.synchronize();
-        TEST_ASSERT(dy == HostVector(y));
+        TEST_ASSERT(dy == sq::mapFrom(y));
 
         HostMatrix B = testMatBalanced<real>(dim.transpose());
         devCopy(&dB, B);
         devMath.mvProduct(&dy, 0.25, dB, opTranspose, dx);
-        y = B.map().transpose() * x.mapToColumnVector();
+        y = sq::mapTo(B).transpose() * sq::mapToColumnVector(x);
+        y *= 0.25;
         device_.synchronize();
-        TEST_ASSERT(dy == HostVector(0.25 * y));
+        TEST_ASSERT(dy == sq::mapFrom(y));
     }
 
     testcase("mmProduct") {
         HostMatrix A = testMatBalanced<real>(dim);
         HostMatrix B = testMatBalanced<real>(dim.transpose());
-        EigenMatrix C = 0.5 * A.map() * B.map();
+        EigenMatrix C = 0.5 * sq::mapTo(A) * sq::mapTo(B);
 
         devCopy(&dA, A);
         devCopy(&dB, B);
         devMath.mmProduct(&dC, 0.5, dA, opNone, dB, opNone);
         device_.synchronize();
-        TEST_ASSERT(dC == HostMatrix(C));
+        TEST_ASSERT(dC == sq::mapFrom(C));
 
         HostMatrix At(dim.transpose());
         HostMatrix Bt(dim);
-        At.map() = A.map().transpose();
-        Bt.map() = B.map().transpose();
+        sq::mapTo(At) = sq::mapTo(A).transpose();
+        sq::mapTo(Bt) = sq::mapTo(B).transpose();
         alloc->deallocate(dA);
         alloc->deallocate(dB);
         alloc->deallocate(dC);
@@ -331,14 +332,14 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, Bt);
         devMath.mmProduct(&dC, 0.5, dA, opTranspose, dB, opTranspose);
         device_.synchronize();
-        TEST_ASSERT(dC == HostMatrix(C));
+        TEST_ASSERT(dC == sq::mapFrom(C));
     }
 
     testcase("vmvProduct") {
         HostMatrix A = testMatBalanced<real>(dim);
         HostVector x = testVecBalanced<real>(dim.cols);
         HostVector y = testVecBalanced<real>(dim.rows);
-        real product = y.mapToRowVector() * A.map() * x.mapToColumnVector();
+        real product = mapToRowVector(y) * sq::mapTo(A) * mapToColumnVector(x);
 
         devCopy(&dA, A);
         devCopy(&dx, x);
@@ -354,21 +355,22 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         HostMatrix X = testMatBalanced<real>(dim);
         HostMatrix Y = testMatBalanced<real>(dim);
 
-        EigenMatrix AX = A.map() * X.map().transpose();
-        EigenMatrix AXY = Y.map().array() * AX.transpose().array();
+        EigenMatrix AX = sq::mapTo(A) * sq::mapTo(X).transpose();
+        EigenMatrix AXY = sq::mapTo(Y).array() * AX.transpose().array();
         EigenColumnVector z = 1. * AXY.rowwise().sum();
 
         devCopy(&dA, A);
         devCopy(&dB, X);
         devCopy(&dC, Y);
         devMath.vmvProductBatched(&dx, 2., dC, dA, dB);
+        z *= 2.;
         device_.synchronize();
-        TEST_ASSERT(dx == HostVector(2. * z));
+        TEST_ASSERT(dx == sq::mapFrom(z));
     }
 
     testcase("min matrix") {
         HostMatrix A = testMatBalanced<real>(dim);
-        real vMin = A.map().minCoeff();
+        real vMin = sq::mapTo(A).minCoeff();
         devCopy(&dA, A);
         devMath.min(&da, dA);
         device_.synchronize();
@@ -377,7 +379,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
     testcase("min") {
         HostVector x = testVecBalanced<real>(dim.rows);
-        real vMin = x.mapToRowVector().minCoeff();
+        real vMin = sq::mapToRowVector(x).minCoeff();
         devCopy(&dx, x);
         devMath.min(&da, dx);
         device_.synchronize();

@@ -142,6 +142,14 @@ struct MatrixType {
         assert((0 <= c) && (c < (IdxType)cols));
         return data[r * cols + c];
     }
+
+    V sum() const {
+        return sqaod::sum(data, rows * cols);
+    }
+
+    V min() const {
+        return sqaod::min(data, rows * cols);
+    }
     
     SizeType rows, cols;
     V *data;
@@ -169,6 +177,18 @@ struct MatrixType {
 };
 
 /* Matrix operator */
+template<class V>
+bool operator==(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
+    if (lhs.dim() != rhs.dim())
+        return false;
+    return memcmp(lhs.data, rhs.data, sizeof(V) * lhs.rows * lhs.cols) == 0;
+}
+
+template<class V>
+bool operator!=(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
+    return !(lhs == rhs);
+}
+
 template<class V>
 MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v) {
     multiply(mat.data, mat.rows * mat.cols, v);
@@ -300,15 +320,13 @@ struct VectorType {
     const V &operator()(IdxType idx) const {
         return data[idx];
     }
-    
-    bool operator==(const VectorType<V> &rhs) const {
-        if (size != rhs.size)
-            return false;
-        return memcmp(data, rhs.data, sizeof(V) * size) == 0;
+
+    V sum() const {
+        return sqaod::sum(data, size);
     }
 
-    bool operator!=(const VectorType<V> &rhs) const {
-        return !operator==(rhs);
+    V min() const {
+        return sqaod::min(data, size);
     }
     
     SizeType size;
@@ -327,6 +345,18 @@ struct VectorType {
 
 
 /* Vector operator */
+
+template<class V>
+bool operator==(const VectorType<V> &lhs, const VectorType<V> &rhs) {
+    if (lhs.size != rhs.size)
+        return false;
+    return memcmp(lhs.data, rhs.data, sizeof(V) * lhs.size) == 0;
+}
+
+template<class V>
+bool operator!=(const VectorType<V> &lhs, const VectorType<V> &rhs) {
+    return !(lhs == rhs);
+}
 
 template<class V>
 VectorType<V> &operator*=(VectorType<V> &vec, const V &v) {
