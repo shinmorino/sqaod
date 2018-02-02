@@ -1,8 +1,7 @@
-
 #ifndef SQAOD_CUDA_CUDA_MATRIX_H__
 #define SQAOD_CUDA_CUDA_MATRIX_H__
 
-#include <common/Matrix.h>
+#include <common/types.h>
 #include <cuda/DeviceObject.h>
 
 namespace sqaod_cuda {
