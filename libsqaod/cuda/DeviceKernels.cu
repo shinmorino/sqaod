@@ -4,6 +4,7 @@
 
 using sqaod::SizeType;
 using sqaod::IdxType;
+using sqaod::PackedBits;
 using namespace sqaod_cuda;
 
 
@@ -520,3 +521,32 @@ template void DeviceCopyKernels::copyBroadcast(long *, const long &, SizeType) c
 template void DeviceCopyKernels::copyBroadcast(unsigned long *, const unsigned long &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(long long *, const long long &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(unsigned long long *, const unsigned long long &, SizeType) const;
+
+
+    
+
+template<class V>
+__global__ static
+void generateBitsSequenceKernel(V *d_data, int N,
+                                SizeType nSeqs, PackedBits xBegin) {
+    IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
+    if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
+        PackedBits bits = xBegin + seqIdx;
+        bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
+        d_data[seqIdx * N + threadIdx.x] = bitSet ? V(1) : V(0);
+    }
+}
+
+
+template<class V> void
+sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBits xBegin, PackedBits xEnd,
+                                 cudaStream_t stream) {
+    dim3 blockDim, gridDim;
+    blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
+    blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
+    SizeType nSeqs = SizeType(xEnd - xBegin);
+    gridDim.x = (unsigned int)divru((unsigned int)(xEnd - xBegin), blockDim.y);
+    generateBitsSequenceKernel
+            <<<gridDim, blockDim, 0, stream>>>(d_data, N, nSeqs, xBegin);
+    DEBUG_SYNC;
+}

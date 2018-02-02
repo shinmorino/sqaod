@@ -62,7 +62,14 @@ struct DeviceCopyKernels {
 private:
     cudaStream_t stream_;
 };
-    
+
+
+
+template<class V>
+void generateBitsSequence(V *d_data, int N,
+                          sqaod::PackedBits xBegin, sqaod::PackedBits xEnd,
+                          cudaStream_t stream);
+
 
 
 }  // namespace sqaod_cuda

@@ -10,9 +10,6 @@ class Device;
 template<class real>
 struct DeviceBFKernelsType {
 
-    void generateBitsSequence(real *d_data, int N,
-                              sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
-
     void select(sqaod::PackedBits *d_out, sqaod::SizeType *d_nOut, sqaod::PackedBits xBegin, 
                 real val, const real *d_vals, sqaod::SizeType nIn);
 

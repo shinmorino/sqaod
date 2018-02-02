@@ -5,7 +5,6 @@
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
 #include <cuda/DeviceObjectAllocator.h>
-#include <cuda/DeviceBFKernels.h>
 
 namespace sqaod_cuda {
 
@@ -19,7 +18,6 @@ class DeviceDenseGraphBatchSearch {
     typedef DeviceScalarType<sqaod::SizeType> DeviceSize;
     typedef CUDADGFuncs<real> DGFuncs;
     typedef sqaod::MatrixType<real> HostMatrix;
-    typedef DeviceBFKernelsType<real> DeviceBFKernels;
     
 public:
     DeviceDenseGraphBatchSearch();
@@ -45,7 +43,17 @@ public:
     
     void synchronize();
 
+
+    /* Device kernels, declared as public for tests */
+
+    void generateBitsSequence(real *d_data, int N,
+                              sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+
+    void select(sqaod::PackedBits *d_out, sqaod::SizeType *d_nOut, sqaod::PackedBits xBegin, 
+                real val, const real *d_vals, sqaod::SizeType nIn);
+
 private:
+
     DeviceMatrix d_W_;
     sqaod::SizeType tileSize_;
 
@@ -62,7 +70,6 @@ private:
     /* lower level objects. */
     DGFuncs dgFuncs_;
     DeviceCopy devCopy_;
-    DeviceBFKernels kernels_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;
 };
