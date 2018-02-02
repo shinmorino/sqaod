@@ -48,8 +48,7 @@ int main() {
               << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << " msec."
               << std::endl;
 
-#if 0
-//#ifdef SQAOD_CUDA_ENABLED    
+#ifdef SQAOD_CUDA_ENABLED    
     sqcuda::Device device;
     device.initialize();
 
@@ -61,7 +60,7 @@ int main() {
     cudaSolver.search();
     end = std::chrono::system_clock::now();
 
-    std::cout << cudaSolver.get_E().mapToRowVector().minCoeff() << std::endl;
+    std::cout << cudaSolver.get_E().min() << std::endl;
     device.finalize();
 
     diff = end - start;
