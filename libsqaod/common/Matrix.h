@@ -15,16 +15,16 @@ struct MatrixType {
     typedef V ValueType;
     typedef MatrixType<V> Matrix;
     
-    MatrixType() {
+    explicit MatrixType() {
         resetState();
     }
 
-    MatrixType(SizeType _rows, SizeType _cols) {
+    explicit MatrixType(SizeType _rows, SizeType _cols) {
         resetState();
         allocate(_rows, _cols);
     }
 
-    MatrixType(const Dim &dim) {
+    explicit MatrixType(const Dim &dim) {
         resetState();
         allocate(dim.rows, dim.cols);
     }
@@ -39,7 +39,7 @@ struct MatrixType {
         moveFrom(static_cast<MatrixType<V>&>(mat));
     }
 
-    MatrixType(V *_data, SizeType _rows, SizeType _cols) {
+    explicit MatrixType(V *_data, SizeType _rows, SizeType _cols) {
         data = _data;
         rows = _rows;
         cols = _cols;
@@ -54,6 +54,10 @@ struct MatrixType {
     const MatrixType<V> &operator=(const MatrixType<V> &rhs) {
         copyFrom(rhs);
         return rhs;
+    }
+
+    void operator=(const V &v) {
+        sqaod::fill(data, v, rows * cols);
     }
 
     const MatrixType<V> &operator=(MatrixType<V> &&rhs) noexcept {
@@ -191,7 +195,7 @@ bool operator!=(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
 
 template<class V>
 MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v) {
-    multiply(mat.data, mat.rows * mat.cols, v);
+    multiply(mat.data, v, mat.rows * mat.cols);
     return mat;
 }
 
@@ -208,11 +212,11 @@ template<class V>
 struct VectorType {
     typedef V ValueType;
 
-    VectorType() {
+    explicit VectorType() {
         resetState();
     }
 
-    VectorType(SizeType _size) {
+    explicit VectorType(SizeType _size) {
         resetState();
         allocate(_size);
     }
@@ -227,7 +231,7 @@ struct VectorType {
         moveFrom(static_cast<VectorType<V>&>(vec));
     }
     
-    VectorType(V *_data, SizeType _size) {
+    explicit VectorType(V *_data, SizeType _size) {
         data = _data;
         size = _size;
         mapped = true;
@@ -255,6 +259,10 @@ struct VectorType {
     const VectorType<V> &operator=(const VectorType<V> &rhs) {
         copyFrom(rhs);
         return rhs;
+    }
+
+    void operator=(const V &v) {
+        sqaod::fill(data, v, size);
     }
 
     const VectorType<V> &operator=(VectorType<V> &&rhs) noexcept {
@@ -360,7 +368,7 @@ bool operator!=(const VectorType<V> &lhs, const VectorType<V> &rhs) {
 
 template<class V>
 VectorType<V> &operator*=(VectorType<V> &vec, const V &v) {
-    multiply(vec.data, vec.size, v);
+    multiply(vec.data, v, vec.size);
     return vec;
 }
 

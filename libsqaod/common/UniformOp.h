@@ -20,13 +20,13 @@ void cast(newV *dst, const V *src, SizeType size) {
 }
 
 template<class V> inline
-void multiply(V *values, SizeType size, const V v) {
+void multiply(V *values, const V &v, SizeType size) {
     for (IdxType idx = 0; idx < (IdxType)size; ++idx)
         values[idx] *= v;
 }
 
 template<class V> inline
-V sum(V *values, SizeType size) {
+V sum(const V *values, SizeType size) {
     V v = V(0.);
     for (IdxType idx = 0; idx < (IdxType)size; ++idx)
         v += values[idx];
@@ -37,7 +37,7 @@ template<class V> inline
 V min(V *values, SizeType size) {
     V v = std::numeric_limits<V>::max();
     for (IdxType idx = 0; idx < (IdxType)size; ++idx)
-        v += std::min(v, values[idx]);
+        v = std::min(v, values[idx]);
     return v;
 }
 
@@ -46,5 +46,10 @@ void x_from_q(newV *dst, const V *src, SizeType size) {
     for (IdxType idx = 0; idx < (IdxType)size; ++idx)
         dst[idx] = (newV)((src[idx] + 1) / 2);
 }
+
+
+/* specialization */
+double sum(const double *values, SizeType size);
+float sum(const float *values, SizeType size);
 
 }
