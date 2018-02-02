@@ -3,6 +3,8 @@
 #include <common/Matrix.h>
 #include <iostream>
 #include <cpu/CPURandom.h>
+#include <common/EigenBridge.h>
+
 
 namespace sq = sqaod;
 using namespace sqaod_cuda;
@@ -19,7 +21,7 @@ template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec) {
     sqaod::VectorType<real> hvec;
     DeviceCopy()(&hvec, dvec);
-    ostm << hvec.mapToRowVector() << std::endl;
+    ostm << mapToRowVector(hvec) << std::endl;
     return ostm;
 }
 
@@ -62,7 +64,7 @@ void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorTyp
         << "Device" << std::endl
         << dvec
         << "Host  " << std::endl
-        << hvec.mapToRowVector() << std::endl; 
+        << mapToRowVector(hvec) << std::endl; 
 }
 
 
@@ -72,7 +74,7 @@ bool operator==(const DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real
     DeviceCopy devCopy;
     devCopy(&copied, dmat);
     devCopy.synchronize();
-    return copied.map() == hmat.map();
+    return copied == hmat;
 }
 
 template<class real>
@@ -81,7 +83,7 @@ bool operator==(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real
     DeviceCopy devCopy;
     devCopy(&copied, dvec);
     devCopy.synchronize();
-    return copied.mapToRowVector() == hvec.mapToRowVector();
+    return copied == hvec;
 }
 
 template<class real>

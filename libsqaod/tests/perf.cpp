@@ -41,7 +41,7 @@ int main() {
     cpuSolver.search();
     auto end = std::chrono::system_clock::now();
 
-    std::cout << cpuSolver.get_E().mapToRowVector().minCoeff() << std::endl;
+    std::cout << cpuSolver.get_E().min() << std::endl;
 
     auto diff = end - start;
     std::cout << "elapsed time = "
