@@ -21,15 +21,16 @@ public:
     void setRequiredSize(sqaod::SizeType requiredSize);
 
     void seed();
-    
+
     void seed(unsigned long long seed);
 
     sqaod::SizeType getNRands() const;
-    
+
     void generate();
 
-    const int *get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap);
-    
+    const int *get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap,
+                   int alignment = 1);
+
     void synchronize();
 
 private:

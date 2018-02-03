@@ -105,11 +105,13 @@ void DeviceRandom::generate() {
     }
 }
 
-const int *DeviceRandom::get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap) {
+const int *DeviceRandom::get(sqaod::SizeType nRands,
+                             sqaod::IdxType *offset, sqaod::SizeType *posToWrap, int alignment) {
+    nRands = roundUp(nRands, (sq::SizeType)alignment);
     if (getNRands() < nRands)
         generate();
     assert(nRands <= getNRands());
-      
+
     *offset = begin_;
     *posToWrap = internalBufSize_;
     begin_ = (begin_ + nRands) % internalBufSize_;
