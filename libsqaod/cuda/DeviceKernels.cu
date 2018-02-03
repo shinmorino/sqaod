@@ -1,111 +1,12 @@
 #include "cudafuncs.h"
 #include "DeviceKernels.h"
+#include "cub_iterator.cuh"
 #include <cub/cub.cuh>
 
 using sqaod::SizeType;
 using sqaod::IdxType;
 using sqaod::PackedBits;
 using namespace sqaod_cuda;
-
-
-/* FIXME: add __forceinline__ for device funcs/methods. */
-
-namespace {
-        
-template<class real>
-struct AddAssign {
-    __device__ AddAssign(real &_d_value, real _mulFactor, real _alpha) : d_value(_d_value), mulFactor(_mulFactor), alpha(_alpha) { }
-    __forceinline__
-    __device__ real operator=(const real &v) const {
-        return d_value = mulFactor * d_value + alpha * v;
-    }
-    real &d_value;
-    real mulFactor;
-    real alpha;
-};
-
-template<class real>
-struct AddAssignDevPtr {
-    typedef real value_type;
-
-    AddAssignDevPtr(real *_d_data, real _mulFactor, real _alpha) : d_data(_d_data), mulFactor(_mulFactor), alpha(_alpha) { }
-    typedef AddAssign<real> Ref;
-    __device__ Ref operator*() const {
-        return Ref(*d_data, mulFactor, alpha);
-    }
-    __device__ Ref operator[](SizeType idx) const {
-        return Ref(d_data[idx], mulFactor, alpha);
-    }
-
-    real *d_data;
-    real mulFactor;
-    real alpha;
-};
-
-
-template<class real>
-struct Mul{
-    __device__ Mul(real &_d_value, real _alpha) : d_value(_d_value), alpha(_alpha) { }
-    __forceinline__
-    __device__ real operator=(const real &v) const {
-        return d_value = alpha * v;
-    }
-    real &d_value;
-    real alpha;
-};
-
-template<class real>
-struct MulOutDevPtr {
-    typedef real value_type;
-
-    MulOutDevPtr(real *_d_data, real _alpha) : d_data(_d_data), alpha(_alpha) { }
-    typedef Mul<real> Ref;
-    __device__ Ref operator*() const {
-        return Ref(*d_data, alpha);
-    }
-    __device__ Ref operator[](SizeType idx) const {
-        return Ref(d_data[idx], alpha);
-    }
-
-    real *d_data;
-    real alpha;
-};
-
-
-
-template<class real>
-struct StridedInPtr {
-    typedef real value_type;
-    typedef StridedInPtr SelfType;
-    __host__ __device__
-    StridedInPtr(const real *_d_data, SizeType _stride, IdxType _offset) : d_data(_d_data), stride(_stride), offset(_offset) { }
-    __device__ const real &operator[](SizeType idx) const {
-        return d_data[offset + idx * stride];
-    }
-    __device__
-    SelfType operator+(IdxType v) const {
-        return SelfType(d_data + v, stride, offset);
-    }
-
-    const real *d_data;
-    SizeType stride;
-    IdxType offset;
-};
-
-}
-
-namespace std {
-
-template<class real>
-struct iterator_traits<AddAssignDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
-template<class real>
-struct iterator_traits<MulOutDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
-template<class real>
-struct iterator_traits<StridedInPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
-
-}
-
-
 
 
 template<class OutType, class real>  static __global__
@@ -242,18 +143,6 @@ sumGather(real *d_sum, real alpha, const real *d_x, SizeType size, SizeType stri
 }
 
 
-namespace {
-/* Functors for offsets */
-
-struct Linear {
-    Linear(IdxType _a, IdxType _b) : a(_a), b(_b) { }
-    __device__
-    IdxType operator[](IdxType idx) const { return a * idx + b; }
-    IdxType a, b;
-};
-
-}
-
 template<class real> void DeviceMathKernelsType<real>::
 sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBatch) {
     MulOutDevPtr<real> outPtr(d_sum, alpha);
@@ -271,35 +160,6 @@ sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBa
     DEBUG_SYNC;
 }
 
-
-namespace {
-
-template<class real>
-struct InDotPtr {
-    typedef InDotPtr<real> SelfType;
-    
-    __host__ __device__
-    InDotPtr(const real *_d_x, const real *_d_y) : d_x(_d_x), d_y(_d_y) { }
-    __device__
-    real operator[](IdxType idx) const {
-        return d_x[idx] * d_y[idx];
-    }
-    __device__
-    SelfType operator+(IdxType idx) const {
-        return SelfType(&d_x[idx], &d_y[idx]);
-    }
-    
-    const real *d_x, *d_y;
-};
-
-}
-
-namespace std {
-
-template<class real>
-struct iterator_traits<InDotPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
-
-}
 
 
 template<class real> void DeviceMathKernelsType<real>::
