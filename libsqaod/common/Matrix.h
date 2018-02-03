@@ -294,7 +294,7 @@ struct VectorType {
         size = src.size;
         data = src.data;
         mapped = false;
-        src.size = -1;
+        src.size = (SizeType)-1;
         src.data = nullptr;
     }
     
