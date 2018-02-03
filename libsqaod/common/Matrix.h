@@ -247,8 +247,8 @@ struct VectorType {
         size = (SizeType)-1;
         mapped = false;
     }
-    
-    void set(V *_data, SizeType _size) {
+
+    void map(V *_data, SizeType _size) {
         if (!mapped)
             free();
         mapped = true;
