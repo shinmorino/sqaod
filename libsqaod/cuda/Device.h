@@ -20,6 +20,8 @@ public:
     void initialize(int devNo = 0);
     void finalize();
 
+    int devNo() const { return devNo_; }
+
     void useManagedMemory(bool use);
 
     /* FIXME: add activate method. */
