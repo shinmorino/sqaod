@@ -64,7 +64,7 @@ private:
 
 
 template<class V> inline
-DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(int rows, int cols, const char *signature) {
+DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature) {
     void *d_pv = memStore_->allocate(sizeof(V) * rows * cols);
     DeviceMatrixType<V> *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
     tempObjects_.pushBack(mat);
@@ -72,7 +72,7 @@ DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(int rows, int cols, const ch
 }
 
 template<class V> inline
-DeviceVectorType<V> *DeviceStream::tempDeviceVector(int size, const char *signature) {
+DeviceVectorType<V> *DeviceStream::tempDeviceVector(sqaod::SizeType size, const char *signature) {
     void *d_pv = memStore_->allocate(sizeof(V) * size);
     DeviceVectorType<V> *vec = new DeviceVectorType<V>((V*)d_pv, size);
     tempObjects_.pushBack(vec);
