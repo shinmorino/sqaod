@@ -170,7 +170,7 @@ template<class InputIterator, class OutputIterator, class OffsetIterator>
 void segmentedSum(void *temp_storage, sq::SizeType *temp_storage_bytes,
                   InputIterator in, OutputIterator out,
                   OffsetIterator segOffset, int segLen,
-                  sq::SizeType nSegments, int devNo, cudaStream_t stream) {
+                  sq::SizeType nSegments, int nThreadsToFillDevice, cudaStream_t stream) {
     *temp_storage_bytes = 0;
     if (segLen <= WARP_SIZE) {
         dim3 blockDim(128);
@@ -195,7 +195,6 @@ void segmentedSum(void *temp_storage, sq::SizeType *temp_storage_bytes,
     }
     else {
         /* General case */
-        int nThreadsToFillDevice = getNumThreadsToFillDevice(devNo);
         int nThreads = divru(segLen, 128) * nSegments;
         int nLoops = divru(nThreads, nThreadsToFillDevice);
         if (2 <= nLoops) {
@@ -219,7 +218,7 @@ void segmentedSum(void *temp_storage, sq::SizeType *temp_storage_bytes,
                      nBlocksPerSeg);
             DEBUG_SYNC;
             segmentedSum(NULL, NULL, (V*)temp_storage, out,
-                         Linear(nBlocksPerSeg, 0), nBlocksPerSeg, nSegments, devNo, stream);
+                         Linear(nBlocksPerSeg, 0), nBlocksPerSeg, nSegments, nThreadsToFillDevice, stream);
         }
     }
 }
