@@ -29,6 +29,13 @@ struct DeviceMatrixType : DeviceObject {
 
     sqaod::Dim dim() const { return sqaod::Dim(rows, cols); }
 
+    V *row(sqaod::IdxType row) {
+        return &d_data[row * cols];
+    }
+    const V *row(sqaod::IdxType row) const {
+        return &d_data[row * cols];
+    }
+
     SizeType rows, cols;
     V *d_data;
 
