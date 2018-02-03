@@ -71,6 +71,8 @@ void generateBitsSequence(V *d_data, int N,
                           cudaStream_t stream);
 
 
+template<class V>
+void randomize_q(V *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
 
 }  // namespace sqaod_cuda
 
