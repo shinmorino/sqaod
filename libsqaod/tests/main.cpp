@@ -5,6 +5,8 @@
 #include "CUDAFormulasBGFuncTest.h"
 #include "DeviceRandomTest.h"
 #include "CUDADenseGraphBFSolverTest.h"
+#include "DeviceSegmentedSumTest.h"
+#include "CUDADenseGraphAnnealerTest.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
@@ -14,6 +16,8 @@ int main(int argc, char* argv[]) {
     runTest<CUDAFormulasBGFuncTest>();
     runTest<DeviceRandomTest>();
     runTest<CUDADenseGraphBFSolverTest>();
+    runTest<DeviceSegmentedSumTest>();
+    runTest<CUDADenseGraphAnnealerTest>();
     cudaDeviceReset();
     return MinimalTestSuite::summarize();
 }

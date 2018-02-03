@@ -4,7 +4,7 @@ LDADD=
 LIBS=
 
 
-test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp
+test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cpp CUDADenseGraphAnnealerTest.cpp
 perf_SOURCES=perf.cpp
 
 
@@ -21,4 +21,3 @@ LDADD+=$(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
 
 run: $(check_PROGRAMS)
 	./test
-
