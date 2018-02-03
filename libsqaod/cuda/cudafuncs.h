@@ -46,15 +46,6 @@ inline V roundUp(const V &v, const V &base) {
     return ((v + base - 1) / base) * base;
 }
 
-/* base class for CUB iteratos */
-template<class V>
-struct base_iterator_traits {
-    using difference_type   = ptrdiff_t;
-    typedef V                 value_type;
-    using pointer           = V*;
-    using reference         = V&;
-    using iterator_category = std::random_access_iterator_tag;
-};
 
 }
 
