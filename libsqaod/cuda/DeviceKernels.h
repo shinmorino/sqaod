@@ -2,13 +2,14 @@
 #define CUDA_DEVICEMATHKERNELS_H__
 
 #include <cuda/DeviceStream.h>
+#include <cuda/DeviceRandom.h>
 
 namespace sqaod_cuda {
 
 template<class real>
 struct DeviceMathKernelsType {
     typedef sqaod::SizeType SizeType;
-    
+
     void scale(real *d_y, real alpha, const real *d_x, SizeType size, real addAssignFactor);
     void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
     void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
