@@ -71,6 +71,10 @@ void DeviceRandom::seed(unsigned long long seed) {
                          d_kernelParams_, CURAND_NUM_MTGP32_PARAMS, seed));
 }
 
+void DeviceRandom::seed() {
+    seed((unsigned long)time(NULL));
+}
+
 sqaod::SizeType DeviceRandom::getNRands() const {
     return (end_ - begin_ + internalBufSize_) % internalBufSize_;
 }
