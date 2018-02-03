@@ -28,13 +28,13 @@ public:
     void *allocate(size_t size, const char *signature = NULL);
 
     template<class V>
-    DeviceMatrixType<V> *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);
+    DeviceMatrixType<V> *tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature = NULL);
 
     template<class V>
     DeviceMatrixType<V> *tempDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
 
     template<class V>
-    DeviceVectorType<V> *tempDeviceVector(int size, const char *signature = NULL);
+    DeviceVectorType<V> *tempDeviceVector(sqaod::SizeType size, const char *signature = NULL);
 
     template<class V>
     DeviceScalarType<V> *tempDeviceScalar(const char *signature = NULL);
