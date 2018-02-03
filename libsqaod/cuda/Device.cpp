@@ -44,6 +44,12 @@ void Device::useManagedMemory(bool use) {
     memStore_.useManagedMemory(use);
 }
 
+int Device::getNumThreadsToFillDevice() const {
+    cudaDeviceProp prop;
+    throwOnError(cudaGetDeviceProperties(&prop, devNo_));
+    return prop.maxThreadsPerMultiProcessor * prop.multiProcessorCount;
+}
+
 DeviceStream *Device::newStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));

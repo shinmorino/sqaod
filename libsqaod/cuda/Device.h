@@ -16,7 +16,7 @@ public:
     ~Device();
 
     typedef DeviceObjectAllocator ObjectAllocator;
-    
+
     void initialize(int devNo = 0);
     void finalize();
 
@@ -24,13 +24,15 @@ public:
 
     void useManagedMemory(bool use);
 
+    int getNumThreadsToFillDevice() const;
+
     /* FIXME: add activate method. */
 
     DeviceObjectAllocator *objectAllocator();
 
     template<class real>
     const DeviceConstScalarsType<real> *constScalars() const;
-    
+
     DeviceStream *newStream();
 
     DeviceStream *defaultStream();
@@ -39,7 +41,7 @@ public:
 
     /* sync on device */
     void synchronize();
-    
+
 private:
     int devNo_;
     DeviceMemoryStore memStore_;
