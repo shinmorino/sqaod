@@ -1,6 +1,5 @@
 /* -*- c++ -*- */
-#ifndef CPU_DENSEGRAPHBRUTEFORCESOLVER_H__
-#define CPU_DENSEGRAPHANNEALER_H__
+#pragma once
 
 #include <common/Common.h>
 #include <common/EigenBridge.h>
@@ -50,5 +49,3 @@ private:
 };
 
 }
-
-#endif

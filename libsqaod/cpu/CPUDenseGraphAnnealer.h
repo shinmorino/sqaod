@@ -1,6 +1,5 @@
 /* -*- c++ -*- */
-#ifndef CPU_DENSEGRAPHANNEALER_H__
-#define CPU_DENSEGRAPHANNEALER_H__
+#pragma once
 
 #include <common/Common.h>
 #include <common/EigenBridge.h>
@@ -24,7 +23,7 @@ public:
 
     void getProblemSize(SizeType *N, SizeType *m) const;
 
-    void setProblem(const Matrix &W, OptimizeMethod om);
+    void setProblem(const Matrix &W, OptimizeMethod om = sqaod::optMinimize);
 
     void setNumTrotters(SizeType m);
 
@@ -65,5 +64,3 @@ private:
 };
 
 }
-
-#endif
