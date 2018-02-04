@@ -441,6 +441,7 @@ void sqaod_cuda::randomize_q(V *d_q, DeviceRandom &d_random, sqaod::SizeType siz
     const int *d_randnum = d_random.get(size, &offset, &sizeToWrap);
     randomize_q_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q, size,
                                                          d_randnum, offset, sizeToWrap);
+    DEBUG_SYNC;
 }
 
 template void sqaod_cuda::randomize_q(float *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
