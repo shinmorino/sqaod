@@ -54,7 +54,7 @@ private:
     DeviceMemoryStore *memStore_;
 };
 
-template<class V>
+template<class V> inline
 void DeviceObjectAllocator::allocate(V **v, size_t size) {
     *v = (V*)allocate(sizeof(V) * size);
 }
@@ -64,25 +64,25 @@ void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, const sqaod::Dim 
     return allocate(mat, dim.rows, dim.cols);
 }
 
-template<class V>
+template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols) {
     mat->d_data = (V*)allocate(sizeof(V) * rows * cols);
     mat->rows = rows;
     mat->cols = cols;
 }
 
-template<class V>
+template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceVectorType<V> *vec, sqaod::SizeType size) {
     vec->d_data = (V*)allocate(sizeof(V) * size);
     vec->size = size;
 }
 
-template<class V>
+template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceScalarType<V> *sc) {
     sc->d_data = (V*)allocate(sizeof(V));
 }
 
-template<class V>
+template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity) {
     arr->d_data = (V*)allocate(sizeof(V) * capacity);
     arr->capacity = capacity;
