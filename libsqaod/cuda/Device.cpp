@@ -44,6 +44,10 @@ void Device::useManagedMemory(bool use) {
     memStore_.useManagedMemory(use);
 }
 
+void Device::enableLocalStore(bool enable) {
+    memStore_.enableLocalStore(enable);
+}
+
 int Device::getNumThreadsToFillDevice() const {
     cudaDeviceProp prop;
     throwOnError(cudaGetDeviceProperties(&prop, devNo_));

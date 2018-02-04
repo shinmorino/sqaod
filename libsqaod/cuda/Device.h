@@ -24,6 +24,8 @@ public:
 
     void useManagedMemory(bool use);
 
+    void enableLocalStore(bool enable);
+
     int getNumThreadsToFillDevice() const;
 
     /* FIXME: add activate method. */

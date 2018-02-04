@@ -235,13 +235,17 @@ void HeapMap::release(uintptr_t addr, size_t size) {
 
 DeviceMemoryStore::DeviceMemoryStore() {
     useManagedMemory_ = false;
+    enableLocalStore_ = true;
 }
 
 /* DeviceMemoryStore */
 void DeviceMemoryStore::initialize() {
+    if (!enableLocalStore_)
+        return;
     fixedSizedChunks_.initialize();
-    size_t newHeapSize = 512 * (1 << 20); /* 512 M */
+    size_t newHeapSize = 512ull * (1ull << 20); /* 512 M */
     uintptr_t newHeap = cudaMalloc(newHeapSize);
+    d_mems_.pushBack((void*)newHeap);
     heapMap_.addFreeHeap(newHeap, newHeapSize);
 }
 
@@ -258,7 +262,16 @@ void DeviceMemoryStore::useManagedMemory(bool use) {
     useManagedMemory_ = use;
 }
 
+void DeviceMemoryStore::enableLocalStore(bool enable) {
+    enableLocalStore_ = enable;
+}
+
 void *DeviceMemoryStore::allocate(size_t size) {
+    if (!enableLocalStore_) {
+        /* use cudaMalloc(), local memory store is disabled. */
+        return (void*)cudaMalloc(size);
+    }
+
     /* FIXME: Parameterize */
     uintptr_t addr;
     if (ChunkSizeToUseMalloc < size) {
@@ -288,6 +301,11 @@ void *DeviceMemoryStore::allocate(size_t size) {
 void DeviceMemoryStore::deallocate(void *pv) {
     if (pv == NULL) {
         /* FIXME: Add message. */
+        return;
+    }
+    if (!enableLocalStore_) {
+        /* use cudaFree(), local memory store is disabled. */
+        cudaFree(pv);
         return;
     }
 
@@ -322,8 +340,6 @@ uintptr_t DeviceMemoryStore::cudaMalloc(size_t size) {
     else {
         throwOnError(::cudaMallocManaged(reinterpret_cast<void**>(&addr), size));
     }
-    
-    d_mems_.pushBack((void*)addr);
     return addr;
 }
 
@@ -336,6 +352,7 @@ uintptr_t DeviceMemoryStore::allocFromHeapMap(size_t *size) {
     if (addr == (uintptr_t)-1) {
         size_t newHeapSize = heapMap_.newHeapSize();
         uintptr_t newHeap = cudaMalloc(newHeapSize);
+        d_mems_.pushBack((void*)newHeap);
         heapMap_.addFreeHeap(newHeap, newHeapSize);
         addr = heapMap_.acquire(size);
     }
