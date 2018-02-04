@@ -2,7 +2,7 @@
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
-#include "SegmentedSum.cuh"
+#include "DeviceSegmentedSum.cuh"
 
 
 namespace sq = sqaod;
@@ -34,6 +34,9 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     dgFuncs_.assignDevice(device);
     devMath_.assignDevice(device);
     devCopy_.assignDevice(device);
+    d_random_.assignDevice(device);
+    flipPosBuffer_.assignDevice(device);
+    realNumBuffer_.assignDevice(device);
 }
 
 
@@ -74,6 +77,9 @@ void CUDADenseGraphAnnealer<real>::setNumTrotters(int m) {
     halloc.allocate(&h_q_, sq::Dim(m_, N_));
     xlist_.reserve(m);
     qlist_.reserve(m);
+    /* estimate # rand nums required per one anneal. */
+    d_random_.setRequiredSize(N_ * m_ * (nRunsPerRandGen + 1));
+
     annState_ |= annNTrottersGiven;
 }
 
@@ -98,22 +104,20 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::initAnneal() {
-    if (!(annState_ & annRandSeedGiven))
-        d_random_.seed();
-    annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N_) / 4);
     annState_ |= annNTrottersGiven;
+    if (!(annState_ & annRandSeedGiven))
+        d_random_.seed();
+    annState_ |= annRandSeedGiven;
     if (!(annState_ & annQSet))
         randomize_q();
     annState_ |= annQSet;
-
-    /* estimate # rand nums required per one anneal. */
-    d_random_.setRequiredSize(N_ * m_ * (nRunsPerRandGen + 1));
 }
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::finAnneal() {
+    devStream_->synchronize();
     syncBits();
     calculate_E();
     devStream_->synchronize();
@@ -128,7 +132,7 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q(h_q_.row(idx), N_);
         qlist_.pushBack(q);
-        Bits x(qlist_.size());
+        Bits x(sqaod::SizeType(qlist_.size()));
         x = x_from_q(q);
         xlist_.pushBack(x);
     }
@@ -181,16 +185,16 @@ void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_dE,
                                                 const DeviceMatrix &J, const DeviceMatrix &d_matq,
                                                 const int *d_flipPos) {
     cudaStream_t stream = devStream_->getCudaStream();
-    InDotPtr<real> inPtr(d_J_.d_data, d_matq_.d_data);
+    InDotPtr<real> inPtr(d_matq_.d_data, d_J_.d_data);
 
     sq::SizeType temp_storage_bytes;
     segmentedSum(NULL, &temp_storage_bytes,
-                 inPtr, d_dE->d_data, Offset2way(d_flipPos, 0), N_, m_,
+                 inPtr, d_dE->d_data, Offset2way(d_flipPos), N_, m_,
                  nThreadsToFillDevice_, stream);
     if (temp_storage_bytes != 0) {
         void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
         segmentedSum(d_temp_storage, &temp_storage_bytes,
-                     inPtr, d_dE->d_data, Offset2way(d_flipPos, 0), N_, m_,
+                     inPtr, d_dE->d_data, Offset2way(d_flipPos), N_, m_,
                      nThreadsToFillDevice_, stream);
     }
 }
@@ -201,17 +205,19 @@ tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
               const int *d_x, const real *d_random, sq::SizeType N, sq::SizeType m,
              const real twoDivM, const real coef, const real invKT) {
     int y = blockDim.x * blockIdx.x + threadIdx.x; /* m */
-    int x = d_x[y]; /* N */
-    real qyx = d_q[N * y + x];
+    if (y < m) {
+        int x = d_x[y]; /* N */
+        real qyx = d_q[N * y + x];
 
-    int neibour0 = (y == 0) ? m - 1 : y - 1;
-    int neibour1 = (y == m - 1) ? 0 : y + 1;
+        int neibour0 = (y == 0) ? m - 1 : y - 1;
+        int neibour1 = (y == m - 1) ? 0 : y + 1;
 
-    real dE = - twoDivM * qyx * (d_Jq[x] + d_h[x]);
-    dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
-    real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
-    if (threshold > d_random[y])
-        d_q[N * y + x] = -qyx;
+        real dE = - twoDivM * qyx * (d_Jq[y] + d_h[x]);
+        dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
+        real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
+        if (threshold > d_random[y])
+            d_q[N * y + x] = -qyx;
+    }
 }
 
 
@@ -223,7 +229,7 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
     real invKT = real(1.) / kT;
 
     dim3 blockDim(128);
-    dim3 gridDim(divru((uint)m_, blockDim.x));
+    dim3 gridDim(divru((sq::SizeType)m_, blockDim.x));
     tryFlipKernel<<<gridDim, blockDim>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
                                          d_x, d_random, N_, m_,
                                          twoDivM, coef, invKT);

@@ -37,9 +37,13 @@ public:
         return Vector(h_E_.d_data, h_E_.size);
     }
 
-    const sqaod::BitsArray &get_x() const;
+    const sqaod::BitsArray &get_x() const {
+        return xlist_;
+    }
 
-    const sqaod::BitsArray &get_q() const;
+    const sqaod::BitsArray &get_q() const {
+        return xlist_;
+    }
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
 
@@ -65,10 +69,7 @@ private:
         nRunsPerRandGen = 100
     };
 
-    void allocate(int N, int m);
-    void deallocate();
     void syncBits();
-    void calculate_Jq();
 
     int annState_;
 
