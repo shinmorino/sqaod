@@ -96,9 +96,6 @@
     <ClInclude Include="..\..\libsqaod\cuda\HostObjectAllocator.h">
       <Filter>cuda</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\libsqaod\cuda\DeviceBFKernels.h">
-      <Filter>cuda</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.cuh">
       <Filter>cuda</Filter>
     </ClInclude>
@@ -107,6 +104,18 @@
     </ClInclude>
     <ClInclude Include="..\..\libsqaod\common\EigenBridge.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cuh">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandomBuffer.h">
+      <Filter>cuda</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -178,13 +187,16 @@
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBFKernels.cu">
-      <Filter>cuda</Filter>
-    </CudaCompile>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandomBuffer.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
   </ItemGroup>

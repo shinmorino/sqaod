@@ -9,6 +9,8 @@
     <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\DeviceRandomTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.cpp" />
+    <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphAnnealerTest.cpp" />
+    <ClCompile Include="..\..\libsqaod\tests\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libsqaod\tests\MinimalTestSuite.h" />
@@ -19,5 +21,10 @@
     <ClInclude Include="..\..\libsqaod\tests\CUDAFormulasDGFuncTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\DeviceRandomTest.h" />
     <ClInclude Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.h" />
+    <ClInclude Include="..\..\libsqaod\tests\CUDADenseGraphAnnealerTest.h" />
+    <ClInclude Include="..\..\libsqaod\tests\DeviceSegmentedSumTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\libsqaod\tests\DeviceSegmentedSumTest.cu" />
   </ItemGroup>
 </Project>

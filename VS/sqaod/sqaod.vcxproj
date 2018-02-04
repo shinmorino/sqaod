@@ -24,12 +24,13 @@
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPURandom.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh" />
+    <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDAFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cudafuncs.h" />
     <ClInclude Include="..\..\libsqaod\cuda\Device.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceArray.h" />
-    <ClInclude Include="..\..\libsqaod\cuda\DeviceBFKernels.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceConstScalars.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceCopy.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.h" />
@@ -41,6 +42,8 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceObjectAllocator.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.cuh" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceRandomBuffer.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cuh" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceStream.h" />
     <ClInclude Include="..\..\libsqaod\cuda\HostObjectAllocator.h" />
   </ItemGroup>
@@ -68,10 +71,11 @@
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBFKernels.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandomBuffer.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0AEEDA6A-F70A-4ABC-ADDC-3FD4BF15255B}</ProjectGuid>
