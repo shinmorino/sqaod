@@ -2,6 +2,7 @@
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
+#include <cuda/DeviceSegmentedSum.cuh>
 
 using sqaod::SizeType;
 using sqaod::IdxType;
@@ -197,6 +198,7 @@ dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType siz
     
     InDotPtr<real> inPtr(d_x, d_y);
     MulOutDevPtr<real> outPtr(d_z, alpha);
+#if 0
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     inPtr, outPtr, nBatch,
@@ -208,6 +210,14 @@ dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType siz
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
+#else
+    sq::SizeType temp_storage_bytes;
+    segmentedSum(NULL, &temp_storage_bytes, inPtr, outPtr, Linear(size, 0), size, nBatch, devStream_->getNumThreadsToFillDevice(), stream_);
+    if (temp_storage_bytes != 0) {
+        void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
+        segmentedSum(d_temp_storage, &temp_storage_bytes, inPtr, outPtr, Linear(size, 0), size, nBatch, devStream_->getNumThreadsToFillDevice(), stream_);
+    }
+#endif
 }
 
 template <class real>
