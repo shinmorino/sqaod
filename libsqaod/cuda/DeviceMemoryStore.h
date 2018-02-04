@@ -104,6 +104,8 @@ class DeviceMemoryStore {
         SmallChunkSize = 4 * (1 << 10),        /*  4 K */
     };
 public:
+    DeviceMemoryStore();
+
     void initialize();
     void finalize();
     

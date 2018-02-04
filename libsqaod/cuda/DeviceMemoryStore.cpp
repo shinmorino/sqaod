@@ -164,6 +164,7 @@ int FixedSizedChunks::layerIdxFromSize(size_t size) {
  */
 
 HeapMap::HeapMap() {
+    currentHeapSize_ = 0;
 }
 
 void HeapMap::finalize() {
@@ -232,6 +233,9 @@ void HeapMap::release(uintptr_t addr, size_t size) {
     freeRegions_[addr] = size;
 }
 
+DeviceMemoryStore::DeviceMemoryStore() {
+    useManagedMemory_ = false;
+}
 
 /* DeviceMemoryStore */
 void DeviceMemoryStore::initialize() {
