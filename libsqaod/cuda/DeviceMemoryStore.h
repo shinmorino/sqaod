@@ -111,11 +111,14 @@ public:
     
     void useManagedMemory(bool use);
 
+    void enableLocalStore(bool enable);
+
     void *allocate(size_t size);
     void deallocate(void *pv);
 
 private:
     bool useManagedMemory_;
+    bool enableLocalStore_;
 
     uintptr_t cudaMalloc(size_t size);
     void cudaFree(void *pv);
