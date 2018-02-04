@@ -4,6 +4,7 @@
 #include <common/Matrix.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
+#include <cuda/DeviceCopy.h>
 #include <cpu/CPURandom.h>
 
 namespace sq = sqaod;
