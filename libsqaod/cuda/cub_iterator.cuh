@@ -128,15 +128,14 @@ struct Linear {
 
 struct Offset2way  {
     __host__
-    Offset2way(const sq::IdxType *_d_offset, sq::IdxType _base)
-            : d_offset(_d_offset), base(_base) { }
+    Offset2way(const sq::IdxType *_d_offset)
+            : d_offset(_d_offset) { }
 
     __device__ __forceinline__
     int2 operator[](sq::IdxType idx) const {
-        return make_int2(idx + base, d_offset[idx] + base);
+        return make_int2(idx, d_offset[idx]);
     }
     const sq::IdxType *d_offset;
-    sq::IdxType base;
 };
 
 __device__ __forceinline__

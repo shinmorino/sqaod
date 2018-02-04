@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MinimalTestSuite.h"
-
+#include <cuda/Device.h>
 
 class DeviceSegmentedSumTest : public MinimalTestSuite {
 public:
@@ -14,4 +14,6 @@ public:
 
     virtual void run(std::ostream &ostm);
 
+private:
+    sqaod_cuda::Device device_;
 };
