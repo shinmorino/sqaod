@@ -21,6 +21,7 @@ DeviceRandom::DeviceRandom(Device &device, DeviceStream *devStream) {
 
 DeviceRandom::DeviceRandom() {
     requiredSize_ = (sq::SizeType)-1;
+    internalBufSize_ = (sq::SizeType)-1;
     d_buffer_ = NULL;
     d_randStates_ = NULL;
     d_kernelParams_ = NULL;
