@@ -24,7 +24,7 @@ void Device::initialize(int devNo){
     throwOnError(cudaSetDevice(devNo));
     memStore_.initialize();
     devObjAllocator_.set(&memStore_);
-    defaultDeviceStream_.set(NULL, memStore_);
+    defaultDeviceStream_.set(NULL, memStore_, getNumThreadsToFillDevice());
     devConstScalarsFP64_.initialize(devObjAllocator_, defaultDeviceStream_);
     devConstScalarsFP32_.initialize(devObjAllocator_, defaultDeviceStream_);
 }
@@ -53,7 +53,7 @@ int Device::getNumThreadsToFillDevice() const {
 DeviceStream *Device::newStream() {
     cudaStream_t stream;
     throwOnError(cudaStreamCreate(&stream));
-    DeviceStream *deviceStream = new DeviceStream(stream, memStore_);
+    DeviceStream *deviceStream = new DeviceStream(stream, memStore_, getNumThreadsToFillDevice());
     streams_.pushBack(deviceStream);
     return deviceStream;
 }

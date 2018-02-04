@@ -17,12 +17,14 @@ class DeviceStream {
     friend class Device;
 
     DeviceStream();
-    DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore);
+    DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore, int nThreadsToFillDevice);
     ~DeviceStream();
     
-    void set(cudaStream_t stream, DeviceMemoryStore &memStore);
-    
+    void set(cudaStream_t stream, DeviceMemoryStore &memStore, int nThreadsToFillDevice);
+
 public:
+    int getNumThreadsToFillDevice() const { return nThreadsToFillDevice_;  }
+
     void finalize();
     
     void *allocate(size_t size, const char *signature = NULL);
@@ -53,6 +55,7 @@ public:
 private:    
     void releaseTempObjects();
 
+    int nThreadsToFillDevice_;
     cudaStream_t stream_;
     DeviceMemoryStore *memStore_;
     typedef sqaod::ArrayType<DeviceObject*> DeviceObjects;
@@ -69,6 +72,11 @@ DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sqaod::SizeType rows, sqaod:
     DeviceMatrixType<V> *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
     tempObjects_.pushBack(mat);
     return mat;
+}
+
+template<class V> inline
+DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(const sqaod::Dim &dim, const char *signature) {
+    return tempDeviceMatrix<V>(dim.rows, dim.cols, signature);
 }
 
 template<class V> inline

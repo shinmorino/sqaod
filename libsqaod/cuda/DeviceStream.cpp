@@ -19,16 +19,17 @@ struct PlainDeviceObject : DeviceObject {
 DeviceStream::DeviceStream() : stream_(NULL), memStore_(NULL), cublasHandle_(NULL) {
 }
 
-DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore) :
+DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore, int nThreadsToFillDevice) :
         stream_(NULL), memStore_(NULL), cublasHandle_(NULL) {
-    set(stream, memStore);
+    set(stream, memStore, nThreadsToFillDevice);
 }
 
 DeviceStream::~DeviceStream() {
     finalize();
 }
 
-void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore) {
+void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore, int nThreadsToFillDevice) {
+    nThreadsToFillDevice_ = nThreadsToFillDevice;
     stream_ = stream;
     memStore_ = &memStore;
     throwOnError(cublasCreate(&cublasHandle_));
