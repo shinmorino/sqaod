@@ -7,10 +7,15 @@ namespace sqaod_cuda {
 class DeviceRandomBuffer {
 public:
     DeviceRandomBuffer();
+    DeviceRandomBuffer(Device &device, DeviceStream *devStream = NULL);
+
     ~DeviceRandomBuffer();
 
+    void assignDevice(Device &device, DeviceStream *devStream = NULL);
+
     bool available(sqaod::SizeType size) const {
-        return size <= nElms();
+        int nElmsAvailable = sizeInElm_ - posInElm_;
+        return (int)size <= nElmsAvailable;
     }
 
     void generateFlipPositions(DeviceRandom &d_random,
@@ -24,21 +29,18 @@ public:
 
     template<class V>
     const V *acquire(sqaod::SizeType size) {
-        const V *ptr = &((const V*)d_buffer_)[pos_];
-        pos_ += size;
+        const V *ptr = &((const V*)d_buffer_)[posInElm_];
+        posInElm_ += size;
         return ptr;
     }
 
 private:
     void deallocate();
     void reserve(sqaod::SizeType bufSize);
-    sqaod::SizeType nElms() const {
-        return size_ / elmSize_;
-    }
 
-    sqaod::IdxType pos_;
-    sqaod::SizeType size_;
-    sqaod::SizeType elmSize_;
+    sqaod::IdxType posInElm_;
+    sqaod::SizeType sizeInElm_;
+    sqaod::SizeType sizeInByte_;
     void *d_buffer_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;

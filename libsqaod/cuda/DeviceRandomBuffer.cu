@@ -7,31 +7,46 @@ using namespace sqaod_cuda;
 namespace sq = sqaod;
 
 DeviceRandomBuffer::DeviceRandomBuffer() {
-    size_ = (sq::SizeType)-1;
+    sizeInByte_ = (sq::SizeType)-1;
+    sizeInElm_ = 0;
+    posInElm_ = 0;
     d_buffer_ = NULL;
 }
 
+DeviceRandomBuffer::DeviceRandomBuffer(Device &device, DeviceStream *devStream) {
+    sizeInByte_ = (sq::SizeType)-1;
+    d_buffer_ = NULL;
+    sizeInElm_ = 0;
+    posInElm_ = 0;
+    assignDevice(device, devStream);
+}
 
 DeviceRandomBuffer::~DeviceRandomBuffer() {
     deallocate();
 }
 
-
 void DeviceRandomBuffer::deallocate() {
     if (d_buffer_ != NULL) {
         devAlloc_->deallocate(d_buffer_);
         d_buffer_ = NULL;
-        size_ = (sq::SizeType)-1;
+        sizeInByte_ = (sq::SizeType)-1;
+        sizeInElm_ = (sq::SizeType)-1;
     }
 }
 
+void DeviceRandomBuffer::assignDevice(Device &device, DeviceStream *devStream) {
+    devAlloc_ = device.objectAllocator();
+    if (devStream == NULL)
+        devStream = device.defaultStream();
+    devStream_ = devStream;
+}
 
 void DeviceRandomBuffer::reserve(sq::SizeType size) {
-    if ((size_ != size) && (d_buffer_ != NULL))
+    if ((sizeInByte_ != size) && (d_buffer_ != NULL))
         deallocate();
     if (d_buffer_ == NULL) {
         d_buffer_ = devAlloc_->allocate(size);
-        size_ = size;
+        sizeInByte_ = size;
     }
 }
 
@@ -59,7 +74,7 @@ void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
     reserve(size);
 
     dim3 blockDim(128);
-    dim3 gridDim(divru((uint)nToGenerate, blockDim.x));
+    dim3 gridDim(divru((sq::SizeType)nToGenerate, blockDim.x));
     sq::IdxType offset;
     sq::SizeType posToWrap;
     const int *d_randomNum = d_random.get(nToGenerate, &offset, &posToWrap);
@@ -67,8 +82,8 @@ void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
     generateFlipPosKernel<<<gridDim, blockDim, 0, stream>>>((int*)d_buffer_, N, m, nRuns,
                                                             d_randomNum, offset, posToWrap);
     DEBUG_SYNC;
-    pos_ = 0;
-    elmSize_ = sizeof(int);
+    posInElm_ = 0;
+    sizeInElm_ = sizeInByte_ / sizeof(int);
 }
 
 
@@ -104,8 +119,8 @@ void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sqaod::SizeType n
     genRandKernel<<<gridDim, blockDim, 0, stream>>>((float*)d_buffer_, nToGenerate,
                                                     d_randNum, offset, posToWrap);
     DEBUG_SYNC;
-    pos_ = 0;
-    elmSize_ = sizeof(float);
+    posInElm_ = 0;
+    sizeInElm_ = sizeInByte_ / sizeof(float);
 }
 
 void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sqaod::SizeType nToGenerate) {
@@ -120,6 +135,6 @@ void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sqaod::SizeType 
     genRandKernel<<<gridDim, blockDim, 0, stream>>>((double*)d_buffer_, nToGenerate,
                                                     (const int2*)d_randNum, offset, posToWrap);
     DEBUG_SYNC;
-    pos_ = 0;
-    elmSize_ = sizeof(double);
+    posInElm_ = 0;
+    sizeInElm_ = sizeInByte_ / sizeof(double);
 }
