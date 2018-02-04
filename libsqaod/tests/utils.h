@@ -1,71 +1,29 @@
 #pragma once
 
-#include <common/Matrix.h>
 #include <iostream>
+#include <common/Matrix.h>
+#include <cuda/DeviceMatrix.h>
+#include <cuda/DeviceArray.h>
 #include <cpu/CPURandom.h>
-#include <common/EigenBridge.h>
-
 
 namespace sq = sqaod;
 using namespace sqaod_cuda;
 
 template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat) {
-    sqaod::MatrixType<real> hmat;
-    DeviceCopy()(&hmat, dmat);
-    ostm << hmat.map() << std::endl;
-    return ostm;
-}
+std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<real> &arr);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sq::VectorType<real> &vec);
+template<class real>
+void show(const sqaod_cuda::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat);
 
 template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec) {
-    sqaod::VectorType<real> hvec;
-    DeviceCopy()(&hvec, dvec);
-    ostm << mapToRowVector(hvec) << std::endl;
-    return ostm;
-}
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds) {
-    real hs;
-    DeviceCopy()(&hs, ds);
-    ostm << hs << std::endl;
-    return ostm;
-}
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const ArrayType<real> &arr) {
-    for (int idx = 0; idx < (int)arr.size(); ++idx)
-        ostm << arr[idx] << ", ";
-    ostm << std::endl;
-    return ostm;
-}
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const VectorType<real> &vec) {
-    for (int idx = 0; idx < (int)vec.size; ++idx)
-        ostm << (int)vec.data[idx] << ", "; /* FIXME: add [] operator */
-    ostm << std::endl;
-    return ostm;
-}
-
-template<class real>
-void show(const sqaod_cuda::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
-    std::cerr << std::endl 
-        << "Device" << std::endl
-        << dmat
-        << "Host  " << std::endl
-        << hmat.map() << std::endl; 
-}
-
-template<class real>
-void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec) {
-    std::cerr << std::endl
-        << "Device" << std::endl
-        << dvec
-        << "Host  " << std::endl
-        << mapToRowVector(hvec) << std::endl; 
-}
+void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec);
 
 
 template<class real>
@@ -221,3 +179,6 @@ sqaod::MatrixType<real> randomizeBits(const sq::Dim &dim) {
     }
     return mat;
 }
+
+template<class real>
+sq::VectorType<real> segmentedSum(const sq::MatrixType<real> &A, sq::SizeType segLen, sq::SizeType nSegments);

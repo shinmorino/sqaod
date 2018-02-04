@@ -1,6 +1,7 @@
 #include "DeviceMathTest.h"
 #include <cuda/DeviceMath.h>
 #include <cuda/DeviceCopy.h>
+#include <common/EigenBridge.h>
 #include "utils.h"
 
 namespace sq = sqaod;
