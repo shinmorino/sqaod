@@ -5,6 +5,7 @@
 
 namespace sq = sqaod;
 
+#undef SQAOD_CUDA_ENABLED
 
 #ifdef SQAOD_CUDA_ENABLED
 #  include <cuda/CUDADenseGraphBFSolver.h>
@@ -97,6 +98,8 @@ void denseGraphAnnealer(int N) {
     sq::MatrixType<real> W = symmetricMatrix<real>(N);
 
     sq::CPUDenseGraphAnnealer<real> cpuAnnealer;
+    cpuAnnealer.seed(0);
+    cpuAnnealer.selectAlgorithm(sq::algoNaive);
     cpuAnnealer.setProblem(W);
     cpuAnnealer.setNumTrotters(N / 2);
 
@@ -128,11 +131,11 @@ void denseGraphAnnealer(int N) {
 }
 
 int main() {
-    int N = 20;
-    denseGraphBFSearch<double>(N);
-    denseGraphBFSearch<float>(N);
+    // int N = 20;
+    // denseGraphBFSearch<double>(N);
+    // denseGraphBFSearch<float>(N);
 
-    N = 100;
-    denseGraphAnnealer<double>(N);
+    int N = 500;
+    // denseGraphAnnealer<double>(N);
     denseGraphAnnealer<float>(N);
 }

@@ -39,3 +39,12 @@ void sqaod::__throwError(const char *file, unsigned long line, const char *forma
     snprintf(buffer, sizeof(buffer), "%s:%d %s\n", file, (int)line, msg);
     throw std::runtime_error(buffer);
 }
+
+void sqaod::log(const char *format, ...) {
+    va_list va;
+    va_start(va, format);
+    vfprintf(stderr, format, va);
+    va_end(va);
+    fprintf(stderr, "\n");
+}
+
