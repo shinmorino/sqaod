@@ -3,7 +3,6 @@
 
 #include <common/Common.h>
 #include <common/EigenBridge.h>
-#include <cpu/CPURandom.h>
 
 namespace sqaod {
 

@@ -1,4 +1,4 @@
-#include "CPURandom.h"
+#include "Random.h"
 
 
 /* 
@@ -48,8 +48,14 @@ using namespace sqaod;
 
 
 #include <time.h>
+
+Random::Random() {
+    // mti = N + 1;
+    seed();
+}
+
 /* smorino : Modified */
-void CPURandom::seed() {
+void Random::seed() {
     seed((unsigned long)time(NULL));
 }
 
@@ -61,7 +67,7 @@ void CPURandom::seed() {
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
 /* initializes mt[N] with a seed */
-void CPURandom::seed(unsigned long s)
+void Random::seed(unsigned long s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
@@ -80,7 +86,7 @@ void CPURandom::seed(unsigned long s)
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-void CPURandom::initByArray(unsigned long init_key[], int key_length)
+void Random::initByArray(unsigned long init_key[], int key_length)
 {
     int i, j, k;
     seed(19650218UL);
@@ -106,7 +112,7 @@ void CPURandom::initByArray(unsigned long init_key[], int key_length)
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long CPURandom::randInt32(void) {
+unsigned long Random::randInt32(void) {
     unsigned long y;
     static unsigned long mag01[2]={0x0UL, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
@@ -142,13 +148,13 @@ unsigned long CPURandom::randInt32(void) {
     return y;
 }
 
-unsigned long CPURandom::randInt(int high) {
+unsigned long Random::randInt(int high) {
     return randInt32() % high;
 }
 
 
 /* generates a random number on [0,1)-real-interval */
-float CPURandom::randomf32(void)
+float Random::randomf32(void)
 {
     return randInt32()* float(1./4294967296.); 
     /* divided by 2^32 */
@@ -156,7 +162,7 @@ float CPURandom::randomf32(void)
 
 
 /* generates a random number on [0,1) with 53-bit resolution*/
-double CPURandom::randomf64(void)  { 
+double Random::randomf64(void)  { 
     unsigned long a=randInt32()>>5, b=randInt32()>>6; 
     return(a*67108864.0+b)*(1.0/9007199254740992.0); 
 } 
@@ -212,3 +218,5 @@ int main(void)
     return 0;
 }
 #endif
+
+sqaod::Random sqaod::random;

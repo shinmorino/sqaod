@@ -3,6 +3,7 @@
 
 #include <common/Matrix.h>
 #include <common/Array.h>
+#include <common/Random.h>
 
 namespace sqaod {
     

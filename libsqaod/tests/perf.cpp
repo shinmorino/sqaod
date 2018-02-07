@@ -1,6 +1,5 @@
 #include <cpu/CPUDenseGraphBFSolver.h>
 #include <cpu/CPUDenseGraphAnnealer.h>
-#include <cpu/CPURandom.h>
 #include <iostream>
 #include <chrono>
 
@@ -23,7 +22,7 @@ void showDuration(const T &duration) {
 
 template<class real>
 sq::MatrixType<real> symmetricMatrix(sq::SizeType dim) {
-    sq::CPURandom random;
+    sq::Random random;
     random.seed(0);
     sq::MatrixType<real> mat(dim, dim);
     for (sq::SizeType irow = 0; irow < dim; ++irow) {

@@ -4,7 +4,7 @@
 #include <common/Matrix.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
-#include <cpu/CPURandom.h>
+#include <common/Random.h>
 
 namespace sq = sqaod;
 using namespace sqaod_cuda;
@@ -142,7 +142,7 @@ template<class real>
 sqaod::MatrixType<real> createRandomSymmetricMatrix(const sq::SizeType dim) {
     sq::MatrixType<real> mat(dim, dim);
 
-    sq::CPURandom random;
+    sq::Random random;
     random.seed(1);
     for (sq::SizeType irow = 0; irow < dim; ++irow) {
         for (sq::SizeType icol = irow; icol < dim; ++icol) {
@@ -157,7 +157,7 @@ template<class real>
 sqaod::VectorType<real> randomizeBits(const sq::SizeType size) {
     sq::VectorType<real> vec(size);
 
-    sq::CPURandom random;
+    sq::Random random;
     random.seed(2);
     for (sq::SizeType idx = 0; idx < size; ++idx) {
         vec(idx) = (real)random.randInt(2);
@@ -170,7 +170,7 @@ template<class real>
 sqaod::MatrixType<real> randomizeBits(const sq::Dim &dim) {
     sq::MatrixType<real> mat(dim);
 
-    sq::CPURandom random;
+    sq::Random random;
     random.seed(2);
     for (sq::SizeType irow = 0; irow < dim.rows; ++irow) {
         for (sq::SizeType icol = 0; icol < dim.cols; ++icol) {

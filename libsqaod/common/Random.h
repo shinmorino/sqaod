@@ -1,14 +1,11 @@
 /* -*- c++ -*- */
-#ifndef CPU_RANDOM_H__
-#define CPU_RANDOM_H__
+#pragma once
 
 namespace sqaod {
 
-class CPURandom {
+class Random {
 public:
-    CPURandom() {
-        mti = N + 1;
-    }
+    Random();
 
     void seed();
 
@@ -41,14 +38,15 @@ private:
 
 
 template<> inline
-float CPURandom::random<float>() {
+float Random::random<float>() {
     return randomf32();
 }
 template<> inline
-double CPURandom::random<double>() {
+double Random::random<double>() {
     return randomf64();
 }
 
+extern Random random;
+
 }
 
-#endif

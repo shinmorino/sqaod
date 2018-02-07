@@ -4,7 +4,7 @@
 
 #include <common/Common.h>
 #include <common/EigenBridge.h>
-#include <cpu/CPURandom.h>
+
 
 namespace sqaod {
 
@@ -57,7 +57,7 @@ private:
                         const EigenMatrix &qFixed, real G, real kT);
     int annState_;
 
-    CPURandom random_;
+    Random random_;
     SizeType N0_, N1_, m_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
