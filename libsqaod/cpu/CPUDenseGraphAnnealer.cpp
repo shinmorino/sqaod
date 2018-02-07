@@ -9,6 +9,7 @@ template<class real>
 sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annState_ = annNone;
+    annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
 }
 
 template<class real>
@@ -20,6 +21,34 @@ void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
     random_.seed(seed);
     annState_ |= annRandSeedGiven;
 }
+
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
+    switch (algo) {
+    case algoNaive:
+        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
+        break;
+    case algoColored:
+    case algoDefault:
+        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColored;
+        break;
+    default:
+        log("Uknown algo, %s, defaulting to %s.", algoToName(algo), algoToName(algoColored));
+        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColored;
+    }
+}
+
+template<class real>
+enum sqd::Algorithm sqd::CPUDenseGraphAnnealer<real>::algorithm() const {
+    if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepNaive)
+        return algoNaive;
+    if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepColored)
+        return algoColored;
+    abort_("Must not reach here.");
+    return algoDefault; /* to suppress warning. */
+}
+
 
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N, SizeType *m) const {
@@ -121,7 +150,6 @@ void sqd::CPUDenseGraphAnnealer<real>::calculate_E() {
 }
 
 
-
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
@@ -134,9 +162,8 @@ void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
 }
 
 
-
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
+void sqd::CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
         
@@ -146,13 +173,40 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         real qyx = matQ_(y, x);
         real sum = J_.row(x).dot(matQ_.row(y));
         real dE = - twoDivM * qyx * (h_(x) + sum);
-        int neibour0 = (m_ + y - 1) % m_;
-        int neibour1 = (y + 1) % m_;
+        int neibour0 = (y == 0) ? m_ - 1 : y - 1;
+        int neibour1 = (y == m_ - 1) ? 0 : y + 1;
         dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
         real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
         if (threshold > random_.random<real>())
             matQ_(y, x) = - qyx;
     }
+}
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOffset) {
+    real twoDivM = real(2.) / real(m_);
+    real coef = std::log(std::tanh(G / kT / m_)) / kT;
+        
+    for (int y = 0; y < IdxType(m_); ++y) {
+        int offset = (stepOffset + y) % 2;
+        int x = (offset + 2 * random_.randInt32()) % N_;
+        real qyx = matQ_(y, x);
+        real sum = J_.row(x).dot(matQ_.row(y));
+        real dE = - twoDivM * qyx * (h_(x) + sum);
+        int neibour0 = (y == 0) ? m_ - 1 : y - 1;
+        int neibour1 = (y == m_ - 1) ? 0 : y + 1;
+        dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
+        real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+        if (threshold > random_.random<real>())
+            matQ_(y, x) = - qyx;
+    }
+}
+
+template<class real>
+void sqd::CPUDenseGraphAnnealer<real>::annealOneStepColored(real G, real kT) {
+    int stepOffset = random_.randInt(2);
+    for (int idx = 0; idx < (IdxType)N_; ++idx)
+        annealColoredPlane(G, kT, (stepOffset + idx) & 1);
 }
 
 

@@ -21,6 +21,10 @@ public:
 
     void seed(unsigned long seed);
 
+    void selectAlgorithm(enum Algorithm algo);
+
+    enum Algorithm algorithm() const;
+    
     void getProblemSize(SizeType *N, SizeType *m) const;
 
     void setProblem(const Matrix &W, OptimizeMethod om = sqaod::optMinimize);
@@ -45,9 +49,20 @@ public:
 
     void finAnneal();
 
-    void annealOneStep(real G, real kT);
-    
+    void annealOneStep(real G, real kT) {
+        (this->*annealMethod_)(G, kT);
+    }
+
+    void annealOneStepNaive(real G, real kT);
+    void annealOneStepColored(real G, real kT);
+
 private:    
+    typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real kT);
+    AnnealMethod annealMethod_;
+
+    /* actual annealing function for annealOneStepColored. */
+    void annealColoredPlane(real G, real kT, int offset);
+
     void syncBits();
     int annState_;
     

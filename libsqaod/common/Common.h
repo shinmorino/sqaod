@@ -5,8 +5,16 @@
 #include <common/Array.h>
 
 namespace sqaod {
-    
-    
+
+enum Algorithm {
+    algoDefault,
+    algoNaive,
+    algoColored,
+};
+
+const char *algoToName(Algorithm algo);
+
+
 enum OptimizeMethod {
     optMinimize,
     optMaximize
@@ -19,7 +27,6 @@ enum AnnealerState {
     annQSet = 4,
 };
 
-    
 template<class real>
 void createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd);
     

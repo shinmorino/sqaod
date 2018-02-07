@@ -29,6 +29,8 @@ void _throwError(const char *file, unsigned long line, Args... args) {
 }
 
 
+void log(const char *format, ...) FORMATATTR(1, 2);
+
 }
 
 /* FIXME: undef somewhere */
