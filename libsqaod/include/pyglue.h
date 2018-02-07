@@ -60,7 +60,7 @@ struct NpVectorType {
         PyArrayObject *arr = (PyArrayObject*)obj;
         /* setup members */
         real *data = (real*)PyArray_DATA(arr);
-        vec.set(data, _size);
+        vec.map(data, _size);
     }
 
 
@@ -79,7 +79,7 @@ struct NpVectorType {
         else /*if (PyArray_NDIM(arr) == 1) */  {
             size = PyArray_SHAPE(arr)[0];
         }
-        vec.set(data, size);
+        vec.map(data, size);
     }
 
     /* accessor for ease of coding. */
