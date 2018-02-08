@@ -2,10 +2,9 @@
 #include <cpu/CPUDenseGraphAnnealer.h>
 #include <iostream>
 #include <chrono>
+#include <cuda_runtime.h>
 
 namespace sq = sqaod;
-
-#undef SQAOD_CUDA_ENABLED
 
 #ifdef SQAOD_CUDA_ENABLED
 #  include <cuda/CUDADenseGraphBFSolver.h>
