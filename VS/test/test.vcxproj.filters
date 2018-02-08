@@ -11,6 +11,7 @@
     <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphAnnealerTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\utils.cpp" />
+    <ClCompile Include="..\..\libsqaod\cuda\debug.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libsqaod\tests\MinimalTestSuite.h" />
