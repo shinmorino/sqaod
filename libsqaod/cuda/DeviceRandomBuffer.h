@@ -15,7 +15,7 @@ public:
 
     bool available(sqaod::SizeType size) const {
         int nElmsAvailable = sizeInElm_ - posInElm_;
-        return (int)size <= nElmsAvailable;
+        return ((int)size) <= nElmsAvailable;
     }
 
     void generateFlipPositions(DeviceRandom &d_random,
