@@ -28,20 +28,19 @@ public:
 
     void generate();
 
-    const int *get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap,
-                   int alignment = 1);
+    const unsigned int *get(sqaod::SizeType nRands, sqaod::IdxType *offset, sqaod::SizeType *posToWrap,
+                            int alignment = 1);
 
     void synchronize();
 
 private:
 
-void deviceRandomMakeKernelState(curandStateMtgp32_t *d_randStates_,
-                                 mtgp32_kernel_params_t *kernelParams,
-                                 unsigned long long seed, cudaStream_t stream);
+    void deviceRandomMakeKernelState(curandStateMtgp32_t *d_randStates_,
+                                     mtgp32_kernel_params_t *kernelParams,
+                                     unsigned long long seed, cudaStream_t stream);
 
-void deviceGenRand(int *d_buffer, int begin, int end, int nToGenerate, int bufSize,
-                   curandStateMtgp32_t *d_randStates, cudaStream_t stream);
-
+    void deviceGenRand(int *d_buffer, int begin, int end, int nToGenerate, int bufSize,
+                       curandStateMtgp32_t *d_randStates, cudaStream_t stream);
 
 
     DeviceObjectAllocator *devAlloc_;
@@ -52,7 +51,7 @@ void deviceGenRand(int *d_buffer, int begin, int end, int nToGenerate, int bufSi
     
     curandStateMtgp32_t *d_randStates_;
     mtgp32_kernel_params_t *d_kernelParams_;
-    int *d_buffer_;
+    unsigned int *d_buffer_;
     int begin_;
     int end_;
 };

@@ -88,13 +88,13 @@ sqaod::SizeType DeviceRandom::getNRands() const {
 
 
 __global__
-static void genRandKernel(int *d_buffer, int offset, int nNums, int bufLen,
+static void genRandKernel(unsigned int *d_buffer, int offset, int nNums, int bufLen,
                           curandStateMtgp32_t *d_state) {
     /* bufLen must be 2^n */
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     offset = (offset + gid) % bufLen;
     for (int idx = 0; idx < nNums; idx += randGenSize) {
-        int r = curand(&d_state[blockIdx.x]);
+        unsigned int r = curand(&d_state[blockIdx.x]);
         d_buffer[offset] = r;
         offset = (offset + randGenSize) % bufLen;
     }
@@ -112,8 +112,8 @@ void DeviceRandom::generate() {
     }
 }
 
-const int *DeviceRandom::get(sqaod::SizeType nRands,
-                             sqaod::IdxType *offset, sqaod::SizeType *posToWrap, int alignment) {
+const unsigned int *DeviceRandom::get(sqaod::SizeType nRands,
+                                      sqaod::IdxType *offset, sqaod::SizeType *posToWrap, int alignment) {
     nRands = roundUp(nRands, (sq::SizeType)alignment);
     if (getNRands() < nRands)
         generate();

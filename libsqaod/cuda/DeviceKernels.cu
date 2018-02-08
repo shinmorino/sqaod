@@ -424,7 +424,7 @@ sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBits xBegin, PackedBits
 template<class V>
 __global__ static void
 randomize_q_Kernel(V *d_buffer, sq::SizeType size,
-                   const int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap) {
+                   const unsigned int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < size)
         d_buffer[gid] = (d_random[(gid + offset) % sizeToWrap] & 1 == 0) ? V(-1.) : V(1.);
@@ -438,7 +438,7 @@ void sqaod_cuda::randomize_q(V *d_q, DeviceRandom &d_random, sqaod::SizeType siz
     dim3 gridDim(divru(size, blockDim.x));
     sq::IdxType offset;
     sq::SizeType sizeToWrap;
-    const int *d_randnum = d_random.get(size, &offset, &sizeToWrap);
+    const unsigned int *d_randnum = d_random.get(size, &offset, &sizeToWrap);
     randomize_q_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q, size,
                                                          d_randnum, offset, sizeToWrap);
     DEBUG_SYNC;

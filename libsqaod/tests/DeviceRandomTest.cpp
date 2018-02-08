@@ -37,7 +37,7 @@ void DeviceRandomTest::run(std::ostream &ostm) {
 
         sqaod::IdxType offset;
         sqaod::SizeType posToWrap;
-        const int *d_rand = devRand.get(nRands, &offset, &posToWrap);
+        const unsigned int *d_rand = devRand.get(nRands, &offset, &posToWrap);
         TEST_ASSERT(offset == 0);
         d_rand = devRand.get(nRands, &offset, &posToWrap);
         TEST_ASSERT(offset == nRands);
