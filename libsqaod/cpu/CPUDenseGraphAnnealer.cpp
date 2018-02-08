@@ -12,6 +12,7 @@ sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
     nProcs_ = omp_get_num_procs();
+    sqd::log("# processors: %d", nProcs_);
 #else
     nProcs_ = 1;
 #endif
@@ -194,14 +195,15 @@ void sqd::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int s
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
 
-#pragma omp parallel private(random) 
+#ifndef _OPENMP
     {
-#ifdef _OPENMP
-        Random &random = random_[omp_get_thread_num()];
-#else
         Random &random = random_[0];
-#endif
-#pragma omp for
+#else
+#  pragma omp parallel private(random) 
+    {
+        Random &random = random_[omp_get_thread_num()];
+#  pragma omp for
+#endif        
         for (int y = 0; y < IdxType(m_); ++y) {
             int offset = (stepOffset + y) % 2;
             int x = (offset + 2 * random.randInt32()) % N_;
