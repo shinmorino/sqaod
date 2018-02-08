@@ -1,6 +1,7 @@
 #ifndef SQAOD_CUDA_CUDA_MATRIX_H__
 #define SQAOD_CUDA_CUDA_MATRIX_H__
 
+#include <common/defines.h>
 #include <common/types.h>
 #include <cuda/DeviceObject.h>
 
@@ -36,6 +37,18 @@ struct DeviceMatrixType : DeviceObject {
         return &d_data[row * cols];
     }
 
+    V &operator()(sqaod::IdxType r, sqaod::IdxType c) {
+        assert((0 <= r) && (r < (sqaod::IdxType)rows));
+        assert((0 <= c) && (c < (sqaod::IdxType)cols));
+        return d_data[r * cols + c];
+    }
+    
+    const V &operator()(sqaod::IdxType r, sqaod::IdxType c) const {
+        assert((0 <= r) && (r < (sqaod::IdxType)rows));
+        assert((0 <= c) && (c < (sqaod::IdxType)cols));
+        return d_data[r * cols + c];
+    }
+
     SizeType rows, cols;
     V *d_data;
 
@@ -64,6 +77,14 @@ struct DeviceVectorType : DeviceObject {
         size = _size;
     }
     
+    V &operator()(sqaod::IdxType idx) {
+        return d_data[idx];
+    }
+    
+    const V &operator()(sqaod::IdxType idx) const {
+        return d_data[idx];
+    }
+
     virtual ~DeviceVectorType() {
     }
     
