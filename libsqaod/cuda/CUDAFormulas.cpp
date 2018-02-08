@@ -5,7 +5,6 @@
 
 using namespace sqaod_cuda;
 
-
 template<class real>
 void CUDADGFuncs<real>::calculate_E(DeviceScalar *E,
                                     const DeviceMatrix &W, const DeviceVector &x) {
@@ -137,6 +136,11 @@ void CUDABGFuncs<real>::calculate_E(DeviceVector *E,
     devMath.vmProduct(E, 1., h0, q0, opTranspose, 1.);
     devMath.vmProduct(E, 1., h1, q1, opTranspose, 1.);
     devMath.scaleBroadcast(E, 1., c, 1.);
+}
+
+template<class real>
+CUDADGFuncs<real>::CUDADGFuncs(Device &device, DeviceStream *stream) {
+    assignDevice(device, stream);
 }
 
 template<class real>

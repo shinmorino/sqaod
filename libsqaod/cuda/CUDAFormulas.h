@@ -27,7 +27,12 @@ struct CUDADGFuncs {
                      const DeviceMatrix &q);
 
 
+
+    CUDADGFuncs() { }
+
+    CUDADGFuncs(Device &device, DeviceStream *stream = NULL);
     void assignDevice(Device &device, DeviceStream *stream = NULL);
+
     DeviceMath devMath;
 };
 
