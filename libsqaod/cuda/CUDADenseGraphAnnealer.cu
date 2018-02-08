@@ -93,6 +93,7 @@ void CUDADenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const 
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::randomize_q() {
+    /* FIXME: add exception, randomize_q() must be called after calling seed() and setNumTrotters(). */
     ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
                   devStream_->getCudaStream());
 }
@@ -215,10 +216,9 @@ tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
         dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
         real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
         if (threshold > d_random[y])
-            d_q[N * y + x] = -qyx;
+            d_q[N * y + x] = - qyx;
     }
 }
-
 
 template<class real> void CUDADenseGraphAnnealer<real>::
 annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, const real *d_random,
