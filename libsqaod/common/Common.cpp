@@ -7,8 +7,8 @@ const char *sqaod::algoToName(Algorithm algo) {
     switch (algo) {
     case algoNaive:
         return "naive";
-    case algoColored:
-        return "colored";
+    case algoColoring:
+        return "coloring";
     default:
         return "unknown";
     }

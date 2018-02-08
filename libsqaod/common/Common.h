@@ -10,7 +10,7 @@ namespace sqaod {
 enum Algorithm {
     algoDefault,
     algoNaive,
-    algoColored,
+    algoColoring,
 };
 
 const char *algoToName(Algorithm algo);

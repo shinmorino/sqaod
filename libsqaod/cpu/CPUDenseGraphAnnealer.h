@@ -53,7 +53,7 @@ public:
     }
 
     void annealOneStepNaive(real G, real kT);
-    void annealOneStepColored(real G, real kT);
+    void annealOneStepColoring(real G, real kT);
 
 private:    
     typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real kT);
@@ -65,7 +65,8 @@ private:
     void syncBits();
     int annState_;
     
-    CPURandom random_;
+    Random *random_;
+    int nProcs_;
     SizeType N_, m_;
     OptimizeMethod om_;
     Vector E_;
