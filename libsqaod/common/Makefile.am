@@ -1,5 +1,5 @@
 noinst_LTLIBRARIES=libcommon.la
-libcommon_la_SOURCES=sqaod_config.h defines.cpp Matrix.cpp Common.cpp UniformOp.cpp
+libcommon_la_SOURCES=sqaod_config.h defines.cpp Matrix.cpp Common.cpp UniformOp.cpp Random.cpp
 
 defines.cpp: sqaod_config.h
 sqaod_config.h: $(top_srcdir)/config/sqaod_config.h
