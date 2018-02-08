@@ -66,7 +66,8 @@ public:
                       const int *d_flipPos);
 private:
     enum {
-        nRunsPerRandGen = 100
+        /* FIXME: parameterise */
+        nRunsPerRandGen = 10
     };
 
     void syncBits();
