@@ -87,6 +87,65 @@ segmentedSum_128Striped(InputIterator in,
     return sum;
 }
 
+/* 64 < size */
+template<class InputIterator, class OffsetIterator>
+__device__ __forceinline__ static
+typename std::iterator_traits<InputIterator>::value_type
+segmentedSum_128x8(InputIterator in,
+                   OffsetIterator segOffset, sq::SizeType segLen,
+                   sq::SizeType nSegments) {
+    enum { BLOCK_DIM = 128 };
+    typedef typename std::iterator_traits<InputIterator>::value_type V;
+    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+    typedef cub::BlockReduce<V, BLOCK_DIM> BlockReduce;
+
+    int iSegment = blockIdx.x;
+    __shared__ typename BlockReduce::TempStorage temp_storage;
+
+    V sum = V();
+    if (iSegment < nSegments) {
+        OffsetT segBegin = segOffset[iSegment] + threadIdx.x;
+        V v = V();
+#pragma unroll
+        for (int idx = 0; idx < 8; ++idx) {
+            if (threadIdx.x + BLOCK_DIM * idx < segLen)
+                v += in[segBegin + BLOCK_DIM * idx];
+        }
+        sum = BlockReduce(temp_storage).Sum(v);
+    }
+    return sum;
+}
+
+template<class InputIterator, class OffsetIterator>
+__device__ __forceinline__ static
+typename std::iterator_traits<InputIterator>::value_type
+segmentedSum_64x16(InputIterator in,
+                   OffsetIterator segOffset, sq::SizeType segLen,
+                   sq::SizeType nSegments) {
+    enum { BLOCK_DIM = 64 };
+    typedef typename std::iterator_traits<InputIterator>::value_type V;
+    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+    typedef cub::BlockReduce<V, BLOCK_DIM> BlockReduce;
+
+    int iSegment = blockIdx.x;
+    __shared__ typename BlockReduce::TempStorage temp_storage;
+
+    V sum = V();
+    if (iSegment < nSegments) {
+        OffsetT segBegin = segOffset[iSegment] + threadIdx.x;
+        V v = V();
+#pragma unroll
+        for (int idx = 0; idx < 15; ++idx) {
+            v += in[segBegin + BLOCK_DIM * idx];
+        }
+        if (15 * BLOCK_DIM + threadIdx.x < segLen)
+            v += in[segBegin + 15 * BLOCK_DIM];
+        sum = BlockReduce(temp_storage).Sum(v);
+    }
+    return sum;
+}
+
+
 template<class InputIterator, class OffsetIterator>
 __device__ __forceinline__ static
 typename std::iterator_traits<InputIterator>::value_type
@@ -163,6 +222,33 @@ segmentedSumKernel_128Striped(InputIterator in, OutputIterator out,
         out[blockIdx.x] = sum;
 }
 
+
+template<class InputIterator, class OutputIterator,
+         class OffsetBeginIterator, class OffsetEndIterator>
+__global__ static void
+segmentedSumKernel_64x16(InputIterator in, OutputIterator out,
+                         OffsetBeginIterator offsetBegin, OffsetEndIterator offsetEnd,
+                         sq::SizeType nSegments) {
+    enum { BLOCK_DIM = 64 };
+    typedef typename std::iterator_traits<OutputIterator>::value_type V;
+    V sum = segmentedSum_64x16(in, offsetBegin, offsetEnd, nSegments);
+    if (threadIdx.x == 0)
+        out[blockIdx.x] = sum;
+}
+
+template<class InputIterator, class OutputIterator,
+         class OffsetBeginIterator, class OffsetEndIterator>
+__global__ static void
+segmentedSumKernel_128x8(InputIterator in, OutputIterator out,
+                         OffsetBeginIterator offsetBegin, OffsetEndIterator offsetEnd,
+                         sq::SizeType nSegments) {
+    enum { BLOCK_DIM = 128 };
+    typedef typename std::iterator_traits<OutputIterator>::value_type V;
+    V sum = segmentedSum_128x8(in, offsetBegin, offsetEnd, nSegments);
+    if (threadIdx.x == 0)
+        out[blockIdx.x] = sum;
+}
+
 template<class InputIterator, class OutputIterator,
          class OffsetBeginIterator, class OffsetEndIterator>
 __global__ static void
@@ -206,6 +292,24 @@ void segmentedSum_128(InputIterator in, OutputIterator out,
     dim3 blockDim(128);
     dim3 gridDim(nSegments);
     segmentedSumKernel_128<<<gridDim, blockDim, 0, stream>>>(in, out, segOffset, segLen, nSegments);
+    DEBUG_SYNC;
+}
+
+template<class InputIterator, class OutputIterator, class OffsetIterator>
+void segmentedSum_64x16(InputIterator in, OutputIterator out,
+                        OffsetIterator segOffset, int segLen, sq::SizeType nSegments, cudaStream_t stream) {
+    dim3 blockDim(64);
+    dim3 gridDim(nSegments);
+    segmentedSumKernel_64x16<<<gridDim, blockDim, 0, stream>>>(in, out, segOffset, segLen, nSegments);
+    DEBUG_SYNC;
+}
+
+template<class InputIterator, class OutputIterator, class OffsetIterator>
+void segmentedSum_128x8(InputIterator in, OutputIterator out,
+                        OffsetIterator segOffset, int segLen, sq::SizeType nSegments, cudaStream_t stream) {
+    dim3 blockDim(128);
+    dim3 gridDim(nSegments);
+    segmentedSumKernel_128x8<<<gridDim, blockDim, 0, stream>>>(in, out, segOffset, segLen, nSegments);
     DEBUG_SYNC;
 }
 
@@ -269,14 +373,16 @@ void segmentedSum(void *temp_storage, sq::SizeType *temp_storage_bytes,
         segmentedSum_128(in, out, segOffset, segLen, nSegments, stream);
     }
     else if (segLen <= WARP_SIZE * 64) {
-        segmentedSum_512Loop(in, out, segOffset, segLen, nSegments, stream);
+        // segmentedSum_512Loop(in, out, segOffset, segLen, nSegments, stream);
+        segmentedSum_128x8(in, out, segOffset, segLen, nSegments, stream);
+        // segmentedSum_64x16(in, out, segOffset, segLen, nSegments, stream);
     }
     else {
         /* General case */
         int nThreads = roundUp(segLen, 128) * nSegments;
         int nLoops = divru(nThreads, nThreadsToFillDevice);
         if (2 <= nLoops) {
-            segmentedSum_128Loop(in, out, segOffset, segLen, nSegments, 1, stream);
+            segmentedSum_128(in, out, segOffset, segLen, nSegments, stream);
         }
         else {
             assert(temp_storage_bytes != NULL);
