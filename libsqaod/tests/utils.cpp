@@ -38,7 +38,7 @@ std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<real> &arr) {
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const sq::VectorType<real> &vec) {
     for (int idx = 0; idx < (int)vec.size; ++idx)
-        ostm << (int)vec.data[idx] << ", "; /* FIXME: add [] operator */
+        ostm << vec.data[idx] << ", "; /* FIXME: add [] operator */
     ostm << std::endl;
     return ostm;
 }

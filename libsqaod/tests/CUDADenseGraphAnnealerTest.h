@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MinimalTestSuite.h"
-
+#include <cuda/Device.h>
 
 class CUDADenseGraphAnnealerTest : public MinimalTestSuite {
 public:
@@ -13,5 +13,11 @@ public:
     virtual void tearDown();
 
     virtual void run(std::ostream &ostm);
+
+private:
+    template<class real>
+    void test();
+
+    sqaod_cuda::Device device_;
 
 };
