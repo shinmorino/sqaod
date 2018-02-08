@@ -16,6 +16,12 @@ enum {
 
 
 DeviceRandom::DeviceRandom(Device &device, DeviceStream *devStream) {
+    requiredSize_ = (sq::SizeType)-1;
+    internalBufSize_ = (sq::SizeType)-1;
+    d_buffer_ = NULL;
+    d_randStates_ = NULL;
+    d_kernelParams_ = NULL;
+    begin_ = end_ = 0;
     assignDevice(device, devStream);
 }
 
