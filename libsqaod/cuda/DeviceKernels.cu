@@ -427,7 +427,7 @@ randomize_q_Kernel(V *d_buffer, sq::SizeType size,
                    const unsigned int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < size)
-        d_buffer[gid] = (d_random[(gid + offset) % sizeToWrap] & 1 == 0) ? V(-1.) : V(1.);
+        d_buffer[gid] = (d_random[(gid + offset) % sizeToWrap] & 1) ? V(1) : V(-1);
 }
 
 
