@@ -62,7 +62,7 @@ public:
                        const int *d_x, const real *d_random,
                        const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real kT);
 
-    void calculate_Jq(DeviceVector *d_E, const DeviceMatrix &J, const DeviceMatrix &d_matq,
+    void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
                       const int *d_flipPos);
 private:
     enum {

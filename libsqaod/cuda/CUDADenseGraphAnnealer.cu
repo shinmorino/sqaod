@@ -181,20 +181,20 @@ void annealOneStep(real G, real kT) {
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_dE,
-                                                const DeviceMatrix &J, const DeviceMatrix &d_matq,
+void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
+                                                const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
                                                 const int *d_flipPos) {
     cudaStream_t stream = devStream_->getCudaStream();
-    InDotPtr<real> inPtr(d_matq_.d_data, d_J_.d_data);
+    InDotPtr<real> inPtr(d_matq.d_data, d_J.d_data);
 
     sq::SizeType temp_storage_bytes;
     segmentedSum(NULL, &temp_storage_bytes,
-                 inPtr, d_dE->d_data, Offset2way(d_flipPos), N_, m_,
+                 inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_), N_, m_,
                  nThreadsToFillDevice_, stream);
     if (temp_storage_bytes != 0) {
         void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
         segmentedSum(d_temp_storage, &temp_storage_bytes,
-                     inPtr, d_dE->d_data, Offset2way(d_flipPos), N_, m_,
+                     inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_), N_, m_,
                      nThreadsToFillDevice_, stream);
     }
 }
