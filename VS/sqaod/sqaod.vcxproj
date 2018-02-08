@@ -16,6 +16,7 @@
     <ClInclude Include="..\..\libsqaod\common\defines.h" />
     <ClInclude Include="..\..\libsqaod\common\EigenBridge.h" />
     <ClInclude Include="..\..\libsqaod\common\Matrix.h" />
+    <ClInclude Include="..\..\libsqaod\common\Random.h" />
     <ClInclude Include="..\..\libsqaod\common\undef.h" />
     <ClInclude Include="..\..\libsqaod\common\UniformOp.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.h" />
@@ -23,7 +24,6 @@
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h" />
-    <ClInclude Include="..\..\libsqaod\cpu\CPURandom.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.h" />
@@ -51,13 +51,13 @@
     <ClCompile Include="..\..\libsqaod\common\Common.cpp" />
     <ClCompile Include="..\..\libsqaod\common\defines.cpp" />
     <ClCompile Include="..\..\libsqaod\common\Matrix.cpp" />
+    <ClCompile Include="..\..\libsqaod\common\Random.cpp" />
     <ClCompile Include="..\..\libsqaod\common\UniformOp.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUFormulas.cpp" />
-    <ClCompile Include="..\..\libsqaod\cpu\CPURandom.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\CUDAFormulas.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\cudafuncs.cpp" />
@@ -71,7 +71,10 @@
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.cu">
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</Keep>
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</Keep>
+    </CudaCompile>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu" />
@@ -145,6 +148,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;SQAOD_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\libsqaod\cub;$(ProjectDir)..\..\libsqaod\eigen;$(ProjectDir)..\..\libsqaod;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
