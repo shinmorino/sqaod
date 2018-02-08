@@ -148,7 +148,7 @@ void annealOneStep(real G, real kT) {
     for (int outer = 0; outer < IdxType(N_); ++outer) {
         int x[m];
 
-        /* batched dot */
+        /* carried out in DeviceRandomBuffer. */
         for (int y = 0; y < IdxType(m_); ++y) {
             /* first plane */
             int fraction = y % 2;
@@ -158,17 +158,17 @@ void annealOneStep(real G, real kT) {
             x[innder] = (random_random() * 2 + fraction) % N;
         }
 
-        real dE[m];
+        /* calculate_Jq() */
+        real d_Jq[m];
         for (int y = 0; y < IdxType(m_); ++y)
-            dE[y] = J_.row(x[y]).dot(matQ_.row(y)) + h_(x[y]);
+            d_Jq[y] = J_.row(x[y]).dot(matQ_.row(y));
 
-        /* flip each bit */
-
+        /* flip each bit, */
         for (int inner = 0; inner < IdxType(m_); ++inner) {
             /* flip one bit */
             real qyx = matQ_(y, x[m]);
 
-            real dE = - twoDivM * qyx * dE[x[y]];
+            real dE = - twoDivM * qyx * (d_Jq[x[y] + h_(x[y])];
             int neibour0 = (m_ + y - 1) % m_, neibour1 = (y + 1) % m_;
             dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
             real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
@@ -178,7 +178,6 @@ void annealOneStep(real G, real kT) {
     }
 }
 #endif
-
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
