@@ -71,7 +71,7 @@ void DeviceSegmentedSumTest::test() {
     SegmentedSum segSum(device_);
     for (typename SegmentedSum::MethodMap::iterator it = segSum.methodMap_.begin();
         it != segSum.methodMap_.end(); ++it) {
-        runSegmentedSum<V>(it->first, it->first / 2);
+        runSegmentedSum<V>(it->first, it->first / 8);
     }
 #else
     runSegmentedSum<V>(12288, 2);
