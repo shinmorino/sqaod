@@ -20,6 +20,7 @@ DeviceSegmentedSumTest::~DeviceSegmentedSumTest(void)
 
 void DeviceSegmentedSumTest::setUp() {
     device_.useManagedMemory(true);
+    device_.enableLocalStore(false);
     device_.initialize();
 }
 
