@@ -30,6 +30,9 @@ public:
     void *allocate(size_t size, const char *signature = NULL);
 
     template<class V>
+    void allocate(V **pv, sqaod::SizeType size, const char *signature = NULL);
+
+    template<class V>
     DeviceMatrixType<V> *tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature = NULL);
 
     template<class V>
@@ -64,7 +67,10 @@ private:
 };
 
 
-
+template<class V>
+void DeviceStream::allocate(V **pv, sqaod::SizeType size, const char *signature) {
+    *pv = (V*)allocate(sizeof(V) * size, signature);
+}
 
 template<class V> inline
 DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature) {
