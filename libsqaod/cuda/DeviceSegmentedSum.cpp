@@ -20,7 +20,7 @@ DeviceSegmentedSumType<V>::~DeviceSegmentedSumType() {
 }
 
 template<class V>
-DeviceSegmentedSumType<V>::DeviceSegmentedSumType(Device &device, DeviceStream *devStream = NULL) {
+DeviceSegmentedSumType<V>::DeviceSegmentedSumType(Device &device, DeviceStream *devStream) {
     d_tempStoragePreAlloc_ = NULL;
     segLen_ = 0;
     nSegments_ = 0;

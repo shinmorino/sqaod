@@ -203,6 +203,8 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
     typedef DeviceSegmentedSumTypeImpl<V, InputIterator, OutputIterator, OffsetIterator> SelfType;
     typedef DeviceSegmentedSumType<V> Base;
 
+    using Base::d_tempStoragePreAlloc_;
+    using Base::tempStorageSize_;
     using Base::d_tempStorage_;
     using Base::devAlloc_;
     using Base::devStream_;
@@ -264,7 +266,6 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
 
     template<int N_REDUCE_THREADS, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG> void
     segmentedSum_2step(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
-        typedef typename std::iterator_traits<OutputIterator>::value_type V;
         if (N_REDUCE_THREADS == 32) {
             enum { BLOCK_DIM = 128 };
             dim3 blockDim(BLOCK_DIM);
