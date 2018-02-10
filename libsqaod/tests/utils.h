@@ -10,6 +10,21 @@
 namespace sq = sqaod;
 using namespace sqaod_cuda;
 
+
+template<class real>
+real epusiron();
+
+template<> inline
+float epusiron<float>() {
+    return 1.e-5f;
+}
+
+template<> inline
+double epusiron<double>() {
+    return 1.e-10;
+}
+
+
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat);
 template<class real>
@@ -74,6 +89,10 @@ bool operator==(const DeviceArrayType<real> &dsc, const sq::ArrayType<real> &hsc
     HostObjectAllocator().deallocate(copied);
     return true;
 }
+
+template<class real>
+bool allclose(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron);
+
 
 template<class real>
 sqaod::MatrixType<real> testMat(const sqaod::Dim &dim) {

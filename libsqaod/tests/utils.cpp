@@ -93,3 +93,20 @@ VectorType<real> segmentedSum(const MatrixType<real> &A, sq::SizeType segLen, sq
 template VectorType<double> segmentedSum(const MatrixType<double> &A, sq::SizeType segLen, sq::SizeType nSegments);
 template VectorType<float> segmentedSum(const MatrixType<float> &A, sq::SizeType segLen, sq::SizeType nSegments);
 
+
+template<class real>
+bool allclose(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron) {
+    sqaod::VectorType<real> copied;
+    DeviceCopy devCopy;
+    devCopy(&copied, dvec);
+    devCopy.synchronize();
+    real absDiff = (sq::mapToRowVector(copied) - sq::mapToRowVector(hvec)).array().abs().sum();
+    real absVal = sq::mapToRowVector(copied).array().abs().sum() + sq::mapToRowVector(hvec).array().abs().sum();
+    // fprintf(stderr, "%g %g\n", absDiff, absVal);
+    if (absDiff < epsiron)
+        return true;
+    return ((absDiff / absVal) < epsiron);
+}
+
+template bool allclose(const DeviceVectorType<float> &dvec, const sqaod::VectorType<float> &hvec, float epsiron);
+template bool allclose(const DeviceVectorType<double> &dvec, const sqaod::VectorType<double> &hvec, double epsiron);

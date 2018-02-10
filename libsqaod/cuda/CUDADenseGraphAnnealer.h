@@ -4,7 +4,7 @@
 #include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceRandom.h>
 #include <cuda/DeviceRandomBuffer.h>
-
+#include <cuda/DeviceSegmentedSum.h>
 
 namespace sqaod_cuda {
 
@@ -92,7 +92,8 @@ private:
     sqaod::BitsArray xlist_;
     sqaod::BitsArray qlist_;
 
-    int nThreadsToFillDevice_;
+    DeviceSegmentedSumType<real> *dotJq_;
+
     DeviceStream *devStream_;
     CUDADGFuncs<real> dgFuncs_;
     DeviceMathType<real> devMath_;

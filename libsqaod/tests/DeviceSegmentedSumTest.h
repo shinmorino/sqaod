@@ -15,5 +15,10 @@ public:
     virtual void run(std::ostream &ostm);
 
 private:
+    template<class V>
+    void runSegmentedSum(int segLen, int nSegments);
+    template<class V>
+    void test();
+
     sqaod_cuda::Device device_;
 };

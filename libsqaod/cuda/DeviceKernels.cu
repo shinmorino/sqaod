@@ -147,7 +147,7 @@ sumGather(real *d_sum, real alpha, const real *d_x, SizeType size, SizeType stri
 template<class real> void DeviceMathKernelsType<real>::
 sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBatch) {
     MulOutDevPtr<real> outPtr(d_sum, alpha);
-
+#if 0
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     d_A, outPtr, nBatch,
@@ -159,6 +159,12 @@ sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBa
                                     Linear(size, 0), Linear(size, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
+#else
+    typedef DeviceSegmentedSumTypeImpl<real, const real*, MulOutDevPtr<real>, Linear> Sum;
+    Sum &segSum = static_cast<Sum&>(*segmentedSum_);
+    segSum.configure(size, nBatch, true);
+    segSum(d_A, outPtr, Linear(size, 0));
+#endif
 }
 
 
@@ -211,12 +217,10 @@ dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType siz
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
-    sq::SizeType temp_storage_bytes;
-    segmentedSum(NULL, &temp_storage_bytes, inPtr, outPtr, Linear(size, 0), size, nBatch, devStream_->getNumThreadsToFillDevice(), stream_);
-    if (temp_storage_bytes != 0) {
-        void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
-        segmentedSum(d_temp_storage, &temp_storage_bytes, inPtr, outPtr, Linear(size, 0), size, nBatch, devStream_->getNumThreadsToFillDevice(), stream_);
-    }
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, MulOutDevPtr<real>, Linear> Dot;
+    Dot &segDot = static_cast<Dot&>(*segmentedDot_);
+    segDot.configure(size, nBatch, true);
+    segDot(inPtr, outPtr, Linear(size, 0));
 #endif
 }
 
@@ -308,6 +312,11 @@ assignStream(DeviceStream *devStream) {
     stream_ = NULL;
     if (devStream_ != NULL)
         stream_ = devStream_->getCudaStream();
+
+    typedef DeviceSegmentedSumTypeImpl<real, const real *, MulOutDevPtr<real>, Linear> Sum;
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, MulOutDevPtr<real>, Linear> Dot;
+    segmentedSum_ = new Sum(devStream_);
+    segmentedDot_ = new Dot(devStream_);
 }
 
 template struct sqaod_cuda::DeviceMathKernelsType<double>;

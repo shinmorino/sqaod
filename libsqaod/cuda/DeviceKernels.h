@@ -3,6 +3,7 @@
 
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceRandom.h>
+#include <cuda/DeviceSegmentedSum.h>
 
 namespace sqaod_cuda {
 
@@ -44,6 +45,9 @@ struct DeviceMathKernelsType {
 private:
     cudaStream_t stream_;
     DeviceStream *devStream_;
+
+    DeviceSegmentedSumType<real> *segmentedSum_;
+    DeviceSegmentedSumType<real> *segmentedDot_;
 };
 
 

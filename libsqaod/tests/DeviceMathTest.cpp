@@ -65,7 +65,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
     }
 
     testcase("mat scale/sum") {
-        HostMatrix hMat = testMat<real>(dim);
+        HostMatrix hMat = testMatBalanced<real>(dim);
         devCopy(&dA, hMat);
         devMath.scale(&dB, 10., dA);
         device_.synchronize();

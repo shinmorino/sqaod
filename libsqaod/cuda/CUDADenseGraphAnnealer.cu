@@ -23,12 +23,15 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
 
 template<class real>
 CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
+    if (dotJq_ != NULL) {
+        delete dotJq_;
+        dotJq_ = NULL;
+    }
 }
 
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
-    nThreadsToFillDevice_ = device.getNumThreadsToFillDevice();
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
     dgFuncs_.assignDevice(device);
@@ -37,6 +40,10 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     d_random_.assignDevice(device);
     flipPosBuffer_.assignDevice(device);
     realNumBuffer_.assignDevice(device);
+
+    /* initialize sumJq */
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    dotJq_ = new DotJq(device);
 }
 
 
@@ -79,6 +86,10 @@ void CUDADenseGraphAnnealer<real>::setNumTrotters(int m) {
     qlist_.reserve(m);
     /* estimate # rand nums required per one anneal. */
     d_random_.setRequiredSize(N_ * m_ * (nRunsPerRandGen + 1));
+
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
+    dotJq.configure(N_, m_, false);
 
     annState_ |= annNTrottersGiven;
 }
@@ -186,17 +197,9 @@ void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
                                                 const int *d_flipPos) {
     cudaStream_t stream = devStream_->getCudaStream();
     InDotPtr<real> inPtr(d_matq.d_data, d_J.d_data);
-
-    sq::SizeType temp_storage_bytes;
-    segmentedSum(NULL, &temp_storage_bytes,
-                 inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_), N_, m_,
-                 nThreadsToFillDevice_, stream);
-    if (temp_storage_bytes != 0) {
-        void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
-        segmentedSum(d_temp_storage, &temp_storage_bytes,
-                     inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_), N_, m_,
-                     nThreadsToFillDevice_, stream);
-    }
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
+    dotJq(inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_));
 }
 
 template<class real>
