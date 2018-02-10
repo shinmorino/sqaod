@@ -42,7 +42,7 @@ public:
     }
 
     const sqaod::BitsArray &get_q() const {
-        return xlist_;
+        return qlist_;
     }
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
