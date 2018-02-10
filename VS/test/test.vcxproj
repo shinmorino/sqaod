@@ -16,7 +16,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\libsqaod\cuda\debug.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphAnnealerTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDADenseGraphBFSolverTest.cpp" />
     <ClCompile Include="..\..\libsqaod\tests\CUDAFormulasBGFuncTest.cpp" />
