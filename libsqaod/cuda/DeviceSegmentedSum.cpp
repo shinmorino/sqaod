@@ -49,7 +49,7 @@ void DeviceSegmentedSumType<V>::configure(sq::SizeType segLen, sq::SizeType nSeg
     d_tempStorage_ = NULL;
     tempStorageSize_ = 0;
     if (4096 < segLen) {
-        tempStorageSize_ = 32;
+        tempStorageSize_ = 32 * nSegments_;
         if (!useTempStorage)
             devAlloc_->allocate(&d_tempStoragePreAlloc_, tempStorageSize_);
     }

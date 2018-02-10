@@ -74,10 +74,10 @@ segmentedSumKernel_32(InputIterator in, OutputIterator out,
         typedef cub::WarpReduce<V> WarpReduce;
         __shared__ typename WarpReduce::TempStorage temp_storage[BLOCK_DIM / WARP_SIZE];
         sum = WarpReduce(temp_storage[iSubSegment]).Sum(sum);
-    }
 
-    if ((threadIdx.x % warpSize) == 0)
-        out[iSubSegment] = sum;
+        if ((threadIdx.x % warpSize) == 0)
+            out[iSubSegment] = sum;
+    }
 }
 
 
@@ -123,9 +123,10 @@ segmentedSumKernel_64(InputIterator in, OutputIterator out, OffsetIterator segOf
         V *seqPartialSum = &partialSum[iSubSegIdxInBlock * 2];
         __syncthreads();
         sum = seqPartialSum[0] + seqPartialSum[1];
+
+        if ((threadIdx.x % N_REDUCE_THREADS) == 0)
+            out[iSubSegment] = sum;
     }
-    if ((threadIdx.x % N_REDUCE_THREADS) == 0)
-        out[iSubSegment] = sum;
 }
 
 
@@ -154,9 +155,10 @@ segmentedSumKernel_Block(InputIterator in, OutputIterator out,
         typedef cub::BlockReduce<V, BLOCK_DIM> BlockReduce;
         __shared__ typename BlockReduce::TempStorage temp_storage;
         sum = BlockReduce(temp_storage).Sum(sum);
+
+        if (threadIdx.x == 0)
+            out[iSegment] = sum;
     }
-    if (threadIdx.x == 0)
-        out[iSegment] = sum;
 }
 
 
@@ -191,9 +193,10 @@ segmentedSumKernel_Striped(InputIterator in, OutputIterator out,
         typedef cub::BlockReduce<V, BLOCK_DIM> BlockReduce;
         __shared__ typename BlockReduce::TempStorage temp_storage;
         sum = BlockReduce(temp_storage).Sum(sum);
+
+        if (threadIdx.x == 0)
+            out[blockIdx.x] = sum;
     }
-    if (threadIdx.x == 0)
-        out[blockIdx.x] = sum;
 }
 
 
