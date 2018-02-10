@@ -11,12 +11,12 @@
 
 int main(int argc, char* argv[]) {
     runTest<DeviceTest>();
+    runTest<DeviceSegmentedSumTest>();
     runTest<DeviceMathTest>();
     runTest<CUDAFormulasDGFuncTest>();
     runTest<CUDAFormulasBGFuncTest>();
     runTest<DeviceRandomTest>();
     runTest<CUDADenseGraphBFSolverTest>();
-    runTest<DeviceSegmentedSumTest>();
     runTest<CUDADenseGraphAnnealerTest>();
     cudaDeviceReset();
     return MinimalTestSuite::summarize();
