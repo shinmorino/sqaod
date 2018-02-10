@@ -2,6 +2,7 @@
 #include "cudafuncs.h"
 #include <curand_mtgp32_host.h>
 #include <curand_mtgp32_kernel.h>
+#include <common/Random.h>
 
 
 /* FIXME: use multiple states utilize more threads.
@@ -105,9 +106,16 @@ void DeviceRandom::generate() {
     int nToGenerate = requiredSize_ - getNRands();
     nToGenerate = roundUp(nToGenerate, (int)randGenSize);
     if (0 <= nToGenerate) {
+#if 1
         genRandKernel<<<CURAND_NUM_MTGP32_PARAMS, THREAD_NUM, 0, stream_>>>
                 (d_buffer_, end_, nToGenerate, internalBufSize_, d_randStates_);
         DEBUG_SYNC;
+#else
+        /* generate random numbers on CPU for validation. */
+        synchronize();
+        for (int idx = 0; idx < nToGenerate; ++idx)
+            d_buffer_[(end_ + idx) % internalBufSize_] = sq::random.randInt32();
+#endif
         end_ = (end_ + nToGenerate) % internalBufSize_;
     }
 }
