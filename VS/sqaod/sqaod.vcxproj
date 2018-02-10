@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandom.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceRandomBuffer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cuh" />
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceStream.h" />
     <ClInclude Include="..\..\libsqaod\cuda\HostObjectAllocator.h" />
   </ItemGroup>
@@ -67,6 +68,7 @@
     <ClCompile Include="..\..\libsqaod\cuda\DeviceMath.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceMemoryStore.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceObjectAllocator.cpp" />
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\DeviceStream.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
@@ -149,6 +151,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;SQAOD_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\libsqaod\cub;$(ProjectDir)..\..\libsqaod\eigen;$(ProjectDir)..\..\libsqaod;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

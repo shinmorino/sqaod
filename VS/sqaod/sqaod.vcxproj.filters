@@ -117,6 +117,9 @@
     <ClInclude Include="..\..\libsqaod\common\Random.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
@@ -181,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="..\..\libsqaod\common\Random.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cpp">
+      <Filter>cuda</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
