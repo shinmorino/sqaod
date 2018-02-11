@@ -42,6 +42,7 @@ private:
 };
 
 typedef DeviceArrayType<sqaod::PackedBits> DevicePackedBitsArray;
+typedef DeviceArrayType<sqaod::PackedBitsPair> DevicePackedBitsPairArray;
 typedef DeviceArrayType<char> DeviceBitArray;
 
 }
