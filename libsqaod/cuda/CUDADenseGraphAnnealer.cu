@@ -111,6 +111,9 @@ void CUDADenseGraphAnnealer<real>::randomize_q() {
 template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_E() {
     dgFuncs_.calculate_E(&h_E_, d_h_, d_J_, d_c_, d_matq_);
+    DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
+    real sign = (om_ == optMaximize) ? -1. : 1.;
+    dgFuncs_.devMath.scale(&h_E_, sign, *d_E);
 }
 
 template<class real>
