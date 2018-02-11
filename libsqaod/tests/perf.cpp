@@ -1,6 +1,7 @@
 #include <cpu/CPUDenseGraphBFSolver.h>
 #include <cpu/CPUDenseGraphAnnealer.h>
 #include <cpu/CPUBipartiteGraphBFSolver.h>
+#include <cpu/CPUBipartiteGraphAnnealer.h>
 #include <iostream>
 #include <chrono>
 #include <cuda_runtime.h>
@@ -11,6 +12,7 @@ namespace sq = sqaod;
 #  include <cuda/CUDADenseGraphBFSolver.h>
 #  include <cuda/CUDADenseGraphAnnealer.h>
 #  include <cuda/CUDABipartiteGraphBFSolver.h>
+#  include <cuda/CUDABipartiteGraphAnnealer.h>
 namespace sqcuda = sqaod_cuda;
 #endif
 
@@ -36,7 +38,7 @@ sq::MatrixType<real> symmetricMatrix(sq::SizeType dim) {
 }
 
 template<class real>
-sq::MatrixType<real> matrix(sq::Dim &dim) {
+sq::MatrixType<real> matrix(const sq::Dim &dim) {
     sq::MatrixType<real> mat(dim.rows, dim.cols);
     for (sq::SizeType irow = 0; irow < dim.rows; ++irow) {
         for (sq::SizeType icol = 0; icol < dim.cols; ++icol) {
@@ -193,6 +195,56 @@ void denseGraphAnnealer(int N) {
 #endif
 }
 
+
+template<class real>
+void bipartiteGraphAnnealer(int N0, int N1) {
+
+    real Ginit = 5.;
+    real Gfin = 0.01;
+    real kT = 0.02;
+    real tau = 0.99;
+
+    sq::VectorType<real> b0 = vector<real>(N0);
+    sq::VectorType<real> b1 = vector<real>(N1);
+    sq::MatrixType<real> W = matrix<real>(sq::Dim(N0, N1));
+
+    sq::CPUBipartiteGraphAnnealer<real> cpuAnnealer;
+    cpuAnnealer.seed(0);
+    // cpuAnnealer.selectAlgorithm(sq::algoNaive);
+    cpuAnnealer.setProblem(b0, b1, W);
+    cpuAnnealer.setNumTrotters((N0 + N1) / 2);
+
+    auto start = std::chrono::system_clock::now();
+    anneal(cpuAnnealer, Ginit, Gfin, kT, tau);
+    auto end = std::chrono::system_clock::now();
+
+    std::cout << cpuAnnealer.get_E().min() << std::endl;
+
+    showDuration(end - start);
+
+#ifdef SQAOD_CUDA_ENABLED
+    sqcuda::Device device;
+    device.initialize();
+    {
+        sqcuda::CUDABipartiteGraphAnnealer<real> cudaAnnealer(device);
+        cudaAnnealer.setProblem(b0, b1, W);
+        cudaAnnealer.setNumTrotters((N0 + N1) / 2);
+        cudaAnnealer.seed(1);
+
+        auto start = std::chrono::system_clock::now();
+        anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
+        auto end = std::chrono::system_clock::now();
+        device.synchronize();
+        std::cout << cudaAnnealer.get_E().min() << std::endl;
+        showDuration(end - start);
+    }
+    device.finalize();
+
+#endif
+}
+
+
+
 int main() {
     sq::random.seed(0);
 
@@ -208,5 +260,8 @@ int main() {
     bipartiteGraphBFSearch<float>(N0, N1);
     bipartiteGraphBFSearch<double>(N0, N1);
 
+    bipartiteGraphAnnealer<float>(N0, N1);
+    bipartiteGraphAnnealer<double>(N0, N1);
+    
     cudaDeviceReset();
 }
