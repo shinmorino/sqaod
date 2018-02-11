@@ -6,6 +6,9 @@
 
 namespace sqaod_cuda {
 
+/* FIXME: memory store */
+
+
 struct HostObjectAllocator {
 
     void *allocate(size_t size);
