@@ -132,7 +132,7 @@ void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sqaod::SizeType 
     /* 2 random numbers are used to generate one double random number. */
     const unsigned int *d_randNum = d_random.get(nToGenerate * 2, &offset, &posToWrap, 2);
     genRandKernel<<<gridDim, blockDim, 0, stream>>>((double*)d_buffer_, nToGenerate,
-                                                    (const uint2*)d_randNum, offset, posToWrap);
+                                                    (const uint2*)d_randNum, offset / 2, posToWrap / 2);
     DEBUG_SYNC;
     posInElm_ = 0;
     sizeInElm_ = nToGenerate;

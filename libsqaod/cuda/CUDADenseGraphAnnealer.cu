@@ -85,7 +85,8 @@ void CUDADenseGraphAnnealer<real>::setNumTrotters(int m) {
     xlist_.reserve(m);
     qlist_.reserve(m);
     /* estimate # rand nums required per one anneal. */
-    d_random_.setRequiredSize(N_ * m_ * (nRunsPerRandGen + 1));
+    int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    d_random_.setRequiredSize(requiredSize);
 
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
