@@ -35,7 +35,6 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
     dgFuncs_.assignDevice(device);
-    devMath_.assignDevice(device);
     devCopy_.assignDevice(device);
     d_random_.assignDevice(device);
     flipPosBuffer_.assignDevice(device);
@@ -69,7 +68,7 @@ void CUDADenseGraphAnnealer<real>::setProblem(const Matrix &W, sq::OptimizeMetho
     DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
     if (om == sq::optMaximize)
-        devMath_.scale(dW, -1., *dW);
+        dgFuncs_.devMath.scale(dW, -1., *dW);
     dgFuncs_.calculate_hJc(&d_h_, &d_J_, &d_c_, *dW);
 }
 
