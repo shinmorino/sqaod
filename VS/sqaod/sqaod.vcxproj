@@ -25,12 +25,14 @@
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh" />
+    <ClInclude Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDAFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cudafuncs.h" />
     <ClInclude Include="..\..\libsqaod\cuda\Device.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceArray.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceConstScalars.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceCopy.h" />
     <ClInclude Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.h" />
@@ -59,6 +61,7 @@
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUFormulas.cpp" />
+    <ClCompile Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\CUDAFormulas.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\cudafuncs.cpp" />
@@ -77,6 +80,7 @@
       <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</Keep>
       <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</Keep>
     </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceDenseGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandom.cu" />

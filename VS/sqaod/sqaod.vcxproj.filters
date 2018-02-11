@@ -120,6 +120,10 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceSegmentedSum.h">
       <Filter>cuda</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSolver.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
@@ -188,6 +192,9 @@
     <ClCompile Include="..\..\libsqaod\cuda\DeviceSegmentedSum.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSolver.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceKernels.cu">
@@ -205,5 +212,6 @@
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceRandomBuffer.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
+    <CudaCompile Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.cu" />
   </ItemGroup>
 </Project>
