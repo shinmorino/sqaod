@@ -16,6 +16,7 @@ include ./$(DEPDIR)/DeviceRandom.Plo
 include ./$(DEPDIR)/CUDADenseGraphAnnealer.Plo
 include ./$(DEPDIR)/DeviceRandomBuffer.Plo
 include ./$(DEPDIR)/DeviceKernels.Plo
+include ./$(DEPDIR)/DeviceBipartiteGraphBatchSearch.Plo
 
 
 NVCC=@NVCC@
