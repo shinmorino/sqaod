@@ -200,7 +200,7 @@ private:
 
 
 typedef ArrayType<PackedBits> PackedBitsArray;
-typedef ArrayType<std::pair<PackedBits, PackedBits> > PackedBitsPairArray;
+typedef ArrayType<PackedBitsPair > PackedBitsPairArray;
 
 }
 
