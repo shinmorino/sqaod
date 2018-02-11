@@ -24,16 +24,16 @@ class CUDABipartiteGraphBFSolver {
     typedef sqaod::IdxType IdxType;
 public:
     CUDABipartiteGraphBFSolver();
-    CUDABipartiteGraphBFSolver(Device &device, DeviceStream *devStream = NULL);
+    CUDABipartiteGraphBFSolver(Device &device);
 
     ~CUDABipartiteGraphBFSolver();
 
-    void assignDevice(Device &device, DeviceStream *devStream = NULL);
+    void assignDevice(Device &device);
     
     void getProblemSize(int *N0, int *N1) const;
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
-                    sqaod::OptimizeMethod om);
+                    sqaod::OptimizeMethod om = sqaod::optMinimize);
 
     void setTileSize(sqaod::SizeType tileSize0, sqaod::SizeType tileSize1);
 

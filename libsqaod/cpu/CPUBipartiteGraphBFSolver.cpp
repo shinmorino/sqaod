@@ -93,10 +93,10 @@ void CPUBipartiteGraphBFSolver<real>::searchRange(PackedBits iBegin0, PackedBits
 
 template<class real>
 void CPUBipartiteGraphBFSolver<real>::search() {
+    initSearch();
+
     PackedBits iStep0 = std::min(tileSize0_, x0max_);
     PackedBits iStep1 = std::min(tileSize1_, x1max_);
-
-    initSearch();
     for (PackedBits iTile1 = 0; iTile1 < x1max_; iTile1 += iStep1) {
         for (PackedBits iTile0 = 0; iTile0 < x0max_; iTile0 += iStep0) {
             searchRange(iTile0, iTile0 + iStep0, iTile1, iTile1 + iStep1);

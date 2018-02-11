@@ -14,8 +14,8 @@ DeviceBipartiteGraphBatchSearch<real>::DeviceBipartiteGraphBatchSearch() {
 
 
 template<class real>
-void DeviceBipartiteGraphBatchSearch<real>::assignDevice(Device &device) {
-    devStream_ = device.defaultStream();
+void DeviceBipartiteGraphBatchSearch<real>::assignDevice(Device &device, DeviceStream *devStream) {
+    devStream_ = devStream;
     bgFuncs_.assignDevice(device, devStream_);
     devCopy_.assignDevice(device, devStream_);
     devAlloc_ = device.objectAllocator();
@@ -137,13 +137,17 @@ struct SelectInputIterator {
     SelectInputIterator(sq::PackedBitsPair _xPairOffset, int _tileSize0)
             : xPairOffset(_xPairOffset), tileSize0(_tileSize0) { }
     __host__
-    SelectInputIterator() { }
+    SelectInputIterator(int _tileSize0) { 
+        xPairOffset.bits0 = 0;
+        xPairOffset.bits1 = 0;
+        tileSize0 = _tileSize0;
+    }
 
     __device__ __forceinline__
     sq::PackedBitsPair operator[](int idx) const {
         sq::PackedBitsPair pair;
         pair.bits0 = xPairOffset.bits0 + (idx % tileSize0);
-        pair.bits0 = xPairOffset.bits1 + (idx / tileSize0);
+        pair.bits1 = xPairOffset.bits1 + (idx / tileSize0);
         return pair;
     }
     __device__ __forceinline__
@@ -193,7 +197,7 @@ template<class real> struct SelectOp {
             : val(_val), d_vals(_d_vals), tileSize0(_tileSize0) { }
     __device__ __forceinline__
     bool operator()(const sq::PackedBitsPair &idx) const {
-        return val == d_vals[idx.bits1 & tileSize0 + idx.bits0];
+        return val == d_vals[idx.bits1 * tileSize0 + idx.bits0];
     }
     real val;
     const real *d_vals;
@@ -217,7 +221,8 @@ template<class real> void DeviceBipartiteGraphBatchSearch<real>::
 select(sqaod::PackedBitsPair *d_out, sqaod::SizeType *d_nOut,
        sqaod::PackedBits xBegin0, sqaod::PackedBits xBegin1, 
        real val, const real *d_vals, sqaod::SizeType nIn0, sqaod::SizeType nIn1) {
-    SelectInputIterator in;
+    SelectInputIterator in(tileSize0_);
+
     SelectOutputIterator out(xBegin0, xBegin1, d_out);
     SelectOp<real> selectOp(val, d_vals, tileSize0_);
 

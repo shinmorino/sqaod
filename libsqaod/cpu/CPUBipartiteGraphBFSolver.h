@@ -21,7 +21,7 @@ public:
     void getProblemSize(int *N0, int *N1) const;
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    OptimizeMethod om);
+                    OptimizeMethod om = sqaod::optMinimize);
 
     void setTileSize(SizeType tileSize0, SizeType tileSize1);
 

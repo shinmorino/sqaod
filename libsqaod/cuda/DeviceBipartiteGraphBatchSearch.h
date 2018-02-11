@@ -22,7 +22,7 @@ class DeviceBipartiteGraphBatchSearch {
 public:
     DeviceBipartiteGraphBatchSearch();
 
-    void assignDevice(Device &device);
+    void assignDevice(Device &device, DeviceStream *devStream);
 
     void deallocate();
     

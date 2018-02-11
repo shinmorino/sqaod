@@ -14,7 +14,19 @@ CUDABipartiteGraphBFSolver<real>::CUDABipartiteGraphBFSolver() {
 }
 
 template<class real>
+CUDABipartiteGraphBFSolver<real>::CUDABipartiteGraphBFSolver(Device &device) {
+    tileSize0_ = 1024;
+    tileSize1_ = 1024;
+    assignDevice(device);
+}
+
+template<class real>
 CUDABipartiteGraphBFSolver<real>::~CUDABipartiteGraphBFSolver() {
+}
+
+template<class real>
+void CUDABipartiteGraphBFSolver<real>::assignDevice(Device &device) {
+    batchSearch_.assignDevice(device, device.defaultStream());
 }
 
 
@@ -58,13 +70,17 @@ const sq::VectorType<real> &CUDABipartiteGraphBFSolver<real>::get_E() const {
 
 template<class real>
 void CUDABipartiteGraphBFSolver<real>::initSearch() {
+    Emin_ = std::numeric_limits<real>::max();
+    xPackedPairs_.clear();
+    x0max_ = 1ull << N0_;
+    x1max_ = 1ull << N1_;
+    /* FIXME: create persistent tileSize member. */
+    tileSize0_ = (sq::SizeType)std::min((sq::PackedBits)tileSize0_, x0max_);
+    tileSize1_ = (sq::SizeType)std::min((sq::PackedBits)tileSize1_, x1max_);
     batchSearch_.setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
     SizeType minXPairsSize = (tileSize0_ * tileSize1_) * 2;
     HostObjectAllocator().allocate(&h_packedMinXPairs_, minXPairsSize);
 
-    xPackedPairs_.clear();
-    x0max_ = 1ull << N0_;
-    x1max_ = 1ull << N1_;
 }
 
 template<class real>
@@ -117,10 +133,10 @@ void CUDABipartiteGraphBFSolver<real>::searchRange(PackedBits xBegin0, PackedBit
 
 template<class real>
 void CUDABipartiteGraphBFSolver<real>::search() {
+    initSearch();
+
     PackedBits iStep0 = std::min((PackedBits)tileSize0_, x0max_);
     PackedBits iStep1 = std::min((PackedBits)tileSize1_, x1max_);
-
-    initSearch();
     for (PackedBits iTile1 = 0; iTile1 < x1max_; iTile1 += iStep1) {
         for (PackedBits iTile0 = 0; iTile0 < x0max_; iTile0 += iStep0) {
             searchRange(iTile0, iTile0 + iStep0, iTile1, iTile1 + iStep1);
