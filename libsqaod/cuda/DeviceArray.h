@@ -16,7 +16,7 @@ struct DeviceArrayType : DeviceObject {
         size = arr.size;
         capacity = arr.capacity;
         arr.d_data = nullptr;
-        arr.size = (sqaod::SizeType)-1;
+        arr.size = 0;
         arr.capacity = (sqaod::SizeType)-1;
     }
 
