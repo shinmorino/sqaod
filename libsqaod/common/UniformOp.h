@@ -47,6 +47,12 @@ void x_from_q(newV *dst, const V *src, SizeType size) {
         dst[idx] = (newV)((src[idx] + 1) / 2);
 }
 
+template<class newV, class V> inline
+void x_to_q(newV *dst, const V *src, SizeType size) {
+    for (IdxType idx = 0; idx < (IdxType)size; ++idx)
+        dst[idx] = (newV)((src[idx] * 2) - 1);
+}
+
 
 /* specialization */
 double sum(const double *values, SizeType size);

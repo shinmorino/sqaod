@@ -23,7 +23,8 @@ public:
 
     void getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const;
 
-    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W, OptimizeMethod om);
+    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
+                    OptimizeMethod om = optMinimize);
 
     void setNumTrotters(SizeType m);
 

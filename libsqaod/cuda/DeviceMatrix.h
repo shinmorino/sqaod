@@ -9,6 +9,8 @@ namespace sqaod_cuda {
 
 /* light-weight matrix classes for C++ API */
 
+/* FIXME: Support stride and tile, memory alignment of 4-way vector. */
+
 template<class V>
 struct DeviceMatrixType : DeviceObject {
     typedef V ValueType;

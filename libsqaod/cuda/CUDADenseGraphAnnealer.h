@@ -96,7 +96,6 @@ private:
 
     DeviceStream *devStream_;
     CUDADGFuncs<real> dgFuncs_;
-    DeviceMathType<real> devMath_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 };
