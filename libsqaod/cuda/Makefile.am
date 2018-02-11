@@ -3,20 +3,20 @@ SUFFIXES = .cu .cpp .Plo .Po
 noinst_LTLIBRARIES=libcuda.la
 check_PROGRAMS=test
 
-libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cu DeviceRandom.cu CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSolver.cpp DeviceBipartiteGraphBatchSearch.cpp
+libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cu DeviceRandom.cu CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSolver.cpp DeviceBipartiteGraphBatchSearch.cpp CUDABipartiteGraphAnnealer.cu
 
 # check
 test_SOURCES=test.cpp
 test_LDADD=libcuda.la $(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
 LIBS=-L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand
 
-include ./$(DEPDIR)/DeviceDenseGraphBatchSearch.Plo
-include ./$(DEPDIR)/DeviceBFKernels.Plo
-include ./$(DEPDIR)/DeviceRandom.Plo
 include ./$(DEPDIR)/CUDADenseGraphAnnealer.Plo
+include ./$(DEPDIR)/CUDABipartiteGraphAnnealer.Plo
+include ./$(DEPDIR)/DeviceDenseGraphBatchSearch.Plo
+include ./$(DEPDIR)/DeviceBipartiteGraphBatchSearch.Plo
+include ./$(DEPDIR)/DeviceRandom.Plo
 include ./$(DEPDIR)/DeviceRandomBuffer.Plo
 include ./$(DEPDIR)/DeviceKernels.Plo
-include ./$(DEPDIR)/DeviceBipartiteGraphBatchSearch.Plo
 
 
 NVCC=@NVCC@
