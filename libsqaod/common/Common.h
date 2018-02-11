@@ -51,6 +51,20 @@ Bits x_from_q(const VectorType<V> &q) {
     return x;
 }
 
+template<class V> inline
+MatrixType<V> x_to_q(const BitMatrix &x) {
+    MatrixType<V> q(x.dim());
+    x_to_q(q.data, x.data, x.rows * x.cols);
+    return x;
+}
+
+template<class V> inline
+VectorType<V> x_to_q(const Bits &x) {
+    VectorType<V> q(x.size);
+    x_from_q(q.data, x.data, x.size);
+    return q;
+}
+
 
 }
 
