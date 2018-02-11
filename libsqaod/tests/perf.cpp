@@ -175,19 +175,21 @@ void denseGraphAnnealer(int N) {
 #ifdef SQAOD_CUDA_ENABLED
     sqcuda::Device device;
     device.initialize();
+    {
+        sqcuda::CUDADenseGraphAnnealer<real> cudaAnnealer(device);
+        cudaAnnealer.setProblem(W);
+        cudaAnnealer.setNumTrotters(N / 2);
+        cudaAnnealer.seed(1);
 
-    sqcuda::CUDADenseGraphAnnealer<real> cudaAnnealer(device);
-    cudaAnnealer.setProblem(W);
-    cudaAnnealer.setNumTrotters(N / 2);
-
-    start = std::chrono::system_clock::now();
-    anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
-    end = std::chrono::system_clock::now();
-
-    std::cout << cudaAnnealer.get_E().min() << std::endl;
+        auto start = std::chrono::system_clock::now();
+        anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
+        auto end = std::chrono::system_clock::now();
+        device.synchronize();
+        std::cout << cudaAnnealer.get_E().min() << std::endl;
+        showDuration(end - start);
+    }
     device.finalize();
 
-    showDuration(end - start);
 #endif
 }
 
