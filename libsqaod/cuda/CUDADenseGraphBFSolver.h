@@ -5,8 +5,6 @@
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceStream.h>
 #include <cuda/DeviceCopy.h>
-#include <cuda/DeviceMath.h>
-#include <cuda/DeviceRandom.h>
 #include <cuda/DeviceDenseGraphBatchSearch.h>
 
 namespace sqaod_cuda {
@@ -16,7 +14,6 @@ class CUDADenseGraphBFSolver {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
-    typedef DeviceMathType<real> DeviceMath;
     typedef DeviceDenseGraphBatchSearch<real> DeviceBatchSearch;
     
     typedef sqaod::MatrixType<real> Matrix;

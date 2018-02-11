@@ -1,5 +1,4 @@
-#ifndef SQAOD_CUDA_DEVICE_BATCH_SEARCH_H__
-#define SQAOD_CUDA_DEVICE_BATCH_SEARCH_H__
+#pragma once
 
 #include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceMatrix.h>
@@ -75,5 +74,3 @@ private:
 };
 
 }
-
-#endif
