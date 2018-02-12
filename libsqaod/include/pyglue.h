@@ -188,4 +188,19 @@ typedef NpMatrixType<char> NpBitMatrix;
 typedef NpVectorType<char> NpBitVector;
 
 
+/* exception handling macro */
+
+#define TRY try
+#define CATCH_ERROR_AND_RETURN(errObj)                      \
+        catch (const std::exception &e) {                   \
+            PyErr_SetString(errObj, e.what());              \
+            return NULL;                                    \
+        }
+
+#define RAISE_INVALID_DTYPE(dtype, errObj)                                     \
+        {                                                               \
+            PyErr_SetString(errObj, "dtype must be numpy.float64 or numpy.float32."); \
+            return NULL; \
+        }
+
 #endif
