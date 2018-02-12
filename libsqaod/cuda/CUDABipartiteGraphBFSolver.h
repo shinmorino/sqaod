@@ -2,8 +2,8 @@
 #pragma once
 
 #include <common/Common.h>
-#include <cuda/DeviceMatrix.h>
 #include <cuda/Device.h>
+#include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceBipartiteGraphBatchSearch.h>
 
 namespace sqaod_cuda {

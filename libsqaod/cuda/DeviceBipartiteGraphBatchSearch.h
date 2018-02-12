@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cuda/Device.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
 #include <cuda/DeviceFormulas.h>
-#include <cuda/DeviceObjectAllocator.h>
 
 namespace sqaod_cuda {
 

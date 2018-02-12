@@ -1,9 +1,13 @@
 #pragma once
 
 #include <common/Common.h>
+#include <cuda/Device.h>
+#include <cuda/DeviceMatrix.h>
+#include <cuda/DeviceArray.h>
+#include <cuda/DeviceDenseGraphBatchSearch.h>
 #include <cuda/DeviceRandom.h>
 #include <cuda/DeviceRandomBuffer.h>
-#include <cuda/DeviceSegmentedSum.h>
+
 
 namespace sqaod_cuda {
 
