@@ -3,7 +3,7 @@
 #include <cuda/DeviceRandomBuffer.h>
 #include <cuda/DeviceStream.h>
 #include <cuda/CUDADenseGraphAnnealer.h>
-#include <cuda/CUDAFormulas.h>
+#include <cuda/DeviceFormulas.h>
 #include "utils.h"
 #include <cpu/CPUFormulas.h>
 #include <common/EigenBridge.h>
@@ -47,7 +47,7 @@ void CUDADenseGraphAnnealerTest::test() {
     DeviceStream *devStream = device_.defaultStream();
     DeviceObjectAllocator *devAlloc = device_.objectAllocator();
     DeviceCopy devCopy(device_);
-    CUDADGFuncs<real> dgFuncs(device_);
+    DeviceDenseGraphFormulas<real> dgFuncs(device_);
     int N = 40;
     int m = 20;
 

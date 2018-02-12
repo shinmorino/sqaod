@@ -1,5 +1,5 @@
 #include "CUDAFormulasBGFuncTest.h"
-#include <cuda/CUDAFormulas.h>
+#include <cuda/DeviceFormulas.h>
 #include <cpu/CPUFormulas.h>
 #include <stdlib.h>
 #include "utils.h"
@@ -45,7 +45,7 @@ void CUDAFormulasBGFuncTest::tests() {
     // DeviceStream *devStream = device_.defaultStream();
 
     typedef sq::BGFuncs<real> BGF;
-    CUDABGFuncs<real> devFuncs;
+    DeviceBipartiteGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 
     const int N0 = 100;

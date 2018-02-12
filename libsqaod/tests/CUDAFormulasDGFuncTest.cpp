@@ -1,5 +1,5 @@
 #include "CUDAFormulasDGFuncTest.h"
-#include <cuda/CUDAFormulas.h>
+#include <cuda/DeviceFormulas.h>
 #include <cpu/CPUFormulas.h>
 #include <stdlib.h>
 #include "utils.h"
@@ -45,7 +45,7 @@ void CUDAFormulasDGFuncTest::tests() {
     // Device::ObjectAllocator *alloc = device_.objectAllocator();
 
     typedef sq::DGFuncs<real> DGF;
-    CUDADGFuncs<real> devFuncs;
+    DeviceDenseGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 
     const int N = 120;
