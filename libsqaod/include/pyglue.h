@@ -203,4 +203,11 @@ typedef NpVectorType<char> NpBitVector;
             return NULL; \
         }
 
+/* references 
+ * http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
+ * http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
+ *
+ * Input validation is minimal in C++ side, assuming required checkes are done in python.
+ */
+
 #endif
