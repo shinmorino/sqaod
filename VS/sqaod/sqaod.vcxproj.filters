@@ -124,6 +124,9 @@
       <Filter>cuda</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.h" />
+    <ClInclude Include="..\..\libsqaod\cuda\CUDABipartiteGraphAnnealer.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
@@ -213,5 +216,8 @@
       <Filter>cuda</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.cu" />
+    <CudaCompile Include="..\..\libsqaod\cuda\CUDABipartiteGraphAnnealer.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

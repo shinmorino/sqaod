@@ -25,6 +25,7 @@
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh" />
+    <ClInclude Include="..\..\libsqaod\cuda\CUDABipartiteGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSolver.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.h" />
     <ClInclude Include="..\..\libsqaod\cuda\CUDADenseGraphBFSolver.h" />
@@ -76,6 +77,7 @@
     <ClCompile Include="..\..\libsqaod\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\libsqaod\cuda\CUDABipartiteGraphAnnealer.cu" />
     <CudaCompile Include="..\..\libsqaod\cuda\CUDADenseGraphAnnealer.cu">
       <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</Keep>
       <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</Keep>
