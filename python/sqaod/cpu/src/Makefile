@@ -12,7 +12,7 @@ cpu_bg_bf_searcher_so_OBJS=cpu_bg_bf_searcher.o
 
 CXX=g++
 CC=gcc
-CFLAGS=-std=c++11 -fpic -DPIC -Wall -g -I$(dir $(abspath Makefile))
+CFLAGS=-fopenmp -std=c++11 -fpic -DPIC -Wall -ggdb -I$(dir $(abspath Makefile)) -Wno-format-security
 #CFLAGS+=-O2
 CXXFLAGS=$(CFLAGS)
 LDFLAGS=-L.. -lsqaod
