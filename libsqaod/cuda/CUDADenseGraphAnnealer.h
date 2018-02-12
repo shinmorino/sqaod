@@ -14,11 +14,16 @@ namespace sqaod_cuda {
 
 template<class real>
 class CUDADenseGraphAnnealer {
-typedef sqaod::MatrixType<real> Matrix;
-typedef sqaod::VectorType<real> Vector;
+    typedef sqaod::MatrixType<real> HostMatrix;
+    typedef sqaod::VectorType<real> HostVector;
+    typedef sqaod::Bits Bits;
+    typedef sqaod::BitsArray BitsArray;
+    typedef sqaod::SizeType SizeType;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
+    typedef DeviceDenseGraphFormulas<real> DeviceFormulas;
+    
 public:
     CUDADenseGraphAnnealer();
 
@@ -30,17 +35,17 @@ public:
 
     void seed(unsigned long seed);
 
-    void setProblem(const Matrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
+    void setProblem(const HostMatrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
     void getProblemSize(int *N, int *m) const;
 
     void setNumTrotters(int m);
 
-    const Vector get_E() const {
-        return Vector(h_E_.d_data, h_E_.size);
+    const HostVector get_E() const {
+        return HostVector(h_E_.d_data, h_E_.size);
     }
 
-    const sqaod::BitsArray &get_x() const {
+    const BitsArray &get_x() const {
         return xlist_;
     }
 
@@ -48,7 +53,7 @@ public:
         return qlist_;
     }
 
-    void get_hJc(Vector *h, Matrix *J, real *c) const;
+    void get_hJc(HostVector *h, HostMatrix *J, real *c) const;
 
     void randomize_q();
 
@@ -90,7 +95,7 @@ private:
     DeviceBitMatrix h_q_;
     DeviceRandomBuffer flipPosBuffer_;
     DeviceRandomBuffer realNumBuffer_;
-    Vector E_;
+    HostVector E_;
 
     sqaod::BitsArray xlist_;
     sqaod::BitsArray qlist_;
