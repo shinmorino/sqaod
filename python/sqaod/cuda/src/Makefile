@@ -3,12 +3,12 @@
 include incpath
 INCLUDE+=-I../../../../libsqaod/include -I../../../../libsqaod -I../../../../libsqaod/eigen -I/usr/local/cuda-9.1/include
 
-TARGETS= ../cuda_dg_annealer.so ../cuda_dg_bf_solver.so ../cuda_bg_annealer.so ../cuda_bg_bf_solver.so ../cuda_formulas.so
+TARGETS= ../cuda_dg_annealer.so ../cuda_dg_bf_searcher.so ../cuda_bg_annealer.so ../cuda_bg_bf_searcher.so ../cuda_formulas.so
 cuda_formulas_so_OBJS=cuda_formulas.o
 cuda_dg_annealer_so_OBJS=cuda_dg_annealer.o
-cuda_dg_bf_solver_so_OBJS=cuda_dg_bf_solver.o
+cuda_dg_bf_searcher_so_OBJS=cuda_dg_bf_searcher.o
 cuda_bg_annealer_so_OBJS=cuda_bg_annealer.o
-cuda_bg_bf_solver_so_OBJS=cuda_bg_bf_solver.o
+cuda_bg_bf_searcher_so_OBJS=cuda_bg_bf_searcher.o
 
 CXX=g++
 CC=gcc
@@ -25,13 +25,13 @@ all: $(TARGETS)
 ../cuda_dg_annealer.so: $(cuda_dg_annealer_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
-../cuda_dg_bf_solver.so: $(cuda_dg_bf_solver_so_OBJS)
+../cuda_dg_bf_searcher.so: $(cuda_dg_bf_searcher_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
 ../cuda_bg_annealer.so: $(cuda_bg_annealer_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
-../cuda_bg_bf_solver.so: $(cuda_bg_bf_solver_so_OBJS)
+../cuda_bg_bf_searcher.so: $(cuda_bg_bf_searcher_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
 %.o: %.cpp 
@@ -44,4 +44,4 @@ all: $(TARGETS)
 .PHONY:
 
 clean:
-	rm -f $(TARGETS) $(cuda_formulas_so_OBJS) $(cuda_dg_annealer_so_OBJS) $(cuda_bg_annealer_so_OBJS) $(cuda_dg_bf_solver_so_OBJS)
+	rm -f $(TARGETS) $(cuda_formulas_so_OBJS) $(cuda_dg_annealer_so_OBJS) $(cuda_bg_annealer_so_OBJS) $(cuda_dg_bf_searcher_so_OBJS)
