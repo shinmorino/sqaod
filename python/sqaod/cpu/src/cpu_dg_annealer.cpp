@@ -4,30 +4,11 @@
 #include <string.h>
 
 
-/* FIXME : remove DONT_REACH_HERE macro */
-
-
-// http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
-// http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
-
-/* NOTE: Value type checks for python objs have been already done in python glue, 
- * Here we only get entities needed. */
-
-
 static PyObject *Cpu_DgSolverError;
 namespace sqd = sqaod;
 
 
 namespace {
-
-
-
-void setErrInvalidDtype(PyObject *dtype) {
-    PyErr_SetString(Cpu_DgSolverError, "dtype must be numpy.float64 or numpy.float32.");
-}
-
-#define RAISE_INVALID_DTYPE(dtype) {setErrInvalidDtype(dtype); return NULL; }
-
     
 template<class real>
 sqd::CPUDenseGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
@@ -46,7 +27,7 @@ PyObject *dg_annealer_create(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         ext = (void*)new sqd::CPUDenseGraphAnnealer<float>();
     else
-        RAISE_INVALID_DTYPE(dtype);
+        RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
@@ -63,7 +44,7 @@ PyObject *dg_annealer_delete(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         delete pyobjToCppObj<float>(objExt);
     else
-        RAISE_INVALID_DTYPE(dtype);
+        RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -80,7 +61,7 @@ PyObject *dg_annealer_rand_seed(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         pyobjToCppObj<float>(objExt)->seed(seed);
     else
-        RAISE_INVALID_DTYPE(dtype);
+        RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -100,12 +81,15 @@ PyObject *dg_annealer_set_problem(PyObject *module, PyObject *args) {
     int opt;
     if (!PyArg_ParseTuple(args, "OOiO", &objExt, &objW, &opt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_annealer_set_problem<double>(objExt, objW, opt);
-    else if (isFloat32(dtype))
-        internal_dg_annealer_set_problem<float>(objExt, objW, opt);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_annealer_set_problem<double>(objExt, objW, opt);
+        else if (isFloat32(dtype))
+            internal_dg_annealer_set_problem<float>(objExt, objW, opt);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -117,12 +101,15 @@ PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
     sqaod::SizeType N, m;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->getProblemSize(&N, &m);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->getProblemSize(&N, &m);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->getProblemSize(&N, &m);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->getProblemSize(&N, &m);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     return Py_BuildValue("II", N, m);
 }
@@ -133,12 +120,15 @@ PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     sqaod::SizeType m = 0;
     if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->setNumTrotters(m);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->setNumTrotters(m);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->setNumTrotters(m);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->setNumTrotters(m);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -159,13 +149,16 @@ PyObject *dg_annealer_get_E(PyObject *module, PyObject *args) {
     PyObject *objExt, *objE, *dtype;
     if (!PyArg_ParseTuple(args, "OOO", &objExt, &objE, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_annealer_get_E<double>(objExt, objE);
-    else if (isFloat32(dtype))
-        internal_dg_annealer_get_E<float>(objExt, objE);
-    else
-        RAISE_INVALID_DTYPE(dtype);
 
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_annealer_get_E<double>(objExt, objE);
+        else if (isFloat32(dtype))
+            internal_dg_annealer_get_E<float>(objExt, objE);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
+        
     Py_INCREF(Py_None);
     return Py_None;    
 }
@@ -191,11 +184,15 @@ PyObject *dg_annealer_get_x(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        return internal_dg_annealer_get_x<double>(objExt);
-    else if (isFloat32(dtype))
-        return internal_dg_annealer_get_x<float>(objExt);
-    RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_dg_annealer_get_x<double>(objExt);
+        else if (isFloat32(dtype))
+            return internal_dg_annealer_get_x<float>(objExt);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
+
+    RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
 }
 
 
@@ -208,23 +205,21 @@ void internal_dg_annealer_set_x(PyObject *objExt, PyObject *objX) {
 extern "C"
 PyObject *dg_annealer_set_x(PyObject *module, PyObject *args) {
     PyObject *objExt, *objX, *dtype;
-    
     if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objX, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_annealer_set_x<double>(objExt, objX);
-    else if (isFloat32(dtype))
-        internal_dg_annealer_set_x<float>(objExt, objX);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_annealer_set_x<double>(objExt, objX);
+        else if (isFloat32(dtype))
+            internal_dg_annealer_set_x<float>(objExt, objX);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
 }
-
-
-
-
 
 
 template<class real>
@@ -248,12 +243,15 @@ PyObject *dg_annealer_get_hJc(PyObject *module, PyObject *args) {
     PyObject *objExt, *objH, *objJ, *objC, *dtype;
     if (!PyArg_ParseTuple(args, "OOOOO", &objExt, &objH, &objJ, &objC, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_annealer_get_hJc<double>(objExt, objH, objJ, objC);
-    else if (isFloat32(dtype))
-        internal_dg_annealer_get_hJc<float>(objExt, objH, objJ, objC);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_annealer_get_hJc<double>(objExt, objH, objJ, objC);
+        else if (isFloat32(dtype))
+            internal_dg_annealer_get_hJc<float>(objExt, objH, objJ, objC);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -281,11 +279,15 @@ PyObject *dg_annealer_get_q(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        return internal_dg_annealer_get_q<double>(objExt);
-    else if (isFloat32(dtype))
-        return internal_dg_annealer_get_q<float>(objExt);
-    RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_dg_annealer_get_q<double>(objExt);
+        else if (isFloat32(dtype))
+            return internal_dg_annealer_get_q<float>(objExt);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
+
+    RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
 }
     
 extern "C"
@@ -293,12 +295,15 @@ PyObject *dg_annealer_radomize_q(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->randomize_q();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->randomize_q();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->randomize_q();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->randomize_q();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -309,12 +314,15 @@ PyObject *dg_annealer_calculate_E(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->calculate_E();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->calculate_E();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->calculate_E();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->calculate_E();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -326,12 +334,15 @@ PyObject *dg_annealer_init_anneal(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->initAnneal();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->initAnneal();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->initAnneal();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->initAnneal();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -342,12 +353,15 @@ PyObject *dg_annealer_fin_anneal(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->finAnneal();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->finAnneal();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->finAnneal();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->finAnneal();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -366,12 +380,15 @@ PyObject *dg_annealer_anneal_one_step(PyObject *module, PyObject *args) {
     PyObject *objExt, *objG, *objKT, *dtype;
     if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objG, &objKT, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_annealer_anneal_one_step<double>(objExt, objG, objKT);
-    else if (isFloat32(dtype))
-        internal_dg_annealer_anneal_one_step<float>(objExt, objG, objKT);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_annealer_anneal_one_step<double>(objExt, objG, objKT);
+        else if (isFloat32(dtype))
+            internal_dg_annealer_anneal_one_step<float>(objExt, objG, objKT);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    

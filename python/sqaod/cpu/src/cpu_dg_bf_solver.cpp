@@ -4,16 +4,6 @@
 #include <string.h>
 
 
-/* FIXME : remove DONT_REACH_HERE macro */
-
-
-// http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
-// http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
-
-/* NOTE: Value type checks for python objs have been already done in python glue, 
- * Here we only get entities needed. */
-
-
 static PyObject *Cpu_DgBfSolverError;
 namespace sqd = sqaod;
 
@@ -21,14 +11,6 @@ namespace sqd = sqaod;
 namespace {
 
 
-
-void setErrInvalidDtype(PyObject *dtype) {
-    PyErr_SetString(Cpu_DgBfSolverError, "dtype must be numpy.float64 or numpy.float32.");
-}
-
-#define RAISE_INVALID_DTYPE(dtype) {setErrInvalidDtype(dtype); return NULL; }
-
-    
 template<class real>
 sqd::CPUDenseGraphBFSolver<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
@@ -46,7 +28,7 @@ PyObject *dg_bf_solver_create(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         ext = (void*)new sqd::CPUDenseGraphBFSolver<float>();
     else
-        RAISE_INVALID_DTYPE(dtype);
+        RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
@@ -63,7 +45,7 @@ PyObject *dg_bf_solver_delete(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         delete pyobjToCppObj<float>(objExt);
     else
-        RAISE_INVALID_DTYPE(dtype);
+        RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -84,13 +66,16 @@ PyObject *dg_bf_solver_set_problem(PyObject *module, PyObject *args) {
     int opt;
     if (!PyArg_ParseTuple(args, "OOiO", &objExt, &objW, &opt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        internal_dg_bf_solver_set_problem<double>(objExt, objW, opt);
-    else if (isFloat32(dtype))
-        internal_dg_bf_solver_set_problem<float>(objExt, objW, opt);
-    else
-        RAISE_INVALID_DTYPE(dtype);
 
+    TRY {
+        if (isFloat64(dtype))
+            internal_dg_bf_solver_set_problem<double>(objExt, objW, opt);
+        else if (isFloat32(dtype))
+            internal_dg_bf_solver_set_problem<float>(objExt, objW, opt);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
+    
     Py_INCREF(Py_None);
     return Py_None;    
 }
@@ -101,13 +86,16 @@ PyObject *dg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
     sqaod::SizeType tileSize;
     if (!PyArg_ParseTuple(args, "OIO", &objExt, &tileSize, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->setTileSize(tileSize);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->setTileSize(tileSize);
-    else
-        RAISE_INVALID_DTYPE(dtype);
 
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->setTileSize(tileSize);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->setTileSize(tileSize);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
+    
     Py_INCREF(Py_None);
     return Py_None;    
 }
@@ -135,11 +123,15 @@ PyObject *dg_bf_solver_get_x(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        return internal_dg_bf_solver_get_x<double>(objExt);
-    else if (isFloat32(dtype))
-        return internal_dg_bf_solver_get_x<float>(objExt);
-    RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_dg_bf_solver_get_x<double>(objExt);
+        else if (isFloat32(dtype))
+            return internal_dg_bf_solver_get_x<float>(objExt);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
+
+    RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
 }
 
 
@@ -157,11 +149,15 @@ PyObject *dg_bf_solver_get_E(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        return internal_dg_bf_solver_get_E<double>(objExt, NPY_FLOAT64);
-    else if (isFloat32(dtype))
-        return internal_dg_bf_solver_get_E<float>(objExt, NPY_FLOAT32);
-    RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_dg_bf_solver_get_E<double>(objExt, NPY_FLOAT64);
+        else if (isFloat32(dtype))
+            return internal_dg_bf_solver_get_E<float>(objExt, NPY_FLOAT32);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
+        
+    RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
 }
 
 
@@ -170,12 +166,14 @@ PyObject *dg_bf_solver_init_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->initSearch();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->initSearch();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->initSearch();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->initSearch();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -186,12 +184,15 @@ PyObject *dg_bf_solver_fin_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->finSearch();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->finSearch();
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->finSearch();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->finSearch();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -204,12 +205,15 @@ PyObject *dg_bf_solver_search_range(PyObject *module, PyObject *args) {
     unsigned long long iBegin, iEnd;
     if (!PyArg_ParseTuple(args, "OKKO", &objExt, &iBegin, &iEnd, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->searchRange(iBegin, iEnd);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->searchRange(iBegin, iEnd);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->searchRange(iBegin, iEnd);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->searchRange(iBegin, iEnd);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -220,21 +224,21 @@ PyObject *dg_bf_solver_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->search();
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->search();
-    else
-        RAISE_INVALID_DTYPE(dtype);
 
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->search();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->search();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSolverError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSolverError);
+    
     Py_INCREF(Py_None);
     return Py_None;    
 }
 
-    
-
 }
-
 
 
 

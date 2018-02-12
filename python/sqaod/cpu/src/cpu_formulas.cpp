@@ -2,27 +2,20 @@
 #include <cpu/CPUFormulas.h>
 
 
-// http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
-// http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
-
-/* NOTE: Value type checks for python objs have been already done in python glue, 
- * Here we only get entities needed. */
+/* references
+ * http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/
+ * http://scipy-cookbook.readthedocs.io/items/C_Extensions_NumPy_arrays.html
+ *
+ * NOTE: Value type checks for python objs have been already done in python glue, 
+ * Here we only get objects without error checks.
+ */
 
 
 static PyObject *Cpu_FormulasError;
 namespace sqd = sqaod;
 
 
-
 namespace {
-
-
-void setErrInvalidDtype(PyObject *dtype) {
-    PyErr_SetString(Cpu_FormulasError, "dtype must be numpy.float64 or numpy.float32.");
-}
-
-#define RAISE_INVALID_DTYPE(dtype) {setErrInvalidDtype(dtype); return NULL; }
-    
     
 template<class real>
 void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *objX) {
@@ -45,12 +38,14 @@ PyObject *cpu_formulas_dense_graph_calculate_E(PyObject *module, PyObject *args)
     if (!PyArg_ParseTuple(args, "OOOO", &objE, &objW, &objX, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_dense_graph_calculate_E<double>(objE, objW, objX);
-    else if (isFloat32(dtype))
-        internal_dense_graph_calculate_E<float>(objE, objW, objX);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_dense_graph_calculate_E<double>(objE, objW, objX);
+        else if (isFloat32(dtype))
+            internal_dense_graph_calculate_E<float>(objE, objW, objX);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -76,12 +71,14 @@ PyObject *cpu_formulas_dense_graph_batch_calculate_E(PyObject *module, PyObject 
     if (!PyArg_ParseTuple(args, "OOOO", &objE, &objW, &objX, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_dense_graph_batch_calculate_E<double>(objE, objW, objX);
-    else if (isFloat32(dtype))
-        internal_dense_graph_batch_calculate_E<float>(objE, objW, objX);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_dense_graph_batch_calculate_E<double>(objE, objW, objX);
+        else if (isFloat32(dtype))
+            internal_dense_graph_batch_calculate_E<float>(objE, objW, objX);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -109,12 +106,14 @@ PyObject *cpu_formulas_dense_graph_calculate_hJc(PyObject *module, PyObject *arg
     if (!PyArg_ParseTuple(args, "OOOOO", &objH, &objJ, &objC, &objW, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_dense_graph_calculate_hJc<double>(objH, objJ, objC, objW);
-    else if (isFloat32(dtype))
-        internal_dense_graph_calculate_hJc<float>(objH, objJ, objC, objW);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_dense_graph_calculate_hJc<double>(objH, objJ, objC, objW);
+        else if (isFloat32(dtype))
+            internal_dense_graph_calculate_hJc<float>(objH, objJ, objC, objW);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -146,12 +145,14 @@ PyObject *cpu_formulas_dense_graph_calculate_E_from_qbits(PyObject *module, PyOb
     if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_dense_graph_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
-    else if (isFloat32(dtype))
-        internal_dense_graph_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_dense_graph_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
+        else if (isFloat32(dtype))
+            internal_dense_graph_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -181,12 +182,14 @@ PyObject *cpu_formulas_dense_graph_batch_calculate_E_from_qbits(PyObject *module
     if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_dense_graph_batch_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
-    else if (isFloat32(dtype))
-        internal_dense_graph_batch_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_dense_graph_batch_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
+        else if (isFloat32(dtype))
+            internal_dense_graph_batch_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -222,12 +225,14 @@ PyObject *cpu_formulas_bipartite_graph_calculate_E(PyObject *module, PyObject *a
                           &objX0, &objX1, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_calculate_E<double>(objE, objB0, objB1, objW, objX0, objX1);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_calculate_E<float>(objE, objB0, objB1, objW, objX0, objX1);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_calculate_E<double>(objE, objB0, objB1, objW, objX0, objX1);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_calculate_E<float>(objE, objB0, objB1, objW, objX0, objX1);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -257,12 +262,16 @@ PyObject *cpu_formulas_bipartite_graph_batch_calculate_E(PyObject *module, PyObj
                           &objX0, &objX1, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_batch_calculate_E<double>(objE, objB0, objB1, objW, objX0, objX1);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_batch_calculate_E<float>(objE, objB0, objB1, objW, objX0, objX1);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_batch_calculate_E<double>
+                    (objE, objB0, objB1, objW, objX0, objX1);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_batch_calculate_E<float>
+                    (objE, objB0, objB1, objW, objX0, objX1);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -292,13 +301,17 @@ PyObject *cpu_formulas_bipartite_graph_batch_calculate_E_2d(PyObject *module, Py
                           &objX0, &objX1, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_batch_calculate_E_2d<double>(objE, objB0, objB1, objW, objX0, objX1);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_batch_calculate_E_2d<float>(objE, objB0, objB1, objW, objX0, objX1);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_batch_calculate_E_2d<double>
+                    (objE, objB0, objB1, objW, objX0, objX1);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_batch_calculate_E_2d<float>
+                    (objE, objB0, objB1, objW, objX0, objX1);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
+        
     Py_INCREF(Py_None);
     return Py_None;    
 }
@@ -328,14 +341,16 @@ PyObject *cpu_formulas_bipartite_graph_calculate_hJc(PyObject *module, PyObject 
                           &objB0, &objB1, &objW, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_calculate_hJc<double>(objH0, objH1, objJ, objC,
-                                           objB0, objB1, objW);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_calculate_hJc<float>(objH0, objH1, objJ, objC,
-                                          objB0, objB1, objW);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_calculate_hJc<double>(objH0, objH1, objJ, objC,
+                                                           objB0, objB1, objW);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_calculate_hJc<float>(objH0, objH1, objJ, objC,
+                                                          objB0, objB1, objW);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -368,12 +383,16 @@ PyObject *cpu_formulas_bipartite_graph_calculate_E_from_qbits(PyObject *module, 
                           &objQ0, &objQ1, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_calculate_E_from_qbits<double>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_calculate_E_from_qbits<float>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else
-        RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_calculate_E_from_qbits<double>
+                    (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_calculate_E_from_qbits<float>
+                    (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -406,13 +425,17 @@ PyObject *cpu_formulas_bipartite_graph_batch_calculate_E_from_qbits(PyObject *mo
                           &objQ0, &objQ1, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        internal_bipartite_graph_batch_calculate_E_from_qbits<double>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else if (isFloat32(dtype))
-        internal_bipartite_graph_batch_calculate_E_from_qbits<float>(objE, objH0, objH1, objJ, objC, objQ0, objQ1);
-    else
-        RAISE_INVALID_DTYPE(dtype);
-
+    TRY {
+        if (isFloat64(dtype))
+            internal_bipartite_graph_batch_calculate_E_from_qbits<double>
+                    (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
+        else if (isFloat32(dtype))
+            internal_bipartite_graph_batch_calculate_E_from_qbits<float>
+                    (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
+        
     Py_INCREF(Py_None);
     return Py_None;    
 }
@@ -447,11 +470,14 @@ PyObject *cpu_formulas_dense_graph_batch_search(PyObject *module, PyObject *args
     if (!PyArg_ParseTuple(args, "OOiiO", &objE, &objW, &xBegin, &xEnd, &dtype))
         return NULL;
     
-    if (isFloat64(dtype))
-        return internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
-    else if (isFloat32(dtype))
-        return internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
-    RAISE_INVALID_DTYPE(dtype);
+    TRY {
+        if (isFloat64(dtype))
+            return internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
+        else if (isFloat32(dtype))
+            return internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
+    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
+
+    RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
 }
     
 }
