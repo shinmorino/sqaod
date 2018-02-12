@@ -56,12 +56,18 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
     N1_ = W.rows;
     om_ = om;
 
-    DeviceMatrix *d_W = devStream_->tempDeviceMatrix<real>(W.dim());
     DeviceVector *d_b0 = devStream_->tempDeviceVector<real>(b0.size);
     DeviceVector *d_b1 = devStream_->tempDeviceVector<real>(b1.size);
+    DeviceMatrix *d_W = devStream_->tempDeviceMatrix<real>(W.dim());
+    devCopy_(d_b0, b0);
+    devCopy_(d_b1, b1);
     devCopy_(d_W, W);
-    if (om == sq::optMaximize)
+    if (om == sq::optMaximize) {
+        bgFuncs_.devMath.scale(d_b0, -1., *d_b0);
+        bgFuncs_.devMath.scale(d_b1, -1., *d_b1);
         bgFuncs_.devMath.scale(d_W, -1., *d_W);
+    }
+
     bgFuncs_.calculate_hJc(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
 }
 
@@ -74,6 +80,12 @@ void CUDABipartiteGraphAnnealer<real>::setNumTrotters(SizeType m) {
 
     HostObjectAllocator halloc;
     halloc.allocate(&h_E_, m_);
+    bitsPairX_.reserve(m);
+    bitsPairQ_.reserve(m);
+
+    int requiredSize = ((N0_ + N1_) * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    d_random_.setRequiredSize(requiredSize);
+
     annState_ |= annNTrottersGiven;
 }
 
@@ -122,16 +134,16 @@ const BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::randomize_q() {
     cudaStream_t stream = devStream_->getCudaStream();
-    sqaod_cuda::randomize_q(d_matq0_.d_data, d_random_, N0_, stream);
-    sqaod_cuda::randomize_q(d_matq1_.d_data, d_random_, N1_, stream);
+    sqaod_cuda::randomize_q(d_matq0_.d_data, d_random_, N0_ * m_, stream);
+    sqaod_cuda::randomize_q(d_matq1_.d_data, d_random_, N1_ * m_, stream);
     annState_ |= annQSet;
 }
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::calculate_E() {
-    bgFuncs_.calculate_E(&h_E_, d_h0_, d_h1_, d_J_, d_c_,
-                         d_matq0_, d_matq1_);
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
+    bgFuncs_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
+                         d_matq0_, d_matq1_);
     real sign = (om_ == optMaximize) ? -1. : 1.;
     bgFuncs_.devMath.scale(&h_E_, sign, *d_E);
 }
@@ -153,6 +165,7 @@ template<class real>
 void CUDABipartiteGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
+    devStream_->synchronize();
 }
 
 
@@ -182,15 +195,16 @@ template<class real> void CUDABipartiteGraphAnnealer<real>::
 calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
              const DeviceMatrix &d_qFixed) {
     /* original matmul is shown below.
-     *  bgFuncs_.devMath.matmul(d_Jq, d_J, op, qFixed, opTranspose);
+     *  bgFuncs_.devMath.mmProduct(d_Jq, 1., d_J, op, d_qFixed, opTranspose);
      * Tranpose product for coalesced access. */
+
     op = (op == opNone) ? opTranspose : opNone;
     bgFuncs_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
-template<int colorOffset, class real>
+template<class real>
 __global__ static void
-tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h,
+tryFlipKernel(real *d_qAnneal, int N, int m, int colorOffset, const real *d_Emat, const real *d_h,
               const real *d_realRand, real twoDivM, real coef, real invKT) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
@@ -199,14 +213,14 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
     
     if ((iq < N) && (im < m)) {
         real q = d_qAnneal[im * N + iq];
-        real dE = - twoDivM * q * (d_h[iq] + d_Emat[N * im + iq]);
+        real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
         int neibour0 = (im == 0) ? m - 1 : im - 1;
         int neibour1 = (im == m - 1) ? 0 : im + 1;
-        dE -= q * (d_qAnneal[N * neibour0 + iq] + d_qAnneal[N * neibour1 + iq]) * coef;
+        dE -= q * (d_qAnneal[neibour0 * N + iq] + d_qAnneal[neibour1 * N + iq]) * coef;
         real thresh = dE < real(0.) ? real(1.) : exp(- dE * invKT); /* FIXME: check precision */
         if (thresh > d_realRand[N * gidy + iq])
-            d_qAnneal[N * im + iq] = -q;
+            d_qAnneal[im * N + iq] = - q;
     }
 }
 
@@ -215,21 +229,22 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
 
 
 template<class real> void CUDABipartiteGraphAnnealer<real>::
-tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, int offset,
-        const DeviceVector &d_h, const real *d_realRand, real G, real kT) {
+tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
+    int nTrottersToFlip, int offset, 
+    const DeviceVector &d_h, const real *d_realRand, real G, real kT) {
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
     real twoDivM = real(2.) / m_;
 
     dim3 blockDim(64, 2);
-    dim3 gridDim(divru((SizeType)N, blockDim.x), divru((SizeType)m, blockDim.y));
+    dim3 gridDim(divru((SizeType)N, blockDim.x), divru((SizeType)nTrottersToFlip, blockDim.y));
     if (offset == 0) {
-        tryFlipKernel<0><<<gridDim, blockDim>>>
-                (d_qAnneal->d_data, N, m, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
+        tryFlipKernel<<<gridDim, blockDim>>>
+                (d_qAnneal->d_data, N, m, 0, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
     }
     else {
-        tryFlipKernel<1><<<gridDim, blockDim>>>
-                (d_qAnneal->d_data, N, m, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
+        tryFlipKernel<<<gridDim, blockDim>>>
+                (d_qAnneal->d_data, N, m, 1, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
     }
     DEBUG_SYNC;
 }
@@ -249,21 +264,24 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
     calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
     nTrottersToFlip = (m_ + 1) / 2;
     d_randNum = d_randReal_.acquire<real>(N1_ * nTrottersToFlip);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, 0, d_h1_, d_randNum, G, kT);
+    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, nTrottersToFlip, 0, d_h1_, d_randNum, G, kT);
+    DEBUG_SYNC;
     /* 2nd */
     nTrottersToFlip = m_ / 2;
     d_randNum = d_randReal_.acquire<real>(N1_ * nTrottersToFlip);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, 1, d_h1_, d_randNum, G, kT);
+    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, nTrottersToFlip, 1, d_h1_, d_randNum, G, kT);
+    DEBUG_SYNC;
     /* 3rd */
     calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
     nTrottersToFlip = (m_ + 1) / 2;
     d_randNum = d_randReal_.acquire<real>(N0_ * nTrottersToFlip);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, 0, d_h0_, d_randNum, G, kT);
+    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, nTrottersToFlip, 0, d_h0_, d_randNum, G, kT);
+    DEBUG_SYNC;
     /* 4th */
     nTrottersToFlip = m_ / 2;
     d_randNum = d_randReal_.acquire<real>(N0_ * nTrottersToFlip);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, 1, d_h0_, d_randNum, G, kT);
-
+    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, nTrottersToFlip, 1, d_h0_, d_randNum, G, kT);
+    DEBUG_SYNC;
 }
 
 
@@ -272,15 +290,14 @@ void CUDABipartiteGraphAnnealer<real>::syncBits() {
     bitsPairX_.clear();
     bitsPairQ_.clear();
 
-    
-
     HostObjectAllocator halloc;
     DeviceMatrix h_matq0, h_matq1;
     halloc.allocate(&h_matq0, d_matq0_.dim());
     halloc.allocate(&h_matq1, d_matq1_.dim());
     devCopy_(&h_matq0, d_matq0_);
     devCopy_(&h_matq1, d_matq1_);
-    
+    devCopy_.synchronize();
+
     for (int idx = 0; idx < IdxType(m_); ++idx) {
         HostVector rq0(h_matq0.row(idx), N0_);
         HostVector rq1(h_matq1.row(idx), N1_);

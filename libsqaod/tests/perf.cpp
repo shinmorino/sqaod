@@ -206,7 +206,7 @@ void bipartiteGraphAnnealer(int N0, int N1) {
 
     sq::VectorType<real> b0 = vector<real>(N0);
     sq::VectorType<real> b1 = vector<real>(N1);
-    sq::MatrixType<real> W = matrix<real>(sq::Dim(N0, N1));
+    sq::MatrixType<real> W = matrix<real>(sq::Dim(N1, N0));
 
     sq::CPUBipartiteGraphAnnealer<real> cpuAnnealer;
     cpuAnnealer.seed(0);
@@ -229,7 +229,7 @@ void bipartiteGraphAnnealer(int N0, int N1) {
         sqcuda::CUDABipartiteGraphAnnealer<real> cudaAnnealer(device);
         cudaAnnealer.setProblem(b0, b1, W);
         cudaAnnealer.setNumTrotters((N0 + N1) / 2);
-        cudaAnnealer.seed(1);
+        cudaAnnealer.seed(65743);
 
         auto start = std::chrono::system_clock::now();
         anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
