@@ -95,7 +95,18 @@ void CUDADenseGraphAnnealer<real>::setNumTrotters(int m) {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
+void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
+    /* FIXME: add size check */
+    HostVector rx = sq::x_to_q<real>(x);
+    DeviceVector *d_x = devStream_->tempDeviceVector<real>(rx.size);
+    devCopy_(d_x, rx);
+    devFormulas_.devMath.scaleBroadcast(&d_matq_, real(1.), *d_x, opRowwise);
+    annState_ |= annQSet;
+}
+
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c) const {
     devCopy_(h, d_h_);
     devCopy_(J, d_J_);
     devCopy_(c, d_c_);

@@ -37,7 +37,7 @@ public:
 
     void setProblem(const HostMatrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void getProblemSize(int *N, int *m) const;
+    void getProblemSize(sqaod::SizeType *N, sqaod::SizeType *m) const;
 
     void setNumTrotters(int m);
 
@@ -48,6 +48,8 @@ public:
     const BitsArray &get_x() const {
         return xlist_;
     }
+
+    void set_x(const Bits &x);
 
     const sqaod::BitsArray &get_q() const {
         return qlist_;
