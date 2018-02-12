@@ -1,34 +1,35 @@
 #include <pyglue.h>
 #include <common/Common.h>
-#include <cpu/CPUBipartiteGraphBFSolver.h>
+#include <cuda/CUDABipartiteGraphBFSearcher.h>
 #include <string.h>
 
 
-static PyObject *Cpu_BgBfSolverError;
-namespace sqd = sqaod;
+static PyObject *Cuda_BgBfSearcherError;
+namespace sq = sqaod;
+namespace sqcu = sqaod_cuda;
 
 
 namespace {
     
 template<class real>
-sqd::
-CPUBipartiteGraphBFSolver<real> *pyobjToCppObj(PyObject *obj) {
+sqcu::
+CUDABipartiteGraphBFSearcher<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqd::CPUBipartiteGraphBFSolver<real>*>(val);
+    return reinterpret_cast<sqcu::CUDABipartiteGraphBFSearcher<real>*>(val);
 }
 
 extern "C"
-PyObject *bg_bf_solver_create(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_create(PyObject *module, PyObject *args) {
     PyObject *dtype;
     void *ext;
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphBFSolver<double>();
+        ext = (void*)new sqcu::CUDABipartiteGraphBFSearcher<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphBFSolver<float>();
+        ext = (void*)new sqcu::CUDABipartiteGraphBFSearcher<float>();
     else
-        RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
@@ -37,7 +38,7 @@ PyObject *bg_bf_solver_create(PyObject *module, PyObject *args) {
 }
 
 extern "C"
-PyObject *bg_bf_solver_delete(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_delete(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
@@ -46,7 +47,7 @@ PyObject *bg_bf_solver_delete(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         delete pyobjToCppObj<float>(objExt);
     else
-        RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -54,18 +55,18 @@ PyObject *bg_bf_solver_delete(PyObject *module, PyObject *args) {
     
 
 template<class real>
-void internal_bg_bf_solver_set_problem(PyObject *objExt,
+void internal_bg_bf_searcher_set_problem(PyObject *objExt,
                                        PyObject *objB0, PyObject *objB1, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     NpVector b0(objB0), b1(objB1);
     NpMatrix W(objW);
-    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
+    sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
 }
     
 extern "C"
-PyObject *bg_bf_solver_set_problem(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
     PyObject *objExt, *objB0, *objB1, *objW, *dtype;
     int opt;
     if (!PyArg_ParseTuple(args, "OOOOiO", &objExt, &objB0, &objB1, &objW, &opt, &dtype))
@@ -73,19 +74,19 @@ PyObject *bg_bf_solver_set_problem(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_bg_bf_solver_set_problem<double>(objExt, objB0, objB1, objW, opt);
+            internal_bg_bf_searcher_set_problem<double>(objExt, objB0, objB1, objW, opt);
         else if (isFloat32(dtype))
-            internal_bg_bf_solver_set_problem<float>(objExt, objB0, objB1, objW, opt);
+            internal_bg_bf_searcher_set_problem<float>(objExt, objB0, objB1, objW, opt);
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
     
     Py_INCREF(Py_None);
     return Py_None;    
 }
     
 extern "C"
-PyObject *bg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_set_solver_preference(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     sqaod::SizeType tileSize0, tileSize1;
     if (!PyArg_ParseTuple(args, "OIIO", &objExt, &tileSize0, &tileSize1, &dtype))
@@ -97,24 +98,24 @@ PyObject *bg_bf_solver_set_solver_preference(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->setTileSize(tileSize0, tileSize1);
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
     Py_INCREF(Py_None);
     return Py_None;    
 }
 
 template<class real>
-PyObject *internal_bg_bf_solver_get_x(PyObject *objExt) {
-    sqd::CPUBipartiteGraphBFSolver<real> *sol = pyobjToCppObj<real>(objExt);
-    const sqd::BitsPairArray &xList = sol->get_x();
+PyObject *internal_bg_bf_searcher_get_x(PyObject *objExt) {
+    sqcu::CUDABipartiteGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
+    const sq::BitsPairArray &xList = sol->get_x();
 
     int N0, N1;
     sol->getProblemSize(&N0, &N1);
     
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
-        const sqd::BitsPairArray::ValueType &pair = xList[idx];
+        const sq::BitsPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
         x1.vec = pair.second;
@@ -129,24 +130,24 @@ PyObject *internal_bg_bf_solver_get_x(PyObject *objExt) {
     
     
 extern "C"
-PyObject *bg_bf_solver_get_x(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_get_x(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            return internal_bg_bf_solver_get_x<double>(objExt);
+            return internal_bg_bf_searcher_get_x<double>(objExt);
         else if (isFloat32(dtype))
-            return internal_bg_bf_solver_get_x<float>(objExt);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            return internal_bg_bf_searcher_get_x<float>(objExt);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
-    RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
+    RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
 }
 
 
 template<class real>
-PyObject *internal_bg_bf_solver_get_E(PyObject *objExt, int typenum) {
+PyObject *internal_bg_bf_searcher_get_E(PyObject *objExt, int typenum) {
     typedef NpVectorType<real> NpVector;
     const sqaod::VectorType<real> &E = pyobjToCppObj<real>(objExt)->get_E();
     NpVector npE(E.size, typenum); /* allocate PyObject */
@@ -156,24 +157,24 @@ PyObject *internal_bg_bf_solver_get_E(PyObject *objExt, int typenum) {
 
     
 extern "C"
-PyObject *bg_bf_solver_get_E(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_get_E(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            return internal_bg_bf_solver_get_E<double>(objExt, NPY_FLOAT64);
+            return internal_bg_bf_searcher_get_E<double>(objExt, NPY_FLOAT64);
         else if (isFloat32(dtype))
-            return internal_bg_bf_solver_get_E<float>(objExt, NPY_FLOAT32);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            return internal_bg_bf_searcher_get_E<float>(objExt, NPY_FLOAT32);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
-    RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
+    RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
 }
     
 
 extern "C"
-PyObject *bg_bf_solver_init_search(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_init_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
@@ -184,8 +185,8 @@ PyObject *bg_bf_solver_init_search(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->initSearch();
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -193,7 +194,7 @@ PyObject *bg_bf_solver_init_search(PyObject *module, PyObject *args) {
 
 
 extern "C"
-PyObject *bg_bf_solver_fin_search(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_fin_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
@@ -204,15 +205,15 @@ PyObject *bg_bf_solver_fin_search(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->finSearch();
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
     Py_INCREF(Py_None);
     return Py_None;    
 }
     
 extern "C"
-PyObject *bg_bf_solver_search_range(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_search_range(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     unsigned long long iBegin0, iEnd0, iBegin1, iEnd1;
     if (!PyArg_ParseTuple(args, "OKKKKO", &objExt, &iBegin0, &iEnd0, &iBegin1, &iEnd1, &dtype))
@@ -224,15 +225,15 @@ PyObject *bg_bf_solver_search_range(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->searchRange(iBegin0, iEnd0, iBegin1, iEnd1);
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
     Py_INCREF(Py_None);
     return Py_None;    
 }
 
 extern "C"
-PyObject *bg_bf_solver_search(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_search(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
@@ -243,8 +244,8 @@ PyObject *bg_bf_solver_search(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->search();
         else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSolverError);
-    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -254,34 +255,34 @@ PyObject *bg_bf_solver_search(PyObject *module, PyObject *args) {
 
 
 static
-PyMethodDef cpu_bg_bf_solver_methods[] = {
-	{"new_solver", bg_bf_solver_create, METH_VARARGS},
-	{"delete_solver", bg_bf_solver_delete, METH_VARARGS},
-	{"set_problem", bg_bf_solver_set_problem, METH_VARARGS},
-	{"set_solver_preference", bg_bf_solver_set_solver_preference, METH_VARARGS},
-	{"get_x", bg_bf_solver_get_x, METH_VARARGS},
-	{"get_E", bg_bf_solver_get_E, METH_VARARGS},
-	{"init_search", bg_bf_solver_init_search, METH_VARARGS},
-	{"fin_search", bg_bf_solver_fin_search, METH_VARARGS},
-	{"search_range", bg_bf_solver_search_range, METH_VARARGS},
-	{"search", bg_bf_solver_search, METH_VARARGS},
-	{NULL},
+PyMethodDef cuda_bg_bf_searcher_methods[] = {
+    {"new_searcher", bg_bf_searcher_create, METH_VARARGS},
+    {"delete_searcher", bg_bf_searcher_delete, METH_VARARGS},
+    {"set_problem", bg_bf_searcher_set_problem, METH_VARARGS},
+    {"set_solver_preference", bg_bf_searcher_set_solver_preference, METH_VARARGS},
+    {"get_x", bg_bf_searcher_get_x, METH_VARARGS},
+    {"get_E", bg_bf_searcher_get_E, METH_VARARGS},
+    {"init_search", bg_bf_searcher_init_search, METH_VARARGS},
+    {"fin_search", bg_bf_searcher_fin_search, METH_VARARGS},
+    {"search_range", bg_bf_searcher_search_range, METH_VARARGS},
+    {"search", bg_bf_searcher_search, METH_VARARGS},
+    {NULL},
 };
 
 
 
 extern "C"
 PyMODINIT_FUNC
-initcpu_bg_bf_solver(void) {
+initcuda_bg_bf_searcher(void) {
     PyObject *m;
     
-    m = Py_InitModule("cpu_bg_bf_solver", cpu_bg_bf_solver_methods);
+    m = Py_InitModule("cuda_bg_bf_searcher", cuda_bg_bf_searcher_methods);
     import_array();
     if (m == NULL)
         return;
     
-    char name[] = "cpu_bg_solver.error";
-    Cpu_BgBfSolverError = PyErr_NewException(name, NULL, NULL);
-    Py_INCREF(Cpu_BgBfSolverError);
-    PyModule_AddObject(m, "error", Cpu_BgBfSolverError);
+    char name[] = "cuda_bg_searcher.error";
+    Cuda_BgBfSearcherError = PyErr_NewException(name, NULL, NULL);
+    Py_INCREF(Cuda_BgBfSearcherError);
+    PyModule_AddObject(m, "error", Cuda_BgBfSearcherError);
 }

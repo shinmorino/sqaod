@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-static PyObject *Cuda_BgSolverError;
+static PyObject *Cuda_BgAnnealerError;
 namespace sq = sqaod;
 namespace sqcu = sqaod_cuda;
 
@@ -28,7 +28,7 @@ PyObject *bg_annealer_create(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         ext = (void*)new sqcu::CUDABipartiteGraphAnnealer<float>();
     else
-        RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
@@ -45,7 +45,7 @@ PyObject *bg_annealer_delete(PyObject *module, PyObject *args) {
     else if (isFloat32(dtype))
         delete pyobjToCppObj<float>(objExt);
     else
-        RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -64,8 +64,8 @@ PyObject *bg_annealer_rand_seed(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->seed(seed);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
     
     Py_INCREF(Py_None);
     return Py_None;    
@@ -95,8 +95,8 @@ PyObject *bg_annealer_set_problem(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             internal_bg_annealer_set_problem<float>(objExt, objB0, objB1, objW, opt);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -117,8 +117,8 @@ PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1, &m);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     return Py_BuildValue("III", N0, N1, m);
 }
@@ -136,8 +136,8 @@ PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->setNumTrotters(m);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -179,9 +179,9 @@ PyObject *bg_annealer_get_x(PyObject *module, PyObject *args) {
             return internal_bg_annealer_get_x<double>(objExt);
         else if (isFloat32(dtype))
             return internal_bg_annealer_get_x<float>(objExt);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
-    RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
+    RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
 }
 
 
@@ -204,8 +204,8 @@ PyObject *bg_annealer_set_x(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             internal_bg_annealer_set_x<float>(objExt, objX0, objX1);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -247,9 +247,9 @@ PyObject *bg_annealer_get_q(PyObject *module, PyObject *args) {
             return internal_bg_annealer_get_q<double>(objExt);
         else if (isFloat32(dtype))
             return internal_bg_annealer_get_q<float>(objExt);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
-    RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
+    RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
 }
     
 extern "C"
@@ -264,8 +264,8 @@ PyObject *bg_annealer_radomize_q(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->randomize_q();
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -300,8 +300,8 @@ PyObject *bg_annealer_get_hJc(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             internal_bg_annealer_get_hJc<float>(objExt, objH0, objH1, objJ, objC);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -329,8 +329,8 @@ PyObject *bg_annealer_get_E(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             internal_bg_annealer_get_E<float>(objExt, objE);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -349,8 +349,8 @@ PyObject *bg_annealer_calculate_E(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->calculate_E();
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -368,8 +368,8 @@ PyObject *bg_annealer_init_anneal(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->initAnneal();
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -396,8 +396,8 @@ PyObject *bg_annealer_anneal_one_step(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             internal_bg_annealer_anneal_one_step<float>(objExt, objG, objKT);
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -415,8 +415,8 @@ PyObject *bg_annealer_fin_anneal(PyObject *module, PyObject *args) {
         else if (isFloat32(dtype))
             pyobjToCppObj<float>(objExt)->finAnneal();
         else
-            RAISE_INVALID_DTYPE(dtype, Cuda_BgSolverError);
-    } CATCH_ERROR_AND_RETURN(Cuda_BgSolverError);
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -456,8 +456,8 @@ initcuda_bg_annealer(void) {
     if (m == NULL)
         return;
     
-    char name[] = "cuda_dg_solver.error";
-    Cuda_BgSolverError = PyErr_NewException(name, NULL, NULL);
-    Py_INCREF(Cuda_BgSolverError);
-    PyModule_AddObject(m, "error", Cuda_BgSolverError);
+    char name[] = "cuda_dg_searcher.error";
+    Cuda_BgAnnealerError = PyErr_NewException(name, NULL, NULL);
+    Py_INCREF(Cuda_BgAnnealerError);
+    PyModule_AddObject(m, "error", Cuda_BgAnnealerError);
 }

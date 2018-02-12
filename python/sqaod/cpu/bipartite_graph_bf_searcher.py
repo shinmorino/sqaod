@@ -3,48 +3,48 @@ import random
 import sys
 import sqaod
 from sqaod.common import checkers
-import cpu_bg_bf_solver as bg_bf_solver
+import cpu_bg_bf_searcher as bg_bf_searcher
 
 
-class BipartiteGraphBFSolver :
+class BipartiteGraphBFSearcher :
     
     def __init__(self, b0, b1, W, optimize, dtype) :
         self.dtype = dtype
-        self._ext = bg_bf_solver.new_solver(dtype)
+        self._ext = bg_bf_searcher.new_searcher(dtype)
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
             
     def __del__(self) :
-        bg_bf_solver.delete_solver(self._ext, self.dtype)
+        bg_bf_searcher.delete_searcher(self._ext, self.dtype)
 
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         b0, b1, W = sqaod.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
         self._dim = (b0.shape[0], b1.shape[0])
-        bg_bf_solver.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
+        bg_bf_searcher.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
         self._optimize = optimize
 
     def get_optimize_dir(self) :
         return self._optimize
 
     def get_E(self) :
-        return bg_bf_solver.get_E(self._ext, self.dtype);
+        return bg_bf_searcher.get_E(self._ext, self.dtype);
 
     def get_x(self) :
-        return bg_bf_solver.get_x(self._ext, self.dtype);
+        return bg_bf_searcher.get_x(self._ext, self.dtype);
     
     def init_search(self) :
-        bg_bf_solver.init_search(self._ext, self.dtype);
+        bg_bf_searcher.init_search(self._ext, self.dtype);
         
     def fin_search(self) :
-        bg_bf_solver.fin_search(self._ext, self.dtype);
+        bg_bf_searcher.fin_search(self._ext, self.dtype);
         
     def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
-        bg_bf_solver.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+        bg_bf_searcher.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
         
     def _search(self) :
         # one liner.  does not accept ctrl+c.
-        bg_bf_solver.search(self._ext, self.dtype);
+        bg_bf_searcher.search(self._ext, self.dtype);
         
 
     def search(self) :
@@ -65,8 +65,8 @@ class BipartiteGraphBFSolver :
 
         
 
-def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64) :
-    return BipartiteGraphBFSolver(b0, b1, W, optimize, dtype)
+def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64) :
+    return BipartiteGraphBFSearcher(b0, b1, W, optimize, dtype)
 
 
 if __name__ == '__main__' :
@@ -79,7 +79,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
     
-    bf = bipartite_graph_bf_solver(b0, b1, W)
+    bf = bipartite_graph_bf_searcher(b0, b1, W)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 

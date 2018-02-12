@@ -3,7 +3,7 @@ import sys
 import sqaod
 import formulas
 
-class DenseGraphBFSolver :
+class DenseGraphBFSearcher :
     
     def __init__(self, W = None, optimize = sqaod.minimize) :
         if W is not None :
@@ -61,8 +61,8 @@ class DenseGraphBFSolver :
         self.fin_search()
         
     
-def dense_graph_bf_solver(W = None, optimize = sqaod.minimize) :
-    return DenseGraphBFSolver(W, optimize)
+def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize) :
+    return DenseGraphBFSearcher(W, optimize)
 
 
 if __name__ == '__main__' :
@@ -78,13 +78,13 @@ if __name__ == '__main__' :
     
     
     N = 8
-    bf = dense_graph_bf_solver(W, sqaod.minimize)
+    bf = dense_graph_bf_searcher(W, sqaod.minimize)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
     print E, len(x), x[0]
 
-    bf = dense_graph_bf_solver(W, sqaod.maximize)
+    bf = dense_graph_bf_searcher(W, sqaod.maximize)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 

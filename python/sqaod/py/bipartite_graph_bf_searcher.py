@@ -3,7 +3,7 @@ import sys
 import sqaod
 from sqaod.common import checkers
 
-class BipartiteGraphBFSolver :
+class BipartiteGraphBFSearcher :
     
     def __init__(self, W, b0, b1, optimize) :
         self._verbose = False
@@ -100,8 +100,8 @@ class BipartiteGraphBFSolver :
 
         self.fin_search()
         
-def bipartite_graph_bf_solver(b0 = None, b1 = None, W = None, optimize = sqaod.minimize) :
-    return BipartiteGraphBFSolver(b0, b1, W, optimize)
+def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize) :
+    return BipartiteGraphBFSearcher(b0, b1, W, optimize)
 
 
 if __name__ == '__main__' :
@@ -114,7 +114,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
     
-    bf = bipartite_graph_bf_solver(b0, b1, W)
+    bf = bipartite_graph_bf_searcher(b0, b1, W)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 

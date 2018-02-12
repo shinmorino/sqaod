@@ -1,8 +1,8 @@
 import sqaod
 import numpy as np
 
-def output(solver) :
-    summary = sqaod.make_summary(solver)
+def output(searcher) :
+    summary = sqaod.make_summary(searcher)
     print 'E {}'.format(summary.E)
     print 'Number of solutions : {}'.format(len(summary.xlist))
     for x in summary.xlist :
@@ -43,7 +43,7 @@ anneal(ann)
 ann = sqaod.cpu.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
 
-sol = sqaod.py.bipartite_graph_bf_solver(b0, b1, W)
+sol = sqaod.py.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)
-sol = sqaod.cpu.bipartite_graph_bf_solver(b0, b1, W)
+sol = sqaod.cpu.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)

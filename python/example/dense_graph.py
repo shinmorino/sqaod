@@ -2,8 +2,8 @@ import sqaod
 import numpy as np
 
 
-def output(solver) :
-    summary = sqaod.make_summary(solver)
+def output(searcher) :
+    summary = sqaod.make_summary(searcher)
     print 'E {}'.format(summary.E)
     print 'Number of solutions : {}'.format(len(summary.xlist))
     nToShow = min(len(summary.xlist), 4)
@@ -45,7 +45,7 @@ anneal(ann)
 ann = sqaod.cpu.dense_graph_annealer(W, sqaod.minimize, 4)
 anneal(ann)
 
-sol = sqaod.py.dense_graph_bf_solver(W)
+sol = sqaod.py.dense_graph_bf_searcher(W)
 search(sol)
-sol = sqaod.cpu.dense_graph_bf_solver(W)
+sol = sqaod.cpu.dense_graph_bf_searcher(W)
 search(sol)

@@ -52,12 +52,12 @@ class TestMinEnergy(unittest.TestCase):
                     print i, j, Ebf, Ean
                 self.assertTrue(np.allclose(Ebf,  Ean))
 
-    def test_bf_solver(self):
+    def test_bf_searcher(self):
         N0 = 4
         N1 = 4
 
         an = py.bipartite_graph_annealer()
-        bf = py.bipartite_graph_bf_solver()
+        bf = py.bipartite_graph_bf_searcher()
         
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
