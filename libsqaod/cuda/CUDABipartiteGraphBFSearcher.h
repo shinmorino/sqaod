@@ -9,7 +9,7 @@
 namespace sqaod_cuda {
 
 template<class real>
-class CUDABipartiteGraphBFSolver {
+class CUDABipartiteGraphBFSearcher {
     typedef sqaod::MatrixType<real> HostMatrix;
     typedef sqaod::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
@@ -23,10 +23,10 @@ class CUDABipartiteGraphBFSolver {
     typedef sqaod::SizeType SizeType;
     typedef sqaod::IdxType IdxType;
 public:
-    CUDABipartiteGraphBFSolver();
-    CUDABipartiteGraphBFSolver(Device &device);
+    CUDABipartiteGraphBFSearcher();
+    CUDABipartiteGraphBFSearcher(Device &device);
 
-    ~CUDABipartiteGraphBFSolver();
+    ~CUDABipartiteGraphBFSearcher();
 
     void assignDevice(Device &device);
     

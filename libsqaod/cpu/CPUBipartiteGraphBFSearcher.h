@@ -8,15 +8,15 @@
 namespace sqaod {
 
 template<class real>
-class CPUBipartiteGraphBFSolver {
+class CPUBipartiteGraphBFSearcher {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
 public:
-    CPUBipartiteGraphBFSolver();
-    ~CPUBipartiteGraphBFSolver();
+    CPUBipartiteGraphBFSearcher();
+    ~CPUBipartiteGraphBFSearcher();
 
     void getProblemSize(int *N0, int *N1) const;
 

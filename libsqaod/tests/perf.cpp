@@ -1,6 +1,6 @@
-#include <cpu/CPUDenseGraphBFSolver.h>
+#include <cpu/CPUDenseGraphBFSearcher.h>
 #include <cpu/CPUDenseGraphAnnealer.h>
-#include <cpu/CPUBipartiteGraphBFSolver.h>
+#include <cpu/CPUBipartiteGraphBFSearcher.h>
 #include <cpu/CPUBipartiteGraphAnnealer.h>
 #include <iostream>
 #include <chrono>
@@ -9,9 +9,9 @@
 namespace sq = sqaod;
 
 #ifdef SQAOD_CUDA_ENABLED
-#  include <cuda/CUDADenseGraphBFSolver.h>
+#  include <cuda/CUDADenseGraphBFSearcher.h>
 #  include <cuda/CUDADenseGraphAnnealer.h>
-#  include <cuda/CUDABipartiteGraphBFSolver.h>
+#  include <cuda/CUDABipartiteGraphBFSearcher.h>
 #  include <cuda/CUDABipartiteGraphAnnealer.h>
 namespace sqcuda = sqaod_cuda;
 #endif
@@ -62,7 +62,7 @@ template<class real>
 void denseGraphBFSearch(int N) {
     sq::MatrixType<real> W = symmetricMatrix<real>(N);
 
-    sq::CPUDenseGraphBFSolver<real> cpuSolver;
+    sq::CPUDenseGraphBFSearcher<real> cpuSolver;
     cpuSolver.setProblem(W);
     cpuSolver.setTileSize(1 << std::min(N, 20));
 
@@ -78,7 +78,7 @@ void denseGraphBFSearch(int N) {
     sqcuda::Device device;
     device.initialize();
 
-    sqcuda::CUDADenseGraphBFSolver<real> cudaSolver(device);
+    sqcuda::CUDADenseGraphBFSearcher<real> cudaSolver(device);
     cudaSolver.setProblem(W);
     cudaSolver.setTileSize(1 << std::min(N, 18));
 
@@ -99,7 +99,7 @@ void bipartiteGraphBFSearch(int N0, int N1) {
     sq::VectorType<real> b1 = vector<real>(N1);
     sq::MatrixType<real> W = matrix<real>(sq::Dim(N1, N0));
 
-    sq::CPUBipartiteGraphBFSolver<real> cpuSolver;
+    sq::CPUBipartiteGraphBFSearcher<real> cpuSolver;
     cpuSolver.setProblem(b0, b1, W);
 //    cpuSolver.setTileSize(1 << std::min(N, 20));
 
@@ -117,7 +117,7 @@ void bipartiteGraphBFSearch(int N0, int N1) {
     // device.enableLocalStore(false);
     device.initialize();
 
-    sqcuda::CUDABipartiteGraphBFSolver<real> cudaSolver(device);
+    sqcuda::CUDABipartiteGraphBFSearcher<real> cudaSolver(device);
     cudaSolver.setProblem(b0, b1, W);
     // cudaSolver.setTileSize(1 << std::min(N, 20));
 

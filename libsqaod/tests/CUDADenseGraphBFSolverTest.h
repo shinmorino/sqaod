@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MinimalTestSuite.h"
-#include <cuda/CUDADenseGraphBFSolver.h>
+#include <cuda/CUDADenseGraphBFSearcher.h>
 #include <cuda/Device.h>
 
 class CUDADenseGraphBFSolverTest : public MinimalTestSuite {

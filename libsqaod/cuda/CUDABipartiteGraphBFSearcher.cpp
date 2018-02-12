@@ -1,4 +1,4 @@
-#include "CUDABipartiteGraphBFSolver.h"
+#include "CUDABipartiteGraphBFSearcher.h"
 #include <cmath>
 #include <float.h>
 #include <algorithm>
@@ -8,37 +8,37 @@ using namespace sqaod_cuda;
 namespace sq = sqaod;
 
 template<class real>
-CUDABipartiteGraphBFSolver<real>::CUDABipartiteGraphBFSolver() {
+CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher() {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
 }
 
 template<class real>
-CUDABipartiteGraphBFSolver<real>::CUDABipartiteGraphBFSolver(Device &device) {
+CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher(Device &device) {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
     assignDevice(device);
 }
 
 template<class real>
-CUDABipartiteGraphBFSolver<real>::~CUDABipartiteGraphBFSolver() {
+CUDABipartiteGraphBFSearcher<real>::~CUDABipartiteGraphBFSearcher() {
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::assignDevice(Device &device) {
+void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
     batchSearch_.assignDevice(device, device.defaultStream());
 }
 
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::getProblemSize(int *N0, int *N1) const {
+void CUDABipartiteGraphBFSearcher<real>::getProblemSize(int *N0, int *N1) const {
     *N0 = N0_;
     *N1 = N1_;
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::setProblem(const HostVector &b0, const HostVector &b1,
-                                                  const HostMatrix &W, sqaod::OptimizeMethod om) {
+void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
+                                                    const HostMatrix &W, sqaod::OptimizeMethod om) {
     N0_ = b0.size;
     N1_ = b1.size;
     b0_ = b0;
@@ -53,23 +53,23 @@ void CUDABipartiteGraphBFSolver<real>::setProblem(const HostVector &b0, const Ho
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::setTileSize(SizeType tileSize0, SizeType tileSize1) {
+void CUDABipartiteGraphBFSearcher<real>::setTileSize(SizeType tileSize0, SizeType tileSize1) {
     tileSize0_ = tileSize0;
     tileSize1_ = tileSize1;
 }
 
 template<class real>
-const sq::BitsPairArray &CUDABipartiteGraphBFSolver<real>::get_x() const {
+const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
     return minXPairs_;
 }
 
 template<class real>
-const sq::VectorType<real> &CUDABipartiteGraphBFSolver<real>::get_E() const {
+const sq::VectorType<real> &CUDABipartiteGraphBFSearcher<real>::get_E() const {
     return E_;
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::initSearch() {
+void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     Emin_ = std::numeric_limits<real>::max();
     xPackedPairs_.clear();
     x0max_ = 1ull << N0_;
@@ -84,7 +84,7 @@ void CUDABipartiteGraphBFSolver<real>::initSearch() {
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::finSearch() {
+void CUDABipartiteGraphBFSearcher<real>::finSearch() {
     batchSearch_.synchronize();
     const DevicePackedBitsPairArray &dPackedXminPairs = batchSearch_.get_minXPairs();
     SizeType nXMin = dPackedXminPairs.size;
@@ -105,8 +105,8 @@ void CUDABipartiteGraphBFSolver<real>::finSearch() {
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::searchRange(PackedBits xBegin0, PackedBits xEnd0,
-                                                   PackedBits xBegin1, PackedBits xEnd1) {
+void CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits xBegin0, PackedBits xEnd0,
+                                                     PackedBits xBegin1, PackedBits xEnd1) {
     /* FIXME: Use multiple searchers, multi GPU */
     throwErrorIf(xBegin0 > xEnd0, "xBegin0 should be larger than xEnd0");
     throwErrorIf(xBegin1 > xEnd1, "xBegin1 should be larger than xEnd1");
@@ -132,7 +132,7 @@ void CUDABipartiteGraphBFSolver<real>::searchRange(PackedBits xBegin0, PackedBit
 }
 
 template<class real>
-void CUDABipartiteGraphBFSolver<real>::search() {
+void CUDABipartiteGraphBFSearcher<real>::search() {
     initSearch();
 
     PackedBits iStep0 = std::min((PackedBits)tileSize0_, x0max_);
@@ -145,5 +145,5 @@ void CUDABipartiteGraphBFSolver<real>::search() {
     finSearch();
 }
 
-template class sqaod_cuda::CUDABipartiteGraphBFSolver<float>;
-template class sqaod_cuda::CUDABipartiteGraphBFSolver<double>;
+template class sqaod_cuda::CUDABipartiteGraphBFSearcher<float>;
+template class sqaod_cuda::CUDABipartiteGraphBFSearcher<double>;

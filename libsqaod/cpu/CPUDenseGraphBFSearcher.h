@@ -7,15 +7,15 @@
 namespace sqaod {
 
 template<class real>
-class CPUDenseGraphBFSolver {
+class CPUDenseGraphBFSearcher {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
 public:
-    CPUDenseGraphBFSolver();
-    ~CPUDenseGraphBFSolver();
+    CPUDenseGraphBFSearcher();
+    ~CPUDenseGraphBFSearcher();
 
     void getProblemSize(SizeType *N) const;
 

@@ -9,7 +9,7 @@
 namespace sqaod_cuda {
 
 template<class real>
-class CUDADenseGraphBFSolver {
+class CUDADenseGraphBFSearcher {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -19,11 +19,11 @@ class CUDADenseGraphBFSolver {
     typedef sqaod::VectorType<real> Vector;
     
 public:
-    CUDADenseGraphBFSolver();
+    CUDADenseGraphBFSearcher();
 
-    CUDADenseGraphBFSolver(Device &device);
+    CUDADenseGraphBFSearcher(Device &device);
 
-    ~CUDADenseGraphBFSolver();
+    ~CUDADenseGraphBFSearcher();
 
     void assignDevice(Device &device);
     

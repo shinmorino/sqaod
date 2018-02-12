@@ -1,4 +1,4 @@
-#include "CPUDenseGraphBFSolver.h"
+#include "CPUDenseGraphBFSearcher.h"
 #include "CPUFormulas.h"
 #include <cmath>
 
@@ -8,21 +8,21 @@
 using namespace sqaod;
 
 template<class real>
-CPUDenseGraphBFSolver<real>::CPUDenseGraphBFSolver() {
+CPUDenseGraphBFSearcher<real>::CPUDenseGraphBFSearcher() {
     tileSize_ = 1024;
 }
 
 template<class real>
-CPUDenseGraphBFSolver<real>::~CPUDenseGraphBFSolver() {
+CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::getProblemSize(SizeType *N) const {
+void CPUDenseGraphBFSearcher<real>::getProblemSize(SizeType *N) const {
     *N = N_;
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om) {
+void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
     W_ = mapTo(W);
@@ -32,22 +32,22 @@ void CPUDenseGraphBFSolver<real>::setProblem(const Matrix &W, OptimizeMethod om)
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::setTileSize(SizeType tileSize) {
+void CPUDenseGraphBFSearcher<real>::setTileSize(SizeType tileSize) {
     tileSize_ = tileSize;
 }
 
 template<class real>
-const BitsArray &CPUDenseGraphBFSolver<real>::get_x() const {
+const BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
     return xList_;
 }
 
 template<class real>
-const VectorType<real> &CPUDenseGraphBFSolver<real>::get_E() const {
+const VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
     return E_;
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::initSearch() {
+void CPUDenseGraphBFSearcher<real>::initSearch() {
     minE_ = FLT_MAX;
     packedXList_.clear();
     xList_.clear();
@@ -56,7 +56,7 @@ void CPUDenseGraphBFSolver<real>::initSearch() {
 
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::finSearch() {
+void CPUDenseGraphBFSearcher<real>::finSearch() {
     xList_.clear();
     for (int idx = 0; idx < (int)packedXList_.size(); ++idx) {
         Bits bits;
@@ -69,7 +69,7 @@ void CPUDenseGraphBFSolver<real>::finSearch() {
 
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
+void CPUDenseGraphBFSearcher<real>::searchRange(unsigned long long iBegin, unsigned long long iEnd) {
     iBegin = std::min(std::max(0ULL, iBegin), xMax_);
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
     DGFuncs<real>::batchSearch(&minE_, &packedXList_, mapFrom(W_), iBegin, iEnd);
@@ -77,7 +77,7 @@ void CPUDenseGraphBFSolver<real>::searchRange(unsigned long long iBegin, unsigne
 }
 
 template<class real>
-void CPUDenseGraphBFSolver<real>::search() {
+void CPUDenseGraphBFSearcher<real>::search() {
     initSearch();
     PackedBits iStep = std::min(tileSize_, xMax_);
     for (PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
@@ -86,5 +86,5 @@ void CPUDenseGraphBFSolver<real>::search() {
     finSearch();
 }
 
-template class sqaod::CPUDenseGraphBFSolver<float>;
-template class sqaod::CPUDenseGraphBFSolver<double>;
+template class sqaod::CPUDenseGraphBFSearcher<float>;
+template class sqaod::CPUDenseGraphBFSearcher<double>;

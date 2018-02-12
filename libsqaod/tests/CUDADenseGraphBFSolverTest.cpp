@@ -1,6 +1,6 @@
 #include "CUDADenseGraphBFSolverTest.h"
 #include <cpu/CPUFormulas.h>
-#include <cpu/CPUDenseGraphBFSolver.h>
+#include <cpu/CPUDenseGraphBFSearcher.h>
 #include <cuda_runtime.h>
 #include "utils.h"
 
@@ -212,13 +212,13 @@ void CUDADenseGraphBFSolverTest::tests() {
         MatrixType W = testMatSymmetric<real>(N);
         TEST_ASSERT(sqaod::isSymmetric(W));
 
-        sq::CPUDenseGraphBFSolver<real> cpuSolver;
+        sq::CPUDenseGraphBFSearcher<real> cpuSolver;
         cpuSolver.setProblem(W);
         cpuSolver.search();
         const sq::VectorType<real> &cpuE = cpuSolver.get_E();
         const sq::BitsArray &cpuX = cpuSolver.get_x();
 
-        CUDADenseGraphBFSolver<real> cudaSolver;
+        CUDADenseGraphBFSearcher<real> cudaSolver;
         cudaSolver.assignDevice(device_);
         cudaSolver.setProblem(W);
         cudaSolver.search();
