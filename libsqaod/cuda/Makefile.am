@@ -3,7 +3,7 @@ SUFFIXES = .cu .cpp .Plo .Po
 noinst_LTLIBRARIES=libcuda.la
 check_PROGRAMS=test
 
-libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu CUDAFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cu DeviceRandom.cu CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSolver.cpp DeviceBipartiteGraphBatchSearch.cpp CUDABipartiteGraphAnnealer.cu
+libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu DeviceFormulas.cpp CUDADenseGraphBFSolver.cpp DeviceDenseGraphBatchSearch.cu DeviceRandom.cu CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSolver.cpp DeviceBipartiteGraphBatchSearch.cpp CUDABipartiteGraphAnnealer.cu
 
 # check
 test_SOURCES=test.cpp

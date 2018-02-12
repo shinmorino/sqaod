@@ -3,7 +3,6 @@
 #include <float.h>
 #include <algorithm>
 #include <exception>
-#include "CUDAFormulas.h"
 
 
 using namespace sqaod_cuda;
@@ -30,7 +29,7 @@ template<class real>
 void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
-    bgFuncs_.assignDevice(device);
+    devFormulas_.assignDevice(device);
     devCopy_.assignDevice(device);
     d_random_.assignDevice(device);
     d_randReal_.assignDevice(device);
@@ -63,12 +62,12 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
     devCopy_(d_b1, b1);
     devCopy_(d_W, W);
     if (om == sq::optMaximize) {
-        bgFuncs_.devMath.scale(d_b0, -1., *d_b0);
-        bgFuncs_.devMath.scale(d_b1, -1., *d_b1);
-        bgFuncs_.devMath.scale(d_W, -1., *d_W);
+        devFormulas_.devMath.scale(d_b0, -1., *d_b0);
+        devFormulas_.devMath.scale(d_b1, -1., *d_b1);
+        devFormulas_.devMath.scale(d_W, -1., *d_W);
     }
 
-    bgFuncs_.calculate_hJc(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
+    devFormulas_.calculate_hJc(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
 }
 
 template<class real>
@@ -103,8 +102,8 @@ void CUDABipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     DeviceVector *d_x1 = devStream_->tempDeviceVector<real>(rx1.size);
     devCopy_(d_x0, rx0);
     devCopy_(d_x1, rx1);
-    bgFuncs_.devMath.scaleBroadcast(&d_matq0_, real(1.), *d_x0, opRowwise);
-    bgFuncs_.devMath.scaleBroadcast(&d_matq1_, real(1.), *d_x1, opRowwise);
+    devFormulas_.devMath.scaleBroadcast(&d_matq0_, real(1.), *d_x0, opRowwise);
+    devFormulas_.devMath.scaleBroadcast(&d_matq1_, real(1.), *d_x1, opRowwise);
     annState_ |= annQSet;
 }
 
@@ -142,10 +141,10 @@ void CUDABipartiteGraphAnnealer<real>::randomize_q() {
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::calculate_E() {
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
-    bgFuncs_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
-                         d_matq0_, d_matq1_);
+    devFormulas_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
+                             d_matq0_, d_matq1_);
     real sign = (om_ == optMaximize) ? -1. : 1.;
-    bgFuncs_.devMath.scale(&h_E_, sign, *d_E);
+    devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 }
 
 template<class real>
@@ -199,7 +198,7 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
      * Tranpose product for coalesced access. */
 
     op = (op == opNone) ? opTranspose : opNone;
-    bgFuncs_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
+    devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
 template<class real>

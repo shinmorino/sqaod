@@ -16,7 +16,7 @@ DeviceDenseGraphBatchSearch<real>::DeviceDenseGraphBatchSearch() {
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::assignDevice(Device &device) {
     devStream_ = device.defaultStream();
-    dgFuncs_.assignDevice(device, devStream_);
+    devFormulas_.assignDevice(device, devStream_);
     devCopy_.assignDevice(device, devStream_);
     devAlloc_ = device.objectAllocator();
 }
@@ -54,8 +54,8 @@ void DeviceDenseGraphBatchSearch<real>::calculate_E(sq::PackedBits xBegin, sq::P
             "nBatch is too large, tileSize=%d, nBatch=%d", int(tileSize_), int(nBatch));
     int N = d_W_.rows;
     generateBitsSequence(d_bitsMat_.d_data, N, xBegin, xEnd);
-    dgFuncs_.calculate_E(&d_Ebatch_, d_W_, d_bitsMat_);
-    dgFuncs_.devMath.min(&h_Emin_, d_Ebatch_);
+    devFormulas_.calculate_E(&d_Ebatch_, d_W_, d_bitsMat_);
+    devFormulas_.devMath.min(&h_Emin_, d_Ebatch_);
 }
 
 

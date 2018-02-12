@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
+#include <cuda/DeviceFormulas.h>
 #include <cuda/DeviceObjectAllocator.h>
 
 namespace sqaod_cuda {
@@ -15,7 +15,7 @@ class DeviceBipartiteGraphBatchSearch {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceScalarType<sqaod::SizeType> DeviceSize;
-    typedef CUDABGFuncs<real> BGFuncs;
+    typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
     typedef sqaod::MatrixType<real> HostMatrix;
     typedef sqaod::VectorType<real> HostVector;
     
@@ -75,7 +75,7 @@ private:
     DevicePackedBitsPairArray d_minXPairs_;
     DeviceSize h_nMinXPairs_;
     /* lower level objects. */
-    BGFuncs bgFuncs_;
+    DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;

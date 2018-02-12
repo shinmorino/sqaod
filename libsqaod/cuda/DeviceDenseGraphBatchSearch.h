@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda/CUDAFormulas.h>
+#include <cuda/DeviceFormulas.h>
 #include <cuda/DeviceMatrix.h>
 #include <cuda/DeviceArray.h>
 #include <cuda/DeviceObjectAllocator.h>
@@ -15,7 +15,7 @@ class DeviceDenseGraphBatchSearch {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceScalarType<sqaod::SizeType> DeviceSize;
-    typedef CUDADGFuncs<real> DGFuncs;
+    typedef DeviceDenseGraphFormulas<real> Formulas;
     typedef sqaod::MatrixType<real> HostMatrix;
     
 public:
@@ -67,7 +67,7 @@ private:
     DevicePackedBitsArray d_xMins_;
     DeviceSize h_nXMins_;
     /* lower level objects. */
-    DGFuncs dgFuncs_;
+    Formulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;

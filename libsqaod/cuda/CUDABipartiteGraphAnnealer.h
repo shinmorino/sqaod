@@ -2,7 +2,6 @@
 #pragma once
 
 #include <common/Common.h>
-#include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceRandom.h>
 #include <cuda/DeviceRandomBuffer.h>
 
@@ -18,6 +17,7 @@ class CUDABipartiteGraphAnnealer {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
+    typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
     
 public:
     CUDABipartiteGraphAnnealer();
@@ -97,7 +97,7 @@ private:
     BitsPairArray bitsPairQ_;
 
     DeviceStream *devStream_;
-    CUDABGFuncs<real> bgFuncs_;
+    DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 };

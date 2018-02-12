@@ -1,5 +1,4 @@
 #include "CUDADenseGraphBFSolver.h"
-#include "CUDAFormulas.h"
 #include "Device.h"
 #include <cmath>
 #include <float.h>

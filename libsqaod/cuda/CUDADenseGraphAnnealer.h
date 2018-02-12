@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/Common.h>
-#include <cuda/CUDAFormulas.h>
 #include <cuda/DeviceRandom.h>
 #include <cuda/DeviceRandomBuffer.h>
 #include <cuda/DeviceSegmentedSum.h>
@@ -95,7 +94,7 @@ private:
     DeviceSegmentedSumType<real> *dotJq_;
 
     DeviceStream *devStream_;
-    CUDADGFuncs<real> dgFuncs_;
+    DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 };

@@ -1,12 +1,11 @@
-#ifndef CUDAFORMULAS_H__
-#define CUDAFORMULAS_H__
+#pragma once
 
 #include <cuda/DeviceMath.h>
 
 namespace sqaod_cuda {
     
 template<class real>
-struct CUDADGFuncs {
+struct DeviceDenseGraphFormulas {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -28,9 +27,9 @@ struct CUDADGFuncs {
 
 
 
-    CUDADGFuncs() { }
+    DeviceDenseGraphFormulas();
 
-    CUDADGFuncs(Device &device, DeviceStream *stream = NULL);
+    DeviceDenseGraphFormulas(Device &device, DeviceStream *stream = NULL);
     void assignDevice(Device &device, DeviceStream *stream = NULL);
 
     DeviceMath devMath;
@@ -39,7 +38,7 @@ struct CUDADGFuncs {
 
     
 template<class real>
-struct CUDABGFuncs {
+struct DeviceBipartiteGraphFormulas {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -70,10 +69,14 @@ struct CUDABGFuncs {
                      const DeviceScalar &c,
                      const DeviceMatrix &q0, const DeviceMatrix &q1);
 
-      void assignDevice(Device &device, DeviceStream *stream = NULL);
-      DeviceMath devMath;
+
+    DeviceBipartiteGraphFormulas();
+
+    DeviceBipartiteGraphFormulas(Device &device, DeviceStream *stream = NULL);
+
+    void assignDevice(Device &device, DeviceStream *stream = NULL);
+
+    DeviceMath devMath;
 };
 
 }
-
-#endif

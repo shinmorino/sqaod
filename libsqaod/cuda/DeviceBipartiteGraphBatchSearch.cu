@@ -16,7 +16,7 @@ DeviceBipartiteGraphBatchSearch<real>::DeviceBipartiteGraphBatchSearch() {
 template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::assignDevice(Device &device, DeviceStream *devStream) {
     devStream_ = devStream;
-    bgFuncs_.assignDevice(device, devStream_);
+    devFormulas_.assignDevice(device, devStream_);
     devCopy_.assignDevice(device, devStream_);
     devAlloc_ = device.objectAllocator();
 }
@@ -72,8 +72,8 @@ calculate_E(sqaod::PackedBits xBegin0, sqaod::PackedBits xEnd0,
     /* FIXME: use stream if effective */
     generateBitsSequence(d_bitsMat0_.d_data, N0_, xBegin0, xEnd0);
     generateBitsSequence(d_bitsMat1_.d_data, N1_, xBegin1, xEnd1);
-    bgFuncs_.calculate_E_2d(&d_Ebatch_, d_b0_, d_b1_, d_W_, d_bitsMat0_, d_bitsMat1_);
-    bgFuncs_.devMath.min(&h_Emin_, d_Ebatch_);
+    devFormulas_.calculate_E_2d(&d_Ebatch_, d_b0_, d_b1_, d_W_, d_bitsMat0_, d_bitsMat1_);
+    devFormulas_.devMath.min(&h_Emin_, d_Ebatch_);
 }
 
 
