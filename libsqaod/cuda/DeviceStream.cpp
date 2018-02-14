@@ -25,7 +25,8 @@ DeviceStream::DeviceStream(cudaStream_t stream, DeviceMemoryStore &memStore, int
 }
 
 DeviceStream::~DeviceStream() {
-    finalize();
+    /* Don't call finalize here, since it's called from class Device. */
+    // finalize();
 }
 
 void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore, int nThreadsToFillDevice) {

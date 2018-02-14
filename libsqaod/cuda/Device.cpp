@@ -20,16 +20,21 @@ void Device::initialize(int devNo){
     if (devNo_ != -1) /* already initialized */
         throwErrorIf(devNo_ != devNo, "Trying to initialize Device that is already initialized.");
 
-    devNo_ = devNo;
-    throwOnError(cudaSetDevice(devNo));
+    cudaError_t cuerr = cudaSetDevice(devNo);
+    throwErrorIf(cuerr != cudaSuccess,
+                 "CUDA initialization failed, %s(%d).", cudaGetErrorName(cuerr), (int)cuerr);
+
     memStore_.initialize();
     devObjAllocator_.set(&memStore_);
     defaultDeviceStream_.set(NULL, memStore_, getNumThreadsToFillDevice());
     devConstScalarsFP64_.initialize(devObjAllocator_, defaultDeviceStream_);
     devConstScalarsFP32_.initialize(devObjAllocator_, defaultDeviceStream_);
+    devNo_ = devNo;
 }
 
 void Device::finalize() {
+    if (devNo_ == -1)
+        return;
     synchronize();
     for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it)
         delete *it;
