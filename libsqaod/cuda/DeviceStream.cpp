@@ -34,7 +34,7 @@ void DeviceStream::set(cudaStream_t stream, DeviceMemoryStore &memStore, int nTh
     memStore_ = &memStore;
     throwOnError(cublasCreate(&cublasHandle_));
     throwOnError(cublasSetStream(cublasHandle_, stream));
-    cublasSetPointerMode(cublasHandle_, CUBLAS_POINTER_MODE_DEVICE);
+    throwOnError(cublasSetPointerMode(cublasHandle_, CUBLAS_POINTER_MODE_DEVICE));
 }
 
 
