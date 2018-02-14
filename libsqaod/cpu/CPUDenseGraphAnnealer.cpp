@@ -21,6 +21,7 @@ sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
 
 template<class real>
 sqd::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
+    delete [] random_;
 }
 
 template<class real>
