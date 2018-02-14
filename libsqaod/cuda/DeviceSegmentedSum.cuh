@@ -119,13 +119,16 @@ segmentedSumKernel_64(InputIterator in, OutputIterator out, OffsetIterator segOf
         typedef cub::WarpReduce<V> WarpReduce;
         __shared__ typename WarpReduce::TempStorage temp_storage[WARPS_IN_BLOCK];
         __shared__ V partialSum[WARPS_IN_BLOCK];
-        partialSum[warpId] = WarpReduce(temp_storage[warpId]).Sum(sum);
-        V *seqPartialSum = &partialSum[iSubSegIdxInBlock * 2];
+        sum = WarpReduce(temp_storage[warpId]).Sum(sum);
+        if (threadIdx.x % WARP_SIZE == 0)
+            partialSum[warpId] = sum;
         __syncthreads();
-        sum = seqPartialSum[0] + seqPartialSum[1];
 
-        if ((threadIdx.x % N_REDUCE_THREADS) == 0)
+        if ((threadIdx.x % N_REDUCE_THREADS) == 0) {
+            int shMemOffset = iSubSegIdxInBlock * 2;
+            sum = partialSum[shMemOffset] + partialSum[shMemOffset + 1];
             out[iSubSegment] = sum;
+        }
     }
 }
 
