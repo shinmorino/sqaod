@@ -24,11 +24,15 @@ public:
 
     enum Algorithm algorithm() const;
     
-    void getProblemSize(SizeType *N, SizeType *m) const;
+    void getProblemSize(SizeType *N) const;
 
     void setProblem(const Matrix &W, OptimizeMethod om = sqaod::optMinimize);
 
     void setNumTrotters(SizeType m);
+
+    SizeType getNumTrotters() const {
+        return m_;
+    }
 
     const Vector &get_E() const;
 

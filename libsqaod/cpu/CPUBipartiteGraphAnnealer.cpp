@@ -26,10 +26,9 @@ void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const {
+void CPUBipartiteGraphAnnealer<real>::getProblemSize(SizeType *N0, SizeType *N1) const {
     *N0 = N0_;
     *N1 = N1_;
-    *m = m_;
 }
 
 template<class real>

@@ -21,12 +21,16 @@ public:
 
     void seed(unsigned long seed);
 
-    void getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const;
+    void getProblemSize(SizeType *N0, SizeType *N1) const;
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
                     OptimizeMethod om = optMinimize);
 
     void setNumTrotters(SizeType m);
+
+    SizeType getNumTrotters() const {
+        return m_;
+    }
 
     const Vector &get_E() const;
 

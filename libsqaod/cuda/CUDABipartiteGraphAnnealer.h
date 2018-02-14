@@ -36,12 +36,16 @@ public:
     
     void seed(unsigned long seed);
 
-    void getProblemSize(SizeType *N0, SizeType *N1, SizeType *m) const;
+    void getProblemSize(SizeType *N0, SizeType *N1) const;
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                     sqaod::OptimizeMethod om = sqaod::optMinimize);
 
     void setNumTrotters(SizeType m);
+
+    SizeType getNumTrotters() const {
+        return m_;
+    }
 
     const HostVector get_E() const;
 

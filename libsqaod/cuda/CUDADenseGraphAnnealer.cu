@@ -54,9 +54,8 @@ void CUDADenseGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::getProblemSize(sq::SizeType *N, sq::SizeType *m) const {
+void CUDADenseGraphAnnealer<real>::getProblemSize(sq::SizeType *N) const {
     *N = N_;
-    *m = m_;
 }
 
 template<class real>

@@ -37,9 +37,13 @@ public:
 
     void setProblem(const HostMatrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void getProblemSize(sqaod::SizeType *N, sqaod::SizeType *m) const;
+    void getProblemSize(sqaod::SizeType *N) const;
 
     void setNumTrotters(int m);
+
+    SizeType getNumTrotters() const {
+        return m_;
+    }
 
     const HostVector get_E() const {
         return HostVector(h_E_.d_data, h_E_.size);

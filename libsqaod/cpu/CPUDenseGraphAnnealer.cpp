@@ -59,9 +59,8 @@ enum sqd::Algorithm sqd::CPUDenseGraphAnnealer<real>::algorithm() const {
 
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N, SizeType *m) const {
+void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N) const {
     *N = N_;
-    *m = m_;
 }
 
 template<class real>
