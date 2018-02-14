@@ -12,17 +12,53 @@ template<class real>
 CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
     annState_ = annNone;
+    annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
+#ifdef _OPENMP
+    nProcs_ = omp_get_num_procs();
+    log("# processors: %d", nProcs_);
+#else
+    nProcs_ = 1;
+#endif
+    random_ = new Random[nProcs_];
 }
 
 template<class real>
 CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
+    delete [] random_;
 }
 
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
-    random_.seed(seed);
+    for (int idx = 0; idx < nProcs_; ++idx)
+        random_[idx].seed(seed + 17 * idx);
     annState_ |= annRandSeedGiven;
+}
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
+    switch (algo) {
+    case algoNaive:
+        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepNaive;
+        break;
+    case algoColoring:
+    case algoDefault:
+        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
+        break;
+    default:
+        log("Uknown algo, %s, defaulting to %s.", algoToName(algo), algoToName(algoColoring));
+        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
+    }
+}
+
+template<class real>
+enum Algorithm CPUBipartiteGraphAnnealer<real>::algorithm() const {
+    if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepNaive)
+        return algoNaive;
+    if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepColoring)
+        return algoColoring;
+    abort_("Must not reach here.");
+    return algoDefault; /* to suppress warning. */
 }
 
 template<class real>
@@ -101,11 +137,23 @@ const BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::randomize_q() {
     real *q = matQ0_.data();
-    for (int idx = 0; idx < IdxType(N0_ * m_); ++idx)
-        q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
+#ifndef _OPENMP
+    Random &random = random_[0];
+#else
+#pragma omp parallel
+    Random &random = random_[omp_get_thread_num()];
+#pragma omp for
+#endif
+    for (int idx = 0; idx < IdxType(N0_ * m_); ++idx) {
+        q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+    }
     q = matQ1_.data();
-    for (int idx = 0; idx < IdxType(N1_ * m_); ++idx)
-        q[idx] = random_.randInt(2) ? real(1.) : real(-1.);
+#ifdef _OPENMP
+#pragma omp for
+#endif
+    for (int idx = 0; idx < IdxType(N1_ * m_); ++idx) {
+        q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+    }
     annState_ |= annQSet;
 }
 
@@ -120,7 +168,8 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::initAnneal() {
     if (!(annState_ & annRandSeedGiven))
-        random_.seed();
+        for (int idx = 0; idx < nProcs_; ++idx)
+            random_[idx].seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
         setNumTrotters((N0_ + N1_) / 4);
@@ -138,7 +187,42 @@ void CPUBipartiteGraphAnnealer<real>::finAnneal() {
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
+    real twoDivM = real(2.) / real(m_);
+    real coef = std::log(std::tanh(G / kT / m_)) / kT;
+    Random &random = random_[0];
+    int N = N0_ + N1_;
+    for (int loop = 0; loop < IdxType(N * m_); ++loop) {
+        int x = random.randInt(N);
+        int y = random.randInt(m_);
+        if (x < N0_) {
+            real qyx = matQ0_(y, x);
+            real sum = J_.transpose().row(x).dot(matQ1_.row(y));
+            real dE = - twoDivM * qyx * (h0_(x) + sum);
+            int neibour0 = (y == 0) ? m_ - 1 : y - 1;
+            int neibour1 = (y == m_ - 1) ? 0 : y + 1;
+            dE -= qyx * (matQ0_(neibour0, x) + matQ0_(neibour1, x)) * coef;
+            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+            if (threshold > random.random<real>())
+                matQ0_(y, x) = - qyx;
+        }
+        else {
+            x -= N0_;
+            real qyx = matQ1_(y, x);
+            real sum = J_.row(x).dot(matQ0_.row(y));
+            real dE = - twoDivM * qyx * (h1_(x) + sum);
+            int neibour0 = (y == 0) ? m_ - 1 : y - 1;
+            int neibour1 = (y == m_ - 1) ? 0 : y + 1;
+            dE -= qyx * (matQ1_(neibour0, x) + matQ1_(neibour1, x)) * coef;
+            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+            if (threshold > random.random<real>())
+                matQ1_(y, x) = - qyx;
+        }
+    }
+}
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
     annealHalfStep(N1_, matQ1_, h1_, J_, matQ0_, G, kT);
     annealHalfStep(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, kT);
 }
@@ -153,20 +237,45 @@ annealHalfStep(int N, EigenMatrix &qAnneal,
     real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
 
-    for (int loop = 0; loop < IdxType(N * m_); ++loop) {
-        int iq = random_.randInt(N);
-        int im = random_.randInt(m_);
-        real q = qAnneal(im, iq);
-        real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
-        int mNeibour0 = (im + m_ - 1) % m_;
-        int mNeibour1 = (im + 1) % m_;
-        dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
-        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
-        if (thresh > random_.random<real>())
-            qAnneal(im, iq) = -q;
+#ifndef _OPENMP
+    {
+        Random &random = random_[0];
+#else
+#pragma omp parallel
+    {
+        Random &random = random_[omp_get_thread_num()];
+#pragma omp for
+#endif
+        for (int im = 0; im < m_; im += 2) {
+            for (int iq = 0; iq < N; ++iq) {
+                real q = qAnneal(im, iq);
+                real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+                int mNeibour0 = (im + m_ - 1) % m_;
+                int mNeibour1 = (im + 1) % m_;
+                dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
+                real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
+                if (thresh > random.random<real>())
+                    qAnneal(im, iq) = -q;
+            }
+        }
+#ifdef _OPENMP
+#pragma omp for
+#endif
+        for (int im = 1; im < m_; im += 2) {
+            for (int iq = 0; iq < N; ++iq) {
+                real q = qAnneal(im, iq);
+                real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+                int mNeibour0 = (im + m_ - 1) % m_;
+                int mNeibour1 = (im + 1) % m_;
+                dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
+                real thresh = dE < real(0.) ? real(1.) : std::exp(-dE * invKT);
+                if (thresh > random.random<real>())
+                    qAnneal(im, iq) = -q;
+            }
+        }
     }
-}                    
-        
+}
+
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::syncBits() {

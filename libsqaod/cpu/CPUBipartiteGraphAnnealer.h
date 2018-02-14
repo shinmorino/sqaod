@@ -21,6 +21,10 @@ public:
 
     void seed(unsigned long seed);
 
+    void selectAlgorithm(enum Algorithm algo);
+
+    enum Algorithm algorithm() const;
+
     void getProblemSize(SizeType *N0, SizeType *N1) const;
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
@@ -52,9 +56,18 @@ public:
 
     void finAnneal();
 
-    void annealOneStep(real G, real kT);
+    void annealOneStep(real G, real kT) {
+        (this->*annealMethod_)(G, kT);
+    }
+
+    void annealOneStepNaive(real G, real kT);
+
+    void annealOneStepColoring(real G, real kT);
     
 private:
+    typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real kT);
+    AnnealMethod annealMethod_;
+    
     void syncBits();
 
     void annealHalfStep(int N, EigenMatrix &qAnneal,
@@ -62,7 +75,8 @@ private:
                         const EigenMatrix &qFixed, real G, real kT);
     int annState_;
 
-    Random random_;
+    Random *random_;
+    int nProcs_;
     SizeType N0_, N1_, m_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
