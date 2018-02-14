@@ -61,7 +61,7 @@ AC_PROG_CXX
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
 # AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
 
-CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir}"
+CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -fopenmp"
 AC_SUBST([CFLAGS], $CFLAGS)
 
 CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/eigen"
