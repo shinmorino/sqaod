@@ -41,10 +41,12 @@ void Device::finalize() {
 }
 
 void Device::useManagedMemory(bool use) {
+    throwErrorIf(devNo_ != -1, "Device::useManagedMemory() must be called before initialization.");
     memStore_.useManagedMemory(use);
 }
 
 void Device::enableLocalStore(bool enable) {
+    throwErrorIf(devNo_ != -1, "Device::enableLocalStore() must be called before initialization.");
     memStore_.enableLocalStore(enable);
 }
 

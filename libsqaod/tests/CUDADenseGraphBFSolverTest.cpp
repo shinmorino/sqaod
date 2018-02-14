@@ -17,8 +17,8 @@ CUDADenseGraphBFSolverTest::~CUDADenseGraphBFSolverTest(void)
 
 
 void CUDADenseGraphBFSolverTest::setUp() {
-    device_.initialize();
     device_.useManagedMemory(true);
+    device_.initialize();
 }
 
 void CUDADenseGraphBFSolverTest::tearDown() {
