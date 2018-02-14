@@ -14,7 +14,7 @@ lib_LTLIBRARIES=libsqaod.la
 libsqaod_la_SOURCES=
 libsqaod_la_LIBADD=$(top_builddir)/common/libcommon.la $(top_builddir)/cpu/libcpu.la
 if WITH_BLAS
-    libsqaod_la_LIBADD+=-lblas
+    libsqaod_la_LIBADD+=$(top_builddir)/cuda/libcuda.la -lblas
 endif
 
 LIBS=
