@@ -336,8 +336,6 @@ DeviceMathType<real>::DeviceMathType(Device &device, DeviceStream *devStream){
     assignDevice(device, devStream);
 }
 
-#include "Device.h"
-
 template<class real>
 void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream) {
     if (devStream == NULL)
