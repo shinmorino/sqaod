@@ -97,6 +97,7 @@ private:
     DeviceMatrix d_J_;
     DeviceScalar d_c_;
     DeviceMatrix d_matq0_, d_matq1_;
+    DeviceBitMatrix h_q0_, h_q1_;
     
     DeviceMatrix d_Jq0_;
     DeviceMatrix d_Jq1_;

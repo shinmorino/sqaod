@@ -154,6 +154,8 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     xlist_.clear();
     qlist_.clear();
 
+    devFormulas_.devMath.toBits(&h_q_, d_matq_);
+    devStream_->synchronize();
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q(h_q_.row(idx), N_);
         qlist_.pushBack(q);

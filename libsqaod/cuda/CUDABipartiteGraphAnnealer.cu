@@ -78,6 +78,8 @@ void CUDABipartiteGraphAnnealer<real>::setNumTrotters(SizeType m) {
 
     HostObjectAllocator halloc;
     halloc.allocate(&h_E_, m_);
+    halloc.allocate(&h_q0_, m_, N0_);
+    halloc.allocate(&h_q1_, m_, N1_);
     bitsPairX_.reserve(m);
     bitsPairQ_.reserve(m);
 
@@ -288,27 +290,17 @@ void CUDABipartiteGraphAnnealer<real>::syncBits() {
     bitsPairX_.clear();
     bitsPairQ_.clear();
 
-    HostObjectAllocator halloc;
-    DeviceMatrix h_matq0, h_matq1;
-    halloc.allocate(&h_matq0, d_matq0_.dim());
-    halloc.allocate(&h_matq1, d_matq1_.dim());
-    devCopy_(&h_matq0, d_matq0_);
-    devCopy_(&h_matq1, d_matq1_);
-    devCopy_.synchronize();
+    devFormulas_.devMath.toBits(&h_q0_, d_matq0_);
+    devFormulas_.devMath.toBits(&h_q1_, d_matq1_);
+    devStream_->synchronize();
 
     for (int idx = 0; idx < IdxType(m_); ++idx) {
-        HostVector rq0(h_matq0.row(idx), N0_);
-        HostVector rq1(h_matq1.row(idx), N1_);
-        Bits q0 = sq::cast<char>(rq0);
-        Bits q1 = sq::cast<char>(rq1);
+        Bits q0(h_q0_.row(idx), N0_);
+        Bits q1(h_q1_.row(idx), N1_);
         bitsPairQ_.pushBack(BitsPairArray::ValueType(q0, q1));
         Bits x0 = x_from_q(q0), x1 = x_from_q(q1);
         bitsPairX_.pushBack(BitsPairArray::ValueType(x0, x1));
     }
-
-    halloc.deallocate(h_matq0);
-    halloc.deallocate(h_matq1);
-    
 }
 
 
