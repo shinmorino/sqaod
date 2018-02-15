@@ -114,6 +114,9 @@ struct DeviceMathType {
               const DeviceScalar &d_alpha, const DeviceMatrix &A, const DeviceMatrix &B,
               const DeviceScalar &d_beta, DeviceMatrix &C);
 
+    void toBits(DeviceBitMatrix *bits, const DeviceMatrix &mat);
+
+    void toBits(DeviceBits *bits, const DeviceVector &vec);
 
     DeviceMathType();
     DeviceMathType(Device &device, DeviceStream *devStream = NULL);

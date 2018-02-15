@@ -38,6 +38,8 @@ struct DeviceMathKernelsType {
               const real *d_alpha, const real *d_A, int lda, const real *d_B, int ldb,
               const real *d_beta, real *d_C, int ldc);
 
+    void toBits(char *bits, const real *values, sqaod::SizeType size);
+
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
     void assignStream(DeviceStream *devStream);

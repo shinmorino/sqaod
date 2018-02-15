@@ -298,6 +298,22 @@ gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
     throwOnError(cublasSgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, lda, d_B, ldb, d_beta, d_C, ldc));
 }
 
+template<class D, class S>
+__global__ static void
+castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
+    int gid = blockDim.x * blockIdx.x + threadIdx.x;
+    if (gid < size)
+        d_dst[gid] = (D)d_src[gid];
+}
+
+template<class real> void DeviceMathKernelsType<real>::
+toBits(char *bits, const real *values, sqaod::SizeType size) {
+    dim3 blockDim(128);
+    dim3 gridDim(divru(size, blockDim.x));
+    castKernel <<<gridDim, blockDim >>> (bits, values, size);
+    DEBUG_SYNC;
+}
+
 template<class real> DeviceMathKernelsType<real>::
 DeviceMathKernelsType(DeviceStream *devStream) {
     devStream_ = devStream;

@@ -312,6 +312,19 @@ void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
                      d_beta.d_data, C.d_data, ldc);
 }
 
+template<class real>
+void DeviceMathType<real>::toBits(DeviceBitMatrix *bitMat, const DeviceMatrix &mat) {
+    devAlloc_->allocateIfNull(bitMat, mat.dim());
+    assertSameShape(*bitMat, mat, __func__);
+    devKernels_.toBits(bitMat->d_data, mat.d_data, mat.rows * mat.cols);
+}
+
+template<class real>
+void DeviceMathType<real>::toBits(DeviceBits *bits, const DeviceVector &vec) {
+    devAlloc_->allocateIfNull(bits, vec.size);
+    assertSameShape(*bits, vec, __func__);
+    devKernels_.toBits(bits->d_data, vec.d_data, vec.size);
+}
 
 template<class real>
 DeviceMathType<real>::DeviceMathType() {
