@@ -106,7 +106,7 @@ const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_x() const {
 template<class real>
 void sqd::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
     EigenRowVector ex = mapToRowVector(cast<real>(x));
-    matQ_.rowwise() = (ex.array() * 2 - 1).matrix();
+    matQ_ = (ex.array() * 2 - 1).matrix();
     annState_ |= annQSet;
 }
 

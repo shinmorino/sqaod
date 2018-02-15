@@ -107,8 +107,8 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     EigenRowVector ex0 = mapToRowVector(x0).cast<real>();
     EigenRowVector ex1 = mapToRowVector(x1).cast<real>();
-    matQ0_.rowwise() = (ex0.array() * 2 - 1).matrix();
-    matQ1_.rowwise() = (ex1.array() * 2 - 1).matrix();
+    matQ0_ = (ex0.array() * 2 - 1).matrix();
+    matQ1_ = (ex1.array() * 2 - 1).matrix();
     annState_ |= annQSet;
 }
 
