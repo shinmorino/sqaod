@@ -70,9 +70,9 @@ private:
     
     void syncBits();
 
-    void annealHalfStep(int N, EigenMatrix &qAnneal,
-                        const EigenRowVector &h, const EigenMatrix &J,
-                        const EigenMatrix &qFixed, real G, real kT);
+    void annealHalfStepColoring(int N, EigenMatrix &qAnneal,
+                                const EigenRowVector &h, const EigenMatrix &J,
+                                const EigenMatrix &qFixed, real G, real kT);
     int annState_;
 
     Random *random_;

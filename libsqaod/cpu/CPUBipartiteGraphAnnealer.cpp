@@ -138,21 +138,24 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::randomize_q() {
     real *q = matQ0_.data();
 #ifndef _OPENMP
-    Random &random = random_[0];
+    {
+        Random &random = random_[0];
 #else
-#pragma omp parallel
-    Random &random = random_[omp_get_thread_num()];
+#pragma omp parallel shared(q)
+    {
+        sqaod::Random &random = random_[omp_get_thread_num()];
 #pragma omp for
 #endif
-    for (int idx = 0; idx < IdxType(N0_ * m_); ++idx) {
-        q[idx] = random.randInt(2) ? real(1.) : real(-1.);
-    }
-    q = matQ1_.data();
+        for (int idx = 0; idx < IdxType(N0_ * m_); ++idx) {
+            q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        }
+        q = matQ1_.data();
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for 
 #endif
-    for (int idx = 0; idx < IdxType(N1_ * m_); ++idx) {
-        q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        for (int idx = 0; idx < IdxType(N1_ * m_); ++idx) {
+            q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        }
     }
     annState_ |= annQSet;
 }
@@ -223,19 +226,20 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
-    annealHalfStep(N1_, matQ1_, h1_, J_, matQ0_, G, kT);
-    annealHalfStep(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, kT);
+    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, kT);
+    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, kT);
 }
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::
-annealHalfStep(int N, EigenMatrix &qAnneal,
-               const EigenRowVector &h, const EigenMatrix &J,
-               const EigenMatrix &qFixed, real G, real kT) {
+annealHalfStepColoring(int N, EigenMatrix &qAnneal,
+                       const EigenRowVector &h, const EigenMatrix &J,
+                       const EigenMatrix &qFixed, real G, real kT) {
     EigenMatrix dEmat = J * qFixed.transpose();
     real twoDivM = real(2.) / m_;
     real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
+
 
 #ifndef _OPENMP
     {
