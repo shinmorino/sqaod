@@ -36,7 +36,7 @@ void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
+void CPUBipartiteGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
     switch (algo) {
     case algoNaive:
         annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepNaive;
@@ -52,7 +52,7 @@ void CPUBipartiteGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
 }
 
 template<class real>
-enum Algorithm CPUBipartiteGraphAnnealer<real>::algorithm() const {
+Algorithm CPUBipartiteGraphAnnealer<real>::algorithm() const {
     if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepNaive)
         return algoNaive;
     if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepColoring)

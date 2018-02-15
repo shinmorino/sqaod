@@ -21,9 +21,9 @@ public:
 
     void seed(unsigned long seed);
 
-    void selectAlgorithm(enum Algorithm algo);
+    void selectAlgorithm(sqaod::Algorithm algo);
 
-    enum Algorithm algorithm() const;
+    sqaod::Algorithm algorithm() const;
 
     void getProblemSize(SizeType *N0, SizeType *N1) const;
 
