@@ -26,10 +26,10 @@ void Device::initialize(int devNo){
 
     memStore_.initialize();
     devObjAllocator_.set(&memStore_);
-    defaultDeviceStream_.set(NULL, memStore_, getNumThreadsToFillDevice());
     devConstScalarsFP64_.initialize(devObjAllocator_, defaultDeviceStream_);
     devConstScalarsFP32_.initialize(devObjAllocator_, defaultDeviceStream_);
     devNo_ = devNo;
+    defaultDeviceStream_.set(NULL, memStore_, getNumThreadsToFillDevice());
 }
 
 void Device::finalize() {
