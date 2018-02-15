@@ -23,8 +23,8 @@ void assertSameShape(const MatrixType<real> &mat0, const DeviceMatrixType<real> 
     abortIf(mat0.dim() != mat1.dim(), "Different shape.");
 }
 
-template<class real>
-void assertSameShape(const DeviceMatrixType<real> &mat0, const DeviceMatrixType<real> &mat1,
+template<class V0, class V1>
+void assertSameShape(const DeviceMatrixType<V0> &mat0, const DeviceMatrixType<V1> &mat1,
                      const char *func) {
     abortIf(mat0.d_data == NULL, "Matrix is null");
     abortIf(mat0.dim() != mat1.dim(), "Different shape.");
@@ -45,8 +45,8 @@ void assertSameShape(const VectorType<real> &vec0, const DeviceVectorType<real> 
     abortIf(vec0.size != vec1.size, "Different size.");
 }
 
-template<class real>
-void assertSameShape(const DeviceVectorType<real> &vec0, const DeviceVectorType<real> &vec1,
+template<class V0, class V1>
+void assertSameShape(const DeviceVectorType<V0> &vec0, const DeviceVectorType<V1> &vec1,
                      const char *func) {
     abortIf(vec0.d_data == NULL, "Vector is null");
     abortIf(vec0.size != vec1.size, "Different size.");
