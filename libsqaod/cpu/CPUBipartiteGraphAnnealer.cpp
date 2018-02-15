@@ -136,26 +136,25 @@ const BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::randomize_q() {
-    real *q = matQ0_.data();
 #ifndef _OPENMP
     {
         Random &random = random_[0];
+        real *q = matQ0_.data();
 #else
-#pragma omp parallel shared(q)
+#pragma omp parallel
     {
         sqaod::Random &random = random_[omp_get_thread_num()];
+        real *q = matQ0_.data();
 #pragma omp for
 #endif
-        for (int idx = 0; idx < IdxType(N0_ * m_); ++idx) {
+        for (int idx = 0; idx < IdxType(N0_ * m_); ++idx)
             q[idx] = random.randInt(2) ? real(1.) : real(-1.);
-        }
         q = matQ1_.data();
 #ifdef _OPENMP
 #pragma omp for 
 #endif
-        for (int idx = 0; idx < IdxType(N1_ * m_); ++idx) {
+        for (int idx = 0; idx < IdxType(N1_ * m_); ++idx)
             q[idx] = random.randInt(2) ? real(1.) : real(-1.);
-        }
     }
     annState_ |= annQSet;
 }
