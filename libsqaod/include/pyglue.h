@@ -2,7 +2,15 @@
 #ifndef QD_PYGLUE_H__
 #define QD_PYGLUE_H__
 
-#include <Python.h>
+#if defined(_WIN32) && defined(_DEBUG)
+#  undef _DEBUG
+#  include <Python.h>
+#  define _DEBUG
+#else
+#  include <Python.h>
+#endif
+
+
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
