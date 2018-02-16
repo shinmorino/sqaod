@@ -113,8 +113,8 @@ struct NpScalarRefType {
         PyArrayObject *arr = (PyArrayObject*)pyObj;
         throwErrorIf(3 <= PyArray_NDIM(arr), "not a scalar.");
         if (PyArray_NDIM(arr) == 2) {
-            int rows = PyArray_SHAPE(arr)[0];
-            int cols = PyArray_SHAPE(arr)[1];
+            int rows = (int)PyArray_SHAPE(arr)[0];
+            int cols = (int)PyArray_SHAPE(arr)[1];
             throwErrorIf((rows != 1) || (cols != 1), "not a scalar.");
         }
         else if (PyArray_NDIM(arr) == 1) {
