@@ -11,11 +11,13 @@ def new_ext(name, srcs) :
     return ext
     
 ext_modules = []
-ext_modules.append(new_ext('sqaod.cpu.cpu_dg_bf_searcher', ['sqaod/cpu/src/cpu_dg_bf_searcher.cpp']))
-ext_modules.append(new_ext('sqaod.cpu.cpu_dg_annealer', ['sqaod/cpu/src/cpu_dg_annealer.cpp']))
-ext_modules.append(new_ext('sqaod.cpu.cpu_bg_bf_searcher', ['sqaod/cpu/src/cpu_bg_bf_searcher.cpp']))
-ext_modules.append(new_ext('sqaod.cpu.cpu_bg_annealer', ['sqaod/cpu/src/cpu_bg_annealer.cpp']))
-ext_modules.append(new_ext('sqaod.cpu.cpu_formulas', ['sqaod/cpu/src/cpu_formulas.cpp']))
+
+if platform.system() != 'Windows' :
+	ext_modules.append(new_ext('sqaod.cpu.cpu_dg_bf_searcher', ['sqaod/cpu/src/cpu_dg_bf_searcher.cpp']))
+	ext_modules.append(new_ext('sqaod.cpu.cpu_dg_annealer', ['sqaod/cpu/src/cpu_dg_annealer.cpp']))
+	ext_modules.append(new_ext('sqaod.cpu.cpu_bg_bf_searcher', ['sqaod/cpu/src/cpu_bg_bf_searcher.cpp']))
+	ext_modules.append(new_ext('sqaod.cpu.cpu_bg_annealer', ['sqaod/cpu/src/cpu_bg_annealer.cpp']))
+	ext_modules.append(new_ext('sqaod.cpu.cpu_formulas', ['sqaod/cpu/src/cpu_formulas.cpp']))
 
 setup(
     name='sqaod',
