@@ -9,32 +9,37 @@
 namespace sqaod {
 
 template<class real>
-class CPUBipartiteGraphAnnealer {
+class CPUBipartiteGraphAnnealer : public BipartiteGraphAnnealer<real> {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
-
+    typedef BipartiteGraphAnnealer<real> Base;
+    using Base::annState_;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::m_;
+    
 public:
     CPUBipartiteGraphAnnealer();
     ~CPUBipartiteGraphAnnealer();
 
-    void seed(unsigned long seed);
+    void seed(unsigned int seed);
 
-    void selectAlgorithm(sqaod::Algorithm algo);
+    Algorithm selectAlgorithm(Algorithm algo);
 
-    sqaod::Algorithm algorithm() const;
+    Algorithm getAlgorithm() const;
 
-    void getProblemSize(SizeType *N0, SizeType *N1) const;
+    /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
                     OptimizeMethod om = optMinimize);
 
-    void setNumTrotters(SizeType m);
+    /* FIXME: algo */
+    /* void setPreference(const Preference &pref); */
 
-    SizeType getNumTrotters() const {
-        return m_;
-    }
+    /* Preferences getPreferences() const; */
 
     const Vector &get_E() const;
 
@@ -73,15 +78,12 @@ private:
     void annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                                 const EigenRowVector &h, const EigenMatrix &J,
                                 const EigenMatrix &qFixed, real G, real kT);
-    int annState_;
 
     Random *random_;
     int nProcs_;
-    SizeType N0_, N1_, m_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
     real c_;
-    OptimizeMethod om_;
     Vector E_;
     EigenMatrix matQ0_, matQ1_;
     BitsPairArray bitsPairX_;

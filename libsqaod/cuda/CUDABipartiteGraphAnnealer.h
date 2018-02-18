@@ -13,7 +13,7 @@
 namespace sqaod_cuda {
 
 template<class real>
-class CUDABipartiteGraphAnnealer {
+class CUDABipartiteGraphAnnealer : public sqaod::BipartiteGraphAnnealer<real> {
     typedef sqaod::MatrixType<real> HostMatrix;
     typedef sqaod::VectorType<real> HostVector;
     typedef sqaod::BitsPairArray BitsPairArray;
@@ -23,6 +23,14 @@ class CUDABipartiteGraphAnnealer {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
+
+    typedef sqaod::BipartiteGraphAnnealer<real> Base;
+
+    using Base::annState_;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::m_;
     
 public:
     CUDABipartiteGraphAnnealer();
@@ -33,21 +41,24 @@ public:
 
     void assignDevice(Device &device);
 
+    virtual Algorithm selectAlgorithm(Algorithm algo);
     
-    void seed(unsigned long seed);
+    virtual Algorithm getAlgorithm() const;
+    
+    void seed(unsigned int seed);
 
-    void getProblemSize(SizeType *N0, SizeType *N1) const;
+    /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                     sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void setNumTrotters(SizeType m);
+    /* Preferences getPreferences() const; */
 
-    SizeType getNumTrotters() const {
-        return m_;
+    /* void setPreference(const Preference &pref); */
+
+    const HostVector &get_E() const {
+        return E_;
     }
-
-    const HostVector get_E() const;
 
     const BitsPairArray &get_x() const;
 
@@ -87,10 +98,6 @@ private:
 
     void syncBits();
 
-    int annState_;
-    sqaod::OptimizeMethod om_;
-
-    SizeType N0_, N1_, m_;
     DeviceRandom d_random_;
     DeviceRandomBuffer d_randReal_;
     DeviceVector d_h0_, d_h1_;
@@ -103,9 +110,10 @@ private:
     DeviceMatrix d_Jq1_;
     
     DeviceVector h_E_; /* host mem */
+    HostVector E_;
     BitsPairArray bitsPairX_;
     BitsPairArray bitsPairQ_;
-
+    
     DeviceStream *devStream_;
     DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;

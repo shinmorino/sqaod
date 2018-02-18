@@ -36,15 +36,19 @@ void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::seed(unsigned long seed) {
-    d_random_.seed(seed);
-    annState_ |= annRandSeedGiven;
+sq::Algorithm CUDABipartiteGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
+    return sq::algoColoring;
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::getProblemSize(SizeType *N0, SizeType *N1) const {
-    *N0 = N0_;
-    *N1 = N1_;
+sq::Algorithm CUDABipartiteGraphAnnealer<real>::getAlgorithm() const {
+    return sq::algoColoring;
+}
+
+template<class real>
+void CUDABipartiteGraphAnnealer<real>::seed(unsigned int seed) {
+    d_random_.seed(seed);
+    annState_ |= annRandSeedGiven;
 }
 
 template<class real>
@@ -70,26 +74,6 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::setNumTrotters(SizeType m) {
-    throwErrorIf(m <= 0, "# trotters must be a positive integer.");
-    m_ = m;
-    devAlloc_->allocate(&d_matq0_, m_, N0_);
-    devAlloc_->allocate(&d_matq1_, m_, N1_);
-
-    HostObjectAllocator halloc;
-    halloc.allocate(&h_E_, m_);
-    halloc.allocate(&h_q0_, m_, N0_);
-    halloc.allocate(&h_q1_, m_, N1_);
-    bitsPairX_.reserve(m);
-    bitsPairQ_.reserve(m);
-
-    int requiredSize = ((N0_ + N1_) * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
-    d_random_.setRequiredSize(requiredSize);
-
-    annState_ |= annNTrottersGiven;
-}
-
-template<class real>
 const BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
     return bitsPairX_;
 }
@@ -106,12 +90,6 @@ void CUDABipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     devFormulas_.devMath.scaleBroadcast(&d_matq0_, real(1.), *d_x0, opRowwise);
     devFormulas_.devMath.scaleBroadcast(&d_matq1_, real(1.), *d_x1, opRowwise);
     annState_ |= annQSet;
-}
-
-
-template<class real>
-const VectorType<real> CUDABipartiteGraphAnnealer<real>::get_E() const {
-    return HostVector(h_E_.d_data, h_E_.size);
 }
 
 
@@ -154,8 +132,22 @@ void CUDABipartiteGraphAnnealer<real>::initAnneal() {
         d_random_.seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
-        setNumTrotters((N0_ + N1_) / 4);
+        m_ = (N0_ + N1_) / 4;
     annState_ |= annNTrottersGiven;
+
+    devAlloc_->allocate(&d_matq0_, m_, N0_);
+    devAlloc_->allocate(&d_matq1_, m_, N1_);
+
+    HostObjectAllocator halloc;
+    halloc.allocate(&h_E_, m_);
+    halloc.allocate(&h_q0_, m_, N0_);
+    halloc.allocate(&h_q1_, m_, N1_);
+    bitsPairX_.reserve(m_);
+    bitsPairQ_.reserve(m_);
+
+    int requiredSize = ((N0_ + N1_) * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    d_random_.setRequiredSize(requiredSize);
+
     if (!(annState_ & annQSet))
         randomize_q();
     annState_ |= annQSet;
@@ -166,6 +158,7 @@ void CUDABipartiteGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
     devStream_->synchronize();
+    E_.map(h_E_.d_data, h_E_.size);
 }
 
 

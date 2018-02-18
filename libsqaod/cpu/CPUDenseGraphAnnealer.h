@@ -7,32 +7,36 @@
 namespace sqaod {
 
 template<class real>
-class CPUDenseGraphAnnealer {
+class CPUDenseGraphAnnealer : public DenseGraphAnnealer<real> {
 
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
+    typedef DenseGraphAnnealer<real> Base;
+    using Base::om_;
+    using Base::N_;
+    using Base::m_;
+    using Base::annState_;
+    
 public:
     CPUDenseGraphAnnealer();
     ~CPUDenseGraphAnnealer();
 
-    void seed(unsigned long seed);
+    void seed(unsigned int seed);
 
-    void selectAlgorithm(enum Algorithm algo);
+    Algorithm selectAlgorithm(enum Algorithm algo);
 
-    enum Algorithm algorithm() const;
+    Algorithm getAlgorithm() const;
     
-    void getProblemSize(SizeType *N) const;
+    /* void getProblemSize(SizeType *N) const; */
 
     void setProblem(const Matrix &W, OptimizeMethod om = sqaod::optMinimize);
 
-    void setNumTrotters(SizeType m);
+    /* void setPreference(const Preference &pref); */
 
-    SizeType getNumTrotters() const {
-        return m_;
-    }
+    /* Preferences getPreferences() const; */
 
     const Vector &get_E() const;
 
@@ -67,12 +71,9 @@ private:
     void annealColoredPlane(real G, real kT, int offset);
 
     void syncBits();
-    int annState_;
     
     Random *random_;
     int nProcs_;
-    SizeType N_, m_;
-    OptimizeMethod om_;
     Vector E_;
     BitsArray bitsX_;
     BitsArray bitsQ_;

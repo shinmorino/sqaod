@@ -29,13 +29,6 @@ void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
     batchSearch_.assignDevice(device, device.defaultStream());
 }
 
-
-template<class real>
-void CUDABipartiteGraphBFSearcher<real>::getProblemSize(int *N0, int *N1) const {
-    *N0 = N0_;
-    *N1 = N1_;
-}
-
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
                                                     const HostMatrix &W, sqaod::OptimizeMethod om) {
@@ -50,12 +43,6 @@ void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const 
         b0_ *= real(-1.);
         b1_ *= real(-1.);
     }
-}
-
-template<class real>
-void CUDABipartiteGraphBFSearcher<real>::setTileSize(SizeType tileSize0, SizeType tileSize1) {
-    tileSize0_ = tileSize0;
-    tileSize1_ = tileSize1;
 }
 
 template<class real>
@@ -129,20 +116,6 @@ void CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits xBegin0, PackedB
         batchSearch_.partition_minXPairs(true);
     }
     /* FIXME: add max limits of # min vectors. */
-}
-
-template<class real>
-void CUDABipartiteGraphBFSearcher<real>::search() {
-    initSearch();
-
-    PackedBits iStep0 = std::min((PackedBits)tileSize0_, x0max_);
-    PackedBits iStep1 = std::min((PackedBits)tileSize1_, x1max_);
-    for (PackedBits iTile1 = 0; iTile1 < x1max_; iTile1 += iStep1) {
-        for (PackedBits iTile0 = 0; iTile0 < x0max_; iTile0 += iStep0) {
-            searchRange(iTile0, iTile0 + iStep0, iTile1, iTile1 + iStep1);
-        }
-    }
-    finSearch();
 }
 
 template class sqaod_cuda::CUDABipartiteGraphBFSearcher<float>;

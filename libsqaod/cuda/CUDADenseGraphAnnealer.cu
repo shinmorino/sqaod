@@ -10,14 +10,10 @@ using namespace sqaod_cuda;
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
-    m_ = -1;
-    annState_ = sq::annNone;
 }
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
-    m_ = -1;
-    annState_ = sq::annNone;
     assignDevice(device);
 }
 
@@ -45,23 +41,28 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     dotJq_ = new DotJq(device);
 }
 
-
-
 template<class real>
-void CUDADenseGraphAnnealer<real>::seed(unsigned long seed) {
-    d_random_.seed(seed);
-    annState_ |= sq::annRandSeedGiven;
+sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
+    return sq::algoColoring;
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::getProblemSize(sq::SizeType *N) const {
-    *N = N_;
+sq::Algorithm CUDADenseGraphAnnealer<real>::getAlgorithm() const {
+    return sq::algoColoring;
+}
+
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::seed(unsigned int seed) {
+    d_random_.seed(seed);
+    annState_ |= sq::annRandSeedGiven;
 }
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
+    m_ = N_ / 4;
     om_ = om;
 
     DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
@@ -71,27 +72,6 @@ void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeM
     devFormulas_.calculate_hJc(&d_h_, &d_J_, &d_c_, *dW);
 }
 
-template<class real>
-void CUDADenseGraphAnnealer<real>::setNumTrotters(int m) {
-    throwErrorIf(m <= 0, "# trotters must be a positive integer.");
-    m_ = m;
-    HostObjectAllocator halloc;
-    devAlloc_->allocate(&d_matq_, m_, N_);
-    devAlloc_->allocate(&d_Jq_, m_);
-    halloc.allocate(&h_E_, m_);
-    halloc.allocate(&h_q_, sq::Dim(m_, N_));
-    xlist_.reserve(m);
-    qlist_.reserve(m);
-    /* estimate # rand nums required per one anneal. */
-    int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
-    d_random_.setRequiredSize(requiredSize);
-
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
-    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
-    dotJq.configure(N_, m_, false);
-
-    annState_ |= annNTrottersGiven;
-}
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
@@ -115,7 +95,8 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
 template<class real>
 void CUDADenseGraphAnnealer<real>::randomize_q() {
     /* FIXME: add exception, randomize_q() must be called after calling seed() and setNumTrotters(). */
-    ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
+   throwErrorIf(d_matq_.d_data == NULL, "randomize_q() must be called after initAnneal()");
+   ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
                   devStream_->getCudaStream());
 }
 
@@ -130,11 +111,27 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CUDADenseGraphAnnealer<real>::initAnneal() {
     if (!(annState_ & annNTrottersGiven))
-        setNumTrotters((N_) / 4);
+        m_ = N_ / 4;
     annState_ |= annNTrottersGiven;
     if (!(annState_ & annRandSeedGiven))
         d_random_.seed();
     annState_ |= annRandSeedGiven;
+
+    HostObjectAllocator halloc;
+    devAlloc_->allocate(&d_matq_, m_, N_);
+    devAlloc_->allocate(&d_Jq_, m_);
+    halloc.allocate(&h_E_, m_);
+    halloc.allocate(&h_q_, sq::Dim(m_, N_));
+    xlist_.reserve(m_);
+    qlist_.reserve(m_);
+    /* estimate # rand nums required per one anneal. */
+    int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    d_random_.setRequiredSize(requiredSize);
+
+    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
+    dotJq.configure(N_, m_, false);
+
     if (!(annState_ & annQSet))
         randomize_q();
     annState_ |= annQSet;
