@@ -1,10 +1,9 @@
 # consts for factory methods
 
-# graph type
+# graph type   FIXME: give correct definitions
 
 dense = 0
-sparse = 1
-rbm = 2
+bipartite = 1
 
 # solver type
 
