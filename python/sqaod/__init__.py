@@ -38,7 +38,7 @@ class Maximize :
     def sort(list) :
         return sorted(list, reverse = true)
     def __trunc__(self) :
-        return 0
+        return 1
 
 minimize = Minimize()
 maximize = Maximize()
