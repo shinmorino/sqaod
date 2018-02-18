@@ -21,9 +21,9 @@ class DenseGraphBFSearcher :
         dg_bf_searcher.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
 
-    def set_solver_preference(self, tile_size) :
-        dg_bf_searcher.set_solver_preference(self._ext, tile_size, self.dtype)
-        
+    def set_preferences(self, **prefs) :
+        dg_bf_searcher.set_preferences(self._ext, self.dtype, prefs)
+
     def get_optimize_dir(self) :
         return self._optimize
 
@@ -77,7 +77,7 @@ if __name__ == '__main__' :
     N = 16
     W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, dtype);
     bf = dense_graph_bf_searcher(W, sqaod.minimize, dtype)
-    bf.set_solver_preference(256)
+    bf.set_preferences(tile_size=256)
     
     import time
 

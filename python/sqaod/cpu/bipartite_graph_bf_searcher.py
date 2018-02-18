@@ -24,6 +24,9 @@ class BipartiteGraphBFSearcher :
         bg_bf_searcher.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
         self._optimize = optimize
 
+    def set_preferences(self, **kwargs) :
+        bg_bf_searcher.set_preferences(self._ext, self.dtype, kwargs)
+        
     def get_optimize_dir(self) :
         return self._optimize
 
@@ -80,6 +83,7 @@ if __name__ == '__main__' :
     b1 = np.random.random((N1)) - 0.5
     
     bf = bipartite_graph_bf_searcher(b0, b1, W)
+    bf.set_preferences(tile_size_0=256, tile_size_1=256)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
