@@ -4,16 +4,9 @@
 #include <common/Matrix.h>
 #include <common/Array.h>
 #include <common/Random.h>
+#include <common/Preference.h>
 
 namespace sqaod {
-
-enum Algorithm {
-    algoDefault,
-    algoNaive,
-    algoColoring,
-};
-
-const char *algoToName(Algorithm algo);
 
 
 enum OptimizeMethod {

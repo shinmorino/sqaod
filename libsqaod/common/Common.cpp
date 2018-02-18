@@ -3,18 +3,6 @@
 #include <float.h>
 
 
-const char *sqaod::algoToName(Algorithm algo) {
-    switch (algo) {
-    case algoNaive:
-        return "naive";
-    case algoColoring:
-        return "coloring";
-    default:
-        return "unknown";
-    }
-}
-
-
 template<class real>
 void sqaod::createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd) {
     for (PackedBits b = bBegin; b < bEnd; ++b) {
