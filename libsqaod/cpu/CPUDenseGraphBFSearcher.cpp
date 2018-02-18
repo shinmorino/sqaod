@@ -17,11 +17,6 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 }
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::getProblemSize(SizeType *N) const {
-    *N = N_;
-}
-
-template<class real>
 void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
@@ -29,11 +24,6 @@ void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod o
     om_ = om;
     if (om_ == optMaximize)
         W_ *= real(-1.);
-}
-
-template<class real>
-void CPUDenseGraphBFSearcher<real>::setTileSize(SizeType tileSize) {
-    tileSize_ = tileSize;
 }
 
 template<class real>
@@ -74,16 +64,6 @@ void CPUDenseGraphBFSearcher<real>::searchRange(unsigned long long iBegin, unsig
     iEnd = std::min(std::max(0ULL, iEnd), xMax_);
     DGFuncs<real>::batchSearch(&minE_, &packedXList_, mapFrom(W_), iBegin, iEnd);
     /* FIXME: add max limits of # min vectors. */
-}
-
-template<class real>
-void CPUDenseGraphBFSearcher<real>::search() {
-    initSearch();
-    PackedBits iStep = std::min(tileSize_, xMax_);
-    for (PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
-        searchRange(iTile, iTile + iStep);
-    }
-    finSearch();
 }
 
 template class sqaod::CPUDenseGraphBFSearcher<float>;

@@ -23,7 +23,7 @@ template<> struct ValueProp<long long> { enum { POD = true }; };
 template<> struct ValueProp<unsigned long long> { enum { POD = true }; };
 template<class V> struct ValueProp<V*> { enum { POD = true }; };
 
-/* ToDo: add move c-tor */
+/* FIXME: add move c-tor */
 
 template<class V>
 struct ArrayType {
@@ -36,6 +36,12 @@ public:
         data_ = nullptr;
         size_ = 0;
         allocate(capacity);
+    }
+
+    ArrayType(const ArrayType<V> &rhs) {
+        allocate(rhs.capacity());
+        size_ = 0;
+        insert(rhs.begin(), rhs.end());
     }
 
     ~ArrayType() {
@@ -137,6 +143,13 @@ public:
         return data_;
     }
     
+    const ArrayType &operator=(const ArrayType &rhs) {
+        clear();
+        reserve(rhs.capacity());
+        insert(rhs.begin(), rhs.end());
+        return rhs;
+    }
+
     bool operator==(const ArrayType &rhs) const {
         if (size_ != rhs.size_)
             return false;
@@ -156,7 +169,7 @@ public:
         return !operator==(rhs);
     }
 
-    void insert(iterator first, iterator last) {
+    void insert(const_iterator first, const_iterator last) {
         size_t nElms = last - first;
         if (capacity_ < size_ + nElms)
             reserve(capacity_ * 2);
@@ -165,7 +178,7 @@ public:
             size_ += nElms;
         }
         else {
-            for (iterator it = first; it != last; ++it) {
+            for (const_iterator it = first; it != last; ++it) {
                 new (&data_[size_]) V(*it);
                 ++size_;
             }

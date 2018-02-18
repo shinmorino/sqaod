@@ -12,8 +12,6 @@ class BipartiteGraphAnnealer :
         self._ext = bg_annealer.new_annealer(dtype)
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
-        if not n_trotters is None :
-            self.set_solver_preference(n_trotters)
 
     def __del__(self) :
         bg_annealer.delete_annealer(self._ext, self.dtype)
@@ -33,12 +31,14 @@ class BipartiteGraphAnnealer :
     def get_problem_size(self) :
         return bg_annealer.get_problem_size(self._ext, self.dtype)
 
-    def set_solver_preference(self, n_trotters) :
-        # set n_trotters.  The default value assumed to N / 4
-        N0, N1, m = self.get_problem_size()
-        bg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype);
-        N0, N1, m = self.get_problem_size()
+    def set_preferences(self, **kwargs) :
+        bg_annealer.set_preferences(self._ext, self.dtype, kwargs)
+        prefs = self.get_preferences()
+        m = prefs['n_trotters']
         self._E = np.empty((m), self.dtype)
+
+    def get_preferences(self) :
+        return bg_annealer.get_preferences(self._ext, self.dtype)
         
     def get_E(self) :
         return self._E
@@ -77,7 +77,9 @@ class BipartiteGraphAnnealer :
 
     def fin_anneal(self) :
         bg_annealer.fin_anneal(self._ext, self.dtype)
-        N0, N1, m = self.get_problem_size()
+        N0, N1 = self.get_problem_size()
+        prefs = self.get_preferences()
+        m = prefs['n_trotters']
         self._E = np.empty((m), self.dtype)
         bg_annealer.get_E(self._ext, self._E, self.dtype)
 

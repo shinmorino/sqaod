@@ -67,7 +67,7 @@ void DeviceRandom::deallocate() {
     d_kernelParams_ = NULL;
 }
 
-void DeviceRandom::seed(unsigned long long seed) {
+void DeviceRandom::seed(unsigned int seed) {
     if (d_buffer_ != NULL)
         deallocate();
     devAlloc_->allocate(&d_buffer_, internalBufSize_);

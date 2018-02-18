@@ -8,7 +8,6 @@ static PyObject *Cuda_BgAnnealerError;
 namespace sq = sqaod;
 namespace sqcu = sqaod_cuda;
 
-
 namespace {
     
 template<class real>
@@ -110,31 +109,34 @@ PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
-    sqaod::SizeType N0, N1, m;
+    sqaod::SizeType N0, N1;
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1, &m);
+            pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1, &m);
+            pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
 
-    return Py_BuildValue("III", N0, N1, m);
+    return Py_BuildValue("II", N0, N1);
 }
     
 extern "C"
-PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    sqaod::SizeType m = 0;
-    if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
+PyObject *bg_annealer_set_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype, *objPrefs;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
         return NULL;
 
+    sq::Preferences prefs;
+    if (parsePreferences(objPrefs, &prefs, Cuda_BgAnnealerError) == -1)
+        return NULL;
+    
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<double>(objExt)->setPreferences(prefs);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<float>(objExt)->setPreferences(prefs);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
@@ -142,13 +144,33 @@ PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;    
 }
+    
+extern "C"
+PyObject *bg_annealer_get_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    sq::Preferences prefs;
+
+    TRY {
+        if (isFloat64(dtype))
+            prefs = pyobjToCppObj<double>(objExt)->getPreferences();
+        else if (isFloat32(dtype))
+            prefs = pyobjToCppObj<float>(objExt)->getPreferences();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
+
+    return createPreferences(prefs);    
+}
 
 template<class real>
 PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
     sqcu::CUDABipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N0, N1, m;
-    ann->getProblemSize(&N0, &N1, &m);
+    sqaod::SizeType N0, N1;
+    ann->getProblemSize(&N0, &N1);
     const sq::BitsPairArray &xPairList = ann->get_x();
 
     PyObject *list = PyList_New(xPairList.size());
@@ -216,8 +238,8 @@ template<class real>
 PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
     sqcu::CUDABipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N0, N1, m;
-    ann->getProblemSize(&N0, &N1, &m);
+    sqaod::SizeType N0, N1;
+    ann->getProblemSize(&N0, &N1);
     const sq::BitsPairArray &xPairList = ann->get_q();
 
     PyObject *list = PyList_New(xPairList.size());
@@ -427,23 +449,24 @@ PyObject *bg_annealer_fin_anneal(PyObject *module, PyObject *args) {
 
 static
 PyMethodDef cuda_bg_annealer_methods[] = {
-    {"new_annealer", bg_annealer_create, METH_VARARGS},
-    {"delete_annealer", bg_annealer_delete, METH_VARARGS},
-    {"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
-    {"set_problem", bg_annealer_set_problem, METH_VARARGS},
-    {"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
-    {"set_solver_preference", bg_annealer_set_solver_preference, METH_VARARGS},
-    {"get_E", bg_annealer_get_E, METH_VARARGS},
-    {"get_x", bg_annealer_get_x, METH_VARARGS},
-    {"set_x", bg_annealer_set_x, METH_VARARGS},
-    {"get_hJc", bg_annealer_get_hJc, METH_VARARGS},
-    {"get_q", bg_annealer_get_q, METH_VARARGS},
-    {"randomize_q", bg_annealer_radomize_q, METH_VARARGS},
-    {"calculate_E", bg_annealer_calculate_E, METH_VARARGS},
-    {"init_anneal", bg_annealer_init_anneal, METH_VARARGS},
-    {"fin_anneal", bg_annealer_fin_anneal, METH_VARARGS},
-    {"anneal_one_step", bg_annealer_anneal_one_step, METH_VARARGS},
-    {NULL},
+	{"new_annealer", bg_annealer_create, METH_VARARGS},
+	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
+	{"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
+	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
+	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
+	{"set_preferences", bg_annealer_set_preferences, METH_VARARGS},
+	{"get_preferences", bg_annealer_get_preferences, METH_VARARGS},
+	{"get_E", bg_annealer_get_E, METH_VARARGS},
+	{"get_x", bg_annealer_get_x, METH_VARARGS},
+	{"set_x", bg_annealer_set_x, METH_VARARGS},
+	{"get_hJc", bg_annealer_get_hJc, METH_VARARGS},
+	{"get_q", bg_annealer_get_q, METH_VARARGS},
+	{"randomize_q", bg_annealer_radomize_q, METH_VARARGS},
+	{"calculate_E", bg_annealer_calculate_E, METH_VARARGS},
+	{"init_anneal", bg_annealer_init_anneal, METH_VARARGS},
+	{"fin_anneal", bg_annealer_fin_anneal, METH_VARARGS},
+	{"anneal_one_step", bg_annealer_anneal_one_step, METH_VARARGS},
+	{NULL},
 };
 
 extern "C"
@@ -456,7 +479,7 @@ initcuda_bg_annealer(void) {
     if (m == NULL)
         return;
     
-    char name[] = "cuda_dg_searcher.error";
+    char name[] = "cuda_dg_annealer.error";
     Cuda_BgAnnealerError = PyErr_NewException(name, NULL, NULL);
     Py_INCREF(Cuda_BgAnnealerError);
     PyModule_AddObject(m, "error", Cuda_BgAnnealerError);

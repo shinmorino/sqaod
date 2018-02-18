@@ -11,8 +11,6 @@ class DenseGraphAnnealer :
         self._ext = dg_annealer.new_annealer(dtype)
         if not W is None :
             self.set_problem(W, optimize)
-        if not n_trotters is None :
-            self.set_solver_preference(n_trotters)
 
     def __del__(self) :
         dg_annealer.delete_annealer(self._ext, self.dtype)
@@ -29,10 +27,10 @@ class DenseGraphAnnealer :
     def get_problem_size(self) :
         return dg_annealer.get_problem_size(self._ext, self.dtype)
 
-    def set_solver_preference(self, n_trotters = None) :
-        N, m = self.get_problem_size()
-        n_trotters = max(2, N / 2 if n_trotters is None else n_trotters)
-        dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
+    def set_preference(self, **kwargs) :
+        dg_annealer.set_preference(self._ext, self.dtype, kwargs)
+        prefs = dg_annealer.get_preferences(self._ext, self.dtype)
+        n_trotters = prefs['n_trotters']
         self._E = np.empty((n_trotters), self.dtype)
 
     def get_optimize_dir(self) :
@@ -45,7 +43,7 @@ class DenseGraphAnnealer :
         return dg_annealer.get_x(self._ext, self.dtype)
 
     def get_hJc(self) :
-        N, m = self.get_problem_size()
+        N = self.get_problem_size()
         h = np.empty((N), self.dtype)
         J = np.empty((N, N), self.dtype)
         c = np.empty((1), self.dtype)
@@ -66,7 +64,9 @@ class DenseGraphAnnealer :
 
     def fin_anneal(self) :
         dg_annealer.fin_anneal(self._ext, self.dtype)
-        N, m = self.get_problem_size()
+        N = self.get_problem_size()
+        prefs = dg_annealer.get_preferences(self._ext, self.dtype)
+        m = prefs['n_trotters']
         self._E = np.empty((m), self.dtype)
         dg_annealer.get_E(self._ext, self._E, self.dtype)
 
@@ -116,7 +116,6 @@ if __name__ == '__main__' :
     
     for loop in range(0, nRepeat) :
         G = Ginit
-        ann.randomize_q()
         ann.init_anneal()
         while Gfin < G :
             ann.anneal_one_step(G, kT)

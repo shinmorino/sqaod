@@ -5,16 +5,16 @@
 
 
 static PyObject *Cpu_BgBfSearcherError;
-namespace sqd = sqaod;
+namespace sq = sqaod;
 
 
 namespace {
     
 template<class real>
-sqd::
+sq::
 CPUBipartiteGraphBFSearcher<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqd::CPUBipartiteGraphBFSearcher<real>*>(val);
+    return reinterpret_cast<sq::CPUBipartiteGraphBFSearcher<real>*>(val);
 }
 
 extern "C"
@@ -24,9 +24,9 @@ PyObject *bg_bf_searcher_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphBFSearcher<double>();
+        ext = (void*)new sq::CPUBipartiteGraphBFSearcher<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphBFSearcher<float>();
+        ext = (void*)new sq::CPUBipartiteGraphBFSearcher<float>();
     else
         RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSearcherError);
     
@@ -60,7 +60,7 @@ void internal_bg_bf_searcher_set_problem(PyObject *objExt,
     typedef NpVectorType<real> NpVector;
     NpVector b0(objB0), b1(objB1);
     NpMatrix W(objW);
-    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
+    sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
 }
     
@@ -85,17 +85,20 @@ PyObject *bg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
 }
     
 extern "C"
-PyObject *bg_bf_searcher_set_solver_preference(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    sqaod::SizeType tileSize0, tileSize1;
-    if (!PyArg_ParseTuple(args, "OIIO", &objExt, &tileSize0, &tileSize1, &dtype))
+PyObject *bg_bf_searcher_set_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype, *objPrefs;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
+        return NULL;
+
+    sq::Preferences prefs;
+    if (parsePreferences(objPrefs, &prefs, Cpu_BgBfSearcherError) == -1)
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->setTileSize(tileSize0, tileSize1);
+            pyobjToCppObj<double>(objExt)->setPreferences(prefs);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->setTileSize(tileSize0, tileSize1);
+            pyobjToCppObj<float>(objExt)->setPreferences(prefs);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgBfSearcherError);
@@ -104,17 +107,38 @@ PyObject *bg_bf_searcher_set_solver_preference(PyObject *module, PyObject *args)
     return Py_None;    
 }
 
+extern "C"
+PyObject *bg_bf_searcher_get_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    sq::Preferences prefs;
+
+    TRY {
+        if (isFloat64(dtype))
+            prefs = pyobjToCppObj<double>(objExt)->getPreferences();
+        else if (isFloat32(dtype))
+            prefs = pyobjToCppObj<float>(objExt)->getPreferences();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cpu_BgBfSearcherError);
+
+    return createPreferences(prefs);    
+}
+
+
 template<class real>
 PyObject *internal_bg_bf_searcher_get_x(PyObject *objExt) {
-    sqd::CPUBipartiteGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
-    const sqd::BitsPairArray &xList = sol->get_x();
+    sq::CPUBipartiteGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
+    const sq::BitsPairArray &xList = sol->get_x();
 
-    int N0, N1;
+    sq::SizeType N0, N1;
     sol->getProblemSize(&N0, &N1);
     
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
-        const sqd::BitsPairArray::ValueType &pair = xList[idx];
+        const sq::BitsPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
         x1.vec = pair.second;
@@ -258,7 +282,8 @@ PyMethodDef cpu_bg_bf_searcher_methods[] = {
 	{"new_searcher", bg_bf_searcher_create, METH_VARARGS},
 	{"delete_searcher", bg_bf_searcher_delete, METH_VARARGS},
 	{"set_problem", bg_bf_searcher_set_problem, METH_VARARGS},
-	{"set_solver_preference", bg_bf_searcher_set_solver_preference, METH_VARARGS},
+	{"set_preferences", bg_bf_searcher_set_preferences, METH_VARARGS},
+	{"get_preferences", bg_bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", bg_bf_searcher_get_x, METH_VARARGS},
 	{"get_E", bg_bf_searcher_get_E, METH_VARARGS},
 	{"init_search", bg_bf_searcher_init_search, METH_VARARGS},

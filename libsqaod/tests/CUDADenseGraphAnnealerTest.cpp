@@ -149,7 +149,7 @@ void CUDADenseGraphAnnealerTest::test() {
 
         CUDADenseGraphAnnealer<real> an(device_);
         an.setProblem(W);
-        an.setNumTrotters(m);
+        an.setPreference(Preference(pnNumTrotters, m));
         an.seed(0);
         an.randomize_q();
         an.initAnneal();

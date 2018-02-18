@@ -7,25 +7,33 @@
 namespace sqaod {
 
 template<class real>
-class CPUDenseGraphBFSearcher {
+class CPUDenseGraphBFSearcher : public DenseGraphBFSearcher<real> {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
+    typedef DenseGraphBFSearcher<real> Base;
+    using Base::N_;
+    using Base::om_;
+    using Base::tileSize_;
+    using Base::xMax_;
+    
 public:
     CPUDenseGraphBFSearcher();
     ~CPUDenseGraphBFSearcher();
 
-    void getProblemSize(SizeType *N) const;
+    /* void getProblemSize(SizeType *N) const; */
 
     void setProblem(const Matrix &W, OptimizeMethod om = optMinimize);
 
-    void setTileSize(SizeType tileSize);
+    /* Preferences getPreferences() const; */
 
-    const BitsArray &get_x() const;
+    /* void setPreference(const Preference &pref); */
 
     const Vector &get_E() const;
+
+    const BitsArray &get_x() const;
     
     void initSearch();
 
@@ -33,13 +41,9 @@ public:
 
     void searchRange(unsigned long long iBegin, unsigned long long iEnd);
 
-    void search();
+    /* void search(); */
     
 private:    
-    SizeType N_;
-    OptimizeMethod om_;
-    PackedBits tileSize_;
-    PackedBits xMax_;
     real minE_;
     Vector E_;
     PackedBitsArray packedXList_;

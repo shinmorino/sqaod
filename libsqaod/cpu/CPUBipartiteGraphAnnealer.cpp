@@ -29,42 +29,38 @@ CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::seed(unsigned long seed) {
+void CPUBipartiteGraphAnnealer<real>::seed(unsigned int seed) {
     for (int idx = 0; idx < nProcs_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     annState_ |= annRandSeedGiven;
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
+Algorithm CPUBipartiteGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
     switch (algo) {
     case algoNaive:
         annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepNaive;
-        break;
+        return algoNaive;
     case algoColoring:
     case algoDefault:
         annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
-        break;
+        return algoColoring;
     default:
-        log("Uknown algo, %s, defaulting to %s.", algoToName(algo), algoToName(algoColoring));
+        log("Uknown algo, %s, defaulting to %s.",
+            algorithmToString(algo), algorithmToString(algoColoring));
         annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
+        return algoColoring;
     }
 }
 
 template<class real>
-Algorithm CPUBipartiteGraphAnnealer<real>::algorithm() const {
+Algorithm CPUBipartiteGraphAnnealer<real>::getAlgorithm() const {
     if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepNaive)
         return algoNaive;
     if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepColoring)
         return algoColoring;
     abort_("Must not reach here.");
     return algoDefault; /* to suppress warning. */
-}
-
-template<class real>
-void CPUBipartiteGraphAnnealer<real>::getProblemSize(SizeType *N0, SizeType *N1) const {
-    *N0 = N0_;
-    *N1 = N1_;
 }
 
 template<class real>
@@ -88,15 +84,6 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
     }
 }
 
-template<class real>
-void CPUBipartiteGraphAnnealer<real>::setNumTrotters(SizeType m) {
-    throwErrorIf(m <= 0, "# trotters must be a positive integer.");
-    m_ = m;
-    matQ0_.resize(m_, N0_);
-    matQ1_.resize(m_, N1_);
-    E_.resize(m_);
-    annState_ |= annNTrottersGiven;
-}
 
 template<class real>
 const BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
@@ -174,8 +161,13 @@ void CPUBipartiteGraphAnnealer<real>::initAnneal() {
             random_[idx].seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
-        setNumTrotters((N0_ + N1_) / 4);
+        m_ = (N0_ + N1_) / 4; /* setting number of trotters. */
     annState_ |= annNTrottersGiven;
+
+    matQ0_.resize(m_, N0_);
+    matQ1_.resize(m_, N1_);
+    E_.resize(m_);
+
     if (!(annState_ & annQSet))
         randomize_q();
     annState_ |= annQSet;

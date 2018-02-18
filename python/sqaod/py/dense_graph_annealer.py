@@ -8,8 +8,8 @@ from types import MethodType
 class DenseGraphAnnealer :
 
     # algorithm
-    simple = 0
-    stencil = 1
+    naive = 0
+    colored = 1
     
     def __init__(self, W, optimize, n_trotters) :
         self._m = None
@@ -76,7 +76,7 @@ class DenseGraphAnnealer :
             self._x.append(x)
         self.calculate_E()
             
-def anneal_one_step_simple(self, G, kT) :
+def anneal_one_step_naive(self, G, kT) :
     h, J, c, q = self._vars()
     N = self._N
     m = self._m
@@ -94,7 +94,7 @@ def anneal_one_step_simple(self, G, kT) :
         if threshold > np.random.rand():
             q[y][x] = - qyx
 
-def anneal_one_step_stencil_half(self, G, kT, offset) :
+def anneal_colored_plane(self, G, kT, offset) :
     h, J, c, q = self._vars()
     N = self._N
     m = self._m
@@ -110,29 +110,28 @@ def anneal_one_step_stencil_half(self, G, kT, offset) :
         threshold = 1. if (dE <= 0.) else np.exp(-dE / kT)
         if threshold > np.random.rand():
             q[y][x] = - qyx
-
-def anneal_one_step_stencil(self, G, kT) :
+            
+def anneal_one_step_colored(self, G, kT) :
     offset = np.random.randint(2)
-    #offset = 0
-    self.anneal_one_step_stencil_half(G, kT, offset)
-    offset = (offset + 1) % 2
-    self.anneal_one_step_stencil_half(G, kT, offset)
+    for loop in range(0, self._N) :
+        self.anneal_colored_plane(G, kT, offset)
+        offset ^= 1
 
                 
 def dense_graph_annealer(W = None, optimize = sqaod.minimize, n_trotters = None,
-                         algorithm = DenseGraphAnnealer.stencil) :
+                         algorithm = DenseGraphAnnealer.colored) :
     an = DenseGraphAnnealer(W, optimize, n_trotters)
-    if algorithm == DenseGraphAnnealer.simple :
-        an.anneal_one_step = MethodType(anneal_one_step_simple, an, DenseGraphAnnealer)
+    if algorithm == DenseGraphAnnealer.naive :
+        an.anneal_one_step = MethodType(anneal_one_step_naive, an, DenseGraphAnnealer)
     else :
-        an.anneal_one_step = MethodType(anneal_one_step_stencil, an, DenseGraphAnnealer)
-        an.anneal_one_step_stencil_half = \
-                        MethodType(anneal_one_step_stencil_half, an, DenseGraphAnnealer)
+        an.anneal_one_step = MethodType(anneal_one_step_colored, an, DenseGraphAnnealer)
+        an.anneal_colored_plane = \
+            MethodType(anneal_colored_plane, an, DenseGraphAnnealer)
     return an
 
 if __name__ == '__main__' :
 
-
+    np.random.seed(0)
     Ginit = 5.
     Gfin = 0.01
     
@@ -141,6 +140,7 @@ if __name__ == '__main__' :
     tau = 0.99
     
     N = 8
+    m = 4
     W = np.array([[-32,4,4,4,4,4,4,4],
                   [4,-32,4,4,4,4,4,4],
                   [4,4,-32,4,4,4,4,4],
@@ -150,7 +150,14 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,4,-32,4],
                   [4,4,4,4,4,4,4,-32]])
     
-    ann = dense_graph_annealer(W, sqaod.minimize, N / 2)
+
+    N = 20
+    m = 10
+    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+    
+    algo = DenseGraphAnnealer.colored
+    # algo = DenseGraphAnnealer.naive
+    ann = dense_graph_annealer(W, sqaod.minimize, m, algo)
     
     for loop in range(0, nRepeat) :
         G = Ginit
@@ -161,10 +168,10 @@ if __name__ == '__main__' :
 
         ann.fin_anneal()
         E = ann.get_E()
-        x = ann.get_x()
-        print E, x
+        #x = ann.get_x()
+        print E #, x
 
-    ann = dense_graph_annealer(W, sqaod.maximize, N / 2)
+    ann = dense_graph_annealer(W, sqaod.maximize, m, algo)
     
     for loop in range(0, nRepeat) :
         G = Ginit
@@ -175,5 +182,5 @@ if __name__ == '__main__' :
 
         ann.fin_anneal()
         E = ann.get_E()
-        x = ann.get_x()
-        print E, x
+        #x = ann.get_x()
+        print E #, x

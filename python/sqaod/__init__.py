@@ -1,10 +1,9 @@
 # consts for factory methods
 
-# graph type
+# graph type   FIXME: give correct definitions
 
 dense = 0
-sparse = 1
-rbm = 2
+bipartite = 1
 
 # solver type
 
@@ -38,7 +37,7 @@ class Maximize :
     def sort(list) :
         return sorted(list, reverse = true)
     def __trunc__(self) :
-        return 0
+        return 1
 
 minimize = Minimize()
 maximize = Maximize()

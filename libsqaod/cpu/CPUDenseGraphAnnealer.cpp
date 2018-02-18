@@ -2,17 +2,16 @@
 #include "CPUFormulas.h"
 #include <common/Common.h>
 
-namespace sqd = sqaod;
-
+namespace sq = sqaod;
 
 template<class real>
-sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
+sq::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annState_ = annNone;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
     nProcs_ = omp_get_num_procs();
-    sqd::log("# processors: %d", nProcs_);
+    sq::log("# processors: %d", nProcs_);
 #else
     nProcs_ = 1;
 #endif
@@ -20,12 +19,12 @@ sqd::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
 }
 
 template<class real>
-sqd::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
+sq::CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
     delete [] random_;
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
+void sq::CPUDenseGraphAnnealer<real>::seed(unsigned int seed) {
     for (int idx = 0; idx < nProcs_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     annState_ |= annRandSeedGiven;
@@ -33,23 +32,26 @@ void sqd::CPUDenseGraphAnnealer<real>::seed(unsigned long seed) {
 
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
+sq::Algorithm sq::CPUDenseGraphAnnealer<real>::selectAlgorithm(enum Algorithm algo) {
     switch (algo) {
     case algoNaive:
         annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
-        break;
+        return algoNaive;
     case algoColoring:
     case algoDefault:
         annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
+        return algoColoring;
         break;
     default:
-        log("Uknown algo, %s, defaulting to %s.", algoToName(algo), algoToName(algoColoring));
+        log("Uknown algo, %s, defaulting to %s.",
+            algorithmToString(algo), algorithmToString(algoColoring));
         annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
+        return algoColoring;
     }
 }
 
 template<class real>
-enum sqd::Algorithm sqd::CPUDenseGraphAnnealer<real>::algorithm() const {
+enum sq::Algorithm sq::CPUDenseGraphAnnealer<real>::getAlgorithm() const {
     if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepNaive)
         return algoNaive;
     if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepColoring)
@@ -58,16 +60,11 @@ enum sqd::Algorithm sqd::CPUDenseGraphAnnealer<real>::algorithm() const {
     return algoDefault; /* to suppress warning. */
 }
 
-
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::getProblemSize(SizeType *N) const {
-    *N = N_;
-}
-
-template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod om) {
+void sq::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
+    m_ = N_ / 4;
     h_.resize(1, N_);
     J_.resize(N_, N_);
 
@@ -75,55 +72,47 @@ void sqd::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMetho
     Matrix J(mapFrom(J_));
     DGFuncs<real>::calculate_hJc(&h, &J, &c_, W);
     om_ = om;
-    if (om_ == sqd::optMaximize) {
+    if (om_ == sq::optMaximize) {
         h_ *= real(-1.);
         J_ *= real(-1.);
         c_ *= real(-1.);
     }
 }
 
-template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::setNumTrotters(SizeType m) {
-    throwErrorIf(m <= 0, "# trotters must be a positive integer.");
-    m_ = m;
-    bitsX_.reserve(m_);
-    bitsQ_.reserve(m_);
-    matQ_.resize(m_, N_);;
-    E_.resize(m_);
-    annState_ |= annNTrottersGiven;
-}
+
 
 template<class real>
-const sqd::VectorType<real> &sqd::CPUDenseGraphAnnealer<real>::get_E() const {
+const sq::VectorType<real> &sq::CPUDenseGraphAnnealer<real>::get_E() const {
     return E_;
 }
 
 template<class real>
-const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_x() const {
+const sq::BitsArray &sq::CPUDenseGraphAnnealer<real>::get_x() const {
     return bitsX_;
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
+void sq::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
     EigenRowVector ex = mapToRowVector(cast<real>(x));
     matQ_ = (ex.array() * 2 - 1).matrix();
     annState_ |= annQSet;
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
+void sq::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
     mapToRowVector(*h) = h_;
     mapTo(*J) = J_;
     *c = c_;
 }
 
 template<class real>
-const sqd::BitsArray &sqd::CPUDenseGraphAnnealer<real>::get_q() const {
+const sq::BitsArray &sq::CPUDenseGraphAnnealer<real>::get_q() const {
     return bitsQ_;
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
+void sq::CPUDenseGraphAnnealer<real>::randomize_q() {
+    throwErrorIf(matQ_.rows() == 0, "randomize_q() must be called after initAnneal()");
     real *q = matQ_.data();
     for (int idx = 0; idx < IdxType(N_ * m_); ++idx)
         q[idx] = random_->randInt(2) ? real(1.) : real(-1.);
@@ -131,35 +120,41 @@ void sqd::CPUDenseGraphAnnealer<real>::randomize_q() {
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::initAnneal() {
+void sq::CPUDenseGraphAnnealer<real>::initAnneal() {
     if (!(annState_ & annRandSeedGiven))
         random_->seed();
     annState_ |= annRandSeedGiven;
     if (!(annState_ & annNTrottersGiven))
-        setNumTrotters((N_) / 4);
-    annState_ |= annNTrottersGiven;
+        m_ = (N_) / 4; /* setting number of trotters. */
+    annState_ |= annNTrottersGiven; /* not necessary */
+    bitsX_.reserve(m_);
+    bitsQ_.reserve(m_);
+    matQ_.resize(m_, N_);;
+    E_.resize(m_);
+
     if (!(annState_ & annQSet))
         randomize_q();
     annState_ |= annQSet;
+
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::finAnneal() {
+void sq::CPUDenseGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
 }
 
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::calculate_E() {
+void sq::CPUDenseGraphAnnealer<real>::calculate_E() {
     DGFuncs<real>::calculate_E(&E_, mapFrom(h_), mapFrom(J_), c_, mapFrom(matQ_));
-    if (om_ == sqd::optMaximize)
+    if (om_ == sq::optMaximize)
         mapToRowVector(E_) *= real(-1.);
 }
 
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
+void sq::CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
     for (int idx = 0; idx < IdxType(m_); ++idx) {
@@ -171,7 +166,7 @@ void sqd::CPUDenseGraphAnnealer<real>::syncBits() {
 
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
+void sq::CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
     Random &random = random_[0];
@@ -191,7 +186,7 @@ void sqd::CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOffset) {
+void sq::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOffset) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
 
@@ -221,12 +216,12 @@ void sqd::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int s
 }
 
 template<class real>
-void sqd::CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
+void sq::CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
     int stepOffset = random_[0].randInt(2);
     for (int idx = 0; idx < (IdxType)N_; ++idx)
         annealColoredPlane(G, kT, (stepOffset + idx) & 1);
 }
 
 
-template class sqd::CPUDenseGraphAnnealer<float>;
-template class sqd::CPUDenseGraphAnnealer<double>;
+template class sq::CPUDenseGraphAnnealer<float>;
+template class sq::CPUDenseGraphAnnealer<double>;

@@ -8,23 +8,34 @@
 namespace sqaod {
 
 template<class real>
-class CPUBipartiteGraphBFSearcher {
+class CPUBipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
     typedef EigenMatrixType<real> EigenMatrix;
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
+    typedef BipartiteGraphBFSearcher<real> Base;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::tileSize0_;
+    using Base::tileSize1_;
+    using Base::x0max_;
+    using Base::x1max_;
+
 public:
     CPUBipartiteGraphBFSearcher();
     ~CPUBipartiteGraphBFSearcher();
 
-    void getProblemSize(int *N0, int *N1) const;
+    /* void getProblemSize(int *N0, int *N1) const; */
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
                     OptimizeMethod om = sqaod::optMinimize);
 
-    void setTileSize(SizeType tileSize0, SizeType tileSize1);
+    /* void setPreference(const Preference &pref); */
 
+    /* Preferences getPreferences() const; */
+    
     const BitsPairArray &get_x() const;
 
     const Vector &get_E() const;
@@ -36,15 +47,11 @@ public:
     void searchRange(PackedBits iBegin0, PackedBits iEnd0,
                      PackedBits iBegin1, PackedBits iEnd1);
 
-    void search();
+    /* void search(); */
     
 private:    
-    SizeType N0_, N1_;
     EigenRowVector b0_, b1_;
     EigenMatrix W_;
-    OptimizeMethod om_;
-    PackedBits tileSize0_, tileSize1_;
-    PackedBits x0max_, x1max_;
     real minE_;
     Vector E_;
     PackedBitsPairArray xPackedPairs_;

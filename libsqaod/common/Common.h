@@ -4,29 +4,11 @@
 #include <common/Matrix.h>
 #include <common/Array.h>
 #include <common/Random.h>
+#include <common/Preference.h>
+#include <common/Solver.h>
 
 namespace sqaod {
 
-enum Algorithm {
-    algoDefault,
-    algoNaive,
-    algoColoring,
-};
-
-const char *algoToName(Algorithm algo);
-
-
-enum OptimizeMethod {
-    optMinimize,
-    optMaximize
-};
-
-enum AnnealerState {
-    annNone = 0,
-    annRandSeedGiven = 1,
-    annNTrottersGiven = 2,
-    annQSet = 4,
-};
 
 template<class real>
 void createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd);

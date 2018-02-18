@@ -31,11 +31,6 @@ void CUDADenseGraphBFSearcher<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-void CUDADenseGraphBFSearcher<real>::getProblemSize(sqaod::SizeType *N) const {
-    *N = N_;
-}
-
-template<class real>
 void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
@@ -43,11 +38,6 @@ void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMet
     om_ = om;
     if (om_ == sq::optMaximize)
         W_ *= real(-1.);
-}
-
-template<class real>
-void CUDADenseGraphBFSearcher<real>::setTileSize(sqaod::SizeType tileSize) {
-    tileSize_ = tileSize;
 }
 
 template<class real>
@@ -113,16 +103,6 @@ void CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits xBegin, sq::Pack
     }
 }
 
-
-template<class real>
-void CUDADenseGraphBFSearcher<real>::search() {
-    initSearch();
-    int iStep = (int)std::min((unsigned long long)tileSize_, xMax_);
-    for (sq::PackedBits iTile = 0; iTile < xMax_; iTile += iStep) {
-        searchRange(iTile, iTile + iStep);
-    }
-    finSearch();
-}
 
 template class sqaod_cuda::CUDADenseGraphBFSearcher<float>;
 template class sqaod_cuda::CUDADenseGraphBFSearcher<double>;

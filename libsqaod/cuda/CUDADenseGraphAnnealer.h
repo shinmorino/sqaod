@@ -13,7 +13,7 @@ namespace sqaod_cuda {
 
 
 template<class real>
-class CUDADenseGraphAnnealer {
+class CUDADenseGraphAnnealer : public sqaod::DenseGraphAnnealer<real> {
     typedef sqaod::MatrixType<real> HostMatrix;
     typedef sqaod::VectorType<real> HostVector;
     typedef sqaod::Bits Bits;
@@ -23,6 +23,12 @@ class CUDADenseGraphAnnealer {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceDenseGraphFormulas<real> DeviceFormulas;
+
+    typedef sqaod::DenseGraphAnnealer<real> Base;
+    using Base::annState_;
+    using Base::N_;
+    using Base::m_;
+    using Base::om_;
     
 public:
     CUDADenseGraphAnnealer();
@@ -33,20 +39,22 @@ public:
 
     void assignDevice(Device &device);
 
-    void seed(unsigned long seed);
+    virtual Algorithm selectAlgorithm(Algorithm algo);
+    
+    virtual Algorithm getAlgorithm() const;
+    
+    void seed(unsigned int seed);
 
     void setProblem(const HostMatrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void getProblemSize(sqaod::SizeType *N) const;
+    /* void getProblemSize(sqaod::SizeType *N) const; */
 
-    void setNumTrotters(int m);
+    /* Preferences getPreferences() const; */
 
-    SizeType getNumTrotters() const {
-        return m_;
-    }
-
-    const HostVector get_E() const {
-        return HostVector(h_E_.d_data, h_E_.size);
+    /* void setPreference(const Preference &pref); */
+    
+    const HostVector &get_E() const {
+        return E_;
     }
 
     const BitsArray &get_x() const {
@@ -85,11 +93,6 @@ private:
     };
 
     void syncBits();
-
-    int annState_;
-
-    int N_, m_;
-    sqaod::OptimizeMethod om_;
 
     DeviceRandom d_random_;
     DeviceMatrix d_J_;

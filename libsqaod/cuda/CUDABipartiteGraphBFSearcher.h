@@ -9,7 +9,7 @@
 namespace sqaod_cuda {
 
 template<class real>
-class CUDABipartiteGraphBFSearcher {
+class CUDABipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
     typedef sqaod::MatrixType<real> HostMatrix;
     typedef sqaod::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
@@ -22,6 +22,16 @@ class CUDABipartiteGraphBFSearcher {
     typedef sqaod::PackedBitsPairArray PackedBitsPairArray;
     typedef sqaod::SizeType SizeType;
     typedef sqaod::IdxType IdxType;
+
+    typedef BipartiteGraphBFSearcher<real> Base;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::om_;
+    using Base::tileSize0_;
+    using Base::tileSize1_;
+    using Base::x0max_;
+    using Base::x1max_;
+
 public:
     CUDABipartiteGraphBFSearcher();
     CUDABipartiteGraphBFSearcher(Device &device);
@@ -30,14 +40,16 @@ public:
 
     void assignDevice(Device &device);
     
-    void getProblemSize(int *N0, int *N1) const;
+    /* void getProblemSize(int *N0, int *N1) const; */
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                     sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void setTileSize(sqaod::SizeType tileSize0, sqaod::SizeType tileSize1);
+    /* void setPreference(const Preference &pref); */
 
-    const sqaod::BitsPairArray &get_x() const;
+    /* Preferences getPreferences() const; */
+
+    const BitsPairArray &get_x() const;
 
     const HostVector &get_E() const;
 
@@ -45,20 +57,14 @@ public:
 
     void finSearch();
 
-    void searchRange(PackedBits iBegin0, PackedBits iEnd0,
-                     PackedBits iBegin1, PackedBits iEnd1);
+    void searchRange(PackedBits x0Begin, PackedBits x0End,
+                     PackedBits x1Begin, PackedBits x1End);
 
-    void search();
+    /* void search(); */
     
 private:    
-    SizeType N0_, N1_;
     HostMatrix W_;
     HostVector b0_, b1_;
-    sqaod::OptimizeMethod om_;
-    SizeType tileSize0_;
-    SizeType tileSize1_;
-    PackedBits x0max_;
-    PackedBits x1max_;
 
     HostVector E_;
     BitsPairArray minXPairs_;

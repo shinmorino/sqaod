@@ -9,7 +9,7 @@
 namespace sqaod_cuda {
 
 template<class real>
-class CUDADenseGraphBFSearcher {
+class CUDADenseGraphBFSearcher : public sqaod::DenseGraphBFSearcher<real> {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -17,6 +17,12 @@ class CUDADenseGraphBFSearcher {
     
     typedef sqaod::MatrixType<real> Matrix;
     typedef sqaod::VectorType<real> Vector;
+
+    typedef sqaod::DenseGraphBFSearcher<real> Base;
+    using Base::N_;
+    using Base::om_;
+    using Base::tileSize_;
+    using Base::xMax_;
     
 public:
     CUDADenseGraphBFSearcher();
@@ -29,9 +35,11 @@ public:
     
     void setProblem(const Matrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
 
-    void getProblemSize(sqaod::SizeType *N) const;
-    
-    void setTileSize(sqaod::SizeType tileSize);
+    /* void getProblemSize(sqaod::SizeType *N) const; */
+
+    /* void setPreference(const sqaod::Preference &pref); */
+
+    /* sqaod::Preferences getPreferences() const; */
     
     const sqaod::BitsArray &get_x() const;
 
@@ -45,14 +53,10 @@ public:
 
     void searchRange(sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
 
-    void search();
+    /* void search(); */
     
 private:    
-    int N_;
     Matrix W_;
-    sqaod::OptimizeMethod om_;
-    sqaod::SizeType tileSize_;
-    sqaod::PackedBits xMax_;
 
     Vector E_;
     sqaod::BitsArray xList_;
