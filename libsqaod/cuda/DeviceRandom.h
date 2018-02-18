@@ -22,7 +22,7 @@ public:
 
     void seed();
 
-    void seed(unsigned long long seed);
+    void seed(unsigned int seed);
 
     sqaod::SizeType getNRands() const;
 
