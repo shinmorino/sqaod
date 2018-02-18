@@ -187,6 +187,102 @@ bool isFloat32(PyObject *dtype) {
 typedef NpMatrixType<char> NpBitMatrix;
 typedef NpVectorType<char> NpBitVector;
 
+/* Preference */
+
+int parsePreference(const char *key, PyObject *valueObj,
+                    sqaod::Preference *pref, PyObject *errObj) {
+
+    sqaod::PreferenceName prefName = sqaod::preferenceNameFromString(key);
+    switch (prefName) {
+    case sqaod::pnAlgorithm: {
+        if (!PyString_Check(valueObj)) {
+            PyErr_SetString(errObj, "algorithm value is not a string");
+            return -1;
+        }
+        sqaod::Algorithm algo = sqaod::algorithmFromString(PyString_AsString(valueObj));
+        *pref = sqaod::Preference(sqaod::pnAlgorithm, algo);
+        return 0;
+    }
+    case sqaod::pnNumTrotters:
+    case sqaod::pnTileSize:
+    case sqaod::pnTileSize0:
+    case sqaod::pnTileSize1: {
+        if (!PyInt_Check(valueObj)) {
+            PyErr_SetString(errObj, "Not an integer value.");
+            return -1;
+        }
+        PyIntObject *intObj = (PyIntObject*)valueObj;
+        *pref = sqaod::Preference(prefName, (sqaod::SizeType)intObj->ob_ival);
+        return 0;
+    }
+    default:
+        PyErr_SetString(errObj, "unknown preference name");
+        return -1;
+    }
+}
+
+
+
+inline
+int parsePreferences(PyObject *pyObj, sqaod::Preferences *prefs, PyObject *errObj) {
+
+    if (!PyDict_Check(pyObj)) {
+        abort_("Unexpected object.");
+        return -1;
+    }
+
+    PyListObject *list = (PyListObject*)PyDict_Items(pyObj);
+    int nItems = PyList_GET_SIZE(list);
+    prefs->reserve(nItems);
+    for (int idx = 0; idx < nItems; ++idx) {
+        PyObject *item = PyList_GET_ITEM(list, idx);
+        assert(PyTuple_Check(item));
+        PyTupleObject *tuple = (PyTupleObject*)item;
+        PyObject *nameObj = PyTuple_GET_ITEM(tuple, 0);
+        assert(PyString_Check(nameObj));
+        const char *name = PyString_AsString(nameObj);
+        PyObject *valueObj = PyTuple_GET_ITEM(tuple, 1);
+
+        sqaod::Preference pref;
+        if (parsePreference(name, valueObj, &pref, errObj) == -1)
+            return -1;
+        prefs->pushBack(pref);
+    }
+    Py_DECREF(list);
+    return nItems;
+}
+
+
+PyObject *createPreferenceValue(const sqaod::Preference &pref) {
+    switch (pref.name) {
+    case sqaod::pnAlgorithm: {
+        const char *algoName = sqaod::algorithmToString(pref.algo);
+        return Py_BuildValue("s", algoName);
+    }
+    case sqaod::pnNumTrotters:
+    case sqaod::pnTileSize:
+    case sqaod::pnTileSize0:
+    case sqaod::pnTileSize1: {
+        return Py_BuildValue("i", pref.size);
+    }
+    default:
+        abort_("Must not reach here.");
+        return NULL;
+    }
+}
+
+inline
+PyObject *createPreferences(const sqaod::Preferences &prefs) {
+    PyObject *dictObj = PyDict_New();
+    for (int idx = 0; idx < (sqaod::IdxType)prefs.size(); ++idx) {
+        const sqaod::Preference &pref = prefs[idx];
+        const char *name = sqaod::preferenceNameToString(pref.name);
+        PyObject *valueObj = createPreferenceValue(pref);
+        PyDict_SetItemString(dictObj, name, valueObj);
+    }
+    return dictObj;
+}
+
 
 /* exception handling macro */
 
