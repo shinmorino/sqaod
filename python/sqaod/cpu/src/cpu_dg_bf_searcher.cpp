@@ -5,16 +5,16 @@
 
 
 static PyObject *Cpu_DgBfSearcherError;
-namespace sqd = sqaod;
+namespace sq = sqaod;
 
 
 namespace {
 
 
 template<class real>
-sqd::CPUDenseGraphBFSearcher<real> *pyobjToCppObj(PyObject *obj) {
+sq::CPUDenseGraphBFSearcher<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqd::CPUDenseGraphBFSearcher<real>*>(val);
+    return reinterpret_cast<sq::CPUDenseGraphBFSearcher<real>*>(val);
 }
 
 extern "C"
@@ -24,9 +24,9 @@ PyObject *dg_bf_searcher_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqd::CPUDenseGraphBFSearcher<double>();
+        ext = (void*)new sq::CPUDenseGraphBFSearcher<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqd::CPUDenseGraphBFSearcher<float>();
+        ext = (void*)new sq::CPUDenseGraphBFSearcher<float>();
     else
         RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSearcherError);
     
@@ -56,7 +56,7 @@ template<class real>
 void internal_dg_bf_searcher_set_problem(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     const NpMatrix W(objW);
-    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
+    sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(W, om);
 }
     
@@ -81,17 +81,20 @@ PyObject *dg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
 }
     
 extern "C"
-PyObject *dg_bf_searcher_set_solver_preference(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    sqaod::SizeType tileSize;
-    if (!PyArg_ParseTuple(args, "OIO", &objExt, &tileSize, &dtype))
+PyObject *dg_bf_searcher_set_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype, *objPrefs;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
         return NULL;
 
+    sq::Preferences prefs;
+    if (parsePreferences(objPrefs, &prefs, Cpu_DgBfSearcherError) == -1)
+        return NULL;
+    
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->setTileSize(tileSize);
+            pyobjToCppObj<double>(objExt)->setPreferences(prefs);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->setTileSize(tileSize);
+            pyobjToCppObj<float>(objExt)->setPreferences(prefs);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cpu_DgBfSearcherError);
@@ -100,16 +103,36 @@ PyObject *dg_bf_searcher_set_solver_preference(PyObject *module, PyObject *args)
     return Py_None;    
 }
 
+extern "C"
+PyObject *dg_bf_searcher_get_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    sq::Preferences prefs;
+
+    TRY {
+        if (isFloat64(dtype))
+            prefs = pyobjToCppObj<double>(objExt)->getPreferences();
+        else if (isFloat32(dtype))
+            prefs = pyobjToCppObj<float>(objExt)->getPreferences();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgBfSearcherError);
+
+    return createPreferences(prefs);    
+}
+
 template<class real>
 PyObject *internal_dg_bf_searcher_get_x(PyObject *objExt) {
     sqaod::SizeType N;
-    sqd::CPUDenseGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
-    const sqd::BitsArray &xList = sol->get_x();
+    sq::CPUDenseGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
+    const sq::BitsArray &xList = sol->get_x();
     sol->getProblemSize(&N);
 
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
-        const sqd::Bits &bits = xList[idx];
+        const sq::Bits &bits = xList[idx];
         NpBitVector x(N, NPY_INT8);
         x.vec = bits;
         PyList_SET_ITEM(list, idx, x.obj);
@@ -247,7 +270,8 @@ PyMethodDef cpu_dg_bf_searcher_methods[] = {
 	{"new_bf_searcher", dg_bf_searcher_create, METH_VARARGS},
 	{"delete_bf_searcher", dg_bf_searcher_delete, METH_VARARGS},
 	{"set_problem", dg_bf_searcher_set_problem, METH_VARARGS},
-	{"set_solver_preference", dg_bf_searcher_set_solver_preference, METH_VARARGS},
+	{"set_preferences", dg_bf_searcher_set_preferences, METH_VARARGS},
+	{"get_preferences", dg_bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", dg_bf_searcher_get_x, METH_VARARGS},
 	{"get_E", dg_bf_searcher_get_E, METH_VARARGS},
 	{"init_search", dg_bf_searcher_init_search, METH_VARARGS},

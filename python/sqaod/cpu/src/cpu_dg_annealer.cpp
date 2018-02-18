@@ -5,15 +5,15 @@
 
 
 static PyObject *Cpu_DgAnnealerError;
-namespace sqd = sqaod;
+namespace sq = sqaod;
 
 
 namespace {
     
 template<class real>
-sqd::CPUDenseGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
+sq::CPUDenseGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqd::CPUDenseGraphAnnealer<real> *>(val);
+    return reinterpret_cast<sq::CPUDenseGraphAnnealer<real> *>(val);
 }
 
 extern "C"
@@ -23,9 +23,9 @@ PyObject *dg_annealer_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqd::CPUDenseGraphAnnealer<double>();
+        ext = (void*)new sq::CPUDenseGraphAnnealer<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqd::CPUDenseGraphAnnealer<float>();
+        ext = (void*)new sq::CPUDenseGraphAnnealer<float>();
     else
         RAISE_INVALID_DTYPE(dtype, Cpu_DgAnnealerError);
     
@@ -71,7 +71,7 @@ template<class real>
 void internal_dg_annealer_set_problem(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     NpMatrix W(objW);
-    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
+    sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(W, om);
 }
     
@@ -100,32 +100,35 @@ PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
-    sqaod::SizeType N, m;
+    sqaod::SizeType N;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->getProblemSize(&N, &m);
+            pyobjToCppObj<double>(objExt)->getProblemSize(&N);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->getProblemSize(&N, &m);
+            pyobjToCppObj<float>(objExt)->getProblemSize(&N);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_DgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_DgAnnealerError);
 
-    return Py_BuildValue("II", N, m);
+    return Py_BuildValue("I", N);
 }
     
 extern "C"
-PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    sqaod::SizeType m = 0;
-    if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
+PyObject *dg_annealer_set_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype, *objPrefs;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
         return NULL;
 
+    sq::Preferences prefs;
+    if (parsePreferences(objPrefs, &prefs, Cpu_DgAnnealerError) == -1)
+        return NULL;
+    
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<double>(objExt)->setPreferences(prefs);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<float>(objExt)->setPreferences(prefs);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_DgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_DgAnnealerError);
@@ -133,13 +136,32 @@ PyObject *dg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;    
 }
+    
+extern "C"
+PyObject *dg_annealer_get_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+    
+    sq::Preferences prefs;
+    TRY {
+        if (isFloat64(dtype))
+            prefs = pyobjToCppObj<double>(objExt)->getPreferences();
+        else if (isFloat32(dtype))
+            prefs = pyobjToCppObj<float>(objExt)->getPreferences();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_DgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cpu_DgAnnealerError);
+
+    return createPreferences(prefs);    
+}
 
 
 template<class real>
 void internal_dg_annealer_get_E(PyObject *objExt, PyObject *objE) {
     typedef NpVectorType<real> NpVector;
     NpVector E(objE);
-    sqd::CPUDenseGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
+    sq::CPUDenseGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
     E.vec = ext->get_E();
 }
 
@@ -165,10 +187,10 @@ PyObject *dg_annealer_get_E(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_dg_annealer_get_x(PyObject *objExt) {
-    sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N, m;
-    ann->getProblemSize(&N, &m);
+    sqaod::SizeType N;
+    ann->getProblemSize(&N);
     const sqaod::BitsArray &xList = ann->get_x();
     PyObject *list = PyList_New(xList.size());
     for (size_t idx = 0; idx < xList.size(); ++idx) {
@@ -233,7 +255,7 @@ void internal_dg_annealer_get_hJc(PyObject *objExt,
     NpVector h(objH);
     NpScalarRef c(objC);
     
-    sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
     ann->get_hJc(&h, &J, &c);
 }
     
@@ -260,10 +282,10 @@ PyObject *dg_annealer_get_hJc(PyObject *module, PyObject *args) {
     
 template<class real>
 PyObject *internal_dg_annealer_get_q(PyObject *objExt) {
-    sqd::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUDenseGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N, m;
-    ann->getProblemSize(&N, &m);
+    sqaod::SizeType N;
+    ann->getProblemSize(&N);
     const sqaod::BitsArray &qList = ann->get_q();
     PyObject *list = PyList_New(qList.size());
     for (size_t idx = 0; idx < qList.size(); ++idx) {
@@ -406,7 +428,8 @@ PyMethodDef cpu_dg_annealer_methods[] = {
 	{"rand_seed", dg_annealer_rand_seed, METH_VARARGS},
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", dg_annealer_get_problem_size, METH_VARARGS},
-	{"set_solver_preference", dg_annealer_set_solver_preference, METH_VARARGS},
+	{"set_preferences", dg_annealer_set_preferences, METH_VARARGS},
+	{"get_preferences", dg_annealer_get_preferences, METH_VARARGS},
 	{"get_E", dg_annealer_get_E, METH_VARARGS},
 	{"get_x", dg_annealer_get_x, METH_VARARGS},
 	{"set_x", dg_annealer_set_x, METH_VARARGS},

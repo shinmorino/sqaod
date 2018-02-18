@@ -5,15 +5,15 @@
 
 
 static PyObject *Cpu_BgAnnealerError;
-namespace sqd = sqaod;
+namespace sq = sqaod;
 
 
 namespace {
     
 template<class real>
-sqd::CPUBipartiteGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
+sq::CPUBipartiteGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqd::CPUBipartiteGraphAnnealer<real> *>(val);
+    return reinterpret_cast<sq::CPUBipartiteGraphAnnealer<real> *>(val);
 }
 
 extern "C"
@@ -23,9 +23,9 @@ PyObject *bg_annealer_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphAnnealer<double>();
+        ext = (void*)new sq::CPUBipartiteGraphAnnealer<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqd::CPUBipartiteGraphAnnealer<float>();
+        ext = (void*)new sq::CPUBipartiteGraphAnnealer<float>();
     else
         RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     
@@ -77,7 +77,7 @@ void internal_bg_annealer_set_problem(PyObject *objExt,
     typedef NpVectorType<real> NpVector;
     const NpVector b0(objB0), b1(objB1);
     const NpMatrix W(objW);
-    sqd::OptimizeMethod om = (opt == 0) ? sqd::optMinimize : sqd::optMaximize;
+    sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
     pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
 }
     
@@ -109,31 +109,34 @@ PyObject *bg_annealer_get_problem_size(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
-    sqaod::SizeType N0, N1, m;
+    sqaod::SizeType N0, N1;
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1, &m);
+            pyobjToCppObj<double>(objExt)->getProblemSize(&N0, &N1);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1, &m);
+            pyobjToCppObj<float>(objExt)->getProblemSize(&N0, &N1);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
 
-    return Py_BuildValue("III", N0, N1, m);
+    return Py_BuildValue("II", N0, N1);
 }
     
 extern "C"
-PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
-    PyObject *objExt, *dtype;
-    sqaod::SizeType m = 0;
-    if (!PyArg_ParseTuple(args, "OIO", &objExt, &m, &dtype))
+PyObject *bg_annealer_set_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype, *objPrefs;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
         return NULL;
 
+    sq::Preferences prefs;
+    if (parsePreferences(objPrefs, &prefs, Cpu_BgAnnealerError) == -1)
+        return NULL;
+    
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<double>(objExt)->setPreferences(prefs);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->setNumTrotters(m);
+            pyobjToCppObj<float>(objExt)->setPreferences(prefs);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
@@ -141,18 +144,38 @@ PyObject *bg_annealer_set_solver_preference(PyObject *module, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;    
 }
+    
+extern "C"
+PyObject *bg_annealer_get_preferences(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    sq::Preferences prefs;
+
+    TRY {
+        if (isFloat64(dtype))
+            prefs = pyobjToCppObj<double>(objExt)->getPreferences();
+        else if (isFloat32(dtype))
+            prefs = pyobjToCppObj<float>(objExt)->getPreferences();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
+
+    return createPreferences(prefs);    
+}
 
 template<class real>
 PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
-    sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N0, N1, m;
-    ann->getProblemSize(&N0, &N1, &m);
-    const sqd::BitsPairArray &xPairList = ann->get_x();
+    sqaod::SizeType N0, N1;
+    ann->getProblemSize(&N0, &N1);
+    const sq::BitsPairArray &xPairList = ann->get_x();
 
     PyObject *list = PyList_New(xPairList.size());
     for (size_t idx = 0; idx < xPairList.size(); ++idx) {
-        const sqd::BitsPairArray::ValueType &pair = xPairList[idx];
+        const sq::BitsPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
@@ -213,15 +236,15 @@ PyObject *bg_annealer_set_x(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
-    sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
-    sqaod::SizeType N0, N1, m;
-    ann->getProblemSize(&N0, &N1, &m);
-    const sqd::BitsPairArray &xPairList = ann->get_q();
+    sqaod::SizeType N0, N1;
+    ann->getProblemSize(&N0, &N1);
+    const sq::BitsPairArray &xPairList = ann->get_q();
 
     PyObject *list = PyList_New(xPairList.size());
     for (size_t idx = 0; idx < xPairList.size(); ++idx) {
-        const sqd::BitsPairArray::ValueType &pair = xPairList[idx];
+        const sq::BitsPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector q0(N0, NPY_INT8), q1(N1, NPY_INT8);
         q0.vec = pair.first;
@@ -279,7 +302,7 @@ void internal_bg_annealer_get_hJc(PyObject *objExt,
     typedef NpVectorType<real> NpVector;
     typedef NpScalarRefType<real> NpScalarRef;
     
-    sqd::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    sq::CPUBipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
     NpVector h0(objH0), h1(objH1);
     NpScalarRef c(objC);
     NpMatrix J(objJ);
@@ -311,7 +334,7 @@ template<class real>
 void internal_bg_annealer_get_E(PyObject *objExt, PyObject *objE) {
     typedef NpVectorType<real> NpVector;
     NpVector E(objE);
-    sqd::CPUBipartiteGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
+    sq::CPUBipartiteGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
     E.vec = ext->get_E();
 }
 
@@ -431,7 +454,8 @@ PyMethodDef cpu_bg_annealer_methods[] = {
 	{"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
 	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
-	{"set_solver_preference", bg_annealer_set_solver_preference, METH_VARARGS},
+	{"set_preferences", bg_annealer_set_preferences, METH_VARARGS},
+	{"get_preferences", bg_annealer_get_preferences, METH_VARARGS},
 	{"get_E", bg_annealer_get_E, METH_VARARGS},
 	{"get_x", bg_annealer_get_x, METH_VARARGS},
 	{"set_x", bg_annealer_set_x, METH_VARARGS},
