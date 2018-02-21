@@ -36,6 +36,9 @@ void Device::finalize() {
     if (devNo_ == -1)
         return;
     synchronize();
+
+    devConstScalarsFP64_.finalize(devObjAllocator_);
+    devConstScalarsFP32_.finalize(devObjAllocator_);
     for (Streams::iterator it = streams_.begin(); it != streams_.end(); ++it)
         delete *it;
     defaultDeviceStream_.finalize();
