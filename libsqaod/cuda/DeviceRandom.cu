@@ -70,7 +70,6 @@ void DeviceRandom::deallocate() {
 void DeviceRandom::seed(unsigned int seed) {
     if (d_buffer_ != NULL)
         deallocate();
-    devAlloc_->allocate(&d_buffer_, internalBufSize_);
     devAlloc_->allocate(&d_randStates_, CURAND_NUM_MTGP32_PARAMS);
     devAlloc_->allocate(&d_kernelParams_, CURAND_NUM_MTGP32_PARAMS);
     /* synchronous */
@@ -103,6 +102,10 @@ static void genRandKernel(unsigned int *d_buffer, int offset, int nNums, int buf
 
 
 void DeviceRandom::generate() {
+    throwErrorIf(internalBufSize_ == (sq::SizeType) -1, "DeviceRandom not initialized.");
+    if (d_buffer_ == NULL)
+        devAlloc_->allocate(&d_buffer_, internalBufSize_);
+
     int nToGenerate = requiredSize_ - getNRands();
     nToGenerate = roundUp(nToGenerate, (int)randGenSize);
     if (0 <= nToGenerate) {
