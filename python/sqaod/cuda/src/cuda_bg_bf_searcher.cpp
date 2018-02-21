@@ -49,7 +49,8 @@ PyObject *bg_bf_searcher_delete(PyObject *module, PyObject *args) {
         RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     
     Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_None;
+}
 
 extern "C"
 PyObject *bg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
