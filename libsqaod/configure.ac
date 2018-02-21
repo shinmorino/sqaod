@@ -72,6 +72,6 @@ AC_SUBST([CXXFLAGS], $CXXFLAGS)
 
 AC_CONFIG_FILES([Makefile config/sqaod_config.h common/Makefile cpu/Makefile])
 AM_COND_IF([CUDA_ENABLED],
-           [AC_CONFIG_FILES([cuda/Makefile ../python/setup.py])])
+           [AC_CONFIG_FILES([cuda/Makefile])])
 AC_CONFIG_FILES([tests/Makefile])
 AC_OUTPUT
