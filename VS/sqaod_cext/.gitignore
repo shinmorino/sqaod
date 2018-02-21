@@ -1,0 +1,15 @@
+cpu_bg_annealer.vcxproj
+cpu_bg_bf_searcher.vcxproj
+cpu_bg_bf_searcher.vcxproj.user
+cpu_dg_annealer.vcxproj
+cpu_dg_bf_searcher.vcxproj
+cpu_formulas.vcxproj
+cuda_bg_annealer.vcxproj
+cuda_bg_bf_searcher.vcxproj
+cuda_device.vcxproj
+cuda_dg_annealer.vcxproj
+cuda_dg_annealer.vcxproj.user
+cuda_dg_bf_searcher.vcxproj
+cuda_formulas.vcxproj
+.vs
+

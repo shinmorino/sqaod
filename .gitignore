@@ -9,8 +9,10 @@
 .deps
 .libs
 *.obj
-Debug
-Release
+*Debug
+*Release
 x86
 build
 *.opendb
+*.pyd
+
