@@ -45,13 +45,32 @@ PyObject *bg_annealer_delete(PyObject *module, PyObject *args) {
         delete pyobjToCppObj<float>(objExt);
     else
         RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
-    
+
     Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_None;
 }
 
 extern "C"
-PyObject *bg_annealer_rand_seed(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_assign_device(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objDevice, *dtype;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objDevice, &dtype))
+        return NULL;
+
+    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->assignDevice(*device);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->assignDevice(*device);
+    else
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+extern "C"
+PyObject *bg_annealer_seed(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     unsigned long long seed;
     if (!PyArg_ParseTuple(args, "OKO", &objExt, &seed, &dtype))
@@ -451,7 +470,6 @@ static
 PyMethodDef cuda_bg_annealer_methods[] = {
 	{"new_annealer", bg_annealer_create, METH_VARARGS},
 	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
-	{"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
 	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
 	{"set_preferences", bg_annealer_set_preferences, METH_VARARGS},
@@ -467,6 +485,7 @@ PyMethodDef cuda_bg_annealer_methods[] = {
 	{"fin_anneal", bg_annealer_fin_anneal, METH_VARARGS},
 	{"anneal_one_step", bg_annealer_anneal_one_step, METH_VARARGS},
 	{NULL},
+    {"seed", bg_annealer_seed, METH_VARARGS},
 };
 
 extern "C"
