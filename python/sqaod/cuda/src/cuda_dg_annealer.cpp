@@ -117,7 +117,7 @@ PyObject *dg_annealer_get_problem_size(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *dg_annealer_set_preferences(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype, *objPrefs;
-    if (!PyArg_ParseTuple(args, "OOO", &objExt, &dtype, &objPrefs))
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objPrefs, &dtype))
         return NULL;
 
     sq::Preferences prefs;
