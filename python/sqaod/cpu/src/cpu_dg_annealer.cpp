@@ -51,7 +51,7 @@ PyObject *dg_annealer_delete(PyObject *module, PyObject *args) {
 }
 
 extern "C"
-PyObject *dg_annealer_rand_seed(PyObject *module, PyObject *args) {
+PyObject *dg_annealer_seed(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     unsigned long long seed;
     if (!PyArg_ParseTuple(args, "OKO", &objExt, &seed, &dtype))
@@ -425,7 +425,7 @@ static
 PyMethodDef cpu_dg_annealer_methods[] = {
 	{"new_annealer", dg_annealer_create, METH_VARARGS},
 	{"delete_annealer", dg_annealer_delete, METH_VARARGS},
-	{"rand_seed", dg_annealer_rand_seed, METH_VARARGS},
+	{"seed", dg_annealer_seed, METH_VARARGS},
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", dg_annealer_get_problem_size, METH_VARARGS},
 	{"set_preferences", dg_annealer_set_preferences, METH_VARARGS},

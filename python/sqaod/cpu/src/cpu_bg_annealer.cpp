@@ -51,7 +51,7 @@ PyObject *bg_annealer_delete(PyObject *module, PyObject *args) {
 }
 
 extern "C"
-PyObject *bg_annealer_rand_seed(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_seed(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     unsigned long long seed;
     if (!PyArg_ParseTuple(args, "OKO", &objExt, &seed, &dtype))
@@ -451,7 +451,7 @@ static
 PyMethodDef cpu_bg_annealer_methods[] = {
 	{"new_annealer", bg_annealer_create, METH_VARARGS},
 	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
-	{"rand_seed", bg_annealer_rand_seed, METH_VARARGS},
+	{"seed", bg_annealer_seed, METH_VARARGS},
 	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
 	{"set_preferences", bg_annealer_set_preferences, METH_VARARGS},

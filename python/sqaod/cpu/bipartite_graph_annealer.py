@@ -16,8 +16,8 @@ class BipartiteGraphAnnealer :
     def __del__(self) :
         bg_annealer.delete_annealer(self._ext, self.dtype)
         
-    def rand_seed(self, seed) :
-        bg_annealer.rand_seed(self._ext, seed, self.dtype)
+    def seed(self, seed) :
+        bg_annealer.seed(self._ext, seed, self.dtype)
             
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)

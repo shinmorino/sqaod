@@ -15,8 +15,8 @@ class DenseGraphAnnealer :
     def __del__(self) :
         dg_annealer.delete_annealer(self._ext, self.dtype)
         
-    def rand_seed(self, seed) :
-        dg_annealer.rand_seed(self._ext, seed, self.dtype)
+    def seed(self, seed) :
+        dg_annealer.seed(self._ext, seed, self.dtype)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
