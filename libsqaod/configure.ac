@@ -51,6 +51,7 @@ fi
 AC_SUBST([DEFINE_SQAOD_CUDA_ENABLED], ${cudadef})
 AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
 AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
+AC_SUBST([CUDA_INCLUDE], ${cuda_prefix}/include)
 AC_PROG_CC
 AC_PROG_CXX
 #if test x$prefix = xNONE ; then
@@ -71,6 +72,6 @@ AC_SUBST([CXXFLAGS], $CXXFLAGS)
 
 AC_CONFIG_FILES([Makefile config/sqaod_config.h common/Makefile cpu/Makefile])
 AM_COND_IF([CUDA_ENABLED],
-           [AC_CONFIG_FILES([cuda/Makefile])])
+           [AC_CONFIG_FILES([cuda/Makefile ../python/setup.py])])
 AC_CONFIG_FILES([tests/Makefile])
 AC_OUTPUT
