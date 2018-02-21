@@ -51,10 +51,28 @@ PyObject *dg_annealer_delete(PyObject *module, PyObject *args) {
 }
 
 extern "C"
-PyObject *dg_annealer_rand_seed(PyObject *module, PyObject *args) {
+PyObject *dg_annealer_assign_device(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objDevice, *dtype;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objDevice, &dtype))
+        return NULL;
+
+    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->assignDevice(*device);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->assignDevice(*device);
+    else
+        RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
+    
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
+extern "C"
+PyObject *dg_annealer_seed(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    unsigned long long seed;
-    if (!PyArg_ParseTuple(args, "OKO", &objExt, &seed, &dtype))
+    unsigned int seed;
+    if (!PyArg_ParseTuple(args, "OIO", &objExt, &seed, &dtype))
         return NULL;
     if (isFloat64(dtype))
         pyobjToCppObj<double>(objExt)->seed(seed);
@@ -425,7 +443,8 @@ static
 PyMethodDef cuda_dg_annealer_methods[] = {
 	{"new_annealer", dg_annealer_create, METH_VARARGS},
 	{"delete_annealer", dg_annealer_delete, METH_VARARGS},
-	{"rand_seed", dg_annealer_rand_seed, METH_VARARGS},
+	{"assign_device", dg_annealer_assign_device, METH_VARARGS},
+	{"seed", dg_annealer_seed, METH_VARARGS},
 	{"set_problem", dg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", dg_annealer_get_problem_size, METH_VARARGS},
 	{"set_preferences", dg_annealer_set_preferences, METH_VARARGS},

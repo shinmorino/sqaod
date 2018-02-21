@@ -52,6 +52,23 @@ PyObject *dg_bf_searcher_delete(PyObject *module, PyObject *args) {
     return Py_None;    
 }
 
+extern "C"
+PyObject *dg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objDevice, *dtype;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objDevice, &dtype))
+        return NULL;
+
+    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->assignDevice(*device);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->assignDevice(*device);
+    else
+        RAISE_INVALID_DTYPE(dtype, Cuda_DgBfSearcherError);
+    
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
 
 template<class real>
 void internal_dg_bf_searcher_set_problem(PyObject *objExt, PyObject *objW, int opt) {
@@ -270,6 +287,7 @@ static
 PyMethodDef cuda_dg_bf_searcher_methods[] = {
 	{"new_bf_searcher", dg_bf_searcher_create, METH_VARARGS},
 	{"delete_bf_searcher", dg_bf_searcher_delete, METH_VARARGS},
+	{"assign_device", dg_bf_searcher_assign_device, METH_VARARGS},
 	{"set_problem", dg_bf_searcher_set_problem, METH_VARARGS},
 	{"set_preferences", dg_bf_searcher_set_preferences, METH_VARARGS},
 	{"get_preferences", dg_bf_searcher_get_preferences, METH_VARARGS},

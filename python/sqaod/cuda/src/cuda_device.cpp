@@ -61,7 +61,6 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
     sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->finalize();
-        delete device;
     } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
 
     Py_INCREF(Py_None);
@@ -76,7 +75,7 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
 static
 PyMethodDef cuda_device_methods[] = {
     {"device_new", cuda_device_new, METH_VARARGS},
-    {"delete_delete", cuda_device_delete, METH_VARARGS},
+    {"device_delete", cuda_device_delete, METH_VARARGS},
     {"device_initialize", cuda_device_initialize, METH_VARARGS},
     {"device_finalize", cuda_device_finalize, METH_VARARGS},
     {NULL},

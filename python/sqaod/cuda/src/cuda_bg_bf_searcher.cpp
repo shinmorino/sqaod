@@ -50,6 +50,23 @@ PyObject *bg_bf_searcher_delete(PyObject *module, PyObject *args) {
     
     Py_INCREF(Py_None);
     return Py_None;    
+
+extern "C"
+PyObject *bg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objDevice, *dtype;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objDevice, &dtype))
+        return NULL;
+
+    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
+    if (isFloat64(dtype))
+        pyobjToCppObj<double>(objExt)->assignDevice(*device);
+    else if (isFloat32(dtype))
+        pyobjToCppObj<float>(objExt)->assignDevice(*device);
+    else
+        RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+
+    Py_INCREF(Py_None);
+    return Py_None;
 }
     
 
@@ -291,6 +308,7 @@ PyMethodDef cuda_bg_bf_searcher_methods[] = {
 	{"search_range", bg_bf_searcher_search_range, METH_VARARGS},
 	{"search", bg_bf_searcher_search, METH_VARARGS},
 	{NULL},
+    {"assign_device", bg_bf_searcher_assign_device, METH_VARARGS},
 };
 
 
