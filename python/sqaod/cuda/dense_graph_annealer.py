@@ -3,22 +3,26 @@ import random
 import sqaod
 from sqaod.common import checkers
 import cuda_dg_annealer as dg_annealer
+import device
 
 class DenseGraphAnnealer :
     
     def __init__(self, W, optimize, n_trotters, dtype) :
         self.dtype = dtype
         self._ext = dg_annealer.new_annealer(dtype)
+	self.assign_device(device.active_device)
         if not W is None :
             self.set_problem(W, optimize)
-        if not n_trotters is None :
-            self.set_solver_preference(n_trotters)
+            self.set_preferences(n_trotters = W.shape[0] / 4)
 
     def __del__(self) :
         dg_annealer.delete_annealer(self._ext, self.dtype)
         
-    def rand_seed(self, seed) :
-        dg_annealer.rand_seed(self._ext, seed, self.dtype)
+    def assign_device(self, dev) :
+        dg_annealer.assign_device(self._ext, dev._ext, self.dtype)
+
+    def seed(self, seed) :
+        dg_annealer.seed(self._ext, seed, self.dtype)
         
     def set_problem(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
@@ -29,11 +33,12 @@ class DenseGraphAnnealer :
     def get_problem_size(self) :
         return dg_annealer.get_problem_size(self._ext, self.dtype)
 
-    def set_solver_preference(self, n_trotters = None) :
-        N, m = self.get_problem_size()
-        n_trotters = max(2, N / 2 if n_trotters is None else n_trotters)
-        dg_annealer.set_solver_preference(self._ext, n_trotters, self.dtype)
-        self._E = np.empty((n_trotters), self.dtype)
+    def set_preferences(self, **prefs) :
+        N = self.get_problem_size()
+        dg_annealer.set_preferences(self._ext, prefs, self.dtype)
+
+    def get_preferences(self) :
+	return dg_annealer.get_preferences(self._ext, self.dtype)
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -45,7 +50,7 @@ class DenseGraphAnnealer :
         return dg_annealer.get_x(self._ext, self.dtype)
 
     def get_hJc(self) :
-        N, m = self.get_problem_size()
+        N = self.get_problem_size()
         h = np.empty((N), self.dtype)
         J = np.empty((N, N), self.dtype)
         c = np.empty((1), self.dtype)
@@ -66,7 +71,9 @@ class DenseGraphAnnealer :
 
     def fin_anneal(self) :
         dg_annealer.fin_anneal(self._ext, self.dtype)
-        N, m = self.get_problem_size()
+        N = self.get_problem_size()
+	prefs = self.get_preferences()
+	m = prefs['n_trotters']
         self._E = np.empty((m), self.dtype)
         dg_annealer.get_E(self._ext, self._E, self.dtype)
 
@@ -75,7 +82,8 @@ class DenseGraphAnnealer :
         
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, n_trotters = None, dtype=np.float64) :
-    return DenseGraphAnnealer(W, optimize, n_trotters, dtype)
+    ann = DenseGraphAnnealer(W, optimize, n_trotters, dtype)
+    return ann
 
 
 if __name__ == '__main__' :
@@ -93,9 +101,9 @@ if __name__ == '__main__' :
     N = 8
     m = 4
 
-#    N = 10
-#    m = 5
-#    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
+    N = 100
+    m = 5
+    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
     import sqaod.py as py
@@ -110,14 +118,14 @@ if __name__ == '__main__' :
     Ginit = 5.
     Gfin = 0.001
     
-    nRepeat = 4
+    nRepeat = 2
     kT = 0.02
     tau = 0.995
     
     for loop in range(0, nRepeat) :
         G = Ginit
-        ann.randomize_q()
         ann.init_anneal()
+#        ann.randomize_q()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

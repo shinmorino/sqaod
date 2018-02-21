@@ -1,9 +1,8 @@
 import numpy as np
 import sqaod
+import device
 from sqaod.common import checkers
 import cuda_dg_bf_searcher as dg_bf_searcher
-import device
-
 
 class DenseGraphBFSearcher :
     
@@ -16,6 +15,9 @@ class DenseGraphBFSearcher :
     def __del__(self) :
         dg_bf_searcher.delete_bf_searcher(self._ext, self.dtype)
 
+    def assign_device(self, dev) :
+        dg_bf_searcher.assign_device(self._ext, dev._ext, self.dtype)
+
     def set_problem(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
         W = sqaod.clone_as_ndarray(W, self.dtype)
@@ -23,8 +25,8 @@ class DenseGraphBFSearcher :
         dg_bf_searcher.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
 
-    def set_solver_preference(self, tile_size) :
-        dg_bf_searcher.set_solver_preference(self._ext, tile_size, self.dtype)
+    def set_preferences(self, **prefs) :
+        dg_bf_searcher.set_preferences(self._ext, prefs, self.dtype)
         
     def get_optimize_dir(self) :
         return self._optimize
@@ -44,7 +46,7 @@ class DenseGraphBFSearcher :
     def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
         dg_bf_searcher.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
         
-    def search(self) :
+    def _search(self) :
         N = self._N
         iMax = 1 << N
         iStep = min(512, iMax)
@@ -53,14 +55,15 @@ class DenseGraphBFSearcher :
             dg_bf_searcher.search_range(self._ext, iTile, iTile + iStep, self.dtype)
         self.fin_search()
         
-    def _search(self) :
+    def search(self) :
         # one liner.  does not accept ctrl+c.
         dg_bf_searcher.search(self._ext, self.dtype)
 
 
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64) :
-    return DenseGraphBFSearcher(W, optimize, dtype)
-
+    searcher = DenseGraphBFSearcher(W, optimize, dtype)
+    searcher.assign_device(device.active_device)
+    return searcher
 
 if __name__ == '__main__' :
 
@@ -76,10 +79,10 @@ if __name__ == '__main__' :
                   [4,4,4,4,4,4,-32,4],
                   [4,4,4,4,4,4,4,-32]])
 
-    N = 16
+    N = 20
     W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, dtype);
     bf = dense_graph_bf_searcher(W, sqaod.minimize, dtype)
-    bf.set_solver_preference(256)
+    # bf.set_preferences(tile_size = 256)
     
     import time
 

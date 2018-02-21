@@ -2,22 +2,30 @@ import cuda_device
 
 class Device :
     def __init__(self, devno) :
-        self.ext = cuda_device.device_new(devno)
+        self._ext = cuda_device.device_new(devno)
 
     def __del__(self) :
-        if not self.ext is None :
-            self.device_finalize(ext);
+        if not self._ext is None :
+            self.finalize();
 
     def finalize(self) :
-        cuda_device.device_finalize(self.ext);
-        cuda_device.device_delete(self.ext)
-        self.ext = None
-
+        cuda_device.device_finalize(self._ext);
+        cuda_device.device_delete(self._ext)
+        self._ext = None
         
 def create_device(devno = 0) :
-    Device.device = Device(devno)
-    return Device.device
+    return Device(devno)
 
-if __name__ == "__main__" :
-    dev = create_device()
-    dev.finalize()
+
+# Global/Static
+
+def unload(active_device) :
+    if not active_device is None :
+    	active_device.finalize()
+	active_device = None
+
+if __name__ != "__main__" :
+    active_device = create_device()
+    import atexit
+    atexit.register(unload, active_device)
+
