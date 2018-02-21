@@ -13,6 +13,7 @@ DeviceMathTest::~DeviceMathTest(void) {
 }
 
 void DeviceMathTest::setUp() {
+    device_.useManagedMemory(true);
     device_.initialize(0);
 }
 
