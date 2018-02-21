@@ -2,6 +2,9 @@ import cuda_device
 
 class Device :
     def __init__(self, devno) :
+        # make ext as a member, and it should be initialized, 
+        # since exception may occur in the nextline.
+        self._ext = None
         self._ext = cuda_device.device_new(devno)
 
     def __del__(self) :
