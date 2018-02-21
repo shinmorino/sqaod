@@ -16,7 +16,7 @@ CC=gcc
 CFLAGS=-std=c++11 -fpic -DPIC -Wall -ggdb -I$(dir $(abspath Makefile)) -Wno-format-security
 #CFLAGS+=-O2
 CXXFLAGS=$(CFLAGS)
-LDFLAGS=-L.. -lsqaod
+LDFLAGS=-L.. -lsqaod_cuda -lsqaod
 
 all: $(TARGETS)
 
