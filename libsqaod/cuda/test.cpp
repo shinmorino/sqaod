@@ -1,5 +1,5 @@
 #include <iostream>
-#include "CUDADenseGraphBFSolver.h"
+#include "CUDADenseGraphBFSearcher.h"
 #include "Device.h"
 
 using namespace sqaod_cuda;
@@ -7,14 +7,14 @@ namespace sq = sqaod;
 
 
 template<class real>
-void runBFSolver() {
+void runBFSearcher() {
     typedef sq::MatrixType<real> Matrix;
 
     Device device;
     device.initialize();
     
     int N = 100;
-    CUDADenseGraphBFSolver<real> solver;
+    CUDADenseGraphBFSearcher<real> solver;
     solver.assignDevice(device);
     Matrix W = Matrix::eye(N);
     solver.setProblem(W, sq::optMinimize);
@@ -26,6 +26,6 @@ void runBFSolver() {
 
 
 int main() {
-    runBFSolver<float>();
-    runBFSolver<double>();
+    runBFSearcher<float>();
+    runBFSearcher<double>();
 }
