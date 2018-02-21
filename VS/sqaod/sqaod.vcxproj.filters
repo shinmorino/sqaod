@@ -132,6 +132,12 @@
     <ClInclude Include="..\..\libsqaod\cuda\DeviceBipartiteGraphBatchSearch.h">
       <Filter>cuda</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\Solver.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\common\Preference.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
@@ -205,6 +211,12 @@
     </ClCompile>
     <ClCompile Include="..\..\libsqaod\cuda\DeviceFormulas.cpp">
       <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\Solver.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\common\Preference.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
