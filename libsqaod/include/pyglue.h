@@ -215,13 +215,19 @@ int parsePreference(const char *key, PyObject *valueObj,
     case sqaod::pnTileSize:
     case sqaod::pnTileSize0:
     case sqaod::pnTileSize1: {
-        if (!PyInt_Check(valueObj)) {
+        if (PyInt_Check(valueObj)) {
+            PyIntObject *intObj = (PyIntObject*)valueObj;
+            *pref = sqaod::Preference(prefName, (sqaod::SizeType)intObj->ob_ival);
+            return 0;
+        }
+        else if (PyLong_Check(valueObj)) {
+            *pref = sqaod::Preference(prefName, PyLong_AsLong(valueObj));
+            return 0;
+        }
+        else {
             PyErr_SetString(errObj, "Not an integer value.");
             return -1;
         }
-        PyIntObject *intObj = (PyIntObject*)valueObj;
-        *pref = sqaod::Preference(prefName, (sqaod::SizeType)intObj->ob_ival);
-        return 0;
     }
     default:
         PyErr_SetString(errObj, "unknown preference name");
