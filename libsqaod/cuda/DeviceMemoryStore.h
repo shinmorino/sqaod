@@ -117,6 +117,7 @@ public:
     void deallocate(void *pv);
 
 private:
+    bool initialized_;
     bool useManagedMemory_;
     bool enableLocalStore_;
 
