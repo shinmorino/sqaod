@@ -246,7 +246,7 @@ int parsePreferences(PyObject *pyObj, sqaod::Preferences *prefs, PyObject *errOb
     }
 
     PyListObject *list = (PyListObject*)PyDict_Items(pyObj);
-    int nItems = PyList_GET_SIZE(list);
+    int nItems = (int)PyList_GET_SIZE(list);
     prefs->reserve(nItems);
     for (int idx = 0; idx < nItems; ++idx) {
         PyObject *item = PyList_GET_ITEM(list, idx);
