@@ -1,0 +1,10 @@
+#pragma once
+
+/* build configuration */
+
+/* BLAS */
+@DEFINE_SQAOD_WITH_BLAS@
+
+/* CUDA */
+@DEFINE_SQAOD_CUDA_ENABLED@
+
