@@ -23,6 +23,8 @@ void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vecto
                                                    const Matrix &W, OptimizeMethod om) {
     N0_ = b0.size;
     N1_ = b1.size;
+    throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
+    throwErrorIf(63 < N1_, "N1 must be smaller than 64, N1=%d.", N1_);
     b0_ = mapToRowVector(b0);
     b1_ = mapToRowVector(b1);
     W_ = mapTo(W);
@@ -50,6 +52,14 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
     xPackedPairs_.clear();
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
+    if (x0max_ < tileSize0_) {
+        tileSize0_ = (SizeType)x0max_;
+        log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
+    }
+    if (x1max_ < tileSize1_) {
+        tileSize1_ = (SizeType)x1max_;
+        log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
+    }
 }
 
 template<class real>

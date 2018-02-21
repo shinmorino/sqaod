@@ -19,6 +19,7 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 template<class real>
 void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     N_ = W.rows;
     W_ = mapTo(W);
     om_ = om;
@@ -42,6 +43,10 @@ void CPUDenseGraphBFSearcher<real>::initSearch() {
     packedXList_.clear();
     xList_.clear();
     xMax_ = 1ull << N_;
+    if (xMax_ < tileSize_) {
+        tileSize_ = (SizeType)xMax_;
+        log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
+    }
 }
 
 

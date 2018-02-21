@@ -34,6 +34,8 @@ void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const 
                                                     const HostMatrix &W, sqaod::OptimizeMethod om) {
     N0_ = b0.size;
     N1_ = b1.size;
+    throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
+    throwErrorIf(63 < N1_, "N1 must be smaller than 64, N1=%d.", N1_);
     b0_ = b0;
     b1_ = b1;
     W_ = W;
@@ -61,13 +63,17 @@ void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     xPackedPairs_.clear();
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
-    /* FIXME: create persistent tileSize member. */
-    tileSize0_ = (sq::SizeType)std::min((sq::PackedBits)tileSize0_, x0max_);
-    tileSize1_ = (sq::SizeType)std::min((sq::PackedBits)tileSize1_, x1max_);
+    if (x0max_ < tileSize0_) {
+        tileSize0_ = (sq::SizeType)x0max_;
+        sq::log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
+    }
+    if (x1max_ < tileSize1_) {
+        tileSize1_ = (sq::SizeType)x1max_;
+        sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
+    }
     batchSearch_.setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
     SizeType minXPairsSize = (tileSize0_ * tileSize1_) * 2;
     HostObjectAllocator().allocate(&h_packedMinXPairs_, minXPairsSize);
-
 }
 
 template<class real>

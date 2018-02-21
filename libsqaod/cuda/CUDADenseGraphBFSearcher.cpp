@@ -52,6 +52,11 @@ const sq::VectorType<real> &CUDADenseGraphBFSearcher<real>::get_E() const {
 
 template<class real>
 void CUDADenseGraphBFSearcher<real>::initSearch() {
+    sq::SizeType maxTileSize = 1u << N_;
+    if (maxTileSize < tileSize_) {
+        tileSize_ = maxTileSize;
+        sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
+    }
     batchSearch_.setProblem(W_, tileSize_);
     HostObjectAllocator().allocate(&h_packedXmin_, tileSize_);
 
