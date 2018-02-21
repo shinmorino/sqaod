@@ -151,7 +151,7 @@ void CUDADenseGraphAnnealerTest::test() {
         an.setProblem(W);
         an.setPreference(Preference(pnNumTrotters, m));
         an.seed(0);
-        an.randomize_q();
+        // an.randomize_q();  FIXME: initilization check.
         an.initAnneal();
 
         DeviceMatrix d_W, d_J, d_q;
