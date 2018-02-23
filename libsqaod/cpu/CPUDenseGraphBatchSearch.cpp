@@ -51,5 +51,5 @@ void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBits xBegin, sq::Pack
     }
 }
 
-template class sqaod_cpu::CPUDenseGraphBatchSearch<float>;
-template class sqaod_cpu::CPUDenseGraphBatchSearch<double>;
+template struct sqaod_cpu::CPUDenseGraphBatchSearch<float>;
+template struct sqaod_cpu::CPUDenseGraphBatchSearch<double>;

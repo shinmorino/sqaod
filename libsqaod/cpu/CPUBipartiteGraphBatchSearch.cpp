@@ -75,5 +75,5 @@ searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
 }
     
 
-template class sqaod_cpu::CPUBipartiteGraphBatchSearch<float>;
-template class sqaod_cpu::CPUBipartiteGraphBatchSearch<double>;
+template struct sqaod_cpu::CPUBipartiteGraphBatchSearch<float>;
+template struct sqaod_cpu::CPUBipartiteGraphBatchSearch<double>;
