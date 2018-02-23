@@ -1,4 +1,4 @@
 
 noinst_LTLIBRARIES=libcpu.la
 
-libcpu_la_SOURCES=CPUFormulas.cpp CPUDenseGraphBFSearcher.cpp CPUDenseGraphAnnealer.cpp CPUBipartiteGraphBFSearcher.cpp CPUBipartiteGraphAnnealer.cpp
+libcpu_la_SOURCES=CPUFormulas.cpp CPUDenseGraphBFSearcher.cpp CPUDenseGraphBatchSearch.cpp CPUDenseGraphAnnealer.cpp CPUBipartiteGraphBFSearcher.cpp CPUBipartiteGraphBatchSearch.cpp CPUBipartiteGraphAnnealer.cpp
