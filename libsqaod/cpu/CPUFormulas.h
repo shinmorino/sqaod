@@ -72,12 +72,6 @@ struct BGFuncs {
     void calculate_E(Vector *E,
                      const Vector &h0, const Vector &h1, const Matrix &J, real c,
                      const Matrix &q0, const Matrix &q1);
-
-    static
-    void batchSearch(real *E, PackedBitsPairArray *xList,
-                     const Vector &b0, const Vector &b1, const Matrix &W,
-                     PackedBits xBegin0, PackedBits xEnd0,
-                     PackedBits xBegin1, PackedBits xEnd1);
     
     /* Eigen ver */
     static
