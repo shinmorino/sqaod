@@ -8,12 +8,16 @@
 
 namespace sq = sqaod;
 
+
 #ifdef SQAOD_CUDA_ENABLED
 #  include <cuda/CUDADenseGraphBFSearcher.h>
 #  include <cuda/CUDADenseGraphAnnealer.h>
 #  include <cuda/CUDABipartiteGraphBFSearcher.h>
 #  include <cuda/CUDABipartiteGraphAnnealer.h>
 namespace sqcuda = sqaod_cuda;
+
+sqcuda::Device device;
+
 #endif
 
 template<class T>
@@ -59,211 +63,170 @@ sq::VectorType<real> vector(sq::SizeType size) {
 }
 
 template<class real>
-void denseGraphBFSearch(int N) {
-    sq::MatrixType<real> W = symmetricMatrix<real>(N);
-
-    sq::CPUDenseGraphBFSearcher<real> cpuSolver;
-    cpuSolver.setProblem(W);
-    cpuSolver.setPreference(sq::Preference(sq::pnTileSize, 1 << std::min(N, 20)));
-
-    auto start = std::chrono::system_clock::now();
-    cpuSolver.search();
-    auto end = std::chrono::system_clock::now();
-
-    std::cout << cpuSolver.get_E().min() << std::endl;
-
-    showDuration(end - start);
-
-#ifdef SQAOD_CUDA_ENABLED
-    sqcuda::Device device;
-    device.initialize();
-
-    sqcuda::CUDADenseGraphBFSearcher<real> cudaSolver(device);
-    cudaSolver.setProblem(W);
-    cudaSolver.setPreference(sq::Preference(pnTileSize, 1 << std::min(N, 18)));
-
-    start = std::chrono::system_clock::now();
-    cudaSolver.search();
-    end = std::chrono::system_clock::now();
-
-    std::cout << cudaSolver.get_E().min() << std::endl;
-    device.finalize();
-
-    showDuration(end - start);
-#endif
+void createBipartiteGraph(sq::VectorType<real> *b0, sq::VectorType<real> *b1, sq::MatrixType<real> *W,
+                          sq::SizeType N0, sq::SizeType N1) {
+    *b0 = vector<real>(N0);
+    *b1 = vector<real>(N1);
+    *W = matrix<real>(sq::Dim(N1, N0));
 }
 
-template<class real>
-void bipartiteGraphBFSearch(int N0, int N1) {
-    sq::VectorType<real> b0 = vector<real>(N0);
-    sq::VectorType<real> b1 = vector<real>(N1);
-    sq::MatrixType<real> W = matrix<real>(sq::Dim(N1, N0));
-
-    sq::CPUBipartiteGraphBFSearcher<real> cpuSolver;
-    cpuSolver.setProblem(b0, b1, W);
-//    cpuSolver.setTileSize(1 << std::min(N, 20));
-
+template<class real, template<class real> class S>
+void runSearch(S<real> &searcher) {
     auto start = std::chrono::system_clock::now();
-    cpuSolver.search();
+    searcher.search();
     auto end = std::chrono::system_clock::now();
 
-    std::cout << cpuSolver.get_E().min() << std::endl;
-
+    const sq::VectorType<real> &E = searcher.get_E();
+    std::cerr << "Energy : " << E.min() << std::endl << std::endl;
     showDuration(end - start);
-
-#ifdef SQAOD_CUDA_ENABLED
-    sqcuda::Device device;
-    // device.useManagedMemory(true);
-    // device.enableLocalStore(false);
-    device.initialize();
-
-    sqcuda::CUDABipartiteGraphBFSearcher<real> cudaSolver(device);
-    cudaSolver.setProblem(b0, b1, W);
-    // cudaSolver.setTileSize(1 << std::min(N, 20));
-
-    start = std::chrono::system_clock::now();
-    cudaSolver.search();
-    end = std::chrono::system_clock::now();
-
-    std::cout << cudaSolver.get_E().min() << std::endl;
-    device.finalize();
-
-    showDuration(end - start);
-#endif
 }
 
 
 template<class real, template<class real> class A>
-void anneal(A<real> &an, real Ginit, real Gfin, real kT, real tau) {
+void anneal(A<real> &an) {
+    real Ginit = real(5.);
+    real Gfin = real(0.01);
+    real kT = real(0.02);
+    real tau = real(0.99);
+    tau = (real)0.9;
 
+    int nSteps = 0;
+
+    auto start = std::chrono::system_clock::now();
     an.initAnneal();
     an.randomize_q();
     real G = Ginit;
     while (Gfin < G) {
         an.annealOneStep(G, kT);
         G = G * tau;
+        ++nSteps;
         std::cerr << ".";
     }
     an.finAnneal();
+    auto end = std::chrono::system_clock::now();
+
     std::cerr << std::endl;
     const sq::VectorType<real> &E = an.get_E();
     std::cerr << "Energy : " << E.min() << std::endl;
+    std::cerr << "# Steps : " << nSteps << std::endl << std::endl;
+
+    showDuration(end - start);
 }
 
 template<class real>
-void denseGraphAnnealer(int N) {
+void run(const char *precisionStr) {
+    bool runDenseGraphBruteForceSearchers = true;
+    bool runDenseGraphAnnealers = true;
+    bool runBipartiteGraphBruteForceSearchers = true;
+    bool runBipartiteGraphAnnealers = true;
 
-    real Ginit = 5.;
-    real Gfin = 0.01;
-    real kT = 0.02;
-    real tau = 0.99;
+    bool runCPUSolvers = true;
+    bool runCUDASolvers = true;
 
-    sq::MatrixType<real> W = symmetricMatrix<real>(N);
-
-    sq::CPUDenseGraphAnnealer<real> cpuAnnealer;
-    cpuAnnealer.seed(0);
-    // cpuAnnealer.selectAlgorithm(sq::algoNaive);
-    cpuAnnealer.setProblem(W);
-    cpuAnnealer.setPreference(Preference(sq::pnNumTrotters, N / 2));
-    // cpuAnnealer.setNumTrotters(N / 2); /* FIXME: add setNumTrotters for ease of use. */
-
-    auto start = std::chrono::system_clock::now();
-    anneal(cpuAnnealer, Ginit, Gfin, kT, tau);
-    auto end = std::chrono::system_clock::now();
-
-    std::cout << cpuAnnealer.get_E().min() << std::endl;
-
-    showDuration(end - start);
-
-#ifdef SQAOD_CUDA_ENABLED
-    sqcuda::Device device;
-    device.initialize();
-    {
-        sqcuda::CUDADenseGraphAnnealer<real> cudaAnnealer(device);
-        cudaAnnealer.setProblem(W);
-        cudaAnnealer.setPreference(sq::Preference(sq::pnNumTrotters, (N / 2)));
-        cudaAnnealer.seed(1);
-
-        auto start = std::chrono::system_clock::now();
-        anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
-        auto end = std::chrono::system_clock::now();
-        device.synchronize();
-        std::cout << cudaAnnealer.get_E().min() << std::endl;
-        showDuration(end - start);
+    /* Dense graph brute-force searchers */
+    if (runDenseGraphBruteForceSearchers) {
+        int N = 24;
+        sq::random.seed(0);
+        sq::MatrixType<real> W = symmetricMatrix<real>(N);
+        if (runCPUSolvers) {
+            fprintf(stderr, "Dense graph brute-force searcher, CPU, %s\n", precisionStr);
+            sq::CPUDenseGraphBFSearcher<real> searcher;
+            searcher.setProblem(W);
+            runSearch(searcher);
+        }
+        if (runCUDASolvers) {
+            fprintf(stderr, "Dense graph brute-force searcher, CUDA, %s\n", precisionStr);
+            sqcuda::CUDADenseGraphBFSearcher<real> searcher(device);
+            searcher.setProblem(W);
+            runSearch(searcher);
+        }
     }
-    device.finalize();
 
-#endif
-}
-
-
-template<class real>
-void bipartiteGraphAnnealer(int N0, int N1) {
-
-    real Ginit = 5.;
-    real Gfin = 0.01;
-    real kT = 0.02;
-    real tau = 0.9;
-
-    sq::VectorType<real> b0 = vector<real>(N0);
-    sq::VectorType<real> b1 = vector<real>(N1);
-    sq::MatrixType<real> W = matrix<real>(sq::Dim(N1, N0));
-
-    sq::CPUBipartiteGraphAnnealer<real> cpuAnnealer;
-    cpuAnnealer.seed(0);
-    // cpuAnnealer.selectAlgorithm(sq::algoNaive);
-    cpuAnnealer.setProblem(b0, b1, W);
-    sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
-    cpuAnnealer.setPreference(pref);
-
-    auto start = std::chrono::system_clock::now();
-    anneal(cpuAnnealer, Ginit, Gfin, kT, tau);
-    auto end = std::chrono::system_clock::now();
-
-    std::cout << cpuAnnealer.get_E().min() << std::endl;
-
-    showDuration(end - start);
-
-#ifdef SQAOD_CUDA_ENABLED
-    sqcuda::Device device;
-    device.initialize();
-    {
-        sqcuda::CUDABipartiteGraphAnnealer<real> cudaAnnealer(device);
-        cudaAnnealer.setProblem(b0, b1, W);
-        cudaAnnealer.setPreference(sq::Preference(sq::pnNumTrotters, ((N0 + N1) / 2)));
-        cudaAnnealer.seed(65743);
-
-        auto start = std::chrono::system_clock::now();
-        anneal(cudaAnnealer, Ginit, Gfin, kT, tau);
-        auto end = std::chrono::system_clock::now();
-        device.synchronize();
-        std::cout << cudaAnnealer.get_E().min() << std::endl;
-        showDuration(end - start);
+    /* Dense graph annealers */
+    if (runDenseGraphAnnealers) {
+        int N = 1024;
+        sq::random.seed(0);
+        sq::MatrixType<real> W = symmetricMatrix<real>(N);
+        if (runCPUSolvers) {
+            fprintf(stderr, "Dense graph annealer, CPU, %s\n", precisionStr);
+            sq::CPUDenseGraphAnnealer<real> annealer;
+            annealer.setProblem(W);
+            sq::Preference pref(sq::pnNumTrotters, sq::SizeType(N / 2));
+            annealer.setPreference(pref);
+            anneal(annealer);
+        }
+        if (runCUDASolvers) {
+            fprintf(stderr, "Dense graph annealer, CUDA, %s\n", precisionStr);
+            sqcuda::CUDADenseGraphAnnealer<real> annealer(device);
+            annealer.setProblem(W);
+            sq::Preference pref(sq::pnNumTrotters, sq::SizeType(N / 2));
+            annealer.setPreference(pref);
+            anneal(annealer);
+        }
     }
-    device.finalize();
 
-#endif
+    /* Bipartite graph brute-force searchers */
+    if (runBipartiteGraphBruteForceSearchers) {
+        int N0 = 14, N1 = 14;
+        sq::random.seed(0);
+        sq::VectorType<real> b0, b1;
+        sq::MatrixType<real> W;
+        createBipartiteGraph(&b0, &b1, &W, N0, N1);
+        if (runCPUSolvers) {
+            fprintf(stderr, "Bipartite graph brute-force searcher, CPU, %s\n", precisionStr);
+            sq::CPUBipartiteGraphBFSearcher<real> searcher;
+            searcher.setProblem(b0, b1, W);
+            runSearch(searcher);
+        }
+        if (runCUDASolvers) {
+            fprintf(stderr, "Bipartite graph brute-force searcher, CUDA, %s\n", precisionStr);
+            sqcuda::CUDABipartiteGraphBFSearcher<real> searcher(device);
+            searcher.setProblem(b0, b1, W);
+            runSearch(searcher);
+        }
+    }
+
+    /* Bipartite graph annealers */
+    if (runBipartiteGraphAnnealers) {
+        int N0 = 384, N1 = 384;
+        sq::random.seed(0);
+        sq::VectorType<real> b0, b1;
+        sq::MatrixType<real> W;
+        createBipartiteGraph(&b0, &b1, &W, N0, N1);
+        if (runCPUSolvers) {
+            fprintf(stderr, "Bipartite graph annealer, CPU, %s\n", precisionStr);
+            sq::CPUBipartiteGraphAnnealer<real> annealer;
+            annealer.setProblem(b0, b1, W);
+            sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
+            annealer.setPreference(pref);
+            anneal(annealer);
+        }
+        if (runCUDASolvers) {
+            fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
+            sqcuda::CUDABipartiteGraphAnnealer<real> annealer(device);
+            annealer.setProblem(b0, b1, W);
+            sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
+            annealer.setPreference(pref);
+            anneal(annealer);
+        }
+    }
 }
-
-
 
 int main() {
-    sq::random.seed(0);
+    bool runFloatSolvers = true;
+    bool runDoubleSolvers = true;
 
-    int N = 24;
-    denseGraphBFSearch<double>(N);
-    denseGraphBFSearch<float>(N);
+#ifdef SQAOD_CUDA_ENABLED
+    device.initialize();
+#endif
 
-    N = 1024;
-    denseGraphAnnealer<double>(N);
-    denseGraphAnnealer<float>(N);
+    if (runFloatSolvers)
+        run<float>("float");
+    if (runDoubleSolvers)
+        run<double>("double");
 
-    int N0 = 14, N1 = 14;
-    bipartiteGraphBFSearch<float>(N0, N1);
-    bipartiteGraphBFSearch<double>(N0, N1);
-
-    bipartiteGraphAnnealer<float>(N0, N1);
-    bipartiteGraphAnnealer<double>(N0, N1);
-    
+#ifdef SQAOD_CUDA_ENABLED
+    device.finalize();
     cudaDeviceReset();
+#endif
 }
