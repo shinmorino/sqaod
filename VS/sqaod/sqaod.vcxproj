@@ -22,8 +22,10 @@
     <ClInclude Include="..\..\libsqaod\common\undef.h" />
     <ClInclude Include="..\..\libsqaod\common\UniformOp.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.h" />
+    <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphBatchSearch.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSearcher.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.h" />
+    <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBatchSearch.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBFSearcher.h" />
     <ClInclude Include="..\..\libsqaod\cpu\CPUFormulas.h" />
     <ClInclude Include="..\..\libsqaod\cuda\cub_iterator.cuh" />
@@ -63,8 +65,10 @@
     <ClCompile Include="..\..\libsqaod\common\Solver.cpp" />
     <ClCompile Include="..\..\libsqaod\common\UniformOp.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphAnnealer.cpp" />
+    <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphAnnealer.cpp" />
+    <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\libsqaod\cpu\CPUFormulas.cpp" />
     <ClCompile Include="..\..\libsqaod\cuda\CUDABipartiteGraphBFSearcher.cpp" />

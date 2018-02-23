@@ -138,6 +138,12 @@
     <ClInclude Include="..\..\libsqaod\common\Preference.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUBipartiteGraphBatchSearch.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libsqaod\cpu\CPUDenseGraphBatchSearch.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libsqaod\cuda\Device.cpp">
@@ -217,6 +223,12 @@
     </ClCompile>
     <ClCompile Include="..\..\libsqaod\common\Preference.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUBipartiteGraphBatchSearch.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libsqaod\cpu\CPUDenseGraphBatchSearch.cpp">
+      <Filter>cpu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
