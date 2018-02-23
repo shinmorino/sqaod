@@ -1,7 +1,8 @@
 *.pyc
 *.o
 *.lo
-*.in
+Makefile.in
+config.h.in
 *.la
 *~
 *.so
@@ -16,3 +17,11 @@ build
 *.opendb
 *.pyd
 .vs
+.dirstamp
+config.status
+config.log
+aclocal.m4
+libtool
+m4
+incpath
+stamp-h1
