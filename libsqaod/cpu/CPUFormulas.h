@@ -32,10 +32,6 @@ struct DGFuncs {
     void calculate_E(Vector *E,
                      const Vector &h, const Matrix &J, real c, const Matrix &q);
     
-
-    static
-    void batchSearch(real *E, PackedBitsArray *xList,
-                     const Matrix &W, PackedBits xBegin, PackedBits xEnd);
 };
     
 template<class real>
@@ -87,12 +83,6 @@ struct BGFuncs {
     static
     void calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenMatrix *J, real *c,
                        const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W);
-
-    static
-    void batchSearch(real *E, PackedBitsPairArray *xList,
-                     const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W,
-                     PackedBits xBegin0, PackedBits xEnd0,
-                     PackedBits xBegin1, PackedBits xEnd1);
 };
 
 

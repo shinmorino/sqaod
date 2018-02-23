@@ -86,41 +86,6 @@ void DGFuncs<real>::calculate_E(Vector *E,
 }
 
 
-template<class real>
-void DGFuncs<real>::batchSearch(real *E, PackedBitsArray *xList,
-                                const Matrix &W, PackedBits xBegin, PackedBits xEnd) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric, %s.");
-
-    const EigenMappedMatrix eW(mapTo(W));
-    int nBatch = int(xEnd - xBegin);
-    int N = eW.rows();
-
-    real Emin = *E;
-    EigenMatrix eBitsSeq(nBatch, N);
-    EigenMatrix eEbatch(nBatch, 1);
-
-    createBitsSequence(eBitsSeq.data(), N, xBegin, xEnd);
-    EigenMatrix eWx = eW * eBitsSeq.transpose();
-    EigenMatrix prod = eWx.transpose().cwiseProduct(eBitsSeq);
-    eEbatch = prod.rowwise().sum(); 
-    /* FIXME: Parallelize */
-    for (int idx = 0; idx < nBatch; ++idx) {
-        if (eEbatch(idx) > Emin) {
-            continue;
-        }
-        else if (eEbatch(idx) == Emin) {
-            xList->pushBack(xBegin + idx);
-        }
-        else {
-            Emin = eEbatch(idx);
-            xList->clear();
-            xList->pushBack(xBegin + idx);
-        }
-    }
-    *E = Emin;
-}
-
-
 /* rbm */
 
 template<class real>
@@ -235,16 +200,6 @@ void BGFuncs<real>::calculate_E(Vector *E,
 }
 
 
-template<class real>
-void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
-    const Vector &b0, const Vector &b1, const Matrix &W,
-    PackedBits xBegin0, PackedBits xEnd0,
-    PackedBits xBegin1, PackedBits xEnd1) {
-
-    batchSearch(E, xPairs, mapToRowVector(b0), mapToRowVector(b1), mapTo(W),
-                xBegin0, xEnd0, xBegin1, xEnd1);
-}
-
 /* Eigen versions */
 
 template<class real>
@@ -257,47 +212,6 @@ void BGFuncs<real>::calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenM
     *c = real(0.25) * W.sum() + real(0.5) * (b0.sum() + b1.sum());
 }
 
-template<class real>
-void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
-                                const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W,
-                                PackedBits xBegin0, PackedBits xEnd0,
-                                PackedBits xBegin1, PackedBits xEnd1) {
-    int nBatch0 = int(xEnd0 - xBegin0);
-    int nBatch1 = int(xEnd1 - xBegin1);
-
-    real Emin = *E;
-    int N0 = W.cols();
-    int N1 = W.rows();
-    EigenMatrix eBitsSeq0(nBatch0, N0);
-    EigenMatrix eBitsSeq1(nBatch1, N1);
-
-    createBitsSequence(eBitsSeq0.data(), N0, xBegin0, xEnd0);
-    createBitsSequence(eBitsSeq1.data(), N1, xBegin1, xEnd1);
-    
-    EigenMatrix eEBatch = eBitsSeq1 * (W * eBitsSeq0.transpose());
-    eEBatch.rowwise() += (b0 * eBitsSeq0.transpose()).row(0);
-    eEBatch.colwise() += (b1 * eBitsSeq1.transpose()).transpose().col(0);
-    
-    /* FIXME: Parallelize */
-    for (int idx1 = 0; idx1 < nBatch1; ++idx1) {
-        for (int idx0 = 0; idx0 < nBatch0; ++idx0) {
-            real Etmp = eEBatch(idx1, idx0);
-            if (Etmp > Emin) {
-                continue;
-            }
-            else if (Etmp == Emin) {
-                xPairs->pushBack(PackedBitsPairArray::ValueType(xBegin0 + idx0, xBegin1 + idx1));
-            }
-            else {
-                Emin = Etmp;
-                xPairs->clear();
-                xPairs->pushBack(PackedBitsPairArray::ValueType(xBegin0 + idx0, xBegin1 + idx1));
-            }
-        }
-    }
-    *E = Emin;
-}
-    
 
 template struct DGFuncs<double>;
 template struct DGFuncs<float>;
