@@ -116,7 +116,6 @@ void CPUBipartiteGraphBFSearcher<real>::searchRange(PackedBits x0begin, PackedBi
     x1begin = std::min(std::max(0ULL, x1begin), x1max_);
     x1end = std::min(std::max(0ULL, x1end), x1max_);
     
-#undef _OPENMP
 #ifdef _OPENMP
     SizeType nBatchSize1 = (SizeType)(x1end - x1begin);
 #pragma omp parallel
