@@ -179,33 +179,33 @@ void CUDADenseGraphBFSolverTest::tests() {
         TEST_ASSERT(nPart == *d_nPart);
     }
 
-    testcase("DenseGraphBatchSearch") {
-        SizeType N = 20;
-        int tileSize = 4096;
-        MatrixType W = testMatSymmetric<real>(N);
-        real E = std::numeric_limits<real>::max();
-        sq::PackedBitsArray xList;
-        sq::DGFuncs<real>::batchSearch(&E, &xList, W, 0, tileSize);
+    // testcase("DenseGraphBatchSearch") {
+    //     SizeType N = 20;
+    //     int tileSize = 4096;
+    //     MatrixType W = testMatSymmetric<real>(N);
+    //     real E = std::numeric_limits<real>::max();
+    //     sq::PackedBitsArray xList;
+    //     sq::DGFuncs<real>::batchSearch(&E, &xList, W, 0, tileSize);
 
-        DeviceDenseGraphBatchSearch<real> batchSearch;
-        batchSearch.assignDevice(device_);
-        batchSearch.setProblem(W, tileSize);
-        batchSearch.calculate_E(0, tileSize);
-        batchSearch.synchronize();
-        TEST_ASSERT(E == batchSearch.get_Emin());
+    //     DeviceDenseGraphBatchSearch<real> batchSearch;
+    //     batchSearch.assignDevice(device_);
+    //     batchSearch.setProblem(W, tileSize);
+    //     batchSearch.calculate_E(0, tileSize);
+    //     batchSearch.synchronize();
+    //     TEST_ASSERT(E == batchSearch.get_Emin());
 
-        batchSearch.partition_xMins(false);
-        batchSearch.synchronize();
+    //     batchSearch.partition_xMins(false);
+    //     batchSearch.synchronize();
 
-        TEST_ASSERT(batchSearch.get_xMins() == xList);
+    //     TEST_ASSERT(batchSearch.get_xMins() == xList);
 
-        batchSearch.partition_xMins(true);
-        batchSearch.synchronize(); // FIXME: add hook ??
-        sq::PackedBitsArray xList2;
-        xList2.insert(xList.begin(), xList.end());
-        xList2.insert(xList.begin(), xList.end());
-        TEST_ASSERT(batchSearch.get_xMins() == xList2)
-    }
+    //     batchSearch.partition_xMins(true);
+    //     batchSearch.synchronize(); // FIXME: add hook ??
+    //     sq::PackedBitsArray xList2;
+    //     xList2.insert(xList.begin(), xList.end());
+    //     xList2.insert(xList.begin(), xList.end());
+    //     TEST_ASSERT(batchSearch.get_xMins() == xList2)
+    // }
 
     testcase("minimum run") {
         int N = 16;
