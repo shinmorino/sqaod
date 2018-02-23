@@ -33,6 +33,7 @@ void CUDADenseGraphBFSearcher<real>::assignDevice(Device &device) {
 template<class real>
 void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     N_ = W.rows;
     W_ = W;
     om_ = om;

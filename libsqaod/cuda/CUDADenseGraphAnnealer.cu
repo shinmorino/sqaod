@@ -62,7 +62,6 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     N_ = W.rows;
-    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     m_ = N_ / 4;
     om_ = om;
 
