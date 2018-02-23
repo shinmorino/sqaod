@@ -226,19 +226,28 @@ void CPUBipartiteGraphAnnealer<real>::
 annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                        const EigenRowVector &h, const EigenMatrix &J,
                        const EigenMatrix &qFixed, real G, real kT) {
-    EigenMatrix dEmat = J * qFixed.transpose();
     real twoDivM = real(2.) / m_;
     real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
 
-
 #ifndef _OPENMP
+    EigenMatrix dEmat = J * qFixed.transpose();
     {
         Random &random = random_[0];
 #else
+    EigenMatrix dEmat(J.rows(), qFixed.rows());
+    // dEmat = J * qFixed.transpose();  // For debug
 #pragma omp parallel
     {
-        Random &random = random_[omp_get_thread_num()];
+        int threadNum = omp_get_thread_num();
+        int JrowSpan = (J.rows() + nProcs_ - 1) / nProcs_;
+        int JrowBegin = JrowSpan * threadNum;
+        int JrowEnd = std::min(J.rows(), JrowSpan * (threadNum + 1));
+        JrowSpan = JrowEnd - JrowBegin;
+        dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
+#pragma omp barrier
+
+        Random &random = random_[threadNum];
 #pragma omp for
 #endif
         for (int im = 0; im < m_; im += 2) {
