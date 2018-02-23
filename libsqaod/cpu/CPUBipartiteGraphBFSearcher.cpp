@@ -69,8 +69,10 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
         tileSize1_ = (SizeType)x1max_;
         log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
-    for (int idx = 0; idx < nProcs_; ++idx)
+    for (int idx = 0; idx < nProcs_; ++idx) {
         searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
+        searchers_[idx].initSearch();
+    }
 }
 
 template<class real>

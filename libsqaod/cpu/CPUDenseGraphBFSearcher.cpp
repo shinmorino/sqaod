@@ -55,8 +55,10 @@ void CPUDenseGraphBFSearcher<real>::initSearch() {
         tileSize_ = (SizeType)xMax_;
         log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
-    for (int idx = 0; idx < nProcs_; ++idx)
+    for (int idx = 0; idx < nProcs_; ++idx) {
         searchers_[idx].setProblem(W_, tileSize_);
+        searchers_[idx].initSearch();
+    }
 }
 
 
