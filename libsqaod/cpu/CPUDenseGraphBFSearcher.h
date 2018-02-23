@@ -2,14 +2,17 @@
 #pragma once
 
 #include <common/Common.h>
-#include <common/EigenBridge.h>
+
+
+namespace sqaod_cpu {
+/* forwarded decl. */
+template<class real> struct CPUDenseGraphBatchSearch;
+}
 
 namespace sqaod {
 
 template<class real>
 class CPUDenseGraphBFSearcher : public DenseGraphBFSearcher<real> {
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
@@ -18,6 +21,8 @@ class CPUDenseGraphBFSearcher : public DenseGraphBFSearcher<real> {
     using Base::om_;
     using Base::tileSize_;
     using Base::xMax_;
+
+    typedef sqaod_cpu::CPUDenseGraphBatchSearch<real> BatchSearcher;
     
 public:
     CPUDenseGraphBFSearcher();
@@ -44,12 +49,13 @@ public:
     /* void search(); */
     
 private:    
-    real minE_;
+    Matrix W_;
+    real Emin_;
     Vector E_;
-    PackedBitsArray packedXList_;
     BitsArray xList_;
-    EigenMatrix matX_;
-    EigenMatrix W_;
+
+    int nProcs_;
+    BatchSearcher *searchers_;
 };
 
 }
