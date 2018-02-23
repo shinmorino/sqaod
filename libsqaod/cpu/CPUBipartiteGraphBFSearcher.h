@@ -3,14 +3,18 @@
 #define CPU_BIPARTITEGRAPH_BF_SOLVER_H__
 
 #include <common/Common.h>
-#include <common/EigenBridge.h>
+
+
+namespace sqaod_cpu {
+/* forwarded decl. */
+template<class real> struct CPUBipartiteGraphBatchSearch;
+}
+
 
 namespace sqaod {
 
 template<class real>
 class CPUBipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
@@ -23,6 +27,8 @@ class CPUBipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
     using Base::x0max_;
     using Base::x1max_;
 
+    typedef sqaod_cpu::CPUBipartiteGraphBatchSearch<real> BatchSearcher;
+    
 public:
     CPUBipartiteGraphBFSearcher();
     ~CPUBipartiteGraphBFSearcher();
@@ -50,12 +56,14 @@ public:
     /* void search(); */
     
 private:    
-    EigenRowVector b0_, b1_;
-    EigenMatrix W_;
-    real minE_;
+    Vector b0_, b1_;
+    Matrix W_;
+    real Emin_;
     Vector E_;
-    PackedBitsPairArray xPackedPairs_;
-    BitsPairArray xPairs_;
+    BitsPairArray xPairList_;
+
+    int nProcs_;
+    BatchSearcher *searchers_;
 };
 
 }
