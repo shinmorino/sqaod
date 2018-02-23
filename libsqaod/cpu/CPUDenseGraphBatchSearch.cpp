@@ -1,4 +1,5 @@
 #include "CPUDenseGraphBatchSearch.h"
+#include "CPUFormulas.h"
 #include <float.h>
 
 using namespace sqaod_cpu;
@@ -26,25 +27,22 @@ void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBits xBegin, sq::Pack
     int nBatchSize = int(xEnd - xBegin);
     int N = W_.rows;
 
-    EigenMappedMatrix eW(sq::mapTo(W_));
-    
-    EigenMatrix eBitsSeq(nBatchSize, N);
-    sq::createBitsSequence(eBitsSeq.data(), N, xBegin, xEnd);
-
-    EigenMatrix eWx = eW * eBitsSeq.transpose();
-    EigenMatrix prod = eWx.transpose().cwiseProduct(eBitsSeq);
-    sq::EigenColumnVectorType<real> eEbatch = prod.rowwise().sum(); 
+    Matrix bitsSeq(nBatchSize, N);
+    Vector Ebatch;
+    sq::createBitsSequence(bitsSeq.data, N, xBegin, xEnd);
+    sq::DGFuncs<real>::calculate_E(&Ebatch, W_, bitsSeq);
 
     for (int idx = 0; idx < nBatchSize; ++idx) {
-        if (eEbatch(idx) > Emin_) {
+        real Etmp = Ebatch(idx);
+        if (Etmp > Emin_) {
             continue;
         }
-        else if (eEbatch(idx) == Emin_) {
+        else if (Etmp == Emin_) {
             if (packedXList_.size() < tileSize_)
                 packedXList_.pushBack(xBegin + idx);
         }
         else {
-            Emin_ = eEbatch(idx);
+            Emin_ = Etmp;
             packedXList_.clear();
             packedXList_.pushBack(xBegin + idx);
         }
