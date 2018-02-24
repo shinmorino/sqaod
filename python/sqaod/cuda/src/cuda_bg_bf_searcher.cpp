@@ -299,6 +299,7 @@ static
 PyMethodDef cuda_bg_bf_searcher_methods[] = {
 	{"new_searcher", bg_bf_searcher_create, METH_VARARGS},
 	{"delete_searcher", bg_bf_searcher_delete, METH_VARARGS},
+	{"assign_device", bg_bf_searcher_assign_device, METH_VARARGS},
 	{"set_problem", bg_bf_searcher_set_problem, METH_VARARGS},
 	{"set_preferences", bg_bf_searcher_set_preferences, METH_VARARGS},
 	{"get_preferences", bg_bf_searcher_get_preferences, METH_VARARGS},
