@@ -39,8 +39,9 @@ public:
     }
 
     ArrayType(const ArrayType<V> &rhs) {
-        allocate(rhs.capacity());
+        data_ = nullptr;
         size_ = 0;
+        allocate(rhs.capacity());
         insert(rhs.begin(), rhs.end());
     }
 
