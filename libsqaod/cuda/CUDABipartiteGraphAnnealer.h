@@ -39,6 +39,8 @@ public:
 
     ~CUDABipartiteGraphAnnealer();
 
+    void deallocate();
+    
     void assignDevice(Device &device);
 
     virtual Algorithm selectAlgorithm(Algorithm algo);

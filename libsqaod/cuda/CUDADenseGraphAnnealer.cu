@@ -10,24 +10,52 @@ using namespace sqaod_cuda;
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
+    devStream_ = NULL;
+    m_ = (SizeType)-1;
 }
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
+    devStream_ = NULL;
+    m_ = (SizeType)-1;
     assignDevice(device);
 }
 
 template<class real>
 CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
+    if (annState_ & annInitialized)
+        deallocate();
+    d_random_.deallocate();
     if (dotJq_ != NULL) {
         delete dotJq_;
         dotJq_ = NULL;
     }
 }
 
+template<class real>
+void CUDADenseGraphAnnealer<real>::deallocate() {
+    if (annState_ & annInitialized) {
+        devAlloc_->deallocate(d_J_);
+        devAlloc_->deallocate(d_h_);
+        devAlloc_->deallocate(d_c_);
+        devAlloc_->deallocate(d_matq_);
+        devAlloc_->deallocate(d_Jq_);
+        
+        HostObjectAllocator halloc;
+        halloc.deallocate(h_E_);
+        halloc.deallocate(h_q_);
+        E_ = HostVector();
+        
+        flipPosBuffer_.deallocate();
+        realNumBuffer_.deallocate();
+
+        annState_ &= ~(int)(annInitialized | annQSet);
+    }
+}
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
+    throwErrorIf(devAlloc_ != NULL, "Device assigned more than once.");
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
     devFormulas_.assignDevice(device);
@@ -54,6 +82,7 @@ sq::Algorithm CUDADenseGraphAnnealer<real>::getAlgorithm() const {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::seed(unsigned int seed) {
+    throwErrorIf(devStream_ == NULL, "Device not set.");
     d_random_.seed(seed);
     annState_ |= sq::annRandSeedGiven;
 }
@@ -61,6 +90,9 @@ void CUDADenseGraphAnnealer<real>::seed(unsigned int seed) {
 template<class real>
 void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    if (W.rows != N_)
+        deallocate();
+
     N_ = W.rows;
     m_ = N_ / 4;
     om_ = om;
@@ -70,11 +102,15 @@ void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeM
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dW, -1., *dW);
     devFormulas_.calculate_hJc(&d_h_, &d_J_, &d_c_, *dW);
+
+    annState_ |= annProblemSet;
 }
 
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
+    throwErrorIf((annState_ & annQSetReady) == annQSetReady,
+                 "set_x() must be called after initAnneal()");
     /* FIXME: add size check */
     HostVector rx = sq::x_to_q<real>(x);
     DeviceVector *d_x = devStream_->tempDeviceVector<real>(rx.size);
@@ -86,6 +122,8 @@ void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c) const {
+    throwErrorIf(!(annState_ & annProblemSet), "Problem unset.");
+
     devCopy_(h, d_h_);
     devCopy_(J, d_J_);
     devCopy_(c, d_c_);
@@ -94,14 +132,18 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::randomize_q() {
-    /* FIXME: add exception, randomize_q() must be called after calling seed() and setNumTrotters(). */
-   throwErrorIf(d_matq_.d_data == NULL, "randomize_q() must be called after initAnneal()");
-   ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
+    throwErrorIf((annState_ & annQSetReady) == annQSetReady,
+                 "randomize_q() must be called after initAnneal()");
+
+    ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
                   devStream_->getCudaStream());
+   annState_ |= annQSet;
 }
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_E() {
+    throwErrorIf((annState_ & annQSet) == 0, "q is not initialized.");
+
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
     devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, d_matq_);
     real sign = (om_ == optMaximize) ? -1. : 1.;
@@ -110,13 +152,13 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::initAnneal() {
-    if (!(annState_ & annNTrottersGiven))
-        m_ = N_ / 4;
-    annState_ |= annNTrottersGiven;
     if (!(annState_ & annRandSeedGiven))
         d_random_.seed();
     annState_ |= annRandSeedGiven;
 
+    if (annState_ & annInitialized)
+        deallocate();
+    
     HostObjectAllocator halloc;
     devAlloc_->allocate(&d_matq_, m_, N_);
     devAlloc_->allocate(&d_Jq_, m_);
@@ -127,18 +169,16 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     /* estimate # rand nums required per one anneal. */
     int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
     d_random_.setRequiredSize(requiredSize);
-
+    
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq.configure(N_, m_, false);
-
-    if (!(annState_ & annQSet))
-        randomize_q();
-    annState_ |= annQSet;
 }
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::finAnneal() {
+    throwErrorIf((annState_ & annInitialized) == 0, "not initialized.");
+
     devStream_->synchronize();
     syncBits();
     calculate_E();
@@ -254,6 +294,8 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
+    throwErrorIf((annState_ & annQSet) == 0, "q is not initialized.");
+
     if (!flipPosBuffer_.available(m_ * N_))
         flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen);
     if (!realNumBuffer_.available(m_ * N_))

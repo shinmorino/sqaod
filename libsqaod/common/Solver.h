@@ -16,8 +16,13 @@ enum OptimizeMethod {
 enum AnnealerState {
     annNone = 0,
     annRandSeedGiven = 1,
-    annNTrottersGiven = 2,
-    annQSet = 4,
+    annProblemSet = 2,
+    annInitialized = 4,
+    annQSet = 8,
+    
+    annQSetReady = (annProblemSet | annRandSeedGiven | annInitialized),
+
+    annNTrottersGiven = 32,
 };
 
 

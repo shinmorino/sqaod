@@ -87,6 +87,8 @@ public:
     void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
                       const int *d_flipPos);
 private:
+    void deallocate();
+
     enum {
         /* FIXME: parameterise */
         nRunsPerRandGen = 10
