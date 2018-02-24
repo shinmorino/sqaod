@@ -11,6 +11,8 @@ public:
 
     ~DeviceRandomBuffer();
 
+    void deallocate();
+
     void assignDevice(Device &device, DeviceStream *devStream = NULL);
 
     bool available(sqaod::SizeType size) const {
@@ -35,7 +37,6 @@ public:
     }
 
 private:
-    void deallocate();
     void reserve(sqaod::SizeType bufSize);
 
     sqaod::IdxType posInElm_;
