@@ -289,7 +289,7 @@ struct VectorType {
             copyFrom(src);
             return;
         }
-        if (data != nullptr)
+        if ((!mapped) && (data != nullptr))
             free();
         size = src.size;
         data = src.data;
