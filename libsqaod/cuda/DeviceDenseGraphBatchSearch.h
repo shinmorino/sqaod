@@ -52,7 +52,7 @@ public:
                 real val, const real *d_vals, sqaod::SizeType nIn);
 
 private:
-
+    sqaod::SizeType N_;
     DeviceMatrix d_W_;
     sqaod::SizeType tileSize_;
 

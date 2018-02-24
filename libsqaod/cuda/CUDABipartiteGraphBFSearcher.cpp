@@ -22,6 +22,8 @@ CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher(Device &device)
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::~CUDABipartiteGraphBFSearcher() {
+    if (h_packedMinXPairs_.d_data != NULL)
+        HostObjectAllocator().deallocate(h_packedMinXPairs_);
 }
 
 template<class real>
@@ -60,7 +62,6 @@ const sq::VectorType<real> &CUDABipartiteGraphBFSearcher<real>::get_E() const {
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     Emin_ = std::numeric_limits<real>::max();
-    xPackedPairs_.clear();
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
     if (x0max_ < tileSize0_) {
@@ -73,7 +74,10 @@ void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     }
     batchSearch_.setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
     SizeType minXPairsSize = (tileSize0_ * tileSize1_) * 2;
-    HostObjectAllocator().allocate(&h_packedMinXPairs_, minXPairsSize);
+    HostObjectAllocator halloc;
+    if (h_packedMinXPairs_.d_data != NULL)
+        halloc.deallocate(h_packedMinXPairs_);
+    halloc.allocate(&h_packedMinXPairs_, minXPairsSize);
 }
 
 template<class real>

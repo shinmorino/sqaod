@@ -93,6 +93,9 @@ public:
                  const DeviceVector &d_h, const real *d_realRand, real G, real kT);
 
 private:
+    void deallocateProblem();
+    void deallocateInternalObjects();
+
     enum {
         /* FIXME: parameterise */
         nRunsPerRandGen = 10

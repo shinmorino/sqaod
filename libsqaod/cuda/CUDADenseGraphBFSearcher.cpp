@@ -59,6 +59,8 @@ void CUDADenseGraphBFSearcher<real>::initSearch() {
         sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
     }
     batchSearch_.setProblem(W_, tileSize_);
+    if (h_packedXmin_.d_data != NULL)
+        HostObjectAllocator().deallocate(h_packedXmin_);
     HostObjectAllocator().allocate(&h_packedXmin_, tileSize_);
 
     Emin_ = std::numeric_limits<real>::max();

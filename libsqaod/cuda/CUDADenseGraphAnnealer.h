@@ -37,6 +37,8 @@ public:
 
     ~CUDADenseGraphAnnealer();
 
+    void deallocate();
+
     void assignDevice(Device &device);
 
     virtual Algorithm selectAlgorithm(Algorithm algo);
@@ -87,7 +89,8 @@ public:
     void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
                       const int *d_flipPos);
 private:
-    void deallocate();
+    void deallocateProblem();
+    void deallocateInternalObjects();
 
     enum {
         /* FIXME: parameterise */

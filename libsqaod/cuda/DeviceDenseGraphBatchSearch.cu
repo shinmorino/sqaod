@@ -10,6 +10,7 @@ namespace sq = sqaod;
 
 template<class real>
 DeviceDenseGraphBatchSearch<real>::DeviceDenseGraphBatchSearch() {
+    N_ = (sq::SizeType) -1;
 }
 
 
@@ -23,8 +24,10 @@ void DeviceDenseGraphBatchSearch<real>::assignDevice(Device &device) {
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::deallocate() {
+    devAlloc_->deallocate(d_W_);
     devAlloc_->deallocate(d_bitsMat_);
     devAlloc_->deallocate(d_Ebatch_);
+    devAlloc_->deallocate(d_xMins_);
 
     HostObjectAllocator halloc;
     halloc.deallocate(h_nXMins_);
@@ -34,6 +37,9 @@ void DeviceDenseGraphBatchSearch<real>::deallocate() {
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::setProblem(const HostMatrix &W, sq::SizeType tileSize) {
+    if (N_ != W.rows)
+        deallocate();
+    N_ = W.rows;
     devCopy_(&d_W_, W);
     tileSize_ = tileSize;
     devAlloc_->allocate(&d_bitsMat_, tileSize, W.rows);

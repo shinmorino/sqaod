@@ -34,28 +34,39 @@ CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::deallocate() {
-    if (annState_ & annInitialized) {
-        devAlloc_->deallocate(d_J_);
-        devAlloc_->deallocate(d_h_);
-        devAlloc_->deallocate(d_c_);
-        devAlloc_->deallocate(d_matq_);
-        devAlloc_->deallocate(d_Jq_);
-        
-        HostObjectAllocator halloc;
-        halloc.deallocate(h_E_);
-        halloc.deallocate(h_q_);
-        E_ = HostVector();
-        
-        flipPosBuffer_.deallocate();
-        realNumBuffer_.deallocate();
+    if (annState_ & annProblemSet)
+        deallocateProblem();
+    if (annState_ & annInitialized)
+        deallocateInternalObjects();
+}
 
-        annState_ &= ~(int)(annInitialized | annQSet);
-    }
+template<class real>
+void CUDADenseGraphAnnealer<real>::deallocateProblem() {
+    devAlloc_->deallocate(d_J_);
+    devAlloc_->deallocate(d_h_);
+    devAlloc_->deallocate(d_c_);
+    annState_ &= ~(int)annProblemSet;
+}
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::deallocateInternalObjects() {
+    devAlloc_->deallocate(d_matq_);
+    devAlloc_->deallocate(d_Jq_);
+        
+    HostObjectAllocator halloc;
+    halloc.deallocate(h_E_);
+    halloc.deallocate(h_q_);
+    E_ = HostVector();
+        
+    flipPosBuffer_.deallocate();
+    realNumBuffer_.deallocate();
+
+    annState_ &= ~(int)(annInitialized | annQSet);
 }
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
-    throwErrorIf(devAlloc_ != NULL, "Device assigned more than once.");
+    throwErrorIf(devStream_ != NULL, "Device assigned more than once.");
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
     devFormulas_.assignDevice(device);
@@ -109,8 +120,7 @@ void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeM
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
-    throwErrorIf((annState_ & annQSetReady) == annQSetReady,
-                 "set_x() must be called after initAnneal()");
+    throwErrorIf(!(annState_ & annQSetReady), "set_x() must be called after initAnneal()");
     /* FIXME: add size check */
     HostVector rx = sq::x_to_q<real>(x);
     DeviceVector *d_x = devStream_->tempDeviceVector<real>(rx.size);
@@ -132,8 +142,7 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::randomize_q() {
-    throwErrorIf((annState_ & annQSetReady) == annQSetReady,
-                 "randomize_q() must be called after initAnneal()");
+    throwErrorIf(!(annState_ & annQSetReady), "randomize_q() must be called after initAnneal()");
 
     ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
                   devStream_->getCudaStream());
@@ -157,12 +166,13 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     annState_ |= annRandSeedGiven;
 
     if (annState_ & annInitialized)
-        deallocate();
+        deallocateInternalObjects();
     
     HostObjectAllocator halloc;
     devAlloc_->allocate(&d_matq_, m_, N_);
     devAlloc_->allocate(&d_Jq_, m_);
     halloc.allocate(&h_E_, m_);
+    E_.map(h_E_.d_data, h_E_.size);
     halloc.allocate(&h_q_, sq::Dim(m_, N_));
     xlist_.reserve(m_);
     qlist_.reserve(m_);
@@ -173,6 +183,8 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq.configure(N_, m_, false);
+
+    annState_ |= annInitialized;
 }
 
 template<class real>
@@ -183,7 +195,6 @@ void CUDADenseGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
     devStream_->synchronize();
-    E_.map(h_E_.d_data, h_E_.size);
 }
 
 template<class real>
@@ -294,7 +305,8 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
-    throwErrorIf((annState_ & annQSet) == 0, "q is not initialized.");
+    throwErrorIf((annState_ & annInitialized) == 0, "Not initialized.");
+    throwErrorIf((annState_ & annQSet) == 0, "q is not set.");
 
     if (!flipPosBuffer_.available(m_ * N_))
         flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen);
