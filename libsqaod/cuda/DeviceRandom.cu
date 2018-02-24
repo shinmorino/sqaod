@@ -49,27 +49,38 @@ void DeviceRandom::assignDevice(Device &device, DeviceStream *devStream) {
 
 
 void DeviceRandom::setRequiredSize(sqaod::SizeType requiredSize) {
-    assert(d_buffer_ == NULL);
-    requiredSize_ = requiredSize;
     /* Should give 2 chunks, 1 is for roundUp(), other is not to make size == 0 when filled up. */
-    internalBufSize_ = roundUp(requiredSize_, (sqaod::SizeType)randGenSize)+ randGenSize * 2;
+    int newInternalBufSize = roundUp(requiredSize, (sqaod::SizeType)randGenSize)+ randGenSize * 2;
+    if (newInternalBufSize != internalBufSize_) {
+        internalBufSize_ = newInternalBufSize;
+        if (d_buffer_ != NULL)
+            devAlloc_->deallocate(d_buffer_);
+        d_buffer_ = NULL;
+    }
+    requiredSize_ = requiredSize;
 }
         
 
 void DeviceRandom::deallocate() {
-    assert(d_buffer_ != NULL);
-    devAlloc_->deallocate(d_buffer_);
+    deallocateStates();
+    deallocateBuffer();
+}
+
+void DeviceRandom::deallocateStates() {
     devAlloc_->deallocate(d_randStates_);
     devAlloc_->deallocate(d_kernelParams_);
-
-    d_buffer_ = NULL;
     d_randStates_ = NULL;
     d_kernelParams_ = NULL;
 }
 
+void DeviceRandom::deallocateBuffer() {
+    devAlloc_->deallocate(d_buffer_);
+    d_buffer_ = NULL;
+}
+
 void DeviceRandom::seed(unsigned int seed) {
-    if (d_buffer_ != NULL)
-        deallocate();
+    if (d_randStates_ != NULL)
+        deallocateStates();
     devAlloc_->allocate(&d_randStates_, CURAND_NUM_MTGP32_PARAMS);
     devAlloc_->allocate(&d_kernelParams_, CURAND_NUM_MTGP32_PARAMS);
     /* synchronous */

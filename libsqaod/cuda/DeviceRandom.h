@@ -17,7 +17,7 @@ public:
     void assignDevice(Device &device, DeviceStream *devStreram = NULL);
 
     void deallocate();
-
+    
     void setRequiredSize(sqaod::SizeType requiredSize);
 
     void seed();
@@ -34,6 +34,8 @@ public:
     void synchronize();
 
 private:
+    void deallocateStates();
+    void deallocateBuffer();
 
     void deviceRandomMakeKernelState(curandStateMtgp32_t *d_randStates_,
                                      mtgp32_kernel_params_t *kernelParams,
