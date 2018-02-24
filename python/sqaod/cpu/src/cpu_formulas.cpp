@@ -439,46 +439,6 @@ PyObject *cpu_formulas_bipartite_graph_batch_calculate_E_from_qbits(PyObject *mo
     Py_INCREF(Py_None);
     return Py_None;    
 }
-
-    
-/* Solver */
-
-template<class real>
-PyObject *internal_dense_graph_batch_search(PyObject *objE, PyObject *objW, sq::PackedBits xBegin, sq::PackedBits xEnd) {
-    typedef NpMatrixType<real> NpMatrix;
-    const NpMatrix W(objW);
-    NpMatrix E(objE); 
-    /* do the native job */
-    sq::PackedBitsArray xList;
-    sq::DGFuncs<real>::batchSearch(E.mat.data, &xList, W, xBegin, xEnd);
-    /* copy values to PyArray(int8). */
-    int N = W.mat.rows;
-    npy_intp dims[2] = {(int)xList.size(), N};
-    PyArrayObject *objX = (PyArrayObject*)PyArray_EMPTY(2, dims, NPY_INT8, 0);
-    char *data = (char*)PyArray_DATA(objX);
-    memcpy(data, xList.data(), sizeof(char) * xList.size() * N);
-    return (PyObject*)objX;
-}
-    
-
-extern "C"
-PyObject *cpu_formulas_dense_graph_batch_search(PyObject *module, PyObject *args) {
-    PyObject *objE, *objW;
-    PyObject *dtype;
-    unsigned long long xBegin = 0, xEnd = 0;
-    
-    if (!PyArg_ParseTuple(args, "OOiiO", &objE, &objW, &xBegin, &xEnd, &dtype))
-        return NULL;
-    
-    TRY {
-        if (isFloat64(dtype))
-            return internal_dense_graph_batch_search<double>(objE, objW, xBegin, xEnd);
-        else if (isFloat32(dtype))
-            return internal_dense_graph_batch_search<float>(objE, objW, xBegin, xEnd);
-    } CATCH_ERROR_AND_RETURN(Cpu_FormulasError);
-
-    RAISE_INVALID_DTYPE(dtype, Cpu_FormulasError);
-}
     
 }
 
@@ -497,7 +457,6 @@ PyMethodDef annealermethods[] = {
 	{"bipartite_graph_calculate_hJc", cpu_formulas_bipartite_graph_calculate_hJc, METH_VARARGS},
 	{"bipartite_graph_calculate_E_from_qbits", cpu_formulas_bipartite_graph_calculate_E_from_qbits, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E_from_qbits", cpu_formulas_bipartite_graph_batch_calculate_E_from_qbits, METH_VARARGS},
-	{"dense_graph_batch_search", cpu_formulas_dense_graph_batch_search, METH_VARARGS},
 	{NULL},
 };
 
