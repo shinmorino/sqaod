@@ -4,7 +4,7 @@ sudo apt-get install automake autoconf libtool python-dev
 
 pushd .
 
-cd libsqaod
+cd sqaodc
 
 git clone https://github.com/Rlovelett/eigen.git
 cd eigen
@@ -23,6 +23,6 @@ sudo make install
 
 popd
 
-cd python/
+cd sqaodpy/
 python setup.py build
 python setup.py install
