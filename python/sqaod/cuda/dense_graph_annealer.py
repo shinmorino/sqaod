@@ -11,6 +11,7 @@ class DenseGraphAnnealer :
         self.dtype = dtype
         self._ext = dg_annealer.new_annealer(dtype)
 	self.assign_device(device.active_device)
+	self._device = device.active_device;
         if not W is None :
             self.set_problem(W, optimize)
             self.set_preferences(n_trotters = W.shape[0] / 4)
@@ -125,7 +126,7 @@ if __name__ == '__main__' :
     for loop in range(0, nRepeat) :
         G = Ginit
         ann.init_anneal()
-#        ann.randomize_q()
+        ann.randomize_q()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

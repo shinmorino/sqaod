@@ -12,6 +12,7 @@ class BipartiteGraphAnnealer :
         self.dtype = dtype
         self._ext = bg_annealer.new_annealer(dtype)
 	self.assign_device(device.active_device)
+	self._device = device.active_device;
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
 

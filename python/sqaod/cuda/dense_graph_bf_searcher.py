@@ -7,8 +7,11 @@ import cuda_dg_bf_searcher as dg_bf_searcher
 class DenseGraphBFSearcher :
     
     def __init__(self, W, optimize, dtype) :
+        self._cext = dg_bf_searcher
         self.dtype = dtype
+	self._device = device.active_device;
         self._ext = dg_bf_searcher.new_bf_searcher(dtype)
+ 	self.assign_device(device.active_device)
         if not W is None :
             self.set_problem(W, optimize)
             
@@ -61,9 +64,7 @@ class DenseGraphBFSearcher :
 
 
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64) :
-    searcher = DenseGraphBFSearcher(W, optimize, dtype)
-    searcher.assign_device(device.active_device)
-    return searcher
+    return DenseGraphBFSearcher(W, optimize, dtype)
 
 if __name__ == '__main__' :
 
