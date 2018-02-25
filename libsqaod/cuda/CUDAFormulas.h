@@ -3,11 +3,13 @@
 #include <cuda/DeviceFormulas.h>
 
 namespace sqaod_cuda {
-    
+
+namespace sq = sqaod;
+
 template<class real>
 struct CUDADenseGraphFormulas {
-    typedef MatrixType<real> HostMatrix;
-    typedef VectorType<real> HostVector;
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -43,8 +45,8 @@ struct CUDADenseGraphFormulas {
     
 template<class real>
 struct CUDABipartiteGraphFormulas {
-    typedef MatrixType<real> HostMatrix;
-    typedef VectorType<real> HostVector;
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;

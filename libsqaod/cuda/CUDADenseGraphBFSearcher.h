@@ -8,15 +8,17 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class real>
-class CUDADenseGraphBFSearcher : public sqaod::DenseGraphBFSearcher<real> {
+class CUDADenseGraphBFSearcher : public sq::DenseGraphBFSearcher<real> {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceDenseGraphBatchSearch<real> DeviceBatchSearch;
     
-    typedef sqaod::MatrixType<real> Matrix;
-    typedef sqaod::VectorType<real> Vector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
     
 public:
     CUDADenseGraphBFSearcher();
@@ -29,15 +31,15 @@ public:
     
     void assignDevice(Device &device);
     
-    void setProblem(const Matrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
+    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
-    /* void getProblemSize(sqaod::SizeType *N) const; */
+    /* void getProblemSize(sq::SizeType *N) const; */
 
-    /* void setPreference(const sqaod::Preference &pref); */
+    /* void setPreference(const sq::Preference &pref); */
 
-    /* sqaod::Preferences getPreferences() const; */
+    /* sq::Preferences getPreferences() const; */
     
-    const sqaod::BitsArray &get_x() const;
+    const sq::BitsArray &get_x() const;
 
     const Vector &get_E() const;
 
@@ -47,7 +49,7 @@ public:
 
     void finSearch();
 
-    void searchRange(sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+    void searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd);
 
     /* void search(); */
     
@@ -56,13 +58,13 @@ private:
     Matrix W_;
 
     Vector E_;
-    sqaod::BitsArray xList_;
+    sq::BitsArray xList_;
     real Emin_;
     DevicePackedBitsArray h_packedXmin_;
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
 
-    typedef sqaod::DenseGraphBFSearcher<real> Base;
+    typedef sq::DenseGraphBFSearcher<real> Base;
     using Base::N_;
     using Base::om_;
     using Base::tileSize_;

@@ -7,6 +7,8 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 /* light-weight matrix classes for C++ API */
 
 /* FIXME: Support stride and tile, memory alignment of 4-way vector. */
@@ -14,7 +16,7 @@ namespace sqaod_cuda {
 template<class V>
 struct DeviceMatrixType : DeviceObject {
     typedef V ValueType;
-    typedef sqaod::SizeType SizeType;
+    typedef sq::SizeType SizeType;
     
     DeviceMatrixType() {
         d_data = NULL;
@@ -30,24 +32,24 @@ struct DeviceMatrixType : DeviceObject {
     virtual ~DeviceMatrixType() {
     }
 
-    sqaod::Dim dim() const { return sqaod::Dim(rows, cols); }
+    sq::Dim dim() const { return sq::Dim(rows, cols); }
 
-    V *row(sqaod::IdxType row) {
+    V *row(sq::IdxType row) {
         return &d_data[row * cols];
     }
-    const V *row(sqaod::IdxType row) const {
+    const V *row(sq::IdxType row) const {
         return &d_data[row * cols];
     }
 
-    V &operator()(sqaod::IdxType r, sqaod::IdxType c) {
-        assert((0 <= r) && (r < (sqaod::IdxType)rows));
-        assert((0 <= c) && (c < (sqaod::IdxType)cols));
+    V &operator()(sq::IdxType r, sq::IdxType c) {
+        assert((0 <= r) && (r < (sq::IdxType)rows));
+        assert((0 <= c) && (c < (sq::IdxType)cols));
         return d_data[r * cols + c];
     }
     
-    const V &operator()(sqaod::IdxType r, sqaod::IdxType c) const {
-        assert((0 <= r) && (r < (sqaod::IdxType)rows));
-        assert((0 <= c) && (c < (sqaod::IdxType)cols));
+    const V &operator()(sq::IdxType r, sq::IdxType c) const {
+        assert((0 <= r) && (r < (sq::IdxType)rows));
+        assert((0 <= c) && (c < (sq::IdxType)cols));
         return d_data[r * cols + c];
     }
 
@@ -67,7 +69,7 @@ private:
 template<class V>
 struct DeviceVectorType : DeviceObject {
     typedef V ValueType;
-    typedef sqaod::SizeType SizeType;
+    typedef sq::SizeType SizeType;
     
     DeviceVectorType() {
         d_data = NULL;
@@ -79,11 +81,11 @@ struct DeviceVectorType : DeviceObject {
         size = _size;
     }
     
-    V &operator()(sqaod::IdxType idx) {
+    V &operator()(sq::IdxType idx) {
         return d_data[idx];
     }
     
-    const V &operator()(sqaod::IdxType idx) const {
+    const V &operator()(sq::IdxType idx) const {
         return d_data[idx];
     }
 

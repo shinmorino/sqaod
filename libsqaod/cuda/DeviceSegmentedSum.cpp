@@ -1,7 +1,6 @@
 #include "DeviceSegmentedSum.h"
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 template<class V>
 DeviceSegmentedSumType<V>::DeviceSegmentedSumType() {

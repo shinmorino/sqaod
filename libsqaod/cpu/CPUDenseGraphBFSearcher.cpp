@@ -5,14 +5,14 @@
 #include <float.h>
 #include <algorithm>
 
-using namespace sqaod;
+using namespace sqaod_cpu;
 
 template<class real>
 CPUDenseGraphBFSearcher<real>::CPUDenseGraphBFSearcher() {
     tileSize_ = 1024;
 #ifdef _OPENMP
     nProcs_ = omp_get_num_procs();
-    log("# processors: %d", nProcs_);
+    sq::log("# processors: %d", nProcs_);
 #else
     nProcs_ = 1;
 #endif
@@ -26,7 +26,7 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 }
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod om) {
+void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     if (N_ != W.rows)
@@ -35,20 +35,20 @@ void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod o
     N_ = W.rows;
     W_ = W;
     om_ = om;
-    if (om_ == optMaximize)
+    if (om_ == sq::optMaximize)
         W_ *= real(-1.);
 
     setState(solProblemSet);
 }
 
 template<class real>
-const BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
+const sq::BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xList_;
 }
 
 template<class real>
-const VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
+const sq::VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
     throwErrorIfSolutionNotAvailable();
     return E_;
 }
@@ -59,8 +59,8 @@ void CPUDenseGraphBFSearcher<real>::initSearch() {
     xList_.clear();
     xMax_ = 1ull << N_;
     if (xMax_ < tileSize_) {
-        tileSize_ = (SizeType)xMax_;
-        log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
+        tileSize_ = (sq::SizeType)xMax_;
+        sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
     for (int idx = 0; idx < nProcs_; ++idx) {
         searchers_[idx].setProblem(W_, tileSize_);
@@ -74,7 +74,7 @@ template<class real>
 void CPUDenseGraphBFSearcher<real>::finSearch() {
     xList_.clear();
 
-    PackedBitsArray packedXList;
+    sq::PackedBitsArray packedXList;
     for (int idx = 0; idx < nProcs_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
         if (searcher.Emin_ < Emin_) {
@@ -90,21 +90,21 @@ void CPUDenseGraphBFSearcher<real>::finSearch() {
     }
     
     std::sort(packedXList.begin(), packedXList.end());
-    int nSolutions = std::min(tileSize_, (SizeType)packedXList.size());
+    int nSolutions = std::min(tileSize_, (sq::SizeType)packedXList.size());
     for (int idx = 0; idx < nSolutions; ++idx) {
-        Bits bits;
+        sq::Bits bits;
         unpackBits(&bits, packedXList[idx], N_);
         xList_.pushBack(bits);
     }
     E_.resize(nSolutions);
-    mapToRowVector(E_).array() = (om_ == optMaximize) ? - Emin_ : Emin_;
+    mapToRowVector(E_).array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
 
     setState(solSolutionAvailable);
 }
 
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::searchRange(PackedBits xBegin, PackedBits xEnd) {
+void CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd) {
     throwErrorIfNotInitialized();
 
     xBegin = std::min(std::max(0ULL, xBegin), xMax_);
@@ -112,13 +112,13 @@ void CPUDenseGraphBFSearcher<real>::searchRange(PackedBits xBegin, PackedBits xE
     
 // #undef _OPENMP
 #ifdef _OPENMP
-    SizeType nBatchSize = (SizeType)(xEnd - xBegin);
+    sq::SizeType nBatchSize = (sq::SizeType)(xEnd - xBegin);
 #pragma omp parallel
     {
-        SizeType threadNum = omp_get_thread_num();
-        SizeType nBatchSizePerThread = (nBatchSize + nProcs_ - 1) / nProcs_;
-        PackedBits batchBegin = xBegin + nBatchSizePerThread * threadNum;
-        PackedBits batchEnd = xBegin + std::min(nBatchSize, nBatchSizePerThread * (threadNum + 1));
+        sq::SizeType threadNum = omp_get_thread_num();
+        sq::SizeType nBatchSizePerThread = (nBatchSize + nProcs_ - 1) / nProcs_;
+        sq::PackedBits batchBegin = xBegin + nBatchSizePerThread * threadNum;
+        sq::PackedBits batchEnd = xBegin + std::min(nBatchSize, nBatchSizePerThread * (threadNum + 1));
         searchers_[threadNum].searchRange(batchBegin, batchEnd);
     }
 #else
@@ -126,5 +126,5 @@ void CPUDenseGraphBFSearcher<real>::searchRange(PackedBits xBegin, PackedBits xE
 #endif
 }
 
-template class sqaod::CPUDenseGraphBFSearcher<float>;
-template class sqaod::CPUDenseGraphBFSearcher<double>;
+template class CPUDenseGraphBFSearcher<float>;
+template class CPUDenseGraphBFSearcher<double>;

@@ -4,12 +4,10 @@
 #include "cub_iterator.cuh"
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
-
 
 template<class real>
 DeviceBipartiteGraphBatchSearch<real>::DeviceBipartiteGraphBatchSearch() {
-    N0_ = N1_ = (SizeType)-1;
+    N0_ = N1_ = (sq::SizeType)-1;
 }
 
 
@@ -41,8 +39,8 @@ template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::
 setProblem(const HostVector &b0, const HostVector &b1,
            const HostMatrix &W,
-           sqaod::SizeType tileSize0, sqaod::SizeType tileSize1) {
-    if (N0_ != (SizeType)-1)
+           sq::SizeType tileSize0, sq::SizeType tileSize1) {
+    if (N0_ != (sq::SizeType)-1)
         deallocate();
 
     N0_ = b0.size;
@@ -66,8 +64,8 @@ setProblem(const HostVector &b0, const HostVector &b1,
 
 template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::
-calculate_E(sqaod::PackedBits xBegin0, sqaod::PackedBits xEnd0,
-            sqaod::PackedBits xBegin1, sqaod::PackedBits xEnd1) {
+calculate_E(sq::PackedBits xBegin0, sq::PackedBits xEnd0,
+            sq::PackedBits xBegin1, sq::PackedBits xEnd1) {
     xBegin0_ = xBegin0;
     xBegin1_ = xBegin1;
     sq::SizeType nBatch0 = sq::SizeType(xEnd0 - xBegin0);
@@ -225,9 +223,9 @@ struct iterator_traits<SelectOp<real> > : sqaod_cuda::base_iterator_traits<real>
 
 
 template<class real> void DeviceBipartiteGraphBatchSearch<real>::
-select(sqaod::PackedBitsPair *d_out, sqaod::SizeType *d_nOut,
-       sqaod::PackedBits xBegin0, sqaod::PackedBits xBegin1, 
-       real val, const real *d_vals, sqaod::SizeType nIn0, sqaod::SizeType nIn1) {
+select(sq::PackedBitsPair *d_out, sq::SizeType *d_nOut,
+       sq::PackedBits xBegin0, sq::PackedBits xBegin1, 
+       real val, const real *d_vals, sq::SizeType nIn0, sq::SizeType nIn1) {
     SelectInputIterator in(tileSize0_);
 
     SelectOutputIterator out(xBegin0, xBegin1, d_out);

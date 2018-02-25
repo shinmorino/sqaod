@@ -5,7 +5,6 @@
 #include "DeviceSegmentedSum.cuh"
 
 
-namespace sq = sqaod;
 using namespace sqaod_cuda;
 
 template<class real>
@@ -82,7 +81,7 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
+sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     return sq::algoColoring;
 }
 
@@ -127,7 +126,7 @@ const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {
 }
 
 template<class real>
-const BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
+const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xlist_;
 }
@@ -170,7 +169,7 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
 
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
     devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, d_matq_);
-    real sign = (om_ == optMaximize) ? -1. : 1.;
+    real sign = (om_ == sq::optMaximize) ? -1. : 1.;
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 }
 
@@ -226,7 +225,7 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q(h_q_.row(idx), N_);
         qlist_.pushBack(q);
-        Bits x(sqaod::SizeType(qlist_.size()));
+        Bits x(sq::SizeType(qlist_.size()));
         x = x_from_q(q);
         xlist_.pushBack(x);
     }

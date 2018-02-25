@@ -1,6 +1,8 @@
 #include "DeviceMemoryStore.h"
 #include "cudafuncs.h"
 
+using namespace sqaod_cuda;
+
 /*
  * FixedSizedChunks
  */

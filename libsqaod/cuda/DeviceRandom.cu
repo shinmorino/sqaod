@@ -9,7 +9,6 @@
  *         use memory store */
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
     
 enum {
     randGenSize = CURAND_NUM_MTGP32_PARAMS * THREAD_NUM
@@ -48,9 +47,9 @@ void DeviceRandom::assignDevice(Device &device, DeviceStream *devStream) {
 }
 
 
-void DeviceRandom::setRequiredSize(sqaod::SizeType requiredSize) {
+void DeviceRandom::setRequiredSize(sq::SizeType requiredSize) {
     /* Should give 2 chunks, 1 is for roundUp(), other is not to make size == 0 when filled up. */
-    int newInternalBufSize = roundUp(requiredSize, (sqaod::SizeType)randGenSize)+ randGenSize * 2;
+    int newInternalBufSize = roundUp(requiredSize, (sq::SizeType)randGenSize)+ randGenSize * 2;
     if (newInternalBufSize != internalBufSize_) {
         internalBufSize_ = newInternalBufSize;
         if (d_buffer_ != NULL)
@@ -93,7 +92,7 @@ void DeviceRandom::seed() {
     seed((unsigned long)time(NULL));
 }
 
-sqaod::SizeType DeviceRandom::getNRands() const {
+sq::SizeType DeviceRandom::getNRands() const {
     return (end_ - begin_ + internalBufSize_) % internalBufSize_;
 }
 
@@ -134,8 +133,8 @@ void DeviceRandom::generate() {
     }
 }
 
-const unsigned int *DeviceRandom::get(sqaod::SizeType nRands,
-                                      sqaod::IdxType *offset, sqaod::SizeType *posToWrap, int alignment) {
+const unsigned int *DeviceRandom::get(sq::SizeType nRands,
+                                      sq::IdxType *offset, sq::SizeType *posToWrap, int alignment) {
     nRands = roundUp(nRands, (sq::SizeType)alignment);
     if (getNRands() < nRands)
         generate();

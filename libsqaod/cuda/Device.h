@@ -8,6 +8,8 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 class DeviceStream;
 
 class Device {
@@ -47,7 +49,7 @@ public:
 private:
     int devNo_;
     DeviceMemoryStore memStore_;
-    typedef sqaod::ArrayType<DeviceStream*> Streams;
+    typedef sq::ArrayType<DeviceStream*> Streams;
     Streams streams_;
 
     /* Object allocators */

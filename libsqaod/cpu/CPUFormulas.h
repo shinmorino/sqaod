@@ -4,16 +4,18 @@
 #include <common/Common.h>
 #include <common/EigenBridge.h>
 
-namespace sqaod {
-    
+namespace sqaod_cpu {
+
+namespace sq = sqaod;
+
 template<class real>
 struct DGFuncs {
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenMappedMatrixType<real> EigenMappedMatrix;
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
-    typedef EigenMappedRowVectorType<real> EigenMappedRowVector;
-    typedef EigenMappedColumnVectorType<real> EigenMappedColumnVector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
+    typedef sq::EigenMatrixType<real> EigenMatrix;
+    typedef sq::EigenMappedMatrixType<real> EigenMappedMatrix;
+    typedef sq::EigenMappedRowVectorType<real> EigenMappedRowVector;
+    typedef sq::EigenMappedColumnVectorType<real> EigenMappedColumnVector;
     
     static
     void calculate_E(real *E, const Matrix &W, const Vector &x);
@@ -36,13 +38,13 @@ struct DGFuncs {
     
 template<class real>
 struct BGFuncs {
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenMappedMatrixType<real> EigenMappedMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
-    typedef EigenMappedRowVectorType<real> EigenMappedRowVector;
-    typedef EigenMappedColumnVectorType<real> EigenMappedColumnVector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
+    typedef sq::EigenMatrixType<real> EigenMatrix;
+    typedef sq::EigenRowVectorType<real> EigenRowVector;
+    typedef sq::EigenMappedMatrixType<real> EigenMappedMatrix;
+    typedef sq::EigenMappedRowVectorType<real> EigenMappedRowVector;
+    typedef sq::EigenMappedColumnVectorType<real> EigenMappedColumnVector;
 
     static
     void calculate_E(real *E,

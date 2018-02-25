@@ -8,20 +8,22 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class real>
-class CUDABipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
-    typedef sqaod::MatrixType<real> HostMatrix;
-    typedef sqaod::VectorType<real> HostVector;
+class CUDABipartiteGraphBFSearcher : public sq::BipartiteGraphBFSearcher<real> {
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceBipartiteGraphBatchSearch<real> DeviceBatchSearch;
     typedef DeviceMathType<real> DeviceMath;
 
-    typedef sqaod::BitsPairArray BitsPairArray;
-    typedef sqaod::PackedBits PackedBits;
-    typedef sqaod::PackedBitsPairArray PackedBitsPairArray;
-    typedef sqaod::SizeType SizeType;
-    typedef sqaod::IdxType IdxType;
+    typedef sq::BitsPairArray BitsPairArray;
+    typedef sq::PackedBits PackedBits;
+    typedef sq::PackedBitsPairArray PackedBitsPairArray;
+    typedef sq::SizeType SizeType;
+    typedef sq::IdxType IdxType;
     
 public:
     CUDABipartiteGraphBFSearcher();
@@ -36,7 +38,7 @@ public:
     /* void getProblemSize(int *N0, int *N1) const; */
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
-                    sqaod::OptimizeMethod om = sqaod::optMinimize);
+                    sq::OptimizeMethod om = sq::optMinimize);
 
     /* void setPreference(const Preference &pref); */
 
@@ -70,7 +72,7 @@ private:
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
 
-    typedef BipartiteGraphBFSearcher<real> Base;
+    typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::N0_;
     using Base::N1_;
     using Base::om_;

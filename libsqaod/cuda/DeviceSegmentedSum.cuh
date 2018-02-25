@@ -7,9 +7,9 @@
 #include <cuda/DeviceSegmentedSum.h>
 #include <map>
 
-namespace sq = sqaod;
-
 namespace sqaod_cuda {
+
+namespace sq = sqaod;
 
 
 template<int ITEMS, class V>

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <exception>
 
-using namespace sqaod;
+using namespace sqaod_cpu;
 
 template<class real>
 CPUBipartiteGraphBFSearcher<real>::CPUBipartiteGraphBFSearcher() {
@@ -13,7 +13,7 @@ CPUBipartiteGraphBFSearcher<real>::CPUBipartiteGraphBFSearcher() {
     tileSize1_ = 1024;
 #ifdef _OPENMP
     nProcs_ = omp_get_num_procs();
-    log("# processors: %d", nProcs_);
+    sq::log("# processors: %d", nProcs_);
 #else
     nProcs_ = 1;
 #endif
@@ -29,7 +29,7 @@ CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
 
 template<class real>
 void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vector &b1,
-                                                   const Matrix &W, OptimizeMethod om) {
+                                                   const Matrix &W, sq::OptimizeMethod om) {
     if ((N0_!= b0.size) || (N1_ != b1.size))
         clearState(solInitialized);
 
@@ -41,7 +41,7 @@ void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vecto
     b1_ = b1;
     W_ = W;
     om_ = om;
-    if (om_ == optMaximize) {
+    if (om_ == sq::optMaximize) {
         W_ *= real(-1.);
         b0_ *= real(-1.);
         b1_ *= real(-1.);
@@ -51,13 +51,13 @@ void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vecto
 }
 
 template<class real>
-const BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
+const sq::BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xPairList_;
 }
 
 template<class real>
-const VectorType<real> &CPUBipartiteGraphBFSearcher<real>::get_E() const {
+const sq::VectorType<real> &CPUBipartiteGraphBFSearcher<real>::get_E() const {
     throwErrorIfSolutionNotAvailable();
     return E_;
 }
@@ -69,12 +69,12 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
     if (x0max_ < tileSize0_) {
-        tileSize0_ = (SizeType)x0max_;
-        log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
+        tileSize0_ = (sq::SizeType)x0max_;
+        sq::log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
     }
     if (x1max_ < tileSize1_) {
-        tileSize1_ = (SizeType)x1max_;
-        log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
+        tileSize1_ = (sq::SizeType)x1max_;
+        sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
     for (int idx = 0; idx < nProcs_; ++idx) {
         searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
@@ -89,7 +89,7 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
 
     int nMaxSolutions = tileSize0_ + tileSize1_;
     
-    PackedBitsPairArray packedXPairList;
+    sq::PackedBitsPairArray packedXPairList;
     for (int idx = 0; idx < nProcs_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
         if (searcher.Emin_ < Emin_) {
@@ -107,13 +107,13 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
 
     int nSolutions = std::min(nMaxSolutions, (int)packedXPairList.size());
     for (int idx = 0; idx < nSolutions; ++idx) {
-        const PackedBitsPair &pair =  packedXPairList[idx];
-        Bits x0(N0_), x1(N1_);
+        const sq::PackedBitsPair &pair =  packedXPairList[idx];
+        sq::Bits x0(N0_), x1(N1_);
         unpackBits(&x0, pair.bits0, N0_);
         unpackBits(&x1, pair.bits1, N1_);
-        xPairList_.pushBack(BitsPairArray::ValueType(x0, x1));
+        xPairList_.pushBack(sq::BitsPairArray::ValueType(x0, x1));
     }
-    real tmpE = (om_ == optMaximize) ? - Emin_ : Emin_;
+    real tmpE = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
     E_.resize(nSolutions);
     mapToRowVector(E_).array() = tmpE;
 
@@ -121,8 +121,8 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
 }
 
 template<class real>
-void CPUBipartiteGraphBFSearcher<real>::searchRange(PackedBits x0begin, PackedBits x0end,
-                                                    PackedBits x1begin, PackedBits x1end) {
+void CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
+                                                    sq::PackedBits x1begin, sq::PackedBits x1end) {
     throwErrorIfNotInitialized();
     
     x0begin = std::min(std::max(0ULL, x0begin), x0max_);
@@ -131,13 +131,13 @@ void CPUBipartiteGraphBFSearcher<real>::searchRange(PackedBits x0begin, PackedBi
     x1end = std::min(std::max(0ULL, x1end), x1max_);
     
 #ifdef _OPENMP
-    SizeType nBatchSize1 = (SizeType)(x1end - x1begin);
+    sq::SizeType nBatchSize1 = (sq::SizeType)(x1end - x1begin);
 #pragma omp parallel
     {
-        SizeType threadNum = omp_get_thread_num();
-        SizeType nBatchSize1PerThread = (nBatchSize1 + nProcs_ - 1) / nProcs_;
-        PackedBits batchBegin1 = x1begin + nBatchSize1PerThread * threadNum;
-        PackedBits batchEnd1 = x1begin +
+        sq::SizeType threadNum = omp_get_thread_num();
+        sq::SizeType nBatchSize1PerThread = (nBatchSize1 + nProcs_ - 1) / nProcs_;
+        sq::PackedBits batchBegin1 = x1begin + nBatchSize1PerThread * threadNum;
+        sq::PackedBits batchEnd1 = x1begin +
                 std::min(nBatchSize1, nBatchSize1PerThread * (threadNum + 1));
         searchers_[threadNum].searchRange(x0begin, x0end, batchBegin1, batchEnd1);
     }
@@ -146,5 +146,5 @@ void CPUBipartiteGraphBFSearcher<real>::searchRange(PackedBits x0begin, PackedBi
 #endif
 }
 
-template class sqaod::CPUBipartiteGraphBFSearcher<float>;
-template class sqaod::CPUBipartiteGraphBFSearcher<double>;
+template class CPUBipartiteGraphBFSearcher<float>;
+template class CPUBipartiteGraphBFSearcher<double>;

@@ -4,10 +4,11 @@
 #include <cub/cub.cuh>
 #include <cuda/DeviceSegmentedSum.cuh>
 
-using sqaod::SizeType;
-using sqaod::IdxType;
-using sqaod::PackedBits;
 using namespace sqaod_cuda;
+
+using sq::SizeType;
+using sq::IdxType;
+using sq::PackedBits;
 
 
 template<class OutType, class real>  static __global__
@@ -307,7 +308,7 @@ castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
 }
 
 template<class real> void DeviceMathKernelsType<real>::
-toBits(char *bits, const real *values, sqaod::SizeType size) {
+toBits(char *bits, const real *values, sq::SizeType size) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
     castKernel <<<gridDim, blockDim >>> (bits, values, size);
@@ -351,7 +352,7 @@ void copyBroadcastKernel(V *d_buf, const V v, SizeType size) {
 
 
 template<class V> void DeviceCopyKernels::
-copyBroadcast(V *d_buf, const V &v, sqaod::SizeType size) const {
+copyBroadcast(V *d_buf, const V &v, sq::SizeType size) const {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
     copyBroadcastKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, v, size);
@@ -457,7 +458,7 @@ randomize_q_Kernel(V *d_buffer, sq::SizeType size,
 
 
 template<class V>
-void sqaod_cuda::randomize_q(V *d_q, DeviceRandom &d_random, sqaod::SizeType size,
+void sqaod_cuda::randomize_q(V *d_q, DeviceRandom &d_random, sq::SizeType size,
                              cudaStream_t stream) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
@@ -469,6 +470,6 @@ void sqaod_cuda::randomize_q(V *d_q, DeviceRandom &d_random, sqaod::SizeType siz
     DEBUG_SYNC;
 }
 
-template void sqaod_cuda::randomize_q(float *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
-template void sqaod_cuda::randomize_q(double *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
-template void sqaod_cuda::randomize_q(char *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
+template void sqaod_cuda::randomize_q(float *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);
+template void sqaod_cuda::randomize_q(double *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);
+template void sqaod_cuda::randomize_q(char *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);

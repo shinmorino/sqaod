@@ -5,27 +5,29 @@
 
 namespace sqaod_cpu {
 
+namespace sq = sqaod;
+
 template<class real>
 struct CPUBipartiteGraphBatchSearch {
-    typedef sqaod::MatrixType<real> Matrix;
-    typedef sqaod::VectorType<real> Vector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
     
     CPUBipartiteGraphBatchSearch();
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    sqaod::SizeType tileSize0, sqaod::SizeType tileSize1);
+                    sq::SizeType tileSize0, sq::SizeType tileSize1);
 
     void initSearch();
     
-    void searchRange(sqaod::PackedBits x0begin, sqaod::PackedBits x0end,
-                     sqaod::PackedBits x1begin, sqaod::PackedBits x1end);
+    void searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
+                     sq::PackedBits x1begin, sq::PackedBits x1end);
 
     Vector b0_, b1_;
     Matrix W_;
-    sqaod::SizeType tileSize0_;
-    sqaod::SizeType tileSize1_;
+    sq::SizeType tileSize0_;
+    sq::SizeType tileSize1_;
     real Emin_;
-    sqaod::PackedBitsPairArray packedXPairList_;
+    sq::PackedBitsPairArray packedXPairList_;
 };
 
 

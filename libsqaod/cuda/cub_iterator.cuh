@@ -3,9 +3,9 @@
 #include <common/types.h>
 #include <iterator>
 
-namespace sq = sqaod;
-
 namespace sqaod_cuda {
+
+namespace sq = sqaod;
 
 template<class real>
 struct AddAssign {

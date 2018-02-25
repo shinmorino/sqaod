@@ -10,6 +10,8 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 class Device;
 
 enum MatrixOp {
@@ -30,7 +32,7 @@ enum BatchOp {
 
 template<class real>
 struct DeviceMathType {
-    typedef sqaod::SizeType SizeType;
+    typedef sq::SizeType SizeType;
     
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
@@ -88,8 +90,8 @@ struct DeviceMathType {
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
     
     /* get matrix shape resulting from matrix arithmetic */
-    sqaod::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);
-    sqaod::Dim getProductShape(const DeviceMatrix &A, MatrixOp opA,
+    sq::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);
+    sq::Dim getProductShape(const DeviceMatrix &A, MatrixOp opA,
                                const DeviceMatrix &B, MatrixOp opB);
     SizeType getProductShape(const DeviceMatrix &A, MatrixOp opA, const DeviceVector &x);
     SizeType getProductShape(const DeviceVector &x, const DeviceMatrix &A, MatrixOp opA);
@@ -101,7 +103,7 @@ struct DeviceMathType {
 
     /* temporary objects */
     DeviceMatrix *tempDeviceMatrix(int rows, int cols, const char *signature = NULL);
-    DeviceMatrix *tempDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
+    DeviceMatrix *tempDeviceMatrix(const sq::Dim &dim, const char *signature = NULL);
     DeviceVector *tempDeviceVector(SizeType size, const char *signature = NULL);
     DeviceScalar *tempDeviceScalar(const char *signature = NULL);
     void *tempAllocate(SizeType size);
@@ -159,7 +161,7 @@ DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(int rows, int col
 }
 
 template<class real> inline
-DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(const sqaod::Dim &dim,
+DeviceMatrixType<real> *DeviceMathType<real>::tempDeviceMatrix(const sq::Dim &dim,
                                                                const char *signature) {
     return devStream_->tempDeviceMatrix<real>(dim.rows, dim.cols, signature);
 }

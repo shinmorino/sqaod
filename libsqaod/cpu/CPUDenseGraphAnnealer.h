@@ -4,15 +4,17 @@
 #include <common/Common.h>
 #include <common/EigenBridge.h>
 
-namespace sqaod {
+namespace sqaod_cpu {
+
+namespace sq = sqaod;
 
 template<class real>
-class CPUDenseGraphAnnealer : public DenseGraphAnnealer<real> {
+class CPUDenseGraphAnnealer : public sq::DenseGraphAnnealer<real> {
 
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
+    typedef sq::EigenMatrixType<real> EigenMatrix;
+    typedef sq::EigenRowVectorType<real> EigenRowVector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
 
 public:
     CPUDenseGraphAnnealer();
@@ -20,13 +22,13 @@ public:
 
     void seed(unsigned int seed);
 
-    Algorithm selectAlgorithm(enum Algorithm algo);
+    sq::Algorithm selectAlgorithm(enum sq::Algorithm algo);
 
-    Algorithm getAlgorithm() const;
+    sq::Algorithm getAlgorithm() const;
     
     /* void getProblemSize(SizeType *N) const; */
 
-    void setProblem(const Matrix &W, OptimizeMethod om = sqaod::optMinimize);
+    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
     /* void setPreference(const Preference &pref); */
 
@@ -34,11 +36,11 @@ public:
 
     const Vector &get_E() const;
 
-    const BitsArray &get_x() const;
+    const sq::BitsArray &get_x() const;
 
-    void set_x(const Bits &x);
+    void set_x(const sq::Bits &x);
 
-    const BitsArray &get_q() const;
+    const sq::BitsArray &get_q() const;
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
 
@@ -66,17 +68,17 @@ private:
 
     void syncBits();
     
-    Random *random_;
+    sq::Random *random_;
     int nProcs_;
     Vector E_;
-    BitsArray bitsX_;
-    BitsArray bitsQ_;
+    sq::BitsArray bitsX_;
+    sq::BitsArray bitsQ_;
     EigenMatrix matQ_;
     EigenRowVector h_;
     EigenMatrix J_;
     real c_;
 
-    typedef DenseGraphAnnealer<real> Base;
+    typedef sq::DenseGraphAnnealer<real> Base;
     using Base::om_;
     using Base::N_;
     using Base::m_;

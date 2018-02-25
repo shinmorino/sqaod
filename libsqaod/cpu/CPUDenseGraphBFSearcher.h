@@ -5,16 +5,16 @@
 
 
 namespace sqaod_cpu {
+
+namespace sq = sqaod;
+
 /* forwarded decl. */
 template<class real> struct CPUDenseGraphBatchSearch;
-}
-
-namespace sqaod {
 
 template<class real>
-class CPUDenseGraphBFSearcher : public DenseGraphBFSearcher<real> {
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
+class CPUDenseGraphBFSearcher : public sq::DenseGraphBFSearcher<real> {
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
 
     typedef sqaod_cpu::CPUDenseGraphBatchSearch<real> BatchSearcher;
     
@@ -24,7 +24,7 @@ public:
 
     /* void getProblemSize(SizeType *N) const; */
 
-    void setProblem(const Matrix &W, OptimizeMethod om = optMinimize);
+    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
     /* Preferences getPreferences() const; */
 
@@ -32,7 +32,7 @@ public:
 
     const Vector &get_E() const;
 
-    const BitsArray &get_x() const;
+    const sq::BitsArray &get_x() const;
     
     void initSearch();
 
@@ -46,12 +46,12 @@ private:
     Matrix W_;
     real Emin_;
     Vector E_;
-    BitsArray xList_;
+    sq::BitsArray xList_;
 
     int nProcs_;
     BatchSearcher *searchers_;
 
-    typedef DenseGraphBFSearcher<real> Base;
+    typedef sq::DenseGraphBFSearcher<real> Base;
     using Base::N_;
     using Base::om_;
     using Base::tileSize_;

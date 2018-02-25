@@ -4,7 +4,6 @@
 #include <float.h>
 
 using namespace sqaod_cpu;
-namespace sq = sqaod;
 
 template<class real>
 CPUBipartiteGraphBatchSearch<real>::CPUBipartiteGraphBatchSearch() {
@@ -12,7 +11,7 @@ CPUBipartiteGraphBatchSearch<real>::CPUBipartiteGraphBatchSearch() {
 
 template<class real> void CPUBipartiteGraphBatchSearch<real>::
 setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-           sqaod::SizeType tileSize0, sqaod::SizeType tileSize1) {
+           sq::SizeType tileSize0, sq::SizeType tileSize1) {
     b0_.map(b0.data, b0.size);
     b1_.map(b1.data, b1.size);
     W_.map(W.data, W.rows, W.cols);
@@ -45,7 +44,7 @@ searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
     int maxNSolutions = W_.rows + W_.cols;
     Matrix EBatch;
 
-    sq::BGFuncs<real>::calculate_E_2d(&EBatch, b0_, b1_, W_, bitsSeq0, bitsSeq1);
+    BGFuncs<real>::calculate_E_2d(&EBatch, b0_, b1_, W_, bitsSeq0, bitsSeq1);
     for (int idx1 = 0; idx1 < nBatchSize1; ++idx1) {
         for (int idx0 = 0; idx0 < nBatchSize0; ++idx0) {
             real Etmp = EBatch(idx1, idx0);

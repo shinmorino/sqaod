@@ -6,6 +6,7 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
 
 template<class real>
 struct DeviceConstScalarsType {
@@ -30,7 +31,7 @@ private:
     static const int nHostConsts_;
     real *d_consts_;
 
-    typedef sqaod::ArrayType<DeviceScalar*> ConstReg;
+    typedef sq::ArrayType<DeviceScalar*> ConstReg;
     ConstReg constReg_;
 
     const DeviceScalar *d_one_;

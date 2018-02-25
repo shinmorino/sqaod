@@ -30,7 +30,7 @@ void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBits xBegin, sq::Pack
     Matrix bitsSeq(nBatchSize, N);
     Vector Ebatch;
     sq::createBitsSequence(bitsSeq.data, N, xBegin, xEnd);
-    sq::DGFuncs<real>::calculate_E(&Ebatch, W_, bitsSeq);
+    DGFuncs<real>::calculate_E(&Ebatch, W_, bitsSeq);
 
     for (int idx = 0; idx < nBatchSize; ++idx) {
         real Etmp = Ebatch(idx);

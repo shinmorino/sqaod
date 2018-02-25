@@ -6,6 +6,9 @@
 #include <cuda/DeviceObject.h>
 #include <common/Array.h>
 
+namespace sqaod_cuda {
+
+namespace sq = sqaod;
 
 /* ToDo: This implementatin is enough for now.  Will be reconsidered when needed. */
 
@@ -134,7 +137,7 @@ private:
     HeapMap heapMap_;
     FixedSizedChunks fixedSizedChunks_;
     /* Chunks allocated by cudaMalloc(). */
-    sqaod::ArrayType<void*> d_mems_;
+    sq::ArrayType<void*> d_mems_;
 
     enum HeapSource {
         fromNone = 0,
@@ -163,5 +166,6 @@ private:
     ChunkPropSet chunkPropSet_;
 };
 
+}
 
 #endif

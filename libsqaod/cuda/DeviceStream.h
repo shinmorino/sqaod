@@ -8,6 +8,8 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class real> struct DeviceMatrixType;
 template<class real> struct DeviceVectorType;
 template<class real> struct DeviceScalarType;
@@ -30,16 +32,16 @@ public:
     void *allocate(size_t size, const char *signature = NULL);
 
     template<class V>
-    void allocate(V **pv, sqaod::SizeType size, const char *signature = NULL);
+    void allocate(V **pv, sq::SizeType size, const char *signature = NULL);
 
     template<class V>
-    DeviceMatrixType<V> *tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature = NULL);
+    DeviceMatrixType<V> *tempDeviceMatrix(sq::SizeType rows, sq::SizeType cols, const char *signature = NULL);
 
     template<class V>
-    DeviceMatrixType<V> *tempDeviceMatrix(const sqaod::Dim &dim, const char *signature = NULL);
+    DeviceMatrixType<V> *tempDeviceMatrix(const sq::Dim &dim, const char *signature = NULL);
 
     template<class V>
-    DeviceVectorType<V> *tempDeviceVector(sqaod::SizeType size, const char *signature = NULL);
+    DeviceVectorType<V> *tempDeviceVector(sq::SizeType size, const char *signature = NULL);
 
     template<class V>
     DeviceScalarType<V> *tempDeviceScalar(const char *signature = NULL);
@@ -61,19 +63,19 @@ private:
     int nThreadsToFillDevice_;
     cudaStream_t stream_;
     DeviceMemoryStore *memStore_;
-    typedef sqaod::ArrayType<DeviceObject*> DeviceObjects;
+    typedef sq::ArrayType<DeviceObject*> DeviceObjects;
     DeviceObjects tempObjects_;
     cublasHandle_t cublasHandle_;
 };
 
 
 template<class V>
-void DeviceStream::allocate(V **pv, sqaod::SizeType size, const char *signature) {
+void DeviceStream::allocate(V **pv, sq::SizeType size, const char *signature) {
     *pv = (V*)allocate(sizeof(V) * size, signature);
 }
 
 template<class V> inline
-DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sqaod::SizeType rows, sqaod::SizeType cols, const char *signature) {
+DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sq::SizeType rows, sq::SizeType cols, const char *signature) {
     void *d_pv = memStore_->allocate(sizeof(V) * rows * cols);
     DeviceMatrixType<V> *mat = new DeviceMatrixType<V>((V*)d_pv, rows, cols);
     tempObjects_.pushBack(mat);
@@ -81,12 +83,12 @@ DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sqaod::SizeType rows, sqaod:
 }
 
 template<class V> inline
-DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(const sqaod::Dim &dim, const char *signature) {
+DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(const sq::Dim &dim, const char *signature) {
     return tempDeviceMatrix<V>(dim.rows, dim.cols, signature);
 }
 
 template<class V> inline
-DeviceVectorType<V> *DeviceStream::tempDeviceVector(sqaod::SizeType size, const char *signature) {
+DeviceVectorType<V> *DeviceStream::tempDeviceVector(sq::SizeType size, const char *signature) {
     void *d_pv = memStore_->allocate(sizeof(V) * size);
     DeviceVectorType<V> *vec = new DeviceVectorType<V>((V*)d_pv, size);
     tempObjects_.pushBack(vec);

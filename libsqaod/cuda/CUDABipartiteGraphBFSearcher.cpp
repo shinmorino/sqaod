@@ -5,7 +5,6 @@
 #include <exception>
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher() {
@@ -43,7 +42,7 @@ void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
-                                                    const HostMatrix &W, sqaod::OptimizeMethod om) {
+                                                    const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!deviceAssigned_, "Device not set.");
 
     N0_ = b0.size;
@@ -114,7 +113,7 @@ void CUDABipartiteGraphBFSearcher<real>::finSearch() {
     E_ = Emin_;
     if (om_ == sq::optMaximize)
         E_ *= real(-1.);
-    for (sqaod::IdxType idx = 0; idx < (sqaod::IdxType)nXMin; ++idx) {
+    for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
         sq::Bits bits0, bits1;
         unpackBits(&bits0, h_packedMinXPairs_[idx].bits0, N0_);
         unpackBits(&bits1, h_packedMinXPairs_[idx].bits1, N1_);

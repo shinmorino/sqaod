@@ -12,13 +12,15 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class real>
-class CUDABipartiteGraphAnnealer : public sqaod::BipartiteGraphAnnealer<real> {
-    typedef sqaod::MatrixType<real> HostMatrix;
-    typedef sqaod::VectorType<real> HostVector;
-    typedef sqaod::BitsPairArray BitsPairArray;
-    typedef sqaod::Bits Bits;
-    typedef sqaod::SizeType SizeType;
+class CUDABipartiteGraphAnnealer : public sq::BipartiteGraphAnnealer<real> {
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
+    typedef sq::BitsPairArray BitsPairArray;
+    typedef sq::Bits Bits;
+    typedef sq::SizeType SizeType;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -35,16 +37,16 @@ public:
     
     void assignDevice(Device &device);
 
-    virtual Algorithm selectAlgorithm(Algorithm algo);
+    virtual sq::Algorithm selectAlgorithm(sq::Algorithm algo);
     
-    virtual Algorithm getAlgorithm() const;
+    virtual sq::Algorithm getAlgorithm() const;
     
     void seed(unsigned int seed);
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
-                    sqaod::OptimizeMethod om = sqaod::optMinimize);
+                    sq::OptimizeMethod om = sq::optMinimize);
 
     /* Preferences getPreferences() const; */
 
@@ -52,7 +54,7 @@ public:
 
     const HostVector &get_E() const;
 
-    const BitsPairArray &get_x() const;
+    const sq::BitsPairArray &get_x() const;
 
     void set_x(const Bits &x0, const Bits &x1);
 
@@ -114,7 +116,7 @@ private:
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 
-    typedef sqaod::BipartiteGraphAnnealer<real> Base;
+    typedef sq::BipartiteGraphAnnealer<real> Base;
     using Base::om_;
     using Base::N0_;
     using Base::N1_;

@@ -6,9 +6,11 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class V>
 struct DeviceArrayType : DeviceObject {
-    DeviceArrayType() : d_data(nullptr), size((sqaod::SizeType)-1) { }
+    DeviceArrayType() : d_data(nullptr), size((sq::SizeType)-1) { }
     
     DeviceArrayType(const DeviceArrayType<V>&& arr) noexcept {
         DeviceArrayType newArr;
@@ -17,32 +19,32 @@ struct DeviceArrayType : DeviceObject {
         capacity = arr.capacity;
         arr.d_data = nullptr;
         arr.size = 0;
-        arr.capacity = (sqaod::SizeType)-1;
+        arr.capacity = (sq::SizeType)-1;
     }
 
-    V &operator[](sqaod::IdxType idx) {
+    V &operator[](sq::IdxType idx) {
         return d_data[idx];
     }
 
-    const V &operator[](sqaod::IdxType idx) const {
+    const V &operator[](sq::IdxType idx) const {
         return d_data[idx];
     }
 
     V *d_data;
-    sqaod::SizeType capacity;
-    sqaod::SizeType size;
+    sq::SizeType capacity;
+    sq::SizeType size;
 
 private:
     DeviceArrayType(const DeviceArrayType<V>&);
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = nullptr;
-        size = (sqaod::SizeType)-1;
+        size = (sq::SizeType)-1;
     }
 };
 
-typedef DeviceArrayType<sqaod::PackedBits> DevicePackedBitsArray;
-typedef DeviceArrayType<sqaod::PackedBitsPair> DevicePackedBitsPairArray;
+typedef DeviceArrayType<sq::PackedBits> DevicePackedBitsArray;
+typedef DeviceArrayType<sq::PackedBitsPair> DevicePackedBitsPairArray;
 typedef DeviceArrayType<char> DeviceBitArray;
 
 }

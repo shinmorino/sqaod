@@ -4,9 +4,7 @@
 #include <algorithm>
 #include <exception>
 
-
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {
@@ -76,7 +74,7 @@ void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-sq::Algorithm CUDABipartiteGraphAnnealer<real>::selectAlgorithm(Algorithm algo) {
+sq::Algorithm CUDABipartiteGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     return sq::algoColoring;
 }
 
@@ -123,13 +121,13 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
 }
 
 template<class real>
-const VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
+const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
     throwErrorIfSolutionNotAvailable();
     return E_;
 }
 
 template<class real>
-const BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
+const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return bitsPairX_;
 }
@@ -165,7 +163,7 @@ void CUDABipartiteGraphAnnealer<real>::get_hJc(HostVector *h0, HostVector *h1,
 
 
 template<class real>
-const BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
+const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
     return bitsPairQ_;
 }
 
@@ -186,7 +184,7 @@ void CUDABipartiteGraphAnnealer<real>::calculate_E() {
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
     devFormulas_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
                              d_matq0_, d_matq1_);
-    real sign = (om_ == optMaximize) ? -1. : 1.;
+    real sign = (om_ == sq::optMaximize) ? -1. : 1.;
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 }
 
@@ -356,7 +354,7 @@ void CUDABipartiteGraphAnnealer<real>::syncBits() {
     devFormulas_.devMath.toBits(&h_q1_, d_matq1_);
     devStream_->synchronize();
 
-    for (int idx = 0; idx < IdxType(m_); ++idx) {
+    for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q0(h_q0_.row(idx), N0_);
         Bits q1(h_q1_.row(idx), N1_);
         bitsPairQ_.pushBack(BitsPairArray::ValueType(q0, q1));

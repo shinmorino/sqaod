@@ -7,9 +7,11 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 template<class real>
 struct DeviceMathKernelsType {
-    typedef sqaod::SizeType SizeType;
+    typedef sq::SizeType SizeType;
 
     void scale(real *d_y, real alpha, const real *d_x, SizeType size, real addAssignFactor);
     void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
@@ -38,7 +40,7 @@ struct DeviceMathKernelsType {
               const real *d_alpha, const real *d_A, int lda, const real *d_B, int ldb,
               const real *d_beta, real *d_C, int ldc);
 
-    void toBits(char *bits, const real *values, sqaod::SizeType size);
+    void toBits(char *bits, const real *values, sq::SizeType size);
 
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
@@ -56,11 +58,11 @@ private:
 struct DeviceCopyKernels {
 
     template<class V>
-    void copyBroadcast(V *d_buf, const V &v, sqaod::SizeType nElms) const;
+    void copyBroadcast(V *d_buf, const V &v, sq::SizeType nElms) const;
 
     template<class V>
-    void copyBroadcastStrided(V *d_buf, const V &v, sqaod::SizeType size,
-                              sqaod::SizeType stride, sqaod::IdxType offset) const;
+    void copyBroadcastStrided(V *d_buf, const V &v, sq::SizeType size,
+                              sq::SizeType stride, sq::IdxType offset) const;
 
     DeviceCopyKernels(DeviceStream *stream = NULL);
 
@@ -74,12 +76,12 @@ private:
 
 template<class V>
 void generateBitsSequence(V *d_data, int N,
-                          sqaod::PackedBits xBegin, sqaod::PackedBits xEnd,
+                          sq::PackedBits xBegin, sq::PackedBits xEnd,
                           cudaStream_t stream);
 
 
 template<class V>
-void randomize_q(V *d_matq, DeviceRandom &d_random, sqaod::SizeType size, cudaStream_t stream);
+void randomize_q(V *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);
 
 }  // namespace sqaod_cuda
 

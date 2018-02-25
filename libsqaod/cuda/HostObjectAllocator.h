@@ -6,8 +6,9 @@
 
 namespace sqaod_cuda {
 
-/* FIXME: memory store */
+namespace sq = sqaod;
 
+/* FIXME: memory store */
 
 struct HostObjectAllocator {
 
@@ -18,44 +19,44 @@ struct HostObjectAllocator {
     /* pinned memory allocator for CPU objects */
 
     template<class V>
-    void allocate(sqaod::MatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols);
+    void allocate(sq::MatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols);
 
     template<class V>
-    void allocate(sqaod::MatrixType<V> *mat, const sqaod::Dim &dim);
+    void allocate(sq::MatrixType<V> *mat, const sq::Dim &dim);
 
     template<class V>
-    void allocate(sqaod::VectorType<V> *vec, sqaod::SizeType size);
+    void allocate(sq::VectorType<V> *vec, sq::SizeType size);
 
     /* Pinned memory allocation for device objects */
 
     template<class V>
-    void allocate(DeviceMatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols);
+    void allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols);
 
     template<class V>
-    void allocate(DeviceMatrixType<V> *mat, const sqaod::Dim &dim);
+    void allocate(DeviceMatrixType<V> *mat, const sq::Dim &dim);
 
     template<class V>
-    void allocate(DeviceVectorType<V> *vec, sqaod::SizeType size);
+    void allocate(DeviceVectorType<V> *vec, sq::SizeType size);
 
     template<class V>
     void allocate(DeviceScalarType<V> *sc);
 
     template<class V>
-    void allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity);
+    void allocate(DeviceArrayType<V> *arr, sq::SizeType capacity);
 
     /* allocating host memory if data member is Null. */
 
     template<class V>
-    void allocateIfNull(sqaod::MatrixType<V> *mat, const sqaod::Dim &dim);
+    void allocateIfNull(sq::MatrixType<V> *mat, const sq::Dim &dim);
 
     template<class V>
-    void allocateIfNull(sqaod::VectorType<V> *vec, const sqaod::SizeType size);
+    void allocateIfNull(sq::VectorType<V> *vec, const sq::SizeType size);
 
     template<class V>
     void allocateIfNull(DeviceScalarType<V> *sc);
 
     template<class V>
-    void allocateIfNull(DeviceArrayType<V> *arr, sqaod::SizeType capacity);
+    void allocateIfNull(DeviceArrayType<V> *arr, sq::SizeType capacity);
     
     template<class T>
     void deallocate(T &obj);
@@ -63,37 +64,37 @@ struct HostObjectAllocator {
 
 
 template<class V> inline
-void HostObjectAllocator::allocate(sqaod::MatrixType<V> *mat, const sqaod::Dim &dim) {
+void HostObjectAllocator::allocate(sq::MatrixType<V> *mat, const sq::Dim &dim) {
     return allocate(mat, dim.rows, dim.cols);
 }
 
 template<class V> inline
-void HostObjectAllocator::allocate(sqaod::MatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols) {
+void HostObjectAllocator::allocate(sq::MatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
     mat->data = allocate(sizeof(V) * rows * cols);
     mat->rows = rows;
     mat->cols = cols;
 }
 
 template<class V> inline
-void HostObjectAllocator::allocate(sqaod::VectorType<V> *vec, sqaod::SizeType size) {
+void HostObjectAllocator::allocate(sq::VectorType<V> *vec, sq::SizeType size) {
     vec->data = (V*)allocate(sizeof(V) * size);
     vec->size = size;
 }
 
 template<class V> inline void HostObjectAllocator::
-allocate(DeviceMatrixType<V> *mat, sqaod::SizeType rows, sqaod::SizeType cols) {
+allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
     mat->d_data = (V*)allocate(sizeof(V) * rows * cols);
     mat->rows = rows;
     mat->cols = cols;
 }
 
 template<class V> inline void HostObjectAllocator::
-allocate(DeviceMatrixType<V> *mat, const sqaod::Dim &dim) {
+allocate(DeviceMatrixType<V> *mat, const sq::Dim &dim) {
     return allocate(mat, dim.rows, dim.cols);
 }
 
 template<class V> inline void HostObjectAllocator::
-allocate(DeviceVectorType<V> *vec, sqaod::SizeType size) {
+allocate(DeviceVectorType<V> *vec, sq::SizeType size) {
     vec->d_data = (V*)allocate(sizeof(V) * size);
     vec->size = size;
 }
@@ -104,20 +105,20 @@ void HostObjectAllocator::allocate(DeviceScalarType<V> *sc) {
 }
 
 template<class V> inline
-void HostObjectAllocator::allocate(DeviceArrayType<V> *arr, sqaod::SizeType capacity) {
+void HostObjectAllocator::allocate(DeviceArrayType<V> *arr, sq::SizeType capacity) {
     arr->d_data = (V*)allocate(sizeof(V) * capacity);
     arr->capacity = capacity;
     arr->size = 0;
 }
 
 template<class V> inline
-void HostObjectAllocator::allocateIfNull(sqaod::MatrixType<V> *mat, const sqaod::Dim &dim) {
+void HostObjectAllocator::allocateIfNull(sq::MatrixType<V> *mat, const sq::Dim &dim) {
     if (mat->data == NULL)
         allocate(mat, dim);
 }
 
 template<class V> inline
-void HostObjectAllocator::allocateIfNull(sqaod::VectorType<V> *vec, const sqaod::SizeType size) {
+void HostObjectAllocator::allocateIfNull(sq::VectorType<V> *vec, const sq::SizeType size) {
     if (vec->data == NULL)
         allocate(vec, size);
 }
@@ -129,7 +130,7 @@ void HostObjectAllocator::allocateIfNull(DeviceScalarType<V> *sc) {
 }
 
 template<class V> inline
-void HostObjectAllocator::allocateIfNull(DeviceArrayType<V> *arr, sqaod::SizeType size) {
+void HostObjectAllocator::allocateIfNull(DeviceArrayType<V> *arr, sq::SizeType size) {
     if (arr->data == NULL)
         allocate(arr, size);
 }

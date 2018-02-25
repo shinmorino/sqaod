@@ -2,9 +2,7 @@
 #include "DeviceRandom.cuh"
 #include "cudafuncs.h"
 
-
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 DeviceRandomBuffer::DeviceRandomBuffer() {
     sizeInByte_ = (sq::SizeType)-1;
@@ -65,7 +63,7 @@ generateFlipPosKernel(sq::IdxType *d_buffer, sq::SizeType N, sq::SizeType m, sq:
 }
 
 void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
-                                               sqaod::SizeType N, sqaod::SizeType m,
+                                               sq::SizeType N, sq::SizeType m,
                                                int nRuns) {
     int nToGenerate = N * m * nRuns;
     sq::SizeType size = nToGenerate * sizeof(int);
@@ -107,7 +105,7 @@ static void genRandKernel(double *d_buffer, int nToGenerate,
 }
 
 
-void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sqaod::SizeType nToGenerate) {
+void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sq::SizeType nToGenerate) {
     reserve(nToGenerate * sizeof(float));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));
@@ -122,7 +120,7 @@ void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sqaod::SizeType n
     sizeInElm_ = nToGenerate;
 }
 
-void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sqaod::SizeType nToGenerate) {
+void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sq::SizeType nToGenerate) {
     reserve(nToGenerate * sizeof(double));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));

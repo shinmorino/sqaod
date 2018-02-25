@@ -4,7 +4,6 @@
 #include <float.h>
 
 
-using namespace sqaod;
 using namespace sqaod_cpu;
 
 
@@ -126,7 +125,7 @@ void BGFuncs<real>::calculate_E_2d(Matrix *E,
                                    const Vector &b0, const Vector &b1, const Matrix &W,
                                    const Matrix &x0, const Matrix &x1) {    
     quboShapeCheck_2d(b0, b1, W, x0, x1, __func__);
-    prepMatrix(E, Dim(x1.rows, x0.rows), __func__);
+    prepMatrix(E, sq::Dim(x1.rows, x0.rows), __func__);
     
     EigenMappedMatrix eE(mapTo(*E));
     const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));

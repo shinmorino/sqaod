@@ -2,8 +2,8 @@
 #include "Assertion.h"
 
 using namespace sqaod_cuda;
-using sqaod::Dim;
-using sqaod::SizeType;
+using sq::Dim;
+using sq::SizeType;
 
 template<class real>
 void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
@@ -245,7 +245,7 @@ void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
 
 /* Matrix shape */
 template<class real>
-sqaod::Dim DeviceMathType<real>::getMatrixShape(const DeviceMatrix &A, MatrixOp opA) {
+sq::Dim DeviceMathType<real>::getMatrixShape(const DeviceMatrix &A, MatrixOp opA) {
     Dim dim;
     dim.rows = opA == opNone ? A.rows : A.cols;
     dim.cols = opA == opNone ? A.cols : A.rows;
@@ -254,7 +254,7 @@ sqaod::Dim DeviceMathType<real>::getMatrixShape(const DeviceMatrix &A, MatrixOp 
 
 
 template<class real>
-sqaod::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp opA,
+sq::Dim DeviceMathType<real>::getProductShape(const DeviceMatrix &A, MatrixOp opA,
                                                  const DeviceMatrix &B, MatrixOp opB) {
     Dim Adim = getMatrixShape(A, opA);
     Dim Bdim = getMatrixShape(B, opB);

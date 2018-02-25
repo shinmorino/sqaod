@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <curand.h>
+#include <common/types.h>
 
 /* FIXME: undef somewhere. */
 #ifdef _DEBUG
@@ -21,6 +22,8 @@
 
 
 namespace sqaod_cuda {
+
+namespace sq = sqaod;
 
 inline bool _valid(cudaError_t cuerr) { return cuerr == cudaSuccess; }
 void _throwError(cudaError_t status, const char *file, unsigned long line, const char *expr);

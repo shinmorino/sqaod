@@ -6,17 +6,16 @@
 
 
 namespace sqaod_cpu {
+
+namespace sq = sqaod;
+
 /* forwarded decl. */
 template<class real> struct CPUBipartiteGraphBatchSearch;
-}
-
-
-namespace sqaod {
 
 template<class real>
-class CPUBipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
+class CPUBipartiteGraphBFSearcher : public sq::BipartiteGraphBFSearcher<real> {
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
 
     typedef sqaod_cpu::CPUBipartiteGraphBatchSearch<real> BatchSearcher;
     
@@ -27,13 +26,13 @@ public:
     /* void getProblemSize(int *N0, int *N1) const; */
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    OptimizeMethod om = sqaod::optMinimize);
+                    sq::OptimizeMethod om = sq::optMinimize);
 
     /* void setPreference(const Preference &pref); */
 
     /* Preferences getPreferences() const; */
     
-    const BitsPairArray &get_x() const;
+    const sq::BitsPairArray &get_x() const;
 
     const Vector &get_E() const;
 
@@ -41,8 +40,8 @@ public:
 
     void finSearch();
 
-    void searchRange(PackedBits iBegin0, PackedBits iEnd0,
-                     PackedBits iBegin1, PackedBits iEnd1);
+    void searchRange(sq::PackedBits iBegin0, sq::PackedBits iEnd0,
+                     sq::PackedBits iBegin1, sq::PackedBits iEnd1);
 
     /* void search(); */
     
@@ -51,12 +50,12 @@ private:
     Matrix W_;
     real Emin_;
     Vector E_;
-    BitsPairArray xPairList_;
+    sq::BitsPairArray xPairList_;
 
     int nProcs_;
     BatchSearcher *searchers_;
     
-    typedef BipartiteGraphBFSearcher<real> Base;
+    typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::om_;
     using Base::N0_;
     using Base::N1_;

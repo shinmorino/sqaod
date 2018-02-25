@@ -7,6 +7,8 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
+
 class Device;
 
 template<class real>
@@ -14,10 +16,10 @@ class DeviceBipartiteGraphBatchSearch {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
-    typedef DeviceScalarType<sqaod::SizeType> DeviceSize;
+    typedef DeviceScalarType<sq::SizeType> DeviceSize;
     typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
-    typedef sqaod::MatrixType<real> HostMatrix;
-    typedef sqaod::VectorType<real> HostVector;
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
     
 public:
     DeviceBipartiteGraphBatchSearch();
@@ -28,10 +30,10 @@ public:
     
     void setProblem(const HostVector &b0, const HostVector &b1,
                     const HostMatrix &W,
-                    sqaod::SizeType tileSize0, sqaod::SizeType tileSize1);
+                    sq::SizeType tileSize0, sq::SizeType tileSize1);
     
-    void calculate_E(sqaod::PackedBits xBegin0, sqaod::PackedBits xEnd0,
-                     sqaod::PackedBits xBegin1, sqaod::PackedBits xEnd1);
+    void calculate_E(sq::PackedBits xBegin0, sq::PackedBits xEnd0,
+                     sq::PackedBits xBegin1, sq::PackedBits xEnd1);
 
     void partition_minXPairs(bool append);
     
@@ -50,22 +52,22 @@ public:
     /* Device kernels, declared as public for tests */
 
     void generateBitsSequence(real *d_data, int N,
-                              sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+                              sq::PackedBits xBegin, sq::PackedBits xEnd);
 
-    void select(sqaod::PackedBitsPair *d_out, sqaod::SizeType *d_nOut,
-                sqaod::PackedBits xBegin0, sqaod::PackedBits xBegin1, 
-                real val, const real *d_vals, sqaod::SizeType nIn0, sqaod::SizeType nIn1);
+    void select(sq::PackedBitsPair *d_out, sq::SizeType *d_nOut,
+                sq::PackedBits xBegin0, sq::PackedBits xBegin1, 
+                real val, const real *d_vals, sq::SizeType nIn0, sq::SizeType nIn1);
 
 private:
-    sqaod::SizeType N0_, N1_;
+    sq::SizeType N0_, N1_;
     DeviceVector d_b0_;
     DeviceVector d_b1_;
     DeviceMatrix d_W_;
-    sqaod::SizeType tileSize0_, tileSize1_;
-    sqaod::SizeType minXPairsSize_;
+    sq::SizeType tileSize0_, tileSize1_;
+    sq::SizeType minXPairsSize_;
     
     /* starting x of batch calculation */
-    sqaod::PackedBits xBegin0_, xBegin1_;
+    sq::PackedBits xBegin0_, xBegin1_;
 
     /* calculate_E */
     DeviceMatrix d_bitsMat0_, d_bitsMat1_;

@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <limits>
 
-
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 template<class real>
 CUDADenseGraphBFSearcher<real>::CUDADenseGraphBFSearcher() {
@@ -96,7 +94,7 @@ void CUDADenseGraphBFSearcher<real>::finSearch() {
 
     batchSearch_.synchronize();
     const DevicePackedBitsArray &dPackedXmin = batchSearch_.get_xMins();
-    sqaod::SizeType nXMin = std::min(tileSize_, dPackedXmin.size);
+    sq::SizeType nXMin = std::min(tileSize_, dPackedXmin.size);
     devCopy_(&h_packedXmin_, dPackedXmin);
     devCopy_.synchronize();
     
@@ -105,7 +103,7 @@ void CUDADenseGraphBFSearcher<real>::finSearch() {
     E_ = Emin_;
     if (om_ == sq::optMaximize)
         E_ *= real(-1.);
-    for (sqaod::IdxType idx = 0; idx < (sqaod::IdxType)nXMin; ++idx) {
+    for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
         sq::Bits bits;
         unpackBits(&bits, h_packedXmin_[idx], N_);
         xList_.pushBack(bits); // FIXME: apply move

@@ -11,14 +11,15 @@
 
 namespace sqaod_cuda {
 
+namespace sq = sqaod;
 
 template<class real>
-class CUDADenseGraphAnnealer : public sqaod::DenseGraphAnnealer<real> {
-    typedef sqaod::MatrixType<real> HostMatrix;
-    typedef sqaod::VectorType<real> HostVector;
-    typedef sqaod::Bits Bits;
-    typedef sqaod::BitsArray BitsArray;
-    typedef sqaod::SizeType SizeType;
+class CUDADenseGraphAnnealer : public sq::DenseGraphAnnealer<real> {
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
+    typedef sq::Bits Bits;
+    typedef sq::BitsArray BitsArray;
+    typedef sq::SizeType SizeType;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -35,15 +36,15 @@ public:
 
     void assignDevice(Device &device);
 
-    virtual Algorithm selectAlgorithm(Algorithm algo);
+    virtual sq::Algorithm selectAlgorithm(sq::Algorithm algo);
     
-    virtual Algorithm getAlgorithm() const;
+    virtual sq::Algorithm getAlgorithm() const;
     
     void seed(unsigned int seed);
 
-    void setProblem(const HostMatrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
+    void setProblem(const HostMatrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
-    /* void getProblemSize(sqaod::SizeType *N) const; */
+    /* void getProblemSize(sq::SizeType *N) const; */
 
     /* Preferences getPreferences() const; */
 
@@ -55,7 +56,7 @@ public:
 
     void set_x(const Bits &x);
 
-    const sqaod::BitsArray &get_q() const {
+    const sq::BitsArray &get_q() const {
         return qlist_;
     }
 
@@ -101,8 +102,8 @@ private:
     DeviceRandomBuffer realNumBuffer_;
     HostVector E_;
 
-    sqaod::BitsArray xlist_;
-    sqaod::BitsArray qlist_;
+    sq::BitsArray xlist_;
+    sq::BitsArray qlist_;
 
     DeviceSegmentedSumType<real> *dotJq_;
 
@@ -111,7 +112,7 @@ private:
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 
-    typedef sqaod::DenseGraphAnnealer<real> Base;
+    typedef sq::DenseGraphAnnealer<real> Base;
     using Base::N_;
     using Base::m_;
     using Base::om_;

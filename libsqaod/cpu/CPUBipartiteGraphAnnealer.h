@@ -6,14 +6,16 @@
 #include <common/EigenBridge.h>
 
 
-namespace sqaod {
+namespace sqaod_cpu {
+
+namespace sq = sqaod;
 
 template<class real>
-class CPUBipartiteGraphAnnealer : public BipartiteGraphAnnealer<real> {
-    typedef EigenMatrixType<real> EigenMatrix;
-    typedef EigenRowVectorType<real> EigenRowVector;
-    typedef MatrixType<real> Matrix;
-    typedef VectorType<real> Vector;
+class CPUBipartiteGraphAnnealer : public sq::BipartiteGraphAnnealer<real> {
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
+    typedef sq::EigenMatrixType<real> EigenMatrix;
+    typedef sq::EigenRowVectorType<real> EigenRowVector;
     
 public:
     CPUBipartiteGraphAnnealer();
@@ -21,14 +23,14 @@ public:
 
     void seed(unsigned int seed);
 
-    Algorithm selectAlgorithm(Algorithm algo);
+    sq::Algorithm selectAlgorithm(sq::Algorithm algo);
 
-    Algorithm getAlgorithm() const;
+    sq::Algorithm getAlgorithm() const;
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
     void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    OptimizeMethod om = optMinimize);
+                    sq::OptimizeMethod om = sq::optMinimize);
 
     /* FIXME: algo */
     /* void setPreference(const Preference &pref); */
@@ -37,15 +39,15 @@ public:
 
     const Vector &get_E() const;
 
-    const BitsPairArray &get_x() const;
+    const sq::BitsPairArray &get_x() const;
 
-    void set_x(const Bits &x0, const Bits &x1);
+    void set_x(const sq::Bits &x0, const sq::Bits &x1);
 
     /* Ising machine / spins */
 
     void get_hJc(Vector *h0, Vector *h1, Matrix *J, real *c) const;
 
-    const BitsPairArray &get_q() const;
+    const sq::BitsPairArray &get_q() const;
 
     void randomize_q();
 
@@ -73,17 +75,17 @@ private:
                                 const EigenRowVector &h, const EigenMatrix &J,
                                 const EigenMatrix &qFixed, real G, real kT);
 
-    Random *random_;
+    sq::Random *random_;
     int nProcs_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
     real c_;
     Vector E_;
     EigenMatrix matQ0_, matQ1_;
-    BitsPairArray bitsPairX_;
-    BitsPairArray bitsPairQ_;
+    sq::BitsPairArray bitsPairX_;
+    sq::BitsPairArray bitsPairQ_;
 
-    typedef BipartiteGraphAnnealer<real> Base;
+    typedef sq::BipartiteGraphAnnealer<real> Base;
     using Base::om_;
     using Base::N0_;
     using Base::N1_;

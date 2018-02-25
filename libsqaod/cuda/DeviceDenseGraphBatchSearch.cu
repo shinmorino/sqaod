@@ -5,7 +5,6 @@
 #include "cub_iterator.cuh"
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 
 template<class real>

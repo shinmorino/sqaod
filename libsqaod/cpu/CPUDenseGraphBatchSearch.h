@@ -5,23 +5,25 @@
 
 namespace sqaod_cpu {
 
+namespace sq = sqaod;
+
 template<class real>
 struct CPUDenseGraphBatchSearch {
-    typedef sqaod::MatrixType<real> Matrix;
-    typedef sqaod::VectorType<real> Vector;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sq::VectorType<real> Vector;
     
     CPUDenseGraphBatchSearch();
 
-    void setProblem(const Matrix &W, sqaod::SizeType tileSize);
+    void setProblem(const Matrix &W, sq::SizeType tileSize);
 
     void initSearch();
     
-    void searchRange(sqaod::PackedBits xBegin, sqaod::PackedBits xEnd);
+    void searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd);
 
     Matrix W_;
-    sqaod::SizeType tileSize_;
+    sq::SizeType tileSize_;
     real Emin_;
-    sqaod::PackedBitsArray packedXList_;
+    sq::PackedBitsArray packedXList_;
 };
 
 
