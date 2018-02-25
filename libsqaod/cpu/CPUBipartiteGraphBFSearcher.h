@@ -18,15 +18,6 @@ class CPUBipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
-    typedef BipartiteGraphBFSearcher<real> Base;
-    using Base::om_;
-    using Base::N0_;
-    using Base::N1_;
-    using Base::tileSize0_;
-    using Base::tileSize1_;
-    using Base::x0max_;
-    using Base::x1max_;
-
     typedef sqaod_cpu::CPUBipartiteGraphBatchSearch<real> BatchSearcher;
     
 public:
@@ -64,6 +55,25 @@ private:
 
     int nProcs_;
     BatchSearcher *searchers_;
+    
+    typedef BipartiteGraphBFSearcher<real> Base;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::tileSize0_;
+    using Base::tileSize1_;
+    using Base::x0max_;
+    using Base::x1max_;
+
+    /* searcher state */
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

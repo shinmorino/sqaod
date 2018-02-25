@@ -333,11 +333,13 @@ DeviceMathType<real>::DeviceMathType() {
 
 template<class real>
 DeviceMathType<real>::DeviceMathType(Device &device, DeviceStream *devStream){
+    devStream_ = NULL;
     assignDevice(device, devStream);
 }
 
 template<class real>
 void DeviceMathType<real>::assignDevice(Device &device, DeviceStream *devStream) {
+    throwErrorIf(devStream_ != NULL, "Device already assigned.");
     if (devStream == NULL)
         devStream = device.defaultStream();
     devStream_ = devStream;

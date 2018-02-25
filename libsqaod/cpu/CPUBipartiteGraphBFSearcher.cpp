@@ -30,6 +30,9 @@ CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
 template<class real>
 void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vector &b1,
                                                    const Matrix &W, OptimizeMethod om) {
+    if ((N0_!= b0.size) || (N1_ != b1.size))
+        clearState(solInitialized);
+
     N0_ = b0.size;
     N1_ = b1.size;
     throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
@@ -43,15 +46,19 @@ void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vecto
         b0_ *= real(-1.);
         b1_ *= real(-1.);
     }
+
+    setState(solProblemSet);
 }
 
 template<class real>
 const BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
+    throwErrorIfSolutionNotAvailable();
     return xPairList_;
 }
 
 template<class real>
 const VectorType<real> &CPUBipartiteGraphBFSearcher<real>::get_E() const {
+    throwErrorIfSolutionNotAvailable();
     return E_;
 }
 
@@ -73,6 +80,7 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
         searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
         searchers_[idx].initSearch();
     }
+    setState(solInitialized);
 }
 
 template<class real>
@@ -108,11 +116,15 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
     real tmpE = (om_ == optMaximize) ? - Emin_ : Emin_;
     E_.resize(nSolutions);
     mapToRowVector(E_).array() = tmpE;
+
+    setState(solSolutionAvailable);
 }
 
 template<class real>
 void CPUBipartiteGraphBFSearcher<real>::searchRange(PackedBits x0begin, PackedBits x0end,
                                                     PackedBits x1begin, PackedBits x1end) {
+    throwErrorIfNotInitialized();
+    
     x0begin = std::min(std::max(0ULL, x0begin), x0max_);
     x0end = std::min(std::max(0ULL, x0end), x0max_);
     x1begin = std::min(std::max(0ULL, x1begin), x1max_);

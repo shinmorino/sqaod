@@ -6,14 +6,19 @@ import cpu_dg_annealer as dg_annealer
 
 class DenseGraphAnnealer :
     
-    def __init__(self, W, optimize, n_trotters, dtype) :
+    def __init__(self, W, optimize, dtype, prefs) :
+        self._cext = dg_annealer
         self.dtype = dtype
         self._ext = dg_annealer.new_annealer(dtype)
         if not W is None :
             self.set_problem(W, optimize)
+            self.set_preferences(n_trotters = W.shape[0] / 4)
+        self.set_preferences(prefs)
 
     def __del__(self) :
-        dg_annealer.delete_annealer(self._ext, self.dtype)
+        if hasattr(self, '_ext') :
+            dg_annealer.delete_annealer(self._ext, self.dtype)
+            self._cext = None
         
     def seed(self, seed) :
         dg_annealer.seed(self._ext, seed, self.dtype)
@@ -27,11 +32,13 @@ class DenseGraphAnnealer :
     def get_problem_size(self) :
         return dg_annealer.get_problem_size(self._ext, self.dtype)
 
-    def set_preference(self, **kwargs) :
-        dg_annealer.set_preference(self._ext, self.dtype, kwargs)
-        prefs = dg_annealer.get_preferences(self._ext, self.dtype)
-        n_trotters = prefs['n_trotters']
-        self._E = np.empty((n_trotters), self.dtype)
+    def set_preferences(self, preferences = None, **prefs) :
+        if not preferences is None:
+            dg_annealer.set_preferences(self._ext, preferences, self.dtype)
+        dg_annealer.set_preferences(self._ext, prefs, self.dtype)
+
+    def get_preferences(self) :
+        return self._ext.get_preferences(self._ext, self.dtype)
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -74,8 +81,8 @@ class DenseGraphAnnealer :
         dg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)
         
 
-def dense_graph_annealer(W = None, optimize=sqaod.minimize, n_trotters = None, dtype=np.float64) :
-    return DenseGraphAnnealer(W, optimize, n_trotters, dtype)
+def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
+    return DenseGraphAnnealer(W, optimize, dtype, prefs)
 
 
 if __name__ == '__main__' :
@@ -97,7 +104,7 @@ if __name__ == '__main__' :
 #    m = 5
 #    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
-    ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
+    ann = dense_graph_annealer(W, dtype=np.float64, n_trotters = m)
     import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_problem(W, sqaod.minimize)
@@ -117,6 +124,7 @@ if __name__ == '__main__' :
     for loop in range(0, nRepeat) :
         G = Ginit
         ann.init_anneal()
+        ann.randomize_q()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

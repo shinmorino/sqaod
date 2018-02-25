@@ -14,12 +14,6 @@ class CPUDenseGraphAnnealer : public DenseGraphAnnealer<real> {
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
-    typedef DenseGraphAnnealer<real> Base;
-    using Base::om_;
-    using Base::N_;
-    using Base::m_;
-    using Base::annState_;
-    
 public:
     CPUDenseGraphAnnealer();
     ~CPUDenseGraphAnnealer();
@@ -81,6 +75,26 @@ private:
     EigenRowVector h_;
     EigenMatrix J_;
     real c_;
+
+    typedef DenseGraphAnnealer<real> Base;
+    using Base::om_;
+    using Base::N_;
+    using Base::m_;
+    /* annealer state */
+    using Base::solRandSeedGiven;
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solQSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::isRandSeedGiven;
+    using Base::isProblemSet;
+    using Base::isInitialized;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfQNotSet;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

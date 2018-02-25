@@ -29,20 +29,27 @@ template<class real>
 void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
+    if (N_ != W.rows)
+        clearState(solInitialized);
+
     N_ = W.rows;
     W_ = W;
     om_ = om;
     if (om_ == optMaximize)
         W_ *= real(-1.);
+
+    setState(solProblemSet);
 }
 
 template<class real>
 const BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
+    throwErrorIfSolutionNotAvailable();
     return xList_;
 }
 
 template<class real>
 const VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
+    throwErrorIfSolutionNotAvailable();
     return E_;
 }
 
@@ -59,6 +66,7 @@ void CPUDenseGraphBFSearcher<real>::initSearch() {
         searchers_[idx].setProblem(W_, tileSize_);
         searchers_[idx].initSearch();
     }
+    setState(solInitialized);
 }
 
 
@@ -90,11 +98,15 @@ void CPUDenseGraphBFSearcher<real>::finSearch() {
     }
     E_.resize(nSolutions);
     mapToRowVector(E_).array() = (om_ == optMaximize) ? - Emin_ : Emin_;
+
+    setState(solSolutionAvailable);
 }
 
 
 template<class real>
 void CPUDenseGraphBFSearcher<real>::searchRange(PackedBits xBegin, PackedBits xEnd) {
+    throwErrorIfNotInitialized();
+
     xBegin = std::min(std::max(0ULL, xBegin), xMax_);
     xEnd = std::min(std::max(0ULL, xEnd), xMax_);
     

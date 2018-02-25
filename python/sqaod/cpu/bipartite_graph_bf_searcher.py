@@ -24,8 +24,8 @@ class BipartiteGraphBFSearcher :
         bg_bf_searcher.set_problem(self._ext, b0, b1, W, optimize, self.dtype)
         self._optimize = optimize
 
-    def set_preferences(self, **kwargs) :
-        bg_bf_searcher.set_preferences(self._ext, self.dtype, kwargs)
+    def set_preferences(self, **prefs) :
+        bg_bf_searcher.set_preferences(self._ext, prefs, self.dtype)
         
     def get_optimize_dir(self) :
         return self._optimize

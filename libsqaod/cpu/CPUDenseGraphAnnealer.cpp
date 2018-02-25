@@ -7,7 +7,6 @@ namespace sq = sqaod;
 template<class real>
 sq::CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
-    annState_ = annNone;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
     nProcs_ = omp_get_num_procs();
@@ -27,7 +26,7 @@ template<class real>
 void sq::CPUDenseGraphAnnealer<real>::seed(unsigned int seed) {
     for (int idx = 0; idx < nProcs_; ++idx)
         random_[idx].seed(seed + 17 * idx);
-    annState_ |= annRandSeedGiven;
+    setState(solRandSeedGiven);
 }
 
 
@@ -63,6 +62,10 @@ enum sq::Algorithm sq::CPUDenseGraphAnnealer<real>::getAlgorithm() const {
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+
+    if (N_ != W.rows)
+        clearState(solInitialized);
+
     N_ = W.rows;
     m_ = N_ / 4;
     h_.resize(1, N_);
@@ -77,29 +80,34 @@ void sq::CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, OptimizeMethod
         J_ *= real(-1.);
         c_ *= real(-1.);
     }
+    setState(solProblemSet);
 }
 
 
 
 template<class real>
 const sq::VectorType<real> &sq::CPUDenseGraphAnnealer<real>::get_E() const {
+    throwErrorIfSolutionNotAvailable();
     return E_;
 }
 
 template<class real>
 const sq::BitsArray &sq::CPUDenseGraphAnnealer<real>::get_x() const {
+    throwErrorIfSolutionNotAvailable();
     return bitsX_;
 }
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::set_x(const Bits &x) {
+    throwErrorIfNotInitialized();
     EigenRowVector ex = mapToRowVector(cast<real>(x));
     matQ_ = (ex.array() * 2 - 1).matrix();
-    annState_ |= annQSet;
+    setState(solQSet);
 }
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
+    throwErrorIfProblemNotSet();
     mapToRowVector(*h) = h_;
     mapTo(*J) = J_;
     *c = c_;
@@ -107,46 +115,44 @@ void sq::CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) con
 
 template<class real>
 const sq::BitsArray &sq::CPUDenseGraphAnnealer<real>::get_q() const {
+    throwErrorIfSolutionNotAvailable();
     return bitsQ_;
 }
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::randomize_q() {
-    throwErrorIf(matQ_.rows() == 0, "randomize_q() must be called after initAnneal()");
+    throwErrorIfNotInitialized();
     real *q = matQ_.data();
     for (int idx = 0; idx < IdxType(N_ * m_); ++idx)
         q[idx] = random_->randInt(2) ? real(1.) : real(-1.);
-    annState_ |= annQSet;
+    setState(solQSet);
 }
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::initAnneal() {
-    if (!(annState_ & annRandSeedGiven))
+    if (!isRandSeedGiven())
         random_->seed();
-    annState_ |= annRandSeedGiven;
-    if (!(annState_ & annNTrottersGiven))
-        m_ = (N_) / 4; /* setting number of trotters. */
-    annState_ |= annNTrottersGiven; /* not necessary */
+    setState(solRandSeedGiven);
     bitsX_.reserve(m_);
     bitsQ_.reserve(m_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
 
-    if (!(annState_ & annQSet))
-        randomize_q();
-    annState_ |= annQSet;
-
+    setState(solInitialized);
 }
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::finAnneal() {
+    throwErrorIfQNotSet();
     syncBits();
+    setState(solSolutionAvailable);
     calculate_E();
 }
 
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::calculate_E() {
+    throwErrorIfSolutionNotAvailable();
     DGFuncs<real>::calculate_E(&E_, mapFrom(h_), mapFrom(J_), c_, mapFrom(matQ_));
     if (om_ == sq::optMaximize)
         mapToRowVector(E_) *= real(-1.);
@@ -167,6 +173,8 @@ void sq::CPUDenseGraphAnnealer<real>::syncBits() {
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
+    throwErrorIfQNotSet();
+
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
     Random &random = random_[0];
@@ -217,6 +225,8 @@ void sq::CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int st
 
 template<class real>
 void sq::CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
+    throwErrorIfQNotSet();
+    
     int stepOffset = random_[0].randInt(2);
     for (int idx = 0; idx < (IdxType)N_; ++idx)
         annealColoredPlane(G, kT, (stepOffset + idx) & 1);

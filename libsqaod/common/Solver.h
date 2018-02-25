@@ -13,18 +13,6 @@ enum OptimizeMethod {
     optMaximize = 1,
 };
 
-enum AnnealerState {
-    annNone = 0,
-    annRandSeedGiven = 1,
-    annProblemSet = 2,
-    annInitialized = 4,
-    annQSet = 8,
-    
-    annQSetReady = (annProblemSet | annRandSeedGiven | annInitialized),
-
-    annNTrottersGiven = 32,
-};
-
 
 template<class real>
 struct Solver {
@@ -43,8 +31,32 @@ struct Solver {
     virtual const VectorType<real> &get_E() const = 0;
     
 protected:
-    Solver() : om_(optNone) { }
+    Solver() : solverState_(solNone), om_(optNone) { }
 
+    int solverState_;
+
+    enum SolverState {
+        solNone = 0,
+        solProblemSet = 1,
+        solInitialized = 2,
+        solSolutionAvailable = 4,
+        /* annealer-specific states */
+        solRandSeedGiven = 8,
+        solQSet = 16,
+    };
+
+    /* Solver state set/clear/assertions */
+    void setState(SolverState state);
+    void clearState(SolverState state);
+    bool isRandSeedGiven() const;
+    bool isProblemSet() const;
+    bool isInitialized() const;
+    bool isQSet() const;
+    void throwErrorIfProblemNotSet() const;
+    void throwErrorIfNotInitialized() const;
+    void throwErrorIfQNotSet() const;
+    void throwErrorIfSolutionNotAvailable() const;
+    
     OptimizeMethod om_;
 };
 
@@ -65,6 +77,7 @@ struct BFSearcher : Solver<real> {
 
 protected:
     BFSearcher() { }
+
 };
 
 
@@ -89,9 +102,8 @@ struct Annealer : Solver<real> {
     virtual void annealOneStep(real G, real kT) = 0;
 
 protected:
-    Annealer() : annState_(annNone), m_(0) { }
+    Annealer() : m_(0) { }
 
-    int annState_;
     SizeType m_;
 };
 

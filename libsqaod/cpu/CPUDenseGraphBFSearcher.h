@@ -16,12 +16,6 @@ class CPUDenseGraphBFSearcher : public DenseGraphBFSearcher<real> {
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
 
-    typedef DenseGraphBFSearcher<real> Base;
-    using Base::N_;
-    using Base::om_;
-    using Base::tileSize_;
-    using Base::xMax_;
-
     typedef sqaod_cpu::CPUDenseGraphBatchSearch<real> BatchSearcher;
     
 public:
@@ -56,6 +50,21 @@ private:
 
     int nProcs_;
     BatchSearcher *searchers_;
+
+    typedef DenseGraphBFSearcher<real> Base;
+    using Base::N_;
+    using Base::om_;
+    using Base::tileSize_;
+    using Base::xMax_;
+    /* searcher state */
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

@@ -22,22 +22,15 @@ class CUDABipartiteGraphBFSearcher : public BipartiteGraphBFSearcher<real> {
     typedef sqaod::PackedBitsPairArray PackedBitsPairArray;
     typedef sqaod::SizeType SizeType;
     typedef sqaod::IdxType IdxType;
-
-    typedef BipartiteGraphBFSearcher<real> Base;
-    using Base::N0_;
-    using Base::N1_;
-    using Base::om_;
-    using Base::tileSize0_;
-    using Base::tileSize1_;
-    using Base::x0max_;
-    using Base::x1max_;
-
+    
 public:
     CUDABipartiteGraphBFSearcher();
     CUDABipartiteGraphBFSearcher(Device &device);
 
     ~CUDABipartiteGraphBFSearcher();
 
+    void deallocate();
+    
     void assignDevice(Device &device);
     
     /* void getProblemSize(int *N0, int *N1) const; */
@@ -63,6 +56,8 @@ public:
     /* void search(); */
     
 private:    
+    bool deviceAssigned_;
+    
     HostMatrix W_;
     HostVector b0_, b1_;
 
@@ -74,6 +69,25 @@ private:
     
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
+
+    typedef BipartiteGraphBFSearcher<real> Base;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::om_;
+    using Base::tileSize0_;
+    using Base::tileSize1_;
+    using Base::x0max_;
+    using Base::x1max_;
+
+    /* searcher state */
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::isInitialized;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

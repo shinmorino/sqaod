@@ -11,29 +11,43 @@ template<class real>
 CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher() {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
+    deviceAssigned_ = false;
 }
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher(Device &device) {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
+    deviceAssigned_ = false;
     assignDevice(device);
 }
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::~CUDABipartiteGraphBFSearcher() {
+    deallocate();
+    
+}
+
+template<class real>
+void CUDABipartiteGraphBFSearcher<real>::deallocate() {
     if (h_packedMinXPairs_.d_data != NULL)
         HostObjectAllocator().deallocate(h_packedMinXPairs_);
+    h_packedMinXPairs_.d_data = NULL;
+    
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
+    throwErrorIf(deviceAssigned_, "Device already assigned.");
     batchSearch_.assignDevice(device, device.defaultStream());
+    deviceAssigned_ = true;
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
                                                     const HostMatrix &W, sqaod::OptimizeMethod om) {
+    throwErrorIf(!deviceAssigned_, "Device not set.");
+
     N0_ = b0.size;
     N1_ = b1.size;
     throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
@@ -47,20 +61,28 @@ void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const 
         b0_ *= real(-1.);
         b1_ *= real(-1.);
     }
+
+    setState(solProblemSet);
 }
 
 template<class real>
 const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
+    throwErrorIfSolutionNotAvailable();
     return minXPairs_;
 }
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphBFSearcher<real>::get_E() const {
+    throwErrorIfSolutionNotAvailable();
     return E_;
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::initSearch() {
+    throwErrorIfProblemNotSet();
+    if (isInitialized())
+        deallocate();
+
     Emin_ = std::numeric_limits<real>::max();
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
@@ -75,13 +97,14 @@ void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     batchSearch_.setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
     SizeType minXPairsSize = (tileSize0_ * tileSize1_) * 2;
     HostObjectAllocator halloc;
-    if (h_packedMinXPairs_.d_data != NULL)
-        halloc.deallocate(h_packedMinXPairs_);
     halloc.allocate(&h_packedMinXPairs_, minXPairsSize);
+
+    setState(solInitialized);
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::finSearch() {
+    throwErrorIfNotInitialized();
     batchSearch_.synchronize();
     const DevicePackedBitsPairArray &dPackedXminPairs = batchSearch_.get_minXPairs();
     SizeType nXMin = dPackedXminPairs.size;
@@ -99,11 +122,15 @@ void CUDABipartiteGraphBFSearcher<real>::finSearch() {
         unpackBits(&bits1, h_packedMinXPairs_[idx].bits1, N1_);
         minXPairs_.pushBack(BitsPairArray::ValueType(bits0, bits1)); // FIXME: apply move
     }
+
+    setState(solSolutionAvailable);
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits xBegin0, PackedBits xEnd0,
                                                      PackedBits xBegin1, PackedBits xEnd1) {
+    throwErrorIfNotInitialized();
+    
     /* FIXME: Use multiple searchers, multi GPU */
     throwErrorIf(xBegin0 > xEnd0, "xBegin0 should be larger than xEnd0");
     throwErrorIf(xBegin1 > xEnd1, "xBegin1 should be larger than xEnd1");

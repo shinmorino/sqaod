@@ -17,20 +17,16 @@ class CUDADenseGraphBFSearcher : public sqaod::DenseGraphBFSearcher<real> {
     
     typedef sqaod::MatrixType<real> Matrix;
     typedef sqaod::VectorType<real> Vector;
-
-    typedef sqaod::DenseGraphBFSearcher<real> Base;
-    using Base::N_;
-    using Base::om_;
-    using Base::tileSize_;
-    using Base::xMax_;
     
 public:
     CUDADenseGraphBFSearcher();
 
     CUDADenseGraphBFSearcher(Device &device);
-
+    
     ~CUDADenseGraphBFSearcher();
 
+    void deallocate();
+    
     void assignDevice(Device &device);
     
     void setProblem(const Matrix &W, sqaod::OptimizeMethod om = sqaod::optMinimize);
@@ -56,6 +52,7 @@ public:
     /* void search(); */
     
 private:    
+    bool deviceAssigned_;
     Matrix W_;
 
     Vector E_;
@@ -64,6 +61,22 @@ private:
     DevicePackedBitsArray h_packedXmin_;
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
+
+    typedef sqaod::DenseGraphBFSearcher<real> Base;
+    using Base::N_;
+    using Base::om_;
+    using Base::tileSize_;
+    using Base::xMax_;
+
+    /* searcher state */
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::isInitialized;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

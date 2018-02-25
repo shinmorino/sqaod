@@ -9,6 +9,7 @@ namespace sq = sqaod;
 
 template<class real>
 DeviceBipartiteGraphBatchSearch<real>::DeviceBipartiteGraphBatchSearch() {
+    N0_ = N1_ = (SizeType)-1;
 }
 
 
@@ -41,7 +42,7 @@ void DeviceBipartiteGraphBatchSearch<real>::
 setProblem(const HostVector &b0, const HostVector &b1,
            const HostMatrix &W,
            sqaod::SizeType tileSize0, sqaod::SizeType tileSize1) {
-    if ((N0_ != b0.size) || (N1_ != b1.size))
+    if (N0_ != (SizeType)-1)
         deallocate();
 
     N0_ = b0.size;

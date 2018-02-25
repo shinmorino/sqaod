@@ -110,8 +110,8 @@ if __name__ == '__main__' :
     n_repeat = 10
 
     for loop in range(0, n_repeat) :
-        an.randomize_q()
         an.init_anneal()
+        an.randomize_q()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)

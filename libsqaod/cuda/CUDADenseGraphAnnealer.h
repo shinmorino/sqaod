@@ -23,12 +23,6 @@ class CUDADenseGraphAnnealer : public sqaod::DenseGraphAnnealer<real> {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceDenseGraphFormulas<real> DeviceFormulas;
-
-    typedef sqaod::DenseGraphAnnealer<real> Base;
-    using Base::annState_;
-    using Base::N_;
-    using Base::m_;
-    using Base::om_;
     
 public:
     CUDADenseGraphAnnealer();
@@ -55,13 +49,9 @@ public:
 
     /* void setPreference(const Preference &pref); */
     
-    const HostVector &get_E() const {
-        return E_;
-    }
+    const HostVector &get_E() const;
 
-    const BitsArray &get_x() const {
-        return xlist_;
-    }
+    const BitsArray &get_x() const;
 
     void set_x(const Bits &x);
 
@@ -120,6 +110,26 @@ private:
     DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
+
+    typedef sqaod::DenseGraphAnnealer<real> Base;
+    using Base::N_;
+    using Base::m_;
+    using Base::om_;
+    /* annealer state */
+    using Base::solRandSeedGiven;
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solQSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::isRandSeedGiven;
+    using Base::isProblemSet;
+    using Base::isInitialized;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfQNotSet;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

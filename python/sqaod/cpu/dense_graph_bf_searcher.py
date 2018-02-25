@@ -5,11 +5,12 @@ import cpu_dg_bf_searcher as dg_bf_searcher
 
 class DenseGraphBFSearcher :
     
-    def __init__(self, W, optimize, dtype) :
+    def __init__(self, W, optimize, dtype, prefs) :
         self.dtype = dtype
         self._ext = dg_bf_searcher.new_bf_searcher(dtype)
         if not W is None :
             self.set_problem(W, optimize)
+        self.set_preferences(prefs)
             
     def __del__(self) :
         dg_bf_searcher.delete_bf_searcher(self._ext, self.dtype)
@@ -21,8 +22,10 @@ class DenseGraphBFSearcher :
         dg_bf_searcher.set_problem(self._ext, W, optimize, self.dtype)
         self._optimize = optimize
 
-    def set_preferences(self, **prefs) :
-        dg_bf_searcher.set_preferences(self._ext, self.dtype, prefs)
+    def set_preferences(self, prefdict = None, **prefs) :
+        if not prefdict is None :
+            dg_bf_searcher.set_preferences(self._ext, prefdict, self.dtype)
+        dg_bf_searcher.set_preferences(self._ext, prefs, self.dtype)
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -56,8 +59,8 @@ class DenseGraphBFSearcher :
         dg_bf_searcher.search(self._ext, self.dtype)
 
 
-def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64) :
-    return DenseGraphBFSearcher(W, optimize, dtype)
+def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64, **prefs) :
+    return DenseGraphBFSearcher(W, optimize, dtype, prefs)
 
 
 if __name__ == '__main__' :

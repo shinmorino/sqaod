@@ -42,10 +42,10 @@ W = np.array([[-32,4,4,4,4,4,4,4],
 
 ann = sqaod.py.dense_graph_annealer(W, sqaod.minimize, 4)
 anneal(ann)
-ann = sqaod.cpu.dense_graph_annealer(W, sqaod.minimize, 4)
+ann = sqaod.cpu.dense_graph_annealer(W, sqaod.minimize, n_trotters = 4)
 anneal(ann)
 
 sol = sqaod.py.dense_graph_bf_searcher(W)
 search(sol)
-sol = sqaod.cpu.dense_graph_bf_searcher(W)
+sol = sqaod.cpu.dense_graph_bf_searcher(W, tile_size = 4)
 search(sol)

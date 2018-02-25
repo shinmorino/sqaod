@@ -14,12 +14,6 @@ class CPUBipartiteGraphAnnealer : public BipartiteGraphAnnealer<real> {
     typedef EigenRowVectorType<real> EigenRowVector;
     typedef MatrixType<real> Matrix;
     typedef VectorType<real> Vector;
-    typedef BipartiteGraphAnnealer<real> Base;
-    using Base::annState_;
-    using Base::om_;
-    using Base::N0_;
-    using Base::N1_;
-    using Base::m_;
     
 public:
     CPUBipartiteGraphAnnealer();
@@ -88,6 +82,25 @@ private:
     EigenMatrix matQ0_, matQ1_;
     BitsPairArray bitsPairX_;
     BitsPairArray bitsPairQ_;
+
+    typedef BipartiteGraphAnnealer<real> Base;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::m_;
+    /* annealer state */
+    using Base::solRandSeedGiven;
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solQSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::isRandSeedGiven;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfQNotSet;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

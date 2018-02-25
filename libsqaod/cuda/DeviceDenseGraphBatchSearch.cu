@@ -24,6 +24,9 @@ void DeviceDenseGraphBatchSearch<real>::assignDevice(Device &device) {
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::deallocate() {
+    if (N_ == (sq::SizeType) -1)
+        return;
+
     devAlloc_->deallocate(d_W_);
     devAlloc_->deallocate(d_bitsMat_);
     devAlloc_->deallocate(d_Ebatch_);
@@ -32,13 +35,13 @@ void DeviceDenseGraphBatchSearch<real>::deallocate() {
     HostObjectAllocator halloc;
     halloc.deallocate(h_nXMins_);
     halloc.deallocate(h_Emin_);
+
+    N_ = (sq::SizeType) -1;
 }
 
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::setProblem(const HostMatrix &W, sq::SizeType tileSize) {
-    if (N_ != W.rows)
-        deallocate();
     N_ = W.rows;
     devCopy_(&d_W_, W);
     tileSize_ = tileSize;

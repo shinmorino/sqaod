@@ -11,10 +11,13 @@ DeviceCopy::DeviceCopy() {
 }
 
 DeviceCopy::DeviceCopy(Device &device, DeviceStream *devStream) {
+    devAlloc_ = NULL;
+    stream_ = NULL;
     assignDevice(device, devStream);
 }
 
 void DeviceCopy::assignDevice(Device &device, DeviceStream *devStream) {
+    throwErrorIf(devAlloc_ != NULL, "Device already assigned.");
     devAlloc_ = device.objectAllocator();
     if (devStream == NULL)
         devStream = device.defaultStream();

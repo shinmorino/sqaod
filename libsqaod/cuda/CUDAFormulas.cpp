@@ -74,16 +74,22 @@ calculate_E(HostVector *E,
 
 
 template<class real>
-CUDADenseGraphFormulas<real>::CUDADenseGraphFormulas() { }
+CUDADenseGraphFormulas<real>::CUDADenseGraphFormulas() {
+    devStream = NULL;
+}
 
 
 template<class real>
 CUDADenseGraphFormulas<real>::CUDADenseGraphFormulas(Device &device, DeviceStream *stream) {
+    devStream = NULL;
     assignDevice(device, stream);
 }
 
 template<class real>
 void CUDADenseGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
+    throwErrorIf(devStream != NULL, "Device already assigned.");
+    stream = stream;
+    devCopy.assignDevice(device, stream);
     formulas.assignDevice(device, stream);
 }
 
@@ -224,15 +230,21 @@ calculate_E(HostVector *E,
 
 
 template<class real>
-CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas() { }
+CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas() {
+    devStream = NULL;
+}
 
 template<class real>
 CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas(Device &device, DeviceStream *stream) {
+    devStream = NULL;
     assignDevice(device, stream);
 }
 
 template<class real>
 void CUDABipartiteGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
+    throwErrorIf(devStream != NULL, "Device already assigned.");
+    devStream = stream;
+    devCopy.assignDevice(device, stream);
     formulas.assignDevice(device, stream);
 }
 

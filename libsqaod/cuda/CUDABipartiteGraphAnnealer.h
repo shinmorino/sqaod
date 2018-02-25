@@ -23,14 +23,6 @@ class CUDABipartiteGraphAnnealer : public sqaod::BipartiteGraphAnnealer<real> {
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
     typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
-
-    typedef sqaod::BipartiteGraphAnnealer<real> Base;
-
-    using Base::annState_;
-    using Base::om_;
-    using Base::N0_;
-    using Base::N1_;
-    using Base::m_;
     
 public:
     CUDABipartiteGraphAnnealer();
@@ -58,9 +50,7 @@ public:
 
     /* void setPreference(const Preference &pref); */
 
-    const HostVector &get_E() const {
-        return E_;
-    }
+    const HostVector &get_E() const;
 
     const BitsPairArray &get_x() const;
 
@@ -123,6 +113,27 @@ private:
     DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
+
+    typedef sqaod::BipartiteGraphAnnealer<real> Base;
+    using Base::om_;
+    using Base::N0_;
+    using Base::N1_;
+    using Base::m_;
+    /* annealer state */
+    using Base::solRandSeedGiven;
+    using Base::solInitialized;
+    using Base::solProblemSet;
+    using Base::solQSet;
+    using Base::solSolutionAvailable;
+    using Base::setState;
+    using Base::clearState;
+    using Base::isRandSeedGiven;
+    using Base::isProblemSet;
+    using Base::isInitialized;
+    using Base::throwErrorIfProblemNotSet;
+    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfQNotSet;
+    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

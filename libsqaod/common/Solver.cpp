@@ -1,4 +1,5 @@
 #include "Solver.h"
+#include "defines.h"
 
 using namespace sqaod;
 
@@ -11,15 +12,71 @@ void Solver<real>::setPreferences(const Preferences &prefs) {
 }
 
 
+/* solver state */
+template<class real>
+void Solver<real>::setState(SolverState state) {
+    solverState_ |= state;
+}
+
+template<class real>
+void Solver<real>::clearState(SolverState state) {
+    solverState_ &= ~state;
+}
+
+template<class real>
+bool Solver<real>::isRandSeedGiven() const {
+    return bool(solverState_ & solRandSeedGiven);
+}
+
+template<class real>
+bool Solver<real>::isProblemSet() const {
+    return bool(solverState_ & solProblemSet);
+}
+
+template<class real>
+bool Solver<real>::isInitialized() const {
+    return bool(solverState_ & solInitialized);
+}
+
+template<class real>
+bool Solver<real>::isQSet() const {
+    return bool(solverState_ & solQSet);
+}
+
+template<class real>
+void Solver<real>::throwErrorIfProblemNotSet() const {
+    throwErrorIf(!isProblemSet(), "Problem is not set.");
+}
+
+template<class real>
+void Solver<real>::throwErrorIfNotInitialized() const {
+    throwErrorIfProblemNotSet();
+    throwErrorIf(!isInitialized(),
+                 "not initialized, call initAnneal() or initSearch() in advance.");
+}
+
+template<class real>
+void Solver<real>::throwErrorIfQNotSet() const {
+    throwErrorIf(!isQSet(),
+                 "Bits(x or q) not initialized.  Plase set or randomize in advance.");
+}
+
+template<class real>
+void Solver<real>::throwErrorIfSolutionNotAvailable() const {
+    throwErrorIf(!(solverState_ & solSolutionAvailable),
+                 "Bits(x or q) not initialized.  Plase set or randomize in advance.");
+}
+
+
 template<class real>
 Algorithm BFSearcher<real>::selectAlgorithm(Algorithm algo) {
     return algoBruteForceSearch;
 }
     
-template<class real>Algorithm BFSearcher<real>::getAlgorithm() const {
+template<class real>
+Algorithm BFSearcher<real>::getAlgorithm() const {
     return algoBruteForceSearch;
 }
-
 
 template<class real>
 Preferences Annealer<real>::getPreferences() const {
@@ -33,8 +90,9 @@ template<class real>
 void Annealer<real>::setPreference(const Preference &pref) {
     if (pref.name == pnNumTrotters) {
         throwErrorIf(pref.nTrotters <= 0, "# trotters must be a positive integer.");
+        if (this->m_ != pref.nTrotters)
+            Solver<real>::clearState(Solver<real>::solInitialized);
         this->m_ = pref.nTrotters;
-        this->annState_ |= annNTrottersGiven;
     }
 }
 
