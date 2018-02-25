@@ -2,52 +2,60 @@ import numpy as np
 import sqaod
 import device
 from sqaod.common import checkers
-import cuda_dg_bf_searcher as dg_bf_searcher
+import cuda_dg_bf_searcher as cext
 
 class DenseGraphBFSearcher :
+
+    _cext = cext
+    _active_device = device.active_device
     
-    def __init__(self, W, optimize, dtype) :
-        self._cext = dg_bf_searcher
+    def __init__(self, W, optimize, dtype, prefdict) :
+        self._cext = cext
         self.dtype = dtype
-	self._device = device.active_device;
-        self._ext = dg_bf_searcher.new_bf_searcher(dtype)
+        self._cobj = cext.new_bf_searcher(dtype)
  	self.assign_device(device.active_device)
         if not W is None :
             self.set_problem(W, optimize)
+        self.set_preferences(prefdict)
             
     def __del__(self) :
-        dg_bf_searcher.delete_bf_searcher(self._ext, self.dtype)
+        cext.delete_bf_searcher(self._cobj, self.dtype)
 
     def assign_device(self, dev) :
-        dg_bf_searcher.assign_device(self._ext, dev._ext, self.dtype)
+        cext.assign_device(self._cobj, dev._cobj, self.dtype)
 
     def set_problem(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
         W = sqaod.clone_as_ndarray(W, self.dtype)
         self._N = W.shape[0]
-        dg_bf_searcher.set_problem(self._ext, W, optimize, self.dtype)
+        cext.set_problem(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
-    def set_preferences(self, **prefs) :
-        dg_bf_searcher.set_preferences(self._ext, prefs, self.dtype)
+    def set_preferences(self, prefdict = None, **prefs) :
+        if not prefdict is None :
+            cext.set_preferences(self._cobj, prefdict, self.dtype)
+        cext.set_preferences(self._cobj, prefs, self.dtype)
+
+    def get_preferences(self) :
+        return cext.get_preferences(self._cobj, self.dtype);
         
     def get_optimize_dir(self) :
         return self._optimize
 
     def get_E(self) :
-        return dg_bf_searcher.get_E(self._ext, self.dtype)
+        return cext.get_E(self._cobj, self.dtype)
 
     def get_x(self) :
-        return dg_bf_searcher.get_x(self._ext, self.dtype)
+        return cext.get_x(self._cobj, self.dtype)
 
     def init_search(self) :
-        dg_bf_searcher.init_search(self._ext, self.dtype);
+        cext.init_search(self._cobj, self.dtype);
         
     def fin_search(self) :
-        dg_bf_searcher.fin_search(self._ext, self.dtype);
+        cext.fin_search(self._cobj, self.dtype);
         
     def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
-        dg_bf_searcher.search_range(self._ext, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+        cext.search_range(self._cobj, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
         
     def _search(self) :
         N = self._N
@@ -55,16 +63,16 @@ class DenseGraphBFSearcher :
         iStep = min(512, iMax)
         self.init_search()
         for iTile in range(0, iMax, iStep) :
-            dg_bf_searcher.search_range(self._ext, iTile, iTile + iStep, self.dtype)
+            cext.search_range(self._cobj, iTile, iTile + iStep, self.dtype)
         self.fin_search()
         
     def search(self) :
         # one liner.  does not accept ctrl+c.
-        dg_bf_searcher.search(self._ext, self.dtype)
+        cext.search(self._cobj, self.dtype)
 
 
-def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64) :
-    return DenseGraphBFSearcher(W, optimize, dtype)
+def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64, **prefs) :
+    return DenseGraphBFSearcher(W, optimize, dtype, prefs)
 
 if __name__ == '__main__' :
 

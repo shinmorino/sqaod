@@ -2,55 +2,60 @@ import numpy as np
 import sqaod
 from sqaod.common import checkers
 import formulas
-import cuda_bg_annealer as bg_annealer
+import cuda_bg_annealer as cext
 import device
 
 
 class BipartiteGraphAnnealer :
 
-    def __init__(self, b0, b1, W, optimize, n_trotters, dtype) : # n_trotters
+    _cext = cext
+    _active_device = device.active_device
+    
+    def __init__(self, b0, b1, W, optimize, dtype, prefdict) : # n_trotters
         self.dtype = dtype
-        self._ext = bg_annealer.new_annealer(dtype)
+        self._cobj = cext.new_annealer(dtype)
 	self.assign_device(device.active_device)
-	self._device = device.active_device;
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
+        self.set_preferences(prefdict)
 
     def __del__(self) :
-        bg_annealer.delete_annealer(self._ext, self.dtype)
+        cext.delete_annealer(self._cobj, self.dtype)
 
     def assign_device(self, dev) :
-        bg_annealer.assign_device(self._ext, dev._ext, self.dtype)
+        cext.assign_device(self._cobj, dev._cobj, self.dtype)
 
     def seed(self, seed) :
-        bg_annealer.seed(self._ext, seed, self.dtype)
+        cext.seed(self._cobj, seed, self.dtype)
             
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         b0, b1, W = sqaod.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
-        bg_annealer.set_problem(self._ext, b0, b1, W, optimize, self.dtype);
+        cext.set_problem(self._cobj, b0, b1, W, optimize, self.dtype);
         self._optimize = optimize
 
     def get_optimize_dir(self) :
         return self._optimize
 
     def get_problem_size(self) :
-        return bg_annealer.get_problem_size(self._ext, self.dtype)
+        return cext.get_problem_size(self._cobj, self.dtype)
 
-    def set_preferences(self, **prefs) :
-        bg_annealer.set_preferences(self._ext, prefs, self.dtype);
+    def set_preferences(self, prefdict = None, **prefs) :
+        if not prefdict is None :
+            cext.set_preferences(self._cobj, prefdict, self.dtype)
+        cext.set_preferences(self._cobj, prefs, self.dtype)
 
-    def get_preferences(self, **prefs) :
-        return bg_annealer.get_preferences(self._ext, self.dtype);
+    def get_preferences(self) :
+        return cext.get_preferences(self._cobj, self.dtype);
 
     def get_E(self) :
         return self._E
 
     def get_x(self) :
-        return bg_annealer.get_x(self._ext, self.dtype)
+        return cext.get_x(self._cobj, self.dtype)
 
     def set_x(self, x0, x1) :
-        bg_annealer.set_x(self._ext, x0, x1, self.dtype)
+        cext.set_x(self._cobj, x0, x1, self.dtype)
 
     # Ising model / spins
     
@@ -60,36 +65,35 @@ class BipartiteGraphAnnealer :
         h1 = np.ndarray((N1), self.dtype);
         J = np.ndarray((N1, N0), self.dtype);
         c = np.ndarray((1), self.dtype)
-        bg_annealer.get_hJc(self._ext, h0, h1, J, c, self.dtype)
+        cext.get_hJc(self._cobj, h0, h1, J, c, self.dtype)
         return h0, h1, J, c[0]
             
     def get_q(self) :
-        return bg_annealer.get_q(self._ext, self.dtype)
+        return cext.get_q(self._cobj, self.dtype)
 
     def randomize_q(self) :
-        bg_annealer.randomize_q(self._ext, self.dtype)
+        cext.randomize_q(self._cobj, self.dtype)
 
     def calculate_E(self) :
-        bg_annealer.calculate_E(self._ext, self.dtype)
+        cext.calculate_E(self._cobj, self.dtype)
 
     def init_anneal(self) :
-        bg_annealer.init_anneal(self._ext, self.dtype)
+        cext.init_anneal(self._cobj, self.dtype)
         
     def anneal_one_step(self, G, kT) :
-        bg_annealer.anneal_one_step(self._ext, G, kT, self.dtype)
+        cext.anneal_one_step(self._cobj, G, kT, self.dtype)
 
     def fin_anneal(self) :
-        bg_annealer.fin_anneal(self._ext, self.dtype)
+        cext.fin_anneal(self._cobj, self.dtype)
         prefs = self.get_preferences()
         m = prefs['n_trotters']
         self._E = np.empty((m), self.dtype)
-        bg_annealer.get_E(self._ext, self._E, self.dtype)
+        cext.get_E(self._cobj, self._E, self.dtype)
 
         
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
-                             optimize = sqaod.minimize, n_trotters = None, \
-                             dtype = np.float64) :
-    return BipartiteGraphAnnealer(b0, b1, W, optimize, n_trotters, dtype)
+                             optimize = sqaod.minimize, dtype = np.float64, **prefs) :
+    return BipartiteGraphAnnealer(b0, b1, W, optimize, dtype, prefs)
 
 
 if __name__ == '__main__' :
