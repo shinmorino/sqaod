@@ -212,6 +212,8 @@ void CUDADenseGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
     devStream_->synchronize();
+
+    setState(solSolutionAvailable);
 }
 
 template<class real>

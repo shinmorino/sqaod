@@ -25,15 +25,13 @@ CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher(Device &device)
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::~CUDABipartiteGraphBFSearcher() {
     deallocate();
-    
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::deallocate() {
     if (h_packedMinXPairs_.d_data != NULL)
         HostObjectAllocator().deallocate(h_packedMinXPairs_);
-    h_packedMinXPairs_.d_data = NULL;
-    
+    batchSearch_.deallocate();
 }
 
 template<class real>

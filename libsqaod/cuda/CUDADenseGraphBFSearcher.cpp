@@ -18,6 +18,7 @@ CUDADenseGraphBFSearcher<real>::CUDADenseGraphBFSearcher() {
 template<class real>
 CUDADenseGraphBFSearcher<real>::CUDADenseGraphBFSearcher(Device &device) {
     tileSize_ = 16384; /* FIXME: give a correct size */
+    deviceAssigned_ = false;
     assignDevice(device);
 }
 

@@ -224,6 +224,8 @@ void CUDABipartiteGraphAnnealer<real>::finAnneal() {
     syncBits();
     calculate_E();
     devStream_->synchronize();
+
+    setState(solSolutionAvailable);
 }
 
 
