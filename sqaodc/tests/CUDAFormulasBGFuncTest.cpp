@@ -5,8 +5,8 @@
 #include "utils.h"
 
 namespace sq = sqaod;
+namespace sqcpu = sqaod_cpu;
 using namespace sqaod_cuda;
-
 
 CUDAFormulasBGFuncTest::CUDAFormulasBGFuncTest(void) : MinimalTestSuite("CUDAFormulasBGFuncTest") {
 }
@@ -44,7 +44,7 @@ void CUDAFormulasBGFuncTest::tests() {
     DeviceCopy devCopy(device_);
     // DeviceStream *devStream = device_.defaultStream();
 
-    typedef sq::BGFuncs<real> BGF;
+    typedef sqcpu::BGFuncs<real> BGF;
     DeviceBipartiteGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 

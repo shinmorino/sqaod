@@ -7,9 +7,7 @@
 #include <common/Random.h>
 #include <cuda/DeviceCopy.h>
 
-namespace sq = sqaod;
 using namespace sqaod_cuda;
-
 
 template<class real>
 real epusiron();

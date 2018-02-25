@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include "utils.h"
 
+namespace sqcpu = sqaod_cpu;
 using namespace sqaod_cuda;
 
 CUDADenseGraphBFSolverTest::CUDADenseGraphBFSolverTest(void) : MinimalTestSuite("TCUDADenseGraphBFSolverTest")
@@ -212,7 +213,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         MatrixType W = testMatSymmetric<real>(N);
         TEST_ASSERT(sqaod::isSymmetric(W));
 
-        sq::CPUDenseGraphBFSearcher<real> cpuSolver;
+        sqcpu::CPUDenseGraphBFSearcher<real> cpuSolver;
         cpuSolver.setProblem(W);
         cpuSolver.search();
         const sq::VectorType<real> &cpuE = cpuSolver.get_E();
@@ -227,8 +228,8 @@ void CUDADenseGraphBFSolverTest::tests() {
         TEST_ASSERT(cpuE == cudaE);
         TEST_ASSERT(cpuX == cudaX);
 
-        VectorType<real> cpuVecX = cast<real>(cpuX[0]);
-        VectorType<real> cudaVecX = cast<real>(cudaX[0]);
+        sq::VectorType<real> cpuVecX = sq::cast<real>(cpuX[0]);
+        sq::VectorType<real> cudaVecX = sq::cast<real>(cudaX[0]);
 
         //real valCpuE, valCudaE;
         //DGFuncs<real>::calculate_E(&valCpuE, W, cpuVecX);

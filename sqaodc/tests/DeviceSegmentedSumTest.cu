@@ -6,7 +6,6 @@
 #include "utils.h"
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
 
 DeviceSegmentedSumTest::DeviceSegmentedSumTest(void) : MinimalTestSuite("DeviceSegmentedSumTest")
 {

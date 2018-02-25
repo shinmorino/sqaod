@@ -82,16 +82,16 @@ template void show(const sqaod_cuda::DeviceVectorType<float> &dvec, const sqaod:
 
 
 template<class real>
-VectorType<real> segmentedSum(const MatrixType<real> &A, sq::SizeType segLen, sq::SizeType nSegments) {
-    VectorType<real> x;
+sq::VectorType<real> segmentedSum(const sq::MatrixType<real> &A, sq::SizeType segLen, sq::SizeType nSegments) {
+    sq::VectorType<real> x;
     sq::EigenMatrixType<real> eA = sq::mapTo(A);
     x.resize(nSegments);
     sq::mapToRowVector(x) = eA.rowwise().sum();
     return x;
 }
 
-template VectorType<double> segmentedSum(const MatrixType<double> &A, sq::SizeType segLen, sq::SizeType nSegments);
-template VectorType<float> segmentedSum(const MatrixType<float> &A, sq::SizeType segLen, sq::SizeType nSegments);
+template sq::VectorType<double> segmentedSum(const sq::MatrixType<double> &A, sq::SizeType segLen, sq::SizeType nSegments);
+template sq::VectorType<float> segmentedSum(const sq::MatrixType<float> &A, sq::SizeType segLen, sq::SizeType nSegments);
 
 
 template<class real>

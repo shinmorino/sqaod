@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include "utils.h"
 
-namespace sq = sqaod;
-
+using namespace sqaod_cpu;
 
 CUDAFormulasDGFuncTest::CUDAFormulasDGFuncTest(void) : MinimalTestSuite("CUDAFormulasDGFuncTest") {
 }
@@ -44,7 +43,7 @@ void CUDAFormulasDGFuncTest::tests() {
     // DeviceStream *devStream = device_.defaultStream();
     // Device::ObjectAllocator *alloc = device_.objectAllocator();
 
-    typedef sq::DGFuncs<real> DGF;
+    typedef DGFuncs<real> DGF;
     DeviceDenseGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 

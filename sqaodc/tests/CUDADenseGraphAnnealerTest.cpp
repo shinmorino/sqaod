@@ -9,7 +9,8 @@
 #include <common/EigenBridge.h>
 
 using namespace sqaod_cuda;
-namespace sq = sqaod;
+namespace sqcpu = sqaod_cpu;
+
 
 CUDADenseGraphAnnealerTest::CUDADenseGraphAnnealerTest(void) : MinimalTestSuite("CUDADenseGraphAnnealerTest")
 {
@@ -129,7 +130,7 @@ void CUDADenseGraphAnnealerTest::test() {
         HostVector Jq(m);
         HostVector h;
         real c;
-        DGFuncs<real>::calculate_hJc(&h, &J, &c, W);
+        sqcpu::DGFuncs<real>::calculate_hJc(&h, &J, &c, W);
         int flippos[m];
         for (int idx = 0; idx < m; ++idx)
             flippos[idx] = (idx * 3) % m;
@@ -149,7 +150,7 @@ void CUDADenseGraphAnnealerTest::test() {
 
         CUDADenseGraphAnnealer<real> an(device_);
         an.setProblem(W);
-        an.setPreference(Preference(pnNumTrotters, m));
+        an.setPreference(sq::Preference(sq::pnNumTrotters, m));
         an.seed(0);
         // an.randomize_q();  FIXME: initilization check.
         an.initAnneal();
