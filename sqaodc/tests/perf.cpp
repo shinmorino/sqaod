@@ -1,24 +1,11 @@
-#include <cpu/CPUDenseGraphBFSearcher.h>
-#include <cpu/CPUDenseGraphAnnealer.h>
-#include <cpu/CPUBipartiteGraphBFSearcher.h>
-#include <cpu/CPUBipartiteGraphAnnealer.h>
+#include <sqaodc/sqaodc.h>
+#include <cuda_runtime.h>
 #include <iostream>
 #include <chrono>
-#include <cuda_runtime.h>
 
 namespace sq = sqaod;
 
-
-#ifdef SQAOD_CUDA_ENABLED
-#  include <cuda/CUDADenseGraphBFSearcher.h>
-#  include <cuda/CUDADenseGraphAnnealer.h>
-#  include <cuda/CUDABipartiteGraphBFSearcher.h>
-#  include <cuda/CUDABipartiteGraphAnnealer.h>
-namespace sqcuda = sqaod_cuda;
-
-sqcuda::Device device;
-
-#endif
+sq::cuda::Device device;
 
 template<class T>
 void showDuration(const T &duration) {
@@ -77,8 +64,9 @@ void runSearch(S<real> &searcher) {
     auto end = std::chrono::system_clock::now();
 
     const sq::VectorType<real> &E = searcher.get_E();
-    std::cerr << "Energy : " << E.min() << std::endl << std::endl;
+    std::cerr << "Energy : " << E.min() << std::endl;
     showDuration(end - start);
+    std::cerr << std::endl;
 }
 
 
@@ -108,9 +96,9 @@ void anneal(A<real> &an) {
     std::cerr << std::endl;
     const sq::VectorType<real> &E = an.get_E();
     std::cerr << "Energy : " << E.min() << std::endl;
-    std::cerr << "# Steps : " << nSteps << std::endl << std::endl;
-
+    std::cerr << "# Steps : " << nSteps << std::endl;
     showDuration(end - start);
+    std::cerr << std::endl;
 }
 
 template<class real>
@@ -130,13 +118,13 @@ void run(const char *precisionStr) {
         sq::MatrixType<real> W = symmetricMatrix<real>(N);
         if (runCPUSolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CPU, %s\n", precisionStr);
-            sq::CPUDenseGraphBFSearcher<real> searcher;
+            sq::cpu::DenseGraphBFSearcher<real> searcher;
             searcher.setProblem(W);
             runSearch(searcher);
         }
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CUDA, %s\n", precisionStr);
-            sqcuda::CUDADenseGraphBFSearcher<real> searcher(device);
+            sq::cuda::DenseGraphBFSearcher<real> searcher(device);
             searcher.setProblem(W);
             runSearch(searcher);
         }
@@ -149,7 +137,8 @@ void run(const char *precisionStr) {
         sq::MatrixType<real> W = symmetricMatrix<real>(N);
         if (runCPUSolvers) {
             fprintf(stderr, "Dense graph annealer, CPU, %s\n", precisionStr);
-            sq::CPUDenseGraphAnnealer<real> annealer;
+            fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
+            sq::cpu::DenseGraphAnnealer<real> annealer;
             annealer.setProblem(W);
             sq::Preference pref(sq::pnNumTrotters, sq::SizeType(N / 2));
             annealer.setPreference(pref);
@@ -157,7 +146,8 @@ void run(const char *precisionStr) {
         }
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph annealer, CUDA, %s\n", precisionStr);
-            sqcuda::CUDADenseGraphAnnealer<real> annealer(device);
+            fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
+            sq::cuda::DenseGraphAnnealer<real> annealer(device);
             annealer.setProblem(W);
             sq::Preference pref(sq::pnNumTrotters, sq::SizeType(N / 2));
             annealer.setPreference(pref);
@@ -174,13 +164,14 @@ void run(const char *precisionStr) {
         createBipartiteGraph(&b0, &b1, &W, N0, N1);
         if (runCPUSolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CPU, %s\n", precisionStr);
-            sq::CPUBipartiteGraphBFSearcher<real> searcher;
+            fprintf(stderr, "(N0, N1) = (%d, %d)\n", N0, N1);
+            sq::cpu::BipartiteGraphBFSearcher<real> searcher;
             searcher.setProblem(b0, b1, W);
             runSearch(searcher);
         }
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CUDA, %s\n", precisionStr);
-            sqcuda::CUDABipartiteGraphBFSearcher<real> searcher(device);
+            sq::cuda::BipartiteGraphBFSearcher<real> searcher(device);
             searcher.setProblem(b0, b1, W);
             runSearch(searcher);
         }
@@ -195,7 +186,7 @@ void run(const char *precisionStr) {
         createBipartiteGraph(&b0, &b1, &W, N0, N1);
         if (runCPUSolvers) {
             fprintf(stderr, "Bipartite graph annealer, CPU, %s\n", precisionStr);
-            sq::CPUBipartiteGraphAnnealer<real> annealer;
+            sq::cpu::BipartiteGraphAnnealer<real> annealer;
             annealer.setProblem(b0, b1, W);
             sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
             annealer.setPreference(pref);
@@ -203,7 +194,7 @@ void run(const char *precisionStr) {
         }
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
-            sqcuda::CUDABipartiteGraphAnnealer<real> annealer(device);
+            sq::cuda::BipartiteGraphAnnealer<real> annealer(device);
             annealer.setProblem(b0, b1, W);
             sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
             annealer.setPreference(pref);
