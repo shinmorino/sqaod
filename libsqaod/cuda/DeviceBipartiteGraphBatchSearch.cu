@@ -23,13 +23,13 @@ void DeviceBipartiteGraphBatchSearch<real>::assignDevice(Device &device, DeviceS
 
 template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::deallocate() {
-    devAlloc_->deallocate(&d_b0_);
-    devAlloc_->deallocate(&d_b1_);
-    devAlloc_->deallocate(&d_W_);
+    devAlloc_->deallocate(d_b0_);
+    devAlloc_->deallocate(d_b1_);
+    devAlloc_->deallocate(d_W_);
     devAlloc_->deallocate(d_bitsMat0_);
     devAlloc_->deallocate(d_bitsMat1_);
     devAlloc_->deallocate(d_Ebatch_);
-    devAlloc_->deallocate(&d_minXPairs_);
+    devAlloc_->deallocate(d_minXPairs_);
 
     HostObjectAllocator halloc;
     halloc.deallocate(h_nMinXPairs_);
