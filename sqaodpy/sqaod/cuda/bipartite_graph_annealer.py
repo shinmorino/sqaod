@@ -22,8 +22,8 @@ class BipartiteGraphAnnealer :
     def __del__(self) :
         cext.delete_annealer(self._cobj, self.dtype)
 
-    def assign_device(self, dev) :
-        cext.assign_device(self._cobj, dev._cobj, self.dtype)
+    def assign_device(self, device) :
+        cext.assign_device(self._cobj, device._cobj, self.dtype)
 
     def seed(self, seed) :
         cext.seed(self._cobj, seed, self.dtype)
@@ -107,7 +107,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
 
-    an = bipartite_graph_annealer(b0, b1, W, sqaod.minimize, m)
+    an = bipartite_graph_annealer(b0, b1, W, sqaod.minimize, n_trotters=m)
     
     Ginit = 5
     Gfin = 0.01

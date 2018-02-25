@@ -21,8 +21,8 @@ class DenseGraphAnnealer :
     def __del__(self) :
         cext.delete_annealer(self._cobj, self.dtype)
         
-    def assign_device(self, dev) :
-        cext.assign_device(self._cobj, dev._cobj, self.dtype)
+    def assign_device(self, device) :
+        cext.assign_device(self._cobj, device._cobj, self.dtype)
 
     def seed(self, seed) :
         cext.seed(self._cobj, seed, self.dtype)
@@ -86,7 +86,7 @@ class DenseGraphAnnealer :
         
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
-    ann = DenseGraphAnnealer(W, optimize, n_trotters, dtype, prefs)
+    ann = DenseGraphAnnealer(W, optimize, dtype, prefs)
     return ann
 
 
@@ -109,7 +109,7 @@ if __name__ == '__main__' :
     m = 5
     W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
-    ann = dense_graph_annealer(W, n_trotters = m, dtype=np.float64)
+    ann = dense_graph_annealer(W, dtype=np.float64, n_trotters = m)
     import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_problem(W, sqaod.minimize)
