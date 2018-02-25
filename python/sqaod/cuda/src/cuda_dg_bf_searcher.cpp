@@ -59,12 +59,14 @@ PyObject *dg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
         return NULL;
 
     sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->assignDevice(*device);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->assignDevice(*device);
-    else
-        RAISE_INVALID_DTYPE(dtype, Cuda_DgBfSearcherError);
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->assignDevice(*device);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->assignDevice(*device);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cuda_DgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_DgBfSearcherError);
     
     Py_INCREF(Py_None);
     return Py_None;    

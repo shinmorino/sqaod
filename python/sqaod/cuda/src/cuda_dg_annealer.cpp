@@ -57,12 +57,14 @@ PyObject *dg_annealer_assign_device(PyObject *module, PyObject *args) {
         return NULL;
 
     sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
-    if (isFloat64(dtype))
-        pyobjToCppObj<double>(objExt)->assignDevice(*device);
-    else if (isFloat32(dtype))
-        pyobjToCppObj<float>(objExt)->assignDevice(*device);
-    else
-        RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->assignDevice(*device);
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->assignDevice(*device);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_DgAnnealerError);
     
     Py_INCREF(Py_None);
     return Py_None;    
