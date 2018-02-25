@@ -50,7 +50,7 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::selectAlgorithm(enum sq::Algorithm al
 }
 
 template<class real>
-enum sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
+sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
     if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepNaive)
         return sq::algoNaive;
     if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepColoring)
@@ -200,7 +200,7 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
 
 #ifndef _OPENMP
     {
-        Random &random = random_[0];
+        sq::Random &random = random_[0];
 #else
 #  pragma omp parallel
     {

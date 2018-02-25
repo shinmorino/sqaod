@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sqaodc\common\Array.h" />
+    <ClInclude Include="..\..\sqaodc\common\Common.h" />
+    <ClInclude Include="..\..\sqaodc\common\defines.h" />
+    <ClInclude Include="..\..\sqaodc\common\EigenBridge.h" />
+    <ClInclude Include="..\..\sqaodc\common\Matrix.h" />
+    <ClInclude Include="..\..\sqaodc\common\Preference.h" />
+    <ClInclude Include="..\..\sqaodc\common\Random.h" />
+    <ClInclude Include="..\..\sqaodc\common\Solver.h" />
+    <ClInclude Include="..\..\sqaodc\common\undef.h" />
+    <ClInclude Include="..\..\sqaodc\common\UniformOp.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUBipartiteGraphAnnealer.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUBipartiteGraphBatchSearch.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUBipartiteGraphBFSearcher.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphAnnealer.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\CPUFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\cub_iterator.cuh" />
+    <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\CUDADenseGraphAnnealer.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\CUDADenseGraphBFSearcher.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\CUDAFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\cudafuncs.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\Device.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceArray.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceBipartiteGraphBatchSearch.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceConstScalars.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceCopy.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceDenseGraphBatchSearch.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceKernels.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceMath.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceMatrix.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceMemoryStore.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceObject.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceObjectAllocator.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandom.cuh" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandom.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomBuffer.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cuh" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceStream.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\HostObjectAllocator.h" />
+    <ClInclude Include="..\..\sqaodc\sqaodc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sqaodc\common\Common.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\defines.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\Matrix.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\Preference.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\Random.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\Solver.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\UniformOp.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphAnnealer.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphBatchSearch.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphBFSearcher.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphAnnealer.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\CPUFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\CUDADenseGraphBFSearcher.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\CUDAFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\cudafuncs.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\Device.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceConstScalars.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceCopy.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceMath.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceMemoryStore.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceObjectAllocator.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceStream.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\HostObjectAllocator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\CUDADenseGraphAnnealer.cu">
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</Keep>
+      <Keep Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</Keep>
+    </CudaCompile>
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceBipartiteGraphBatchSearch.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceDenseGraphBatchSearch.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceKernels.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandom.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomBuffer.cu" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0AEEDA6A-F70A-4ABC-ADDC-3FD4BF15255B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sqaod</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;SQAOD_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\sqaodc\cub;$(ProjectDir)..\..\sqaodc\eigen;$(ProjectDir)..\..\sqaodc;$(ProjectDir)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>cublas.lib;cudart.lib</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_61,sm_61</CodeGeneration>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;SQAOD_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\sqaodc\cub;$(ProjectDir)..\..\sqaodc\eigen;$(ProjectDir)..\..\sqaodc;$(ProjectDir)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>cublas.lib;cudart.lib</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_61,sm_61</CodeGeneration>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.targets" />
+  </ImportGroup>
+</Project>

@@ -1,4 +1,5 @@
 import sqaod
+import sqaod.cuda
 import numpy as np
 
 def output(searcher) :
@@ -42,8 +43,12 @@ ann = sqaod.py.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
 ann = sqaod.cpu.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
+ann = sqaod.cuda.bipartite_graph_annealer(b0, b1, W)
+anneal(ann)
 
 sol = sqaod.py.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)
 sol = sqaod.cpu.bipartite_graph_bf_searcher(b0, b1, W)
+search(sol)
+sol = sqaod.cuda.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)

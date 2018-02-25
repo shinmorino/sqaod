@@ -28,7 +28,7 @@ build=True
 copy=True
 
 # build
-subprocess.call('msbuild ../sqaod/sqaod.vcxproj /property:Configuration=' + config, shell=True)  
+subprocess.call('msbuild ../sqaodc/sqaodc.vcxproj /property:Configuration=' + config, shell=True)  
 
 projects = []
 projects.append(("cpu_formulas", "7099b44e-dba3-4d07-8824-622ed1de0570"))
@@ -49,7 +49,7 @@ for project in projects:
 for project in projects:
 	fn = project[0] + '.pyd'
 	print project[0]
-	shutil.copyfile('../x64/' + config + '/' + fn, '../../python/sqaod/cpu/' + fn)
+	shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cpu/' + fn)
 
 projects = []
 projects.append(("cuda_device", "4002be82-f681-4b04-b569-e022c8fdce0d"))
@@ -60,8 +60,8 @@ projects.append(("cuda_bg_bf_searcher", "a9611f72-4adb-4a91-9313-7a435e7e75d2"))
 projects.append(("cuda_bg_annealer", "c87406bb-1d4e-496b-a1e4-77208e6dfc6a"))
 
 # generate projects
-#for project in projects:
-#	generate_cuda_project(project)
+for project in projects:
+	generate_cuda_project(project)
 
 for project in projects:
 	subprocess.call('msbuild ' + project[0] + '.vcxproj /property:Configuration=' + config, shell=True)  
@@ -70,4 +70,4 @@ for project in projects:
 for project in projects:
 	fn = project[0] + '.pyd'
 	print project[0]
-	shutil.copyfile('../x64/' + config + '/' + fn, '../../python/sqaod/cuda/' + fn)
+	shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cuda/' + fn)

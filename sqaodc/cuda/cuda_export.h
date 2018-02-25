@@ -5,4 +5,4 @@
 #include <sqaodc/cuda/CUDABipartiteGraphBFSearcher.h>
 #include <sqaodc/cuda/CUDABipartiteGraphAnnealer.h>
 #include <sqaodc/cuda/CUDAFormulas.h>
-
+#include <sqaodc/cuda/Device.h>

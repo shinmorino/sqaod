@@ -136,7 +136,7 @@ void CPUBipartiteGraphAnnealer<real>::randomize_q() {
     throwErrorIfNotInitialized();
 #ifndef _OPENMP
     {
-        Random &random = random_[0];
+        sq::Random &random = random_[0];
         real *q = matQ0_.data();
 #else
 #pragma omp parallel
@@ -246,7 +246,7 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
 #ifndef _OPENMP
     EigenMatrix dEmat = J * qFixed.transpose();
     {
-        Random &random = random_[0];
+        sq::Random &random = random_[0];
 #else
     EigenMatrix dEmat(J.rows(), qFixed.rows());
     // dEmat = J * qFixed.transpose();  // For debug

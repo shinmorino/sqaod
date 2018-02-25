@@ -1,11 +1,9 @@
 #include <pyglue.h>
-#include <cuda/Device.h>
+#include <sqaodc/sqaodc.h>
 #include <string.h>
 
 static PyObject *Cuda_DeviceError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
-
 
 namespace {
 
@@ -14,9 +12,9 @@ PyObject *cuda_device_new(PyObject *module, PyObject *args) {
     int devNo = -1;
     if (!PyArg_ParseTuple(args, "i", &devNo))
         return NULL;
-    sqcu::Device *device;
+    sq::cuda::Device *device;
     TRY {
-        device = new sqcu::Device(devNo);
+        device = new sq::cuda::Device(devNo);
     } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
 
     PyObject *obj = PyArrayScalar_New(UInt64);
@@ -30,7 +28,7 @@ PyObject *cuda_device_delete(PyObject *module, PyObject *args) {
     PyObject *objExt;
     if (!PyArg_ParseTuple(args, "O", &objExt))
         return NULL;
-    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objExt, UInt64);
+    sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     delete device;
     Py_INCREF(Py_None);
     return Py_None;    
@@ -43,7 +41,7 @@ PyObject *cuda_device_initialize(PyObject *module, PyObject *args) {
     int devNo;
     if (!PyArg_ParseTuple(args, "Oi", &objExt, &devNo))
         return NULL;
-    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objExt, UInt64);
+    sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->initialize(devNo);
     } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
@@ -58,7 +56,7 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
     PyObject *objExt;
     if (!PyArg_ParseTuple(args, "O", &objExt))
         return NULL;
-    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objExt, UInt64);
+    sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->finalize();
     } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);

@@ -54,6 +54,8 @@ using BipartiteGraphAnnealer = sqaod_cuda::CUDABipartiteGraphAnnealer<real>;
 template<class real>
 using BipartiteGraphFormulas = sqaod_cuda::CUDABipartiteGraphFormulas<real>;
 
+typedef sqaod_cuda::Device Device;
+
 }
 
 #endif

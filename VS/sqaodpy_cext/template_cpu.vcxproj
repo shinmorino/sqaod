@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\python\sqaod\cpu\src\@name@.cpp" />
+    <ClCompile Include="..\..\sqaodpy\sqaod\cpu\src\@name@.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FC4A6DD5-9418-48B4-B656-F55465821DF0}</ProjectGuid>
@@ -35,6 +35,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -64,13 +65,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TEMPLATE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Python27\Lib\site-packages\numpy\core\include;C:\Python27\include;$(ProjectDir)\..\..\libsqaod\eigen;$(ProjectDir)\..\..\libsqaod\cub;$(ProjectDir)\..\..\libsqaod;$(ProjectDir)\..\..\libsqaod\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Python27\Lib\site-packages\numpy\core\include;C:\Python27\include;$(ProjectDir)\..\..\sqaodc\eigen;$(ProjectDir)\..\..\sqaodc\cub;$(ProjectDir)\..\..;$(ProjectDir)\..\..\sqaodc\pyglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)..\x64\$(Configuration);C:\Python27\libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqaod.lib</AdditionalDependencies>
+      <AdditionalDependencies>sqaodc.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -82,7 +83,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TEMPLATE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Python27\Lib\site-packages\numpy\core\include;C:\Python27\include;$(ProjectDir)\..\..\libsqaod\eigen;$(ProjectDir)\..\..\libsqaod\cub;$(ProjectDir)\..\..\libsqaod;$(ProjectDir)\..\..\libsqaod\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Python27\Lib\site-packages\numpy\core\include;C:\Python27\include;$(ProjectDir)\..\..\sqaodc\eigen;$(ProjectDir)\..\..\sqaodc\cub;$(ProjectDir)\..\..;$(ProjectDir)\..\..\sqaodc\pyglue;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,10 +91,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)..\x64\$(Configuration);C:\Python27\libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqaod.lib</AdditionalDependencies>
+      <AdditionalDependencies>sqaodc.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.1.targets" />
   </ImportGroup>
 </Project>

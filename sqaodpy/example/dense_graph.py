@@ -1,4 +1,5 @@
 import sqaod
+import sqaod.cuda
 import numpy as np
 
 
@@ -44,8 +45,12 @@ ann = sqaod.py.dense_graph_annealer(W, sqaod.minimize, 4)
 anneal(ann)
 ann = sqaod.cpu.dense_graph_annealer(W, sqaod.minimize, n_trotters = 4)
 anneal(ann)
+ann = sqaod.cuda.dense_graph_annealer(W, sqaod.minimize, 4)
+anneal(ann)
 
 sol = sqaod.py.dense_graph_bf_searcher(W)
 search(sol)
 sol = sqaod.cpu.dense_graph_bf_searcher(W, tile_size = 4)
+search(sol)
+sol = sqaod.cuda.dense_graph_bf_searcher(W)
 search(sol)

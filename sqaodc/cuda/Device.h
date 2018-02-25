@@ -1,7 +1,6 @@
 #ifndef CUDA_DEVICE_H__
 #define CUDA_DEVICE_H__
 
-#include <sqaodc/common/Array.h>
 #include <sqaodc/cuda/DeviceMemoryStore.h>
 #include <sqaodc/cuda/DeviceObjectAllocator.h>
 #include <sqaodc/cuda/DeviceConstScalars.h>
