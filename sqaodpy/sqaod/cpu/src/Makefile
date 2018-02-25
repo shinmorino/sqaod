@@ -1,0 +1,47 @@
+.SUFFIXES: .cpp .o .h .c
+
+include incpath
+INCLUDE+=-I../../../../sqaodc/pyglue -I../../../.. -I../../../../sqaodc/eigen -I/usr/local/cuda-9.1/include
+
+TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_searcher.so ../cpu_bg_annealer.so ../cpu_bg_bf_searcher.so
+cpu_formulas_so_OBJS=cpu_formulas.o
+cpu_dg_annealer_so_OBJS=cpu_dg_annealer.o
+cpu_dg_bf_searcher_so_OBJS=cpu_dg_bf_searcher.o
+cpu_bg_annealer_so_OBJS=cpu_bg_annealer.o
+cpu_bg_bf_searcher_so_OBJS=cpu_bg_bf_searcher.o
+
+CXX=g++
+CC=gcc
+CFLAGS=-fopenmp -std=c++11 -fpic -DPIC -Wall -ggdb -I$(dir $(abspath Makefile)) -Wno-format-security
+#CFLAGS+=-O2
+CXXFLAGS=$(CFLAGS)
+LDFLAGS=-L../../../../sqaodc/.libs -lsqaodc
+
+all: $(TARGETS)
+
+../cpu_formulas.so: $(cpu_formulas_so_OBJS)
+	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+
+../cpu_dg_annealer.so: $(cpu_dg_annealer_so_OBJS)
+	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+
+../cpu_dg_bf_searcher.so: $(cpu_dg_bf_searcher_so_OBJS)
+	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+
+../cpu_bg_annealer.so: $(cpu_bg_annealer_so_OBJS)
+	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+
+../cpu_bg_bf_searcher.so: $(cpu_bg_bf_searcher_so_OBJS)
+	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+
+%.o: %.cpp 
+	$(CXX) -c $(INCLUDE) $(CXXFLAGS) $< -o $@
+
+%.o: %.c
+	$(CC) -c $(INCLUDE) $(CFLAGS) $< -o $@
+
+
+.PHONY:
+
+clean:
+	rm -f $(TARGETS) $(cpu_formulas_so_OBJS) $(cpu_dg_annealer_so_OBJS) $(cpu_bg_annealer_so_OBJS) $(cpu_dg_bf_searcher_so_OBJS)
