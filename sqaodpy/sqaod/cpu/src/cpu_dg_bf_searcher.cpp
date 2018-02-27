@@ -1,6 +1,5 @@
-#include <pyglue.h>
+#include <sqaodc/pyglue/pyglue.h>
 #include <sqaodc/sqaodc.h>
-#include <string.h>
 
 
 static PyObject *Cpu_DgBfSearcherError;

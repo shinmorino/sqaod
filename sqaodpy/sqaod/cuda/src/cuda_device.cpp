@@ -1,6 +1,5 @@
-#include <pyglue.h>
+#include <sqaodc/pyglue/pyglue.h>
 #include <sqaodc/sqaodc.h>
-#include <string.h>
 
 static PyObject *Cuda_DeviceError;
 namespace sq = sqaod;
@@ -9,13 +8,10 @@ namespace {
 
 extern "C"
 PyObject *cuda_device_new(PyObject *module, PyObject *args) {
-    int devNo = -1;
-    if (!PyArg_ParseTuple(args, "i", &devNo))
-        return NULL;
     sq::cuda::Device *device;
     TRY {
-        device = new sq::cuda::Device(devNo);
-    } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
+        device = new sq::cuda::Device();
+    } CATCH_ERROR_AND_RETURN(PyExc_RuntimeError);
 
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)device);
@@ -44,7 +40,7 @@ PyObject *cuda_device_initialize(PyObject *module, PyObject *args) {
     sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->initialize(devNo);
-    } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
+    } CATCH_ERROR_AND_RETURN(PyExc_RuntimeError);
 
     Py_INCREF(Py_None);
     return Py_None;    

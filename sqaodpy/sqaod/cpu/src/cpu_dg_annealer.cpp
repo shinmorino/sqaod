@@ -1,7 +1,5 @@
-#include <pyglue.h>
-#include <sqaodc/cpu/CPUFormulas.h>
-#include <sqaodc/cpu/CPUDenseGraphAnnealer.h>
-#include <string.h>
+#include <sqaodc/pyglue/pyglue.h>
+#include <sqaodc/sqaodc.h>
 
 
 static PyObject *Cpu_DgAnnealerError;

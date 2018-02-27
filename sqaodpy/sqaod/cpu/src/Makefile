@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../../sqaodc/pyglue -I../../../.. -I../../../../sqaodc/eigen -I/usr/local/cuda-9.1/include
+INCLUDE+=-I../../../.. -I../../../../sqaodc/eigen -I/usr/local/cuda-9.1/include
 
 TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_searcher.so ../cpu_bg_annealer.so ../cpu_bg_bf_searcher.so
 cpu_formulas_so_OBJS=cpu_formulas.o
