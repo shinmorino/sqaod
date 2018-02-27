@@ -1,6 +1,11 @@
 import sqaod
-import sqaod.cuda
 import numpy as np
+
+if sqaod.is_cuda_available() :
+    import sqaod.cuda
+else :
+    print 'cuda not available'
+
 
 def output(searcher) :
     summary = sqaod.make_summary(searcher)
@@ -43,12 +48,14 @@ ann = sqaod.py.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
 ann = sqaod.cpu.bipartite_graph_annealer(b0, b1, W)
 anneal(ann)
-ann = sqaod.cuda.bipartite_graph_annealer(b0, b1, W)
-anneal(ann)
+if sqaod.is_cuda_available() :
+    ann = sqaod.cuda.bipartite_graph_annealer(b0, b1, W)
+    anneal(ann)
 
 sol = sqaod.py.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)
 sol = sqaod.cpu.bipartite_graph_bf_searcher(b0, b1, W)
 search(sol)
-sol = sqaod.cuda.bipartite_graph_bf_searcher(b0, b1, W)
-search(sol)
+if sqaod.is_cuda_available() :
+    sol = sqaod.cuda.bipartite_graph_bf_searcher(b0, b1, W)
+    search(sol)

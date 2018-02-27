@@ -50,3 +50,4 @@ maximize = Maximize()
 from sqaod.common import *
 import sqaod.py
 import sqaod.cpu
+from sqaod.common.cuda import is_cuda_available
