@@ -4,10 +4,6 @@ class Solver :
     @abstractmethod
     def select_algorithm(self, algo) :
         raise NotImplementedError()
-    
-    @abstractmethod
-    def get_algorithm(self) :
-        raise NotImplementedError()
 
     @abstractmethod
     def get_preferences(self, **kwargs) :
