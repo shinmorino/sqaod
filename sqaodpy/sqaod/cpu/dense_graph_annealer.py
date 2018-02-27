@@ -38,7 +38,7 @@ class DenseGraphAnnealer :
         cext.set_preferences(self._cobj, prefs, self.dtype)
 
     def get_preferences(self) :
-        return self._cobj.get_preferences(self._cobj, self.dtype)
+        return cext.get_preferences(self._cobj, self.dtype)
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -48,6 +48,9 @@ class DenseGraphAnnealer :
 
     def get_x(self) :
         return cext.get_x(self._cobj, self.dtype)
+
+    def set_x(self, x0, x1) :
+        cext.set_x(self._cobj, x0, x1, self.dtype)
 
     def get_hJc(self) :
         N = self.get_problem_size()
@@ -105,14 +108,12 @@ if __name__ == '__main__' :
 #    W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, dtype=np.float64, n_trotters = m)
-    import sqaod.py as py
+    #import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
-    ann.set_problem(W, sqaod.minimize)
     h, J, c = ann.get_hJc()
     print h
     print J
     print c
-
     
     Ginit = 5.
     Gfin = 0.001
@@ -123,6 +124,7 @@ if __name__ == '__main__' :
     
     for loop in range(0, nRepeat) :
         G = Ginit
+        ann.set_preferences(n_trotters = 4)
         ann.init_anneal()
         ann.randomize_q()
         while Gfin < G :
@@ -134,3 +136,4 @@ if __name__ == '__main__' :
         q = ann.get_q() 
         print E
         print q
+        print ann.get_preferences()

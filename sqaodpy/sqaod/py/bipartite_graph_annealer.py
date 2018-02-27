@@ -2,38 +2,67 @@ import numpy as np
 import sqaod
 import formulas
 from sqaod.common import checkers
+from types import MethodType
+from sqaod import algorithm as algo
 
 
 class BipartiteGraphAnnealer :
 
-    def __init__(self, b0, b1, W, optimize, n_trotters) : # n_trotters
-        self._m = None
-        self._q0 = self._q1 = None
+    def __init__(self, b0, b1, W, optimize, prefdict) : # n_trotters
         if not W is None :
             self.set_problem(b0, b1, W, optimize)
-            # FIXME
-            self.set_solver_preference(n_trotters)
+        self._select_algorithm(algo.coloring)    
+        self.set_preferences(prefdict)
 
     def _vars(self) :
         return self._h0, self._h1, self._J, self._c, self._q0, self._q1
 
-    def _get_dim(self) :
-        return self._dim[0], self._dim[1], self._m
+    def get_problem_size(self) :
+        return self._N0, self._N1;
         
     def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
 
-        self._dim = (W.shape[1], W.shape[0])
+        self._N0 = W.shape[1]
+        self._N1 = W.shape[0]
+        self._m = (self._N0 + self._N1) / 4
         self._optimize = optimize
         h0, h1, J, c = formulas.bipartite_graph_calculate_hJc(b0, b1, W)
         self._h0, self._h1 = optimize.sign(h0), optimize.sign(h1)
         self._J, self._c = optimize.sign(J), optimize.sign(c)
+        
+    def _select_algorithm(self, algoname) :
+        if algoname == algo.naive :
+            self.anneal_one_step = \
+                MethodType(BipartiteGraphAnnealer.anneal_one_step_naive, self)
+        else :
+            self.anneal_one_step = \
+                MethodType(BipartiteGraphAnnealer.anneal_one_step_coloring, self)
 
-    def set_solver_preference(self, n_trotters) :
-        # set n_trotters.  The default value assumed to N / 4
-        if n_trotters is None :
-            n_trotters = (self._dim[0] + self._dim[1]) / 4
-        self._m = max(2, n_trotters)
+    def _get_algorithm(self) :
+        if self.anneal_one_step is self.anneal_one_step_naive :
+            return algo.naive;
+        return algo.coloring
+            
+    def set_preferences(self, prefdict = None, **prefs) :
+        if not prefdict is None :
+            self._set_prefdict(prefdict)
+        self._set_prefdict(prefs)
+        
+    def _set_prefdict(self, prefdict) :
+        v = prefdict.get('n_trotters')
+        if v is not None :
+            self._m = v;
+        v = prefdict.get('algorithm')
+        if v is not None :
+            self._select_algorithm(v)
+
+    def get_preferences(self) :
+        prefs = { }
+        if hasattr(self, '_m') :
+            prefs['n_trotters'] = self._m
+        prefs['algorithm'] = self._get_algorithm()
+        return prefs
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -45,15 +74,6 @@ class BipartiteGraphAnnealer :
         return self._x_pairs
 
     def set_x(self, x0, x1) :
-        if (x0.shape[len(x0.shape) - 1] != self._dim[0]) \
-           or (x1.shape[len(x1.shape) - 1] != self._dim[1]) :
-            raise Exception("Dim does not match.")
-
-        if self._q0 is None :
-            self._q0 = np.empty((self._m, self._dim[0]), dtype=np.int8)
-        if self._q1 is None :
-            self._q1 = np.empty((self._m, self._dim[1]), dtype=np.int8)
-        
         q0 = sqaod.bits_to_qbits(x0)
         q1 = sqaod.bits_to_qbits(x1)
         self._q0[:][...] = q0[:]
@@ -68,48 +88,8 @@ class BipartiteGraphAnnealer :
         return self._q0, self._q1
 
     def randomize_q(self) :
-        if self._q0 is None :
-            self._q0 = np.empty((self._m, self._dim[0]), dtype=np.int8)
         sqaod.randomize_qbits(self._q0)
-        if self._q1 is None :
-            self._q1 = np.empty((self._m, self._dim[1]), dtype=np.int8)
         sqaod.randomize_qbits(self._q1)
-
-    def init_anneal(self) :
-        if self._m is None :
-            self.set_solver_preference(None)
-        self.randomize_q()
-
-    def fin_anneal(self) :
-        self._x_pairs = []
-        for idx in range(self._m) :
-            x0 = sqaod.bits_from_qbits(self._q0[idx])
-            x1 = sqaod.bits_from_qbits(self._q1[idx])
-            self._x_pairs.append((x0, x1))
-        self.calculate_E()
-        
-    def _anneal_half_step(self, N, qAnneal, h, J, qFixed, G, kT, m) :
-        dEmat = np.matmul(J, qFixed.T)
-        twoDivM = 2. / m
-        tempCoef = np.log(np.tanh(G/kT/m)) / kT
-        invKT = 1. / kT
-        for loop in range(N * m) :
-            iq = np.random.randint(N)
-            im = np.random.randint(m)
-            q = qAnneal[im][iq]
-            dE = - twoDivM * q * (h[iq] + dEmat[iq, im])
-            mNeibour0 = (im + m - 1) % m
-            mNeibour1 = (im + 1) % m
-            dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
-            thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
-            if thresh > np.random.rand():
-                qAnneal[im][iq] = -q
-                    
-    def anneal_one_step(self, G, kT) :
-        h0, h1, J, c, q0, q1 = self._vars()
-        N0, N1, m = self._get_dim()
-        self._anneal_half_step(N1, q1, h1, J, q0, G, kT, m)
-        self._anneal_half_step(N0, q0, h0, J.T, q1, G, kT, m)
 
     def calculate_E(self) :
         h0, h1, J, c, q0, q1 = self._vars()
@@ -119,13 +99,94 @@ class BipartiteGraphAnnealer :
             E[idx] = formulas.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
         self._E = self._optimize.sign(E)
 
+    def init_anneal(self) :
+        self._q0 = np.empty((self._m, self._N0), dtype=np.int8)
+        self._q1 = np.empty((self._m, self._N1), dtype=np.int8)
+
+    def fin_anneal(self) :
+        self._x_pairs = []
+        for idx in range(self._m) :
+            x0 = sqaod.bits_from_qbits(self._q0[idx])
+            x1 = sqaod.bits_from_qbits(self._q1[idx])
+            self._x_pairs.append((x0, x1))
+        self.calculate_E()
+
+    def anneal_one_step(self, G, kT) :
+        # will be dynamically replaced.
+        pass
+                
+    def anneal_one_step_naive(self, G, kT) :
+        h0, h1, J, c, q0, q1 = self._vars()
+        N0, N1 = self.get_problem_size()
+        m = self._m
+        N = N0 + N1
+        twoDivM = 2. / m
+        tempCoef = np.log(np.tanh(G/kT/m)) / kT
+        invKT = 1. / kT
+
+        for loop in range(N * m) :
+            iq = np.random.randint(N)
+            im = np.random.randint(m)
+            mNeibour0 = (im + m - 1) % m
+            mNeibour1 = (im + 1) % m
+            
+            if (iq < N0) :
+                q = q0[im][iq]
+                dE = - twoDivM * q * (h0[iq] + np.dot(J.T[iq], q1[im]))
+                dE -= q * (q0[mNeibour0][iq] + q0[mNeibour1][iq]) * tempCoef
+                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                if thresh > np.random.rand():
+                    q0[im][iq] = -q
+            else :
+                iq -= N0
+                q = q1[im][iq]
+                dE = - twoDivM * q * (h1[iq] + np.dot(J[iq], q0[im]))
+                dE -= q * (q1[mNeibour0][iq] + q1[mNeibour1][iq]) * tempCoef
+                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                if thresh > np.random.rand():
+                    q1[im][iq] = -q
+        
+    def _anneal_half_step_coloring(self, N, qAnneal, h, J, qFixed, G, kT, m) :
+        dEmat = np.matmul(J, qFixed.T)
+        twoDivM = 2. / m
+        tempCoef = np.log(np.tanh(G/kT/m)) / kT
+        invKT = 1. / kT
+        for im in range(0, m, 2) :
+            mNeibour0 = (im + m - 1) % m
+            mNeibour1 = (im + 1) % m
+            for iq in range(0, N) :
+                q = qAnneal[im][iq]
+                dE = - twoDivM * q * (h[iq] + dEmat[iq, im])
+                dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
+                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                if thresh > np.random.rand():
+                    qAnneal[im][iq] = -q
+        for im in range(1, m, 2) :
+            mNeibour0 = (im + m - 1) % m
+            mNeibour1 = (im + 1) % m
+            for iq in range(0, N) :
+                q = qAnneal[im][iq]
+                dE = - twoDivM * q * (h[iq] + dEmat[iq, im])
+                dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
+                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                if thresh > np.random.rand():
+                    qAnneal[im][iq] = -q
+                
+    def anneal_one_step_coloring(self, G, kT) :
+        h0, h1, J, c, q0, q1 = self._vars()
+        N0, N1 = self.get_problem_size()
+        m = self._m
+        self._anneal_half_step_coloring(N1, q1, h1, J, q0, G, kT, m)
+        self._anneal_half_step_coloring(N0, q0, h0, J.T, q1, G, kT, m)
+
+
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
-                             optimize = sqaod.minimize, n_trotters = None) :
-    return BipartiteGraphAnnealer(b0, b1, W, optimize, n_trotters)
+                             optimize = sqaod.minimize, **prefs) :
+    return BipartiteGraphAnnealer(b0, b1, W, optimize, prefs)
 
 
 if __name__ == '__main__' :
-    N0 = 10
+    N0 = 12
     N1 = 10
     m = 10
     
@@ -135,7 +196,7 @@ if __name__ == '__main__' :
     b0 = np.random.random((N0)) - 0.5
     b1 = np.random.random((N1)) - 0.5
 
-    an = bipartite_graph_annealer(b0, b1, W, sqaod.minimize, m)
+    an = bipartite_graph_annealer(b0, b1, W, sqaod.minimize, n_trotters=m, algorithm=algo.coloring)
     
     Ginit = 5
     Gfin = 0.01
@@ -145,6 +206,7 @@ if __name__ == '__main__' :
 
     for loop in range(0, n_repeat) :
         an.init_anneal()
+        an.randomize_q()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)
@@ -154,4 +216,4 @@ if __name__ == '__main__' :
         E = an.get_E()
         x = an.get_x()
         print E
-        print x
+        #print x

@@ -53,6 +53,9 @@ class DenseGraphAnnealer :
     def get_x(self) :
         return cext.get_x(self._cobj, self.dtype)
 
+    def set_x(self, x0, x1) :
+        cext.set_x(self._cobj, x0, x1, self.dtype)
+
     def get_hJc(self) :
         N = self.get_problem_size()
         h = np.empty((N), self.dtype)

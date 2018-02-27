@@ -5,9 +5,12 @@ import formulas
 
 class DenseGraphBFSearcher :
     
-    def __init__(self, W = None, optimize = sqaod.minimize) :
+    def __init__(self, W, optimize, prefdict) :
         if W is not None :
             self.set_problem(W, optimize)
+        self._tile_size = 1024
+        self.set_preferences(prefdict)
+        
             
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dims, is symmetric ? */
@@ -17,6 +20,28 @@ class DenseGraphBFSearcher :
         self._x = []
         self._optimize = optimize
         self._W = optimize.sign(W)
+
+    def select_algorithm(self, algoname) :
+        pass # always choose brute-force search.
+
+    def _get_algorithm(self) :
+        return algo.brute_force_search
+            
+    def set_preferences(self, prefdict=None, **prefs) :
+        if not prefdict is None :
+            self._set_prefdict(prefdict)
+        self._set_prefdict(prefs)
+        
+    def _set_prefdict(self, prefdict) :
+        v = prefdict.get('tile_size')
+        if v is not None :
+            self._tile_size = v;
+
+    def get_preferences(self) :
+        prefs = {}
+        prefs['tile_size'] = self._tile_size
+        prefs['algorithm'] = self._get_algorithm()
+        return prefs
 
     def get_optimize_dir(self) :
         return self._optimize
@@ -29,6 +54,7 @@ class DenseGraphBFSearcher :
 
     def init_search(self) :
         N = self._N
+        self._tile_size = min(1 << N, self._tile_size)
         self._xMax = 1 << N
         self._Emin = sys.float_info.max
 
@@ -55,14 +81,14 @@ class DenseGraphBFSearcher :
 
     def search(self) :
         self.init_search()
-        iStep = min(256, self._xMax)
-        for iTile in range(0, self._xMax, iStep) :
-            self.search_range(iTile, iTile + iStep)
+        xStep = min(self._tile_size, self._xMax)
+        for xBegin in range(0, self._xMax, xStep) :
+            self.search_range(xBegin, xBegin + xStep)
         self.fin_search()
         
     
-def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize) :
-    return DenseGraphBFSearcher(W, optimize)
+def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, **prefs) :
+    return DenseGraphBFSearcher(W, optimize, prefs)
 
 
 if __name__ == '__main__' :

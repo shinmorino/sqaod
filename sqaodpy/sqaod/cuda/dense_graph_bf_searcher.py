@@ -31,6 +31,9 @@ class DenseGraphBFSearcher :
         cext.set_problem(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
+    def get_problem_size(self) :
+        return cext.get_problem_size(self._cobj, self.dtype)
+
     def set_preferences(self, prefdict = None, **prefs) :
         if not prefdict is None :
             cext.set_preferences(self._cobj, prefdict, self.dtype)

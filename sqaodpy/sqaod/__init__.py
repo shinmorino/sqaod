@@ -1,14 +1,17 @@
-# consts for factory methods
 
-# graph type   FIXME: give correct definitions
+class Algorithm :
+    pass
 
-dense = 0
-bipartite = 1
+algorithm = Algorithm()
+setattr(algorithm, 'default', 'default')
+setattr(algorithm, 'naive', 'naive')
+setattr(algorithm, 'cloring', 'coloring')
 
-# solver type
+algorithm.default = 'default'
+algorithm.naive = 'naive'
+algorithm.coloring = 'coloring'
+algorithm.brute_force_search = 'brute_force_search'
 
-bruteforce = 0
-anneal = 1
 
 # operations to switch minimize / maximize.
 
