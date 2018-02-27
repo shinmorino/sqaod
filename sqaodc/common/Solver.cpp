@@ -102,9 +102,9 @@ template<class real>
 void Annealer<real>::setPreference(const Preference &pref) {
     if (pref.name == pnNumTrotters) {
         throwErrorIf(pref.nTrotters <= 0, "# trotters must be a positive integer.");
-        if (this->m_ != pref.nTrotters)
+        if (m_ != pref.nTrotters)
             Solver<real>::clearState(Solver<real>::solInitialized);
-        this->m_ = pref.nTrotters;
+        m_ = pref.nTrotters;
     }
 }
 
