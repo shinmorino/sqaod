@@ -5,6 +5,7 @@
 #include "utils.h"
 
 using namespace sqaod_cpu;
+namespace _sq = sqaod;
 
 CUDAFormulasDGFuncTest::CUDAFormulasDGFuncTest(void) : MinimalTestSuite("CUDAFormulasDGFuncTest") {
 }
@@ -30,11 +31,11 @@ void CUDAFormulasDGFuncTest::run(std::ostream &ostm) {
 template<class real>
 void CUDAFormulasDGFuncTest::tests() {
 
-    typedef sq::MatrixType<real> HostMatrix;
-    typedef sq::VectorType<real> HostVector;
-    // typedef sq::EigenMatrixType<real> EigenMatrix;
-    // typedef sq::EigenRowVectorType<real> EigenRowVector;
-    // typedef sq::EigenColumnVectorType<real> EigenColumnVector;
+    typedef _sq::MatrixType<real> HostMatrix;
+    typedef _sq::VectorType<real> HostVector;
+    // typedef _sq::EigenMatrixType<real> EigenMatrix;
+    // typedef _sq::EigenRowVectorType<real> EigenRowVector;
+    // typedef _sq::EigenColumnVectorType<real> EigenColumnVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -68,7 +69,7 @@ void CUDAFormulasDGFuncTest::tests() {
 
     testcase("calculate_E batched") {
         HostMatrix W = testMatSymmetric<real>(N);
-        HostMatrix X = randomizeBits<real>(sq::Dim(m, N));
+        HostMatrix X = randomizeBits<real>(_sq::Dim(m, N));
         HostVector E(m);
         DGF::calculate_E(&E, W, X);
 

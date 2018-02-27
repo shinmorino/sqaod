@@ -5,6 +5,7 @@ check_PROGRAMS=test perf
 LDADD=
 LIBS=
 
+AM_CPPFLAGS=-I$(top_srcdir)/..
 
 test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp
 perf_SOURCES=perf.cpp

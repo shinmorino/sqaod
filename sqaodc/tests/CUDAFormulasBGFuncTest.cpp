@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "utils.h"
 
-namespace sq = sqaod;
 namespace sqcpu = sqaod_cpu;
 using namespace sqaod_cuda;
 

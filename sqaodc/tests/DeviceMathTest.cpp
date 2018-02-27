@@ -4,8 +4,6 @@
 #include <common/EigenBridge.h>
 #include "utils.h"
 
-namespace sq = sqaod;
-
 DeviceMathTest::DeviceMathTest(void) : MinimalTestSuite("DeviceMathTest") {
 }
 
