@@ -47,11 +47,13 @@ enum PreferenceName sqaod::preferenceNameFromString(const char *name) {
         return pnTileSize0;
     if (strcasecmp("tile_size_1", name) == 0)
         return pnTileSize1;
+    if (strcasecmp("precision", name) == 0)
+        return pnPrecision;
     return pnUnknown;
 }
 
-const char *sqaod::preferenceNameToString(enum PreferenceName sp) {
-    switch (sp) {
+const char *sqaod::preferenceNameToString(enum PreferenceName pn) {
+    switch (pn) {
     case pnAlgorithm:
         return "algorithm";
     case pnNumTrotters:
@@ -62,6 +64,8 @@ const char *sqaod::preferenceNameToString(enum PreferenceName sp) {
         return "tile_size_0";
     case pnTileSize1:
         return "tile_size_1";
+    case pnPrecision:
+        return "precision";
     default:
         return "unknown";
     }

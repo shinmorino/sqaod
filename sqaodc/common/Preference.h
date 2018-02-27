@@ -26,25 +26,30 @@ enum PreferenceName {
     pnTileSize = 3,    /* tileSize for brute force searchers */
     pnTileSize0 = 4,   /* tileSize0 for bipartite graph searchers */
     pnTileSize1 = 5,   /* tileSize1 for bipartite graph searchers */
-    pnMax = 6,
+    pnPrecision = 6,
+    pnMax = 7,
 };
 
 enum PreferenceName preferenceNameFromString(const char *name);
 
-const char *preferenceNameToString(enum PreferenceName sp);
+const char *preferenceNameToString(enum PreferenceName pn);
 
 struct Preference {
     Preference(PreferenceName _name, SizeType _size) : name(_name), size(_size) { }
     Preference(PreferenceName _name, Algorithm _algo) : name(_name), algo(_algo) { }
+    Preference(PreferenceName _name, const char *_str) : name(_name), str(_str) { }
     Preference() : name(pnUnknown) { }
     Preference(const Preference &) = default;
 
     PreferenceName name; /* must be the first member. */
     union {
-        Algorithm algo;
         SizeType size;
+        const char *str;
+
+        Algorithm algo;
         SizeType tileSize;
         SizeType nTrotters;
+        const char *precision;
     };
 };
 

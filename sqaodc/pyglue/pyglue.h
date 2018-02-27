@@ -278,6 +278,9 @@ PyObject *createPreferenceValue(const sqaod::Preference &pref) {
     case sqaod::pnTileSize1: {
         return Py_BuildValue("i", pref.size);
     }
+    case sqaod::pnPrecision : {
+        return Py_BuildValue("s", pref.precision);
+    }
     default:
         abort_("Must not reach here.");
         return NULL;

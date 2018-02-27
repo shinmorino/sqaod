@@ -1,6 +1,17 @@
 #include "Solver.h"
 #include "defines.h"
 
+
+namespace sqaod {
+
+/* name string for float/double */
+template<class real> const char *typeString();
+
+template<> const char *typeString<float>() { return "float"; }
+template<> const char *typeString<double>() { return "double"; }
+
+}
+
 using namespace sqaod;
 
 template<class real>
@@ -82,7 +93,8 @@ template<class real>
 Preferences Annealer<real>::getPreferences() const {
     Preferences prefs;
     prefs.pushBack(Preference(pnAlgorithm, this->getAlgorithm()));
-    prefs.pushBack(Preference(pnNumTrotters, this->m_));
+    prefs.pushBack(Preference(pnNumTrotters, m_));
+    prefs.pushBack(Preference(pnPrecision, typeString<real>()));
     return prefs;
 }
 
@@ -114,6 +126,7 @@ Preferences DenseGraphBFSearcher<real>::getPreferences() const {
     Preferences prefs;
     prefs.pushBack(Preference(pnAlgorithm, this->getAlgorithm()));
     prefs.pushBack(Preference(pnTileSize, tileSize_));
+    prefs.pushBack(Preference(pnPrecision, typeString<real>()));
     return prefs;
 }
 
