@@ -8,6 +8,8 @@
 
 namespace sqaod {
 
+bool isCUDAAvailable();
+
 
 template<class real>
 void createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd);

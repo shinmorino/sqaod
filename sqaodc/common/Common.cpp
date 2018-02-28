@@ -2,6 +2,30 @@
 #include <iostream>
 #include <float.h>
 
+#ifdef __linux__
+#include <dlfcn.h>
+
+bool sqaod::isCUDAAvailable() {
+#ifndef SQAOD_CUDA_ENABLED
+    return false;
+#else
+    void *h = dlopen("libcuda.so", RTLD_NOW);
+    if (h == NULL)
+        return false;
+    /* shared library found */
+    typedef int (*cuDeviceGetCountType)(int *);
+    cuDeviceGetCountType cuDeviceGetCount = (cuDeviceGetCountType)dlsym(h, "cuDeviceGetCount");
+    int count = 0;
+    int res = cuDeviceGetCount(&count);
+    bool deviceFound = (res == 0) && (count != 0);
+    dlclose(h);
+    return deviceFound;
+#endif
+    return false;
+}
+
+#endif
+
 
 template<class real>
 void sqaod::createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd) {

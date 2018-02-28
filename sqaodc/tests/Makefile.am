@@ -14,7 +14,7 @@ perf_SOURCES=perf.cpp
 if CUDA_ENABLED
   test_SOURCES+=DeviceMathTest.cpp DeviceTest.cpp
   LDADD+=$(top_builddir)/cuda/libcuda.la
-  LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart
+  LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
 endif
 if WITH_BLAS
   LIBS+=-lblas

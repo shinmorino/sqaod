@@ -110,6 +110,8 @@ void run(const char *precisionStr) {
 
     bool runCPUSolvers = true;
     bool runCUDASolvers = true;
+    if (!sq::isCUDAAvailable())
+        runCUDASolvers = false;
 
     /* Dense graph brute-force searchers */
     if (runDenseGraphBruteForceSearchers) {
@@ -207,17 +209,16 @@ int main() {
     bool runFloatSolvers = true;
     bool runDoubleSolvers = true;
 
-#ifdef SQAOD_CUDA_ENABLED
-    device.initialize();
-#endif
+    if (sq::isCUDAAvailable())
+        device.initialize();
 
     if (runFloatSolvers)
         run<float>("float");
     if (runDoubleSolvers)
         run<double>("double");
 
-#ifdef SQAOD_CUDA_ENABLED
-    device.finalize();
-    cudaDeviceReset();
-#endif
+    if (sq::isCUDAAvailable()) {
+        device.finalize();
+        cudaDeviceReset();
+    }
 }
