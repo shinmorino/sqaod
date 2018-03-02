@@ -84,6 +84,12 @@ void CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, sq::OptimizeMethod
 }
 
 
+template<class real>
+sq::Preferences CPUDenseGraphAnnealer<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cpu"));
+    return prefs;
+}
 
 template<class real>
 const sq::VectorType<real> &CPUDenseGraphAnnealer<real>::get_E() const {

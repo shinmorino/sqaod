@@ -121,6 +121,13 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
 }
 
 template<class real>
+sq::Preferences CUDABipartiteGraphAnnealer<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cuda"));
+    return prefs;
+}
+
+template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
     throwErrorIfSolutionNotAvailable();
     return E_;

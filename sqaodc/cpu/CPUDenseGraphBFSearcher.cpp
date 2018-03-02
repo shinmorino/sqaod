@@ -42,6 +42,13 @@ void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMeth
 }
 
 template<class real>
+sq::Preferences CPUDenseGraphBFSearcher<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cpu"));
+    return prefs;
+}
+
+template<class real>
 const sq::BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xList_;

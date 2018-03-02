@@ -42,7 +42,7 @@ public:
 
     /* void setPreference(const Preference &pref); */
 
-    /* Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
 
     const BitsPairArray &get_x() const;
 

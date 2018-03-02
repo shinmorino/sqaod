@@ -26,7 +26,7 @@ public:
 
     void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
-    /* Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
 
     /* void setPreference(const Preference &pref); */
 

@@ -48,7 +48,7 @@ public:
     void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                     sq::OptimizeMethod om = sq::optMinimize);
 
-    /* Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
 
     /* void setPreference(const Preference &pref); */
 

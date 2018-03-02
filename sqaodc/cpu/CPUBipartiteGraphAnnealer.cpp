@@ -89,6 +89,12 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
     setState(solProblemSet);
 }
 
+template<class real>
+sq::Preferences CPUBipartiteGraphAnnealer<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cpu"));
+    return prefs;
+}
 
 template<class real>
 const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {

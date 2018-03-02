@@ -118,6 +118,12 @@ void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeM
     setState(solProblemSet);
 }
 
+template<class real>
+sq::Preferences CUDADenseGraphAnnealer<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cuda"));
+    return prefs;
+}
 
 template<class real>
 const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {

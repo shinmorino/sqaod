@@ -51,6 +51,13 @@ void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vecto
 }
 
 template<class real>
+sq::Preferences CPUBipartiteGraphBFSearcher<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cpu"));
+    return prefs;
+}
+
+template<class real>
 const sq::BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xPairList_;

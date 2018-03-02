@@ -55,6 +55,13 @@ void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMet
 }
 
 template<class real>
+sq::Preferences CUDADenseGraphBFSearcher<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cuda"));
+    return prefs;
+}
+
+template<class real>
 const sq::BitsArray &CUDADenseGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return xList_;

@@ -34,7 +34,7 @@ public:
     /* FIXME: algo */
     /* void setPreference(const Preference &pref); */
 
-    /* Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
 
     const Vector &get_E() const;
 

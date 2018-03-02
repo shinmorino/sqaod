@@ -63,6 +63,13 @@ void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const 
 }
 
 template<class real>
+sq::Preferences CUDABipartiteGraphBFSearcher<real>::getPreferences() const {
+    sq::Preferences prefs = Base::getPreferences();
+    prefs.pushBack(sq::Preference(sq::pnDevice, "cuda"));
+    return prefs;
+}
+
+template<class real>
 const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
     throwErrorIfSolutionNotAvailable();
     return minXPairs_;

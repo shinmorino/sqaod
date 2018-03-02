@@ -66,6 +66,8 @@ const char *sqaod::preferenceNameToString(enum PreferenceName pn) {
         return "tile_size_1";
     case pnPrecision:
         return "precision";
+    case pnDevice:
+        return "device";
     default:
         return "unknown";
     }

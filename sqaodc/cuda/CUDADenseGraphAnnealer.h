@@ -46,7 +46,7 @@ public:
 
     /* void getProblemSize(sq::SizeType *N) const; */
 
-    /* Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
 
     /* void setPreference(const Preference &pref); */
     

@@ -37,7 +37,7 @@ public:
 
     /* void setPreference(const sq::Preference &pref); */
 
-    /* sq::Preferences getPreferences() const; */
+    sq::Preferences getPreferences() const;
     
     const sq::BitsArray &get_x() const;
 
