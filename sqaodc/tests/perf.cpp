@@ -5,7 +5,9 @@
 
 namespace sq = sqaod;
 
+#ifdef SQAODC_CUDA_ENABLED
 sq::cuda::Device device;
+#endif
 
 template<class T>
 void showDuration(const T &duration) {
@@ -124,12 +126,14 @@ void run(const char *precisionStr) {
             searcher.setProblem(W);
             runSearch(searcher);
         }
+#ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CUDA, %s\n", precisionStr);
             sq::cuda::DenseGraphBFSearcher<real> searcher(device);
             searcher.setProblem(W);
             runSearch(searcher);
         }
+#endif
     }
 
     /* Dense graph annealers */
@@ -146,6 +150,7 @@ void run(const char *precisionStr) {
             annealer.setPreference(pref);
             anneal(annealer);
         }
+#ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph annealer, CUDA, %s\n", precisionStr);
             fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
@@ -155,6 +160,7 @@ void run(const char *precisionStr) {
             annealer.setPreference(pref);
             anneal(annealer);
         }
+#endif
     }
 
     /* Bipartite graph brute-force searchers */
@@ -171,12 +177,14 @@ void run(const char *precisionStr) {
             searcher.setProblem(b0, b1, W);
             runSearch(searcher);
         }
+#ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CUDA, %s\n", precisionStr);
             sq::cuda::BipartiteGraphBFSearcher<real> searcher(device);
             searcher.setProblem(b0, b1, W);
             runSearch(searcher);
         }
+#endif
     }
 
     /* Bipartite graph annealers */
@@ -194,6 +202,7 @@ void run(const char *precisionStr) {
             annealer.setPreference(pref);
             anneal(annealer);
         }
+#ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
             sq::cuda::BipartiteGraphAnnealer<real> annealer(device);
@@ -202,6 +211,7 @@ void run(const char *precisionStr) {
             annealer.setPreference(pref);
             anneal(annealer);
         }
+#endif
     }
 }
 
@@ -209,16 +219,21 @@ int main() {
     bool runFloatSolvers = true;
     bool runDoubleSolvers = true;
 
+#ifdef SQAODC_CUDA_ENABLED
     if (sq::isCUDAAvailable())
         device.initialize();
-
+#endif
+    
     if (runFloatSolvers)
         run<float>("float");
     if (runDoubleSolvers)
         run<double>("double");
 
+#ifdef SQAODC_CUDA_ENABLED
     if (sq::isCUDAAvailable()) {
         device.finalize();
         cudaDeviceReset();
+
     }
+#endif
 }

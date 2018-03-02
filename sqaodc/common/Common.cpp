@@ -6,7 +6,7 @@
 #include <dlfcn.h>
 
 bool sqaod::isCUDAAvailable() {
-#ifndef SQAOD_CUDA_ENABLED
+#ifndef SQAODC_CUDA_ENABLED
     return false;
 #else
     void *h = dlopen("libcuda.so", RTLD_NOW);

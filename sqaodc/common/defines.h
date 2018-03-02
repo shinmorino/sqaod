@@ -55,7 +55,7 @@ void log(const char *format, ...) FORMATATTR(1, 2);
 #endif
 
 #ifdef _WIN32
-#define SQAOD_CUDA_ENABLED
+#define SQAODC_CUDA_ENABLED
 /* #define SQAOD_WITH_BLAS */
 #endif
 

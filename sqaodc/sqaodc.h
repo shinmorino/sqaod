@@ -3,7 +3,7 @@
 #include <sqaodc/common/Common.h>
 #include <sqaodc/cpu/cpu_export.h>
 
-#ifdef SQAOD_CUDA_ENABLED
+#if defined(SQAODC_CUDA_ENABLED) && !defined(SQAODC_IGNORE_CUDA_HEADERS)
 #include <sqaodc/cuda/cuda_export.h>
 #endif
 
@@ -31,7 +31,7 @@ using BipartiteGraphFormulas = sqaod_cpu::BGFuncs<real>;
 
 }
 
-#ifdef SQAOD_CUDA_ENABLED
+#if defined(SQAODC_CUDA_ENABLED) && !defined(SQAODC_IGNORE_CUDA_HEADERS)
 
 namespace cuda {
 
