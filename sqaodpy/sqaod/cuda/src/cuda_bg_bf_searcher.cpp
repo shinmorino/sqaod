@@ -5,7 +5,7 @@
 
 static PyObject *Cuda_BgBfSearcherError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
+namespace sqcu = sqaod::cuda;
 
 template<class real>
 using BipartiteGraphBFSearcher = sq::cuda::BipartiteGraphBFSearcher<real>;

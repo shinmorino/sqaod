@@ -4,7 +4,7 @@
 
 static PyObject *Cuda_DgBfSearcherError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
+namespace sqcu = sqaod::cuda;
 
 template<class real>
 using DenseGraphBFSearcher = sq::cuda::DenseGraphBFSearcher<real>;

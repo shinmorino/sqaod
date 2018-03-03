@@ -4,7 +4,7 @@
 
 static PyObject *Cuda_BgAnnealerError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
+namespace sqcu = sqaod::cuda;
 
 template<class real>
 using BipartiteGraphAnnealer = sq::cuda::BipartiteGraphAnnealer<real>;
@@ -13,9 +13,9 @@ using BipartiteGraphAnnealer = sq::cuda::BipartiteGraphAnnealer<real>;
 namespace {
     
 template<class real>
-sqcu::CUDABipartiteGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
+BipartiteGraphAnnealer<real> *pyobjToCppObj(PyObject *obj) {
     npy_uint64 val = PyArrayScalar_VAL(obj, UInt64);
-    return reinterpret_cast<sqcu::CUDABipartiteGraphAnnealer<real> *>(val);
+    return reinterpret_cast<BipartiteGraphAnnealer<real> *>(val);
 }
 
 extern "C"
@@ -25,9 +25,9 @@ PyObject *bg_annealer_create(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &dtype))
         return NULL;
     if (isFloat64(dtype))
-        ext = (void*)new sqcu::CUDABipartiteGraphAnnealer<double>();
+        ext = (void*)new BipartiteGraphAnnealer<double>();
     else if (isFloat32(dtype))
-        ext = (void*)new sqcu::CUDABipartiteGraphAnnealer<float>();
+        ext = (void*)new BipartiteGraphAnnealer<float>();
     else
         RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     
@@ -190,7 +190,7 @@ PyObject *bg_annealer_get_preferences(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
-    sqcu::CUDABipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    BipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
     sqaod::SizeType N0, N1;
     ann->getProblemSize(&N0, &N1);
@@ -259,7 +259,7 @@ PyObject *bg_annealer_set_x(PyObject *module, PyObject *args) {
 
 template<class real>
 PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
-    sqcu::CUDABipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    BipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
 
     sqaod::SizeType N0, N1;
     ann->getProblemSize(&N0, &N1);
@@ -325,7 +325,7 @@ void internal_bg_annealer_get_hJc(PyObject *objExt,
     typedef NpVectorType<real> NpVector;
     typedef NpScalarRefType<real> NpScalarRef;
     
-    sqcu::CUDABipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
+    BipartiteGraphAnnealer<real> *ann = pyobjToCppObj<real>(objExt);
     NpVector h0(objH0), h1(objH1);
     NpScalarRef c(objC);
     NpMatrix J(objJ);
@@ -357,7 +357,7 @@ template<class real>
 void internal_bg_annealer_get_E(PyObject *objExt, PyObject *objE) {
     typedef NpVectorType<real> NpVector;
     NpVector E(objE);
-    sqcu::CUDABipartiteGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
+    BipartiteGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
     E.vec = ext->get_E();
 }
 

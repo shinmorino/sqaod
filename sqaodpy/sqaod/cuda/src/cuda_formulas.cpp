@@ -4,31 +4,31 @@
 
 static PyObject *Cuda_FormulasError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
+namespace sqcu = sqaod::cuda;
 
 
 template<class real>
-using DGFormulas = sq::cuda::DenseGraphFormulas<real>;
+using DenseGraphFormulas = sq::cuda::DenseGraphFormulas<real>;
 
 template<class real>
-using BGFormulas = sq::cuda::BipartiteGraphFormulas<real>;
+using BipartiteGraphFormulas = sq::cuda::BipartiteGraphFormulas<real>;
 
 
 namespace {
 
-sqcu::CUDADenseGraphFormulas<float>  dgFuncsFp64_;
-sqcu::CUDADenseGraphFormulas<double> dgFuncsFp32_;
+DenseGraphFormulas<float>  dgFuncsFp64_;
+DenseGraphFormulas<double> dgFuncsFp32_;
 
-template<class real> sqcu::CUDADenseGraphFormulas<real> &dgFuncs();
-template<> sqcu::CUDADenseGraphFormulas<float> &dgFuncs<float>() { return dgFuncsFp64_; }
-template<> sqcu::CUDADenseGraphFormulas<double> &dgFuncs<double>() { return dgFuncsFp32_; }
+template<class real> DenseGraphFormulas<real> &dgFuncs();
+template<> DenseGraphFormulas<float> &dgFuncs<float>() { return dgFuncsFp64_; }
+template<> DenseGraphFormulas<double> &dgFuncs<double>() { return dgFuncsFp32_; }
 
-sqcu::CUDABipartiteGraphFormulas<float>  bgFuncsFp64_;
-sqcu::CUDABipartiteGraphFormulas<double> bgFuncsFp32_;
+BipartiteGraphFormulas<float>  bgFuncsFp64_;
+BipartiteGraphFormulas<double> bgFuncsFp32_;
 
-template<class real> sqcu::CUDABipartiteGraphFormulas<real> &bgFuncs();
-template<> sqcu::CUDABipartiteGraphFormulas<float> &bgFuncs<float>() { return bgFuncsFp64_; }
-template<> sqcu::CUDABipartiteGraphFormulas<double> &bgFuncs<double>() { return bgFuncsFp32_; }
+template<class real> BipartiteGraphFormulas<real> &bgFuncs();
+template<> BipartiteGraphFormulas<float> &bgFuncs<float>() { return bgFuncsFp64_; }
+template<> BipartiteGraphFormulas<double> &bgFuncs<double>() { return bgFuncsFp32_; }
 
 
 

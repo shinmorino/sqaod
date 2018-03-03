@@ -4,7 +4,7 @@
 
 static PyObject *Cuda_DgAnnealerError;
 namespace sq = sqaod;
-namespace sqcu = sqaod_cuda;
+namespace sqcu = sqaod::cuda;
 
 template<class real>
 using DenseGraphAnnealer = sq::cuda::DenseGraphAnnealer<real>;
