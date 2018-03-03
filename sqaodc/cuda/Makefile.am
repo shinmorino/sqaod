@@ -9,8 +9,8 @@ libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.c
 
 # check
 test_SOURCES=test.cpp
-test_LDADD=libcuda.la $(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
-LIBS=-L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand
+test_LDADD=libcuda.la $(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
+LIBS=-L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand -ldl
 
 #include ./$(DEPDIR)/CUDADenseGraphAnnealer.Plo
 #include ./$(DEPDIR)/CUDABipartiteGraphAnnealer.Plo
@@ -29,6 +29,7 @@ NVCC=@NVCC@
 .cu.lo:
 	mkdir -p .libs
 # generate depfile
+	@mkdir -p $(DEPDIR)
 	$(NVCC) -M -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)" $<  -o $(DEPDIR)/$*.Tpo
 # compile
 	$(NVCC) -c -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -fPIC"  $<  -o .libs/$*.o

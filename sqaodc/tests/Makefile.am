@@ -2,7 +2,7 @@ SUFFICES=.cu .cpp .h
 
 LDADD=
 LIBS=
-AM_CPPFLAGS=-I$(top_srcdir)
+AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc
 
 check_PROGRAMS=perf
 perf_SOURCES=perf.cpp
@@ -20,7 +20,7 @@ check_PROGRAMS+=test
 
 test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
 
-LDADD+=$(top_builddir)/cuda/libcuda.la
+LDADD+=$(top_builddir)/sqaodc/cuda/libcuda.la
 LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
 
 run: $(check_PROGRAMS)
@@ -29,11 +29,12 @@ run: $(check_PROGRAMS)
 
 # CUDA build rules
 
-include ./$(DEPDIR)/DeviceSegmentedSumTest.Po
+# include ./$(DEPDIR)/DeviceSegmentedSumTest.Po
 
 NVCC=@NVCC@
 
 .cu.o:  # generate dep, and compile
+	@mkdir -p $(DEPDIR)
 	$(NVCC) -M -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)" $<  -o $(DEPDIR)/$*.Tpo
 	$(NVCC) -c -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)"  $<  -o $*.o
 	sed s/$*.o/$*.lo/ $(DEPDIR)/$*.Tpo > $(DEPDIR)/$*.Po
