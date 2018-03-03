@@ -39,3 +39,6 @@ config/depcomp
 config/install-sh
 config/ltmain.sh
 config/missing
+
+debian/libsqaodc*
+debian/.debhelper
