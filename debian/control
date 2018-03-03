@@ -8,14 +8,14 @@ Homepage: https://github.com/shinmorino/sqaod
 #Vcs-Git: git://anonscm.debian.org/collab-maint/sqaod.git
 #Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/sqaod.git
 
-Package: sqaodc
+Package: libsqaodc
 Section: libs
 Architecture: amd64
 Depends:  libgomp1:amd64
 Description: sqaodc library
 
-Package: sqaodc-cuda
+Package: libsqaodc-cuda
 Section: libs
 Architecture: amd64
-Depends: sqaodc:amd64 cuda-cublas-9-1:amd64 cuda-cudart-9-1:amd64 cuda-curand-9-1
+Depends: sqaodc:amd64, cuda-cublas-9-1:amd64, cuda-cudart-9-1:amd64, cuda-curand-9-1:amd64
 Description: sqaodc CUDA library

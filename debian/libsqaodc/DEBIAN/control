@@ -1,0 +1,11 @@
+Package: libsqaodc
+Source: sqaod
+Version: 0.1.0
+Architecture: amd64
+Maintainer: Shinya Morino <shin.morino@gmail.com>
+Installed-Size: 323
+Depends: libgomp1:amd64
+Section: libs
+Priority: optional
+Homepage: https://github.com/shinmorino/sqaod
+Description: sqaodc library
