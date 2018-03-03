@@ -336,7 +336,7 @@ void internal_bg_annealer_get_hJc(PyObject *objExt,
 extern "C"
 PyObject *bg_annealer_get_hJc(PyObject *module, PyObject *args) {
     PyObject *objExt, *objH0, *objH1, *objJ, *objC, *dtype;
-    if (!PyArg_ParseTuple(args, "OOOOO", &objExt, &objH0, &objH1, &objJ, &objC, &dtype))
+    if (!PyArg_ParseTuple(args, "OOOOOO", &objExt, &objH0, &objH1, &objJ, &objC, &dtype))
         return NULL;
 
     TRY {
