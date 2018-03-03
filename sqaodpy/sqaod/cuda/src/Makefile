@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../.. -I../../../../sqaodc/eigen -I/usr/local/cuda-9.1/include
+INCLUDE+=-I../../../.. -I../../../../eigen -I/usr/local/cuda-9.1/include
 
 TARGETS= ../cuda_dg_annealer.so ../cuda_dg_bf_searcher.so ../cuda_bg_annealer.so ../cuda_bg_bf_searcher.so ../cuda_formulas.so ../cuda_device.so
 cuda_formulas_so_OBJS=cuda_formulas.o

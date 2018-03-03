@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../.. -I../../../../sqaodc/eigen
+INCLUDE+=-I../../../.. -I../../../../eigen
 
 TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_searcher.so ../cpu_bg_annealer.so ../cpu_bg_bf_searcher.so
 cpu_formulas_so_OBJS=cpu_formulas.o
@@ -12,7 +12,7 @@ cpu_bg_bf_searcher_so_OBJS=cpu_bg_bf_searcher.o
 
 CXX=g++
 CC=gcc
-CFLAGS=-fopenmp -std=c++11 -fpic -DPIC -Wall -ggdb -I$(dir $(abspath Makefile)) -Wno-format-security
+CFLAGS=-fopenmp -std=c++11 -fpic -DPIC -Wall -ggdb -Wno-format-security -DSQAODC_IGNORE_CUDA_HEADERS
 #CFLAGS+=-O2
 CXXFLAGS=$(CFLAGS)
 LDFLAGS=-L../../../../sqaodc/.libs -lsqaodc
@@ -29,7 +29,7 @@ all: $(TARGETS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
 
 ../cpu_bg_annealer.so: $(cpu_bg_annealer_so_OBJS)
-	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
+	$(CXX) -shared $(cCXXFLAGS) $< $(LDFLAGS)  -o $@
 
 ../cpu_bg_bf_searcher.so: $(cpu_bg_bf_searcher_so_OBJS)
 	$(CXX) -shared $(CXXFLAGS) $< $(LDFLAGS)  -o $@
