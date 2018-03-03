@@ -36,27 +36,28 @@ AC_ARG_WITH([blas],
 esac],[blas=true])
 AM_CONDITIONAL([WITH_BLAS], [test x${blas} = xtrue])
 
-blasdef='#define SQAOD_WITH_BLAS' 
+blasdef='#define SQAODC_WITH_BLAS' 
 if test x$blas = xfalse
 then
   blasdef="/* ${blasdef} */"
 fi
-AC_SUBST([DEFINE_SQAOD_WITH_BLAS], ${blasdef})
+AC_SUBST([DEFINE_SQAODC_WITH_BLAS], ${blasdef})
 
-cudadef='#define SQAOD_CUDA_ENABLED' 
+cudadef='#define SQAODC_CUDA_ENABLED' 
 if test x$cuda = xfalse
 then
   cudadef="/* ${cudadef} */"
 fi
-AC_SUBST([DEFINE_SQAOD_CUDA_ENABLED], ${cudadef})
+AC_SUBST([DEFINE_SQAODC_CUDA_ENABLED], ${cudadef})
 AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
 AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
 AC_SUBST([CUDA_INCLUDE], ${cuda_prefix}/include)
 AC_PROG_CC
 AC_PROG_CXX
-#if test x$prefix = xNONE ; then
-#  prefix=${ac_default_prefix}
-#fi
+
+if test x$prefix = xNONE ; then
+  prefix=${ac_default_prefix}
+fi
 
 # I want this stuff to go into config.h or confdefs.h
 # AC_DEFINE([STUFF], ["blahblah"], [Stuff])
@@ -69,6 +70,20 @@ CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/eigen"
 AM_COND_IF([CUDA_ENABLED],
 	[CXXFLAGS="$CXXFLAGS -I${cuda_prefix}/include -I\${abs_top_srcdir}/cub"])
 AC_SUBST([CXXFLAGS], $CXXFLAGS)
+
+
+SQAODC_CXXFLAGS="${CXXFLAGS}"
+AC_SUBST([SQAODC_CXXFLAGS], ${SQAODC_CXXFLAGS})
+
+abs_top_builddir=
+SQAODC_LDFLAGS="-L${prefix}/lib -l${abs_top_builddir}/.libs"
+if test x$cuda = xtrue
+then
+    SQAODC_LDFLAGS="$SQAODC_LDFLAGS -lsqaod_cuda"
+fi
+SQAODC_LDFLAGS="$SQAODC_LDFLAGS -lsqaod"
+AC_SUBST([SQAODC_LDFLAGS], $SQAODC_LDFLAGS)
+
 
 AC_CONFIG_FILES([Makefile config/sqaod_config.h common/Makefile cpu/Makefile])
 AM_COND_IF([CUDA_ENABLED],
