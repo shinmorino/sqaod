@@ -54,7 +54,7 @@ class BipartiteGraphAnnealer :
     # Ising model / spins
     
     def get_hJc(self) :
-        N0, N1, m = self._get_dim()
+        N0, N1 = self.get_problem_size()
         h0 = np.ndarray((N0), self.dtype);
         h1 = np.ndarray((N1), self.dtype);
         J = np.ndarray((N1, N0), self.dtype);
