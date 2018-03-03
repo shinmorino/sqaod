@@ -1,32 +1,33 @@
 SUFFICES=.cu .cpp .h
 
-check_PROGRAMS=test perf
-
 LDADD=
 LIBS=
+AM_CPPFLAGS=-I$(top_srcdir)
 
-AM_CPPFLAGS=-I$(top_srcdir)/..
-
-test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp
+check_PROGRAMS=perf
 perf_SOURCES=perf.cpp
+LDADD+=$(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
 
-
-if CUDA_ENABLED
-  test_SOURCES+=DeviceMathTest.cpp DeviceTest.cpp
-  LDADD+=$(top_builddir)/cuda/libcuda.la
-  LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
-endif
 if WITH_BLAS
   LIBS+=-lblas
 endif
 
-LDADD+=$(top_builddir)/cpu/libcpu.la $(top_builddir)/common/libcommon.la
+
+# test for CUDA code
+if CUDA_ENABLED
+
+check_PROGRAMS+=test
+
+test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
+
+LDADD+=$(top_builddir)/cuda/libcuda.la
+LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
 
 run: $(check_PROGRAMS)
 	./test
 
 
-# CUDA
+# CUDA build rules
 
 include ./$(DEPDIR)/DeviceSegmentedSumTest.Po
 
@@ -52,3 +53,5 @@ NVCC=@NVCC@
 	touch $@
 %.Po:
 	touch $@
+
+endif

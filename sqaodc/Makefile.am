@@ -8,7 +8,7 @@ endif
 SUBDIRS+=tests
 
 lib_LTLIBRARIES=libsqaodc.la
-libsqaodc_la_LIBADD=$(top_builddir)/common/libcommon.la $(top_builddir)/cpu/libcpu.la -ldl
+libsqaodc_la_LIBADD=$(top_builddir)/sqaodc/common/libcommon.la $(top_builddir)/sqaodc/cpu/libcpu.la -ldl
 libsqaodc_la_SOURCES=
 
 if WITH_BLAS

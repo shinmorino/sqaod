@@ -85,8 +85,11 @@ SQAODC_LDFLAGS="$SQAODC_LDFLAGS -lsqaod"
 AC_SUBST([SQAODC_LDFLAGS], $SQAODC_LDFLAGS)
 
 
-AC_CONFIG_FILES([Makefile config/sqaod_config.h common/Makefile cpu/Makefile])
-AM_COND_IF([CUDA_ENABLED],
-           [AC_CONFIG_FILES([cuda/Makefile])])
-AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([Makefile
+                 sqaodc/Makefile
+		 config/sqaod_config.h
+		 sqaodc/common/Makefile
+		 sqaodc/cpu/Makefile
+		 sqaodc/cuda/Makefile
+		 sqaodc/tests/Makefile])
 AC_OUTPUT
