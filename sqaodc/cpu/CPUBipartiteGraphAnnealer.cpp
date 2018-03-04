@@ -105,6 +105,10 @@ const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const sq::Bits &x0, const sq::Bits &x1) {
     throwErrorIfNotInitialized();
+    throwErrorIf(x0.size != N0_,
+                 "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
+    throwErrorIf(x1.size != N1_,
+                 "Dimension of x1, %d,  should be equal to N1, %d.", x1.size, N1_);
     EigenRowVector ex0 = mapToRowVector(x0).cast<real>();
     EigenRowVector ex1 = mapToRowVector(x1).cast<real>();
     matQ0_ = (ex0.array() * 2 - 1).matrix();

@@ -106,6 +106,9 @@ const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_x() const {
 template<class real>
 void CPUDenseGraphAnnealer<real>::set_x(const sq::Bits &x) {
     throwErrorIfNotInitialized();
+    throwErrorIf(x.size != N_,
+                 "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
+    
     EigenRowVector ex = mapToRowVector(sq::cast<real>(x));
     matQ_ = (ex.array() * 2 - 1).matrix();
     setState(solQSet);
