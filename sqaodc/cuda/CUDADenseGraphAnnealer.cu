@@ -141,7 +141,9 @@ const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
     throwErrorIfNotInitialized();
-    /* FIXME: add size check */
+    throwErrorIf(x.size != N_,
+                 "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
+
     HostVector rx = sq::x_to_q<real>(x);
     DeviceVector *d_x = devStream_->tempDeviceVector<real>(rx.size);
     devCopy_(d_x, rx);

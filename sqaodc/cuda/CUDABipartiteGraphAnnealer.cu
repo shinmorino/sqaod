@@ -142,8 +142,11 @@ const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
     throwErrorIfNotInitialized();
-    
-    /* FIXME: add size check */
+    throwErrorIf(x0.size != N0_,
+                 "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
+    throwErrorIf(x1.size != N1_,
+                 "Dimension of x1, %d,  should be equal to N1, %d.", x1.size, N1_);
+
     HostVector rx0 = sq::x_to_q<real>(x0);
     HostVector rx1 = sq::x_to_q<real>(x1);
     DeviceVector *d_x0 = devStream_->tempDeviceVector<real>(rx0.size);

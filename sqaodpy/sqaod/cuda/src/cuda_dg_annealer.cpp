@@ -249,7 +249,7 @@ void internal_dg_annealer_set_x(PyObject *objExt, PyObject *objX) {
 extern "C"
 PyObject *dg_annealer_set_x(PyObject *module, PyObject *args) {
     PyObject *objExt, *objX, *dtype;
-    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objX, &dtype))
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objX, &dtype))
         return NULL;
 
     TRY {
