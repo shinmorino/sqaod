@@ -14,8 +14,8 @@ W = np.ones((N1, N0))
 sol = sq.cpu # use CPU searchealer
 # If you want to use CUDA, check CUDA availability with sq.is_cuda_available().
 if sq.is_cuda_available() :
-    import sq.cuda
-    sol = sq.cuda
+    import sqaod.cuda
+    sol = sqaod.cuda
     
 # 3. instanciate solver
 search = sol.bipartite_graph_bf_searcher()
