@@ -4,7 +4,8 @@ sudo apt-get install automake autoconf libtool python-dev
 
 pushd .
 
-cd sqaodc
+mkdir 3rdparty
+cd 3rdparty
 
 git clone https://github.com/Rlovelett/eigen.git
 cd eigen
@@ -16,13 +17,19 @@ cd cub
 git checkout v1.7.4
 cd ..
 
+popd
+
 ./autogen.sh
 ./configure --prefix=/usr --enable-cuda
 make
 sudo make install
 
-popd
-
-cd sqaodpy/
+cd sqaodpy/sqaod/cpu/src
+python incpathgen.py > incpath
+make
+cd ../../cuda/src
+python incpathgen.py > incpath
+make
+cd ../../..
 python setup.py build
-python setup.py install
+python setup.py bdist_wheel
