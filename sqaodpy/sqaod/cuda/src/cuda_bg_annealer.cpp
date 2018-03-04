@@ -474,6 +474,7 @@ static
 PyMethodDef cuda_bg_annealer_methods[] = {
 	{"new_annealer", bg_annealer_create, METH_VARARGS},
 	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
+    {"seed", bg_annealer_seed, METH_VARARGS},
 	{"assign_device", bg_annealer_assign_device, METH_VARARGS},
 	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
 	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
@@ -490,7 +491,6 @@ PyMethodDef cuda_bg_annealer_methods[] = {
 	{"fin_anneal", bg_annealer_fin_anneal, METH_VARARGS},
 	{"anneal_one_step", bg_annealer_anneal_one_step, METH_VARARGS},
 	{NULL},
-    {"seed", bg_annealer_seed, METH_VARARGS},
 };
 
 extern "C"
