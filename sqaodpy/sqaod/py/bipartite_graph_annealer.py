@@ -17,6 +17,11 @@ class BipartiteGraphAnnealer :
     def _vars(self) :
         return self._h0, self._h1, self._J, self._c, self._q0, self._q1
 
+    def seed(self, seed) :
+        # this annealer use global random number genertor.
+        # nothing to do here.
+        pass
+    
     def get_problem_size(self) :
         return self._N0, self._N1;
         

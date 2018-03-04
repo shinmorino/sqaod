@@ -13,6 +13,11 @@ class DenseGraphAnnealer :
         self._select_algorithm(algo.coloring)
         self.set_preferences(prefdict)
 
+    def seed(self, seed) :
+        # py version uses using global random generator.
+        # Nothing to do here.
+        pass
+        
     def _vars(self) :
         return self._h, self._J, self._c, self._q
     
