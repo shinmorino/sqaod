@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import sqaod
 import formulas
+from sqaod import algorithm as algo
 
 class DenseGraphBFSearcher :
     
@@ -10,7 +11,6 @@ class DenseGraphBFSearcher :
             self.set_problem(W, optimize)
         self._tile_size = 1024
         self.set_preferences(prefdict)
-        
             
     def set_problem(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dims, is symmetric ? */

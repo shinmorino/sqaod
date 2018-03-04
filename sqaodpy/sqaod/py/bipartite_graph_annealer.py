@@ -87,7 +87,7 @@ class BipartiteGraphAnnealer :
     # Ising model / spins
     
     def get_hJc(self) :
-        return self._h, self._J, self._c
+        return self._h0, self._h1, self._J, self._c
             
     def get_q(self) :
         return self._q0, self._q1
