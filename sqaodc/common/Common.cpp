@@ -2,30 +2,64 @@
 #include <iostream>
 #include <float.h>
 
+#ifndef SQAODC_CUDA_ENABLED
+bool sqaod::isCUDAAvailable() {
+    return false;
+}
+
+#else
+
 #ifdef __linux__
 #include <dlfcn.h>
-
 bool sqaod::isCUDAAvailable() {
-#ifndef SQAODC_CUDA_ENABLED
-    return false;
-#else
     void *h = dlopen("libcuda.so", RTLD_NOW);
     if (h == NULL)
         return false;
-    /* shared library found */
-    typedef int (*cuDeviceGetCountType)(int *);
+     /* shared library found */
+    typedef int(*cuInitType)(unsigned int);
+    typedef int(*cuDeviceGetCountType)(int *);
+    cuInitType cuInit = (cuInitType)dlsym(h, "cuInit");
     cuDeviceGetCountType cuDeviceGetCount = (cuDeviceGetCountType)dlsym(h, "cuDeviceGetCount");
-    int count = 0;
-    int res = cuDeviceGetCount(&count);
-    bool deviceFound = (res == 0) && (count != 0);
+
+    bool deviceFound = false;
+    int res = cuInit(0);
+    if (res == 0) {
+        int count = 0;
+        res = cuDeviceGetCount(&count);
+        deviceFound = (res == 0) && (count != 0);
+    }
     dlclose(h);
     return deviceFound;
-#endif
-    return false;
 }
 
 #endif
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+bool sqaod::isCUDAAvailable() {
+    HMODULE h = LoadLibrary(L"nvcuda.dll");
+    if (h == NULL)
+        return false;
+    /* shared library found */
+    typedef int(*cuInitType)(unsigned int);
+    typedef int (*cuDeviceGetCountType)(int *);
+    cuInitType cuInit = (cuInitType)GetProcAddress(h, "cuInit");
+    cuDeviceGetCountType cuDeviceGetCount = (cuDeviceGetCountType)GetProcAddress(h, "cuDeviceGetCount");
+    bool deviceFound = false;
+    int res = cuInit(0);
+    if (res == 0) {
+        int count = 0;
+        res = cuDeviceGetCount(&count);
+        deviceFound = (res == 0) && (count != 0);
+    }
+    FreeLibrary(h);
+    return deviceFound;
+}
+#endif
+
+#endif
 
 template<class real>
 void sqaod::createBitsSequence(real *bits, int nBits, PackedBits bBegin, PackedBits bEnd) {
