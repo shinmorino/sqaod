@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../.. -I../../../../eigen
+INCLUDE+=-I../../../.. -I../../../../3rdparty/eigen
 
 TARGETS=../cpu_formulas.so ../cpu_dg_annealer.so ../cpu_dg_bf_searcher.so ../cpu_bg_annealer.so ../cpu_bg_bf_searcher.so
 cpu_formulas_so_OBJS=cpu_formulas.o

@@ -2,7 +2,7 @@ SUFFICES=.cu .cpp .h
 
 LDADD=
 LIBS=
-AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc
+AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc -I$(top_srcdir)/3rdparty/eigen -I$(top_srcdir)/3rdparty/cub
 
 check_PROGRAMS=perf
 perf_SOURCES=perf.cpp
