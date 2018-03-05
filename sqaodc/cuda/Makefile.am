@@ -5,7 +5,7 @@ check_PROGRAMS=test
 
 AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc
 
-libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu DeviceFormulas.cpp CUDADenseGraphBFSearcher.cpp DeviceDenseGraphBatchSearch.cu DeviceRandom.cu CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSearcher.cpp DeviceBipartiteGraphBatchSearch.cu CUDABipartiteGraphAnnealer.cu CUDAFormulas.cpp
+libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu DeviceFormulas.cpp CUDADenseGraphBFSearcher.cpp DeviceDenseGraphBatchSearch.cu DeviceRandomMTGP32.cu DeviceRandomMT19937.cpp CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSearcher.cpp DeviceBipartiteGraphBatchSearch.cu CUDABipartiteGraphAnnealer.cu CUDAFormulas.cpp
 
 # check
 test_SOURCES=test.cpp
