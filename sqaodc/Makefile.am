@@ -2,6 +2,9 @@ AUTOMAKE_OPTIONS=foreign
 ACLOCAL_AMFLAGS=-I m4
 SUBDIRS=common cpu
 
+libdir = ${prefix}/lib/$(build_cpu)-$(build_os)
+
+
 if CUDA_ENABLED
     SUBDIRS+=cuda
 endif
