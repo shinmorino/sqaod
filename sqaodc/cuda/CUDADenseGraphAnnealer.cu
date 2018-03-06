@@ -3,9 +3,10 @@
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
 #include "DeviceSegmentedSum.cuh"
-
+#include <cooperative_groups.h>
 
 using namespace sqaod_cuda;
+namespace cg = cooperative_groups;
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
@@ -295,20 +296,28 @@ template<class real>
 __global__ static void
 tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
               const int *d_x, const real *d_random, sq::SizeType N, sq::SizeType m,
-             const real twoDivM, const real coef, const real invKT) {
-    int y = blockDim.x * blockIdx.x + threadIdx.x; /* m */
-    if (y < m) {
-        int x = d_x[y]; /* N */
-        real qyx = d_q[N * y + x];
+              const real twoDivM, const real coef, const real invKT) {
 
-        int neibour0 = (y == 0) ? m - 1 : y - 1;
-        int neibour1 = (y == m - 1) ? 0 : y + 1;
+    cg::thread_block g = cg::this_thread_block();
 
-        real dE = - twoDivM * qyx * (d_Jq[y] + d_h[x]);
-        dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
-        real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
-        if (threshold > d_random[y])
-            d_q[N * y + x] = - qyx;
+    int gid = blockDim.x * blockIdx.x + threadIdx.x;
+    int y = 2 * gid;
+    for (int loop = 0; loop < 2; ++loop) {
+        if (y < m) {
+            int x = d_x[y]; /* N */
+            real qyx = d_q[N * y + x];
+
+            int neibour0 = (y == 0) ? m - 1 : y - 1;
+            int neibour1 = (y == m - 1) ? 0 : y + 1;
+            real dE = - twoDivM * qyx * (d_Jq[y] + d_h[x]);
+            dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
+            real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
+            if (threshold > d_random[y])
+                d_q[N * y + x] = - qyx;
+        }
+        if (loop == 0)
+            g.sync();
+        y += 1;
     }
 }
 
@@ -320,8 +329,11 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
     real invKT = real(1.) / kT;
 
     dim3 blockDim(128);
-    dim3 gridDim(divru((sq::SizeType)m_, blockDim.x));
-    tryFlipKernel<<<gridDim, blockDim>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
+
+    int nThreadsToFlipBits = (m_ + 1) / 2;
+    dim3 gridDim(divru((sq::SizeType)nThreadsToFlipBits, blockDim.x));
+    cudaStream_t stream = devStream_->getCudaStream();
+    tryFlipKernel<<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
                                          d_x, d_random, N_, m_,
                                          twoDivM, coef, invKT);
     DEBUG_SYNC;

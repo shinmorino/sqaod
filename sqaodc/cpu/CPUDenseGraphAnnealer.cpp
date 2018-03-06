@@ -206,7 +206,7 @@ template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOffset) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
-
+    real invKT = real(1.) / kT;
 #ifndef _OPENMP
     {
         sq::Random &random = random_[0];
@@ -214,20 +214,23 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
 #  pragma omp parallel
     {
         sq::Random &random = random_[omp_get_thread_num()];
+#endif
+        for (int yOffset = 0; yOffset < 2; ++yOffset) {
+#ifndef _OPENMP
 #  pragma omp for
-#endif        
-        for (int y = 0; y < sq::IdxType(m_); ++y) {
-            int offset = (stepOffset + y) % 2;
-            int x = (offset + 2 * random.randInt32()) % N_;
-            real qyx = matQ_(y, x);
-            real sum = J_.row(x).dot(matQ_.row(y));
-            real dE = - twoDivM * qyx * (h_(x) + sum);
-            int neibour0 = (y == 0) ? m_ - 1 : y - 1;
-            int neibour1 = (y == m_ - 1) ? 0 : y + 1;
-            dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
-            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
-            if (threshold > random.random<real>())
-                matQ_(y, x) = - qyx;
+#endif
+            for (int y = yOffset; y < sq::IdxType(m_); y += 2) {
+                int x = random.randInt32() % N_;
+                real qyx = matQ_(y, x);
+                real sum = J_.row(x).dot(matQ_.row(y));
+                real dE = - twoDivM * qyx * (h_(x) + sum);
+                int neibour0 = (y == 0) ? m_ - 1 : y - 1;
+                int neibour1 = (y == m_ - 1) ? 0 : y + 1;
+                dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
+                real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
+                if (threshold > random.random<real>())
+                    matQ_(y, x) = - qyx;
+            }
         }
     }
 }
