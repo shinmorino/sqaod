@@ -245,8 +245,14 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
 
         dim3 blockDim(BLOCK_DIM);
         dim3 gridDim(divru(nSegments_, 4u));
+#if 0
         segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1>
             <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+        void *func = (void*)segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1, InputIterator, OutputIterator, OffsetIterator>;
+        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
         DEBUG_SYNC;
     }
 
@@ -256,8 +262,14 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
 
         dim3 blockDim(BLOCK_DIM);
         dim3 gridDim(divru(nSegments_, 2u));
+#if 0
         segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1>
             <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+        void *func = (void*)segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1, InputIterator, OutputIterator, OffsetIterator>;
+        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
         DEBUG_SYNC;
     }
 
@@ -265,8 +277,14 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
     segmentedSum_Block(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
         dim3 blockDim(BLOCK_DIM);
         dim3 gridDim(nSegments_);
+#if 0
         segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD>
             <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+        void *func = (void*)segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD, InputIterator, OutputIterator, OffsetIterator>;
+        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
         DEBUG_SYNC;
     }
 

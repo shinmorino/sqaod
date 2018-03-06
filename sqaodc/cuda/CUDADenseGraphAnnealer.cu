@@ -333,9 +333,15 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
     int nThreadsToFlipBits = (m_ + 1) / 2;
     dim3 gridDim(divru((sq::SizeType)nThreadsToFlipBits, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
+#if 0
     tryFlipKernel<<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
                                          d_x, d_random, N_, m_,
                                          twoDivM, coef, invKT);
+#else
+    void *args[] = {(void*)&d_matq->d_data, (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
+                    (void*)&N_, (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&invKT, NULL};
+    cudaLaunchKernel((void*)tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
+#endif
     DEBUG_SYNC;
 }
 
