@@ -145,6 +145,12 @@
       <Filter>cpu</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sqaodc\sqaodc.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMT19937.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\cuda\Device.cpp">
@@ -231,6 +237,9 @@
     <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.cpp">
       <Filter>cpu</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceRandomMT19937.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceKernels.cu">
@@ -239,19 +248,19 @@
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceDenseGraphBatchSearch.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandom.cu">
-      <Filter>cuda</Filter>
-    </CudaCompile>
     <CudaCompile Include="..\..\sqaodc\cuda\CUDADenseGraphAnnealer.cu">
-      <Filter>cuda</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomBuffer.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceBipartiteGraphBatchSearch.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomBuffer.cu">
       <Filter>cuda</Filter>
     </CudaCompile>
   </ItemGroup>

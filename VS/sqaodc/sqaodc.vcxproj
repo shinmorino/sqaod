@@ -51,6 +51,8 @@
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandom.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandom.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomBuffer.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMT19937.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceStream.h" />
@@ -83,6 +85,7 @@
     <ClCompile Include="..\..\sqaodc\cuda\DeviceMath.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceMemoryStore.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceObjectAllocator.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\DeviceRandomMT19937.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceStream.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\HostObjectAllocator.cpp" />
@@ -96,8 +99,8 @@
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceBipartiteGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceDenseGraphBatchSearch.cu" />
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceKernels.cu" />
-    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandom.cu" />
     <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomBuffer.cu" />
+    <CudaCompile Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0AEEDA6A-F70A-4ABC-ADDC-3FD4BF15255B}</ProjectGuid>
