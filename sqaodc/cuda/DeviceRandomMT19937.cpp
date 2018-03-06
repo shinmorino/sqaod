@@ -1,7 +1,8 @@
 #include "DeviceRandomMT19937.h"
 #include "cudafuncs.h"
 #include <common/Random.h>
-
+#include <algorithm>
+#include <time.h>
 
 using namespace sqaod_cuda;
     
@@ -21,13 +22,13 @@ DeviceRandomMT19937::DeviceRandomMT19937(Device &device, DeviceStream *devStream
 
 DeviceRandomMT19937::DeviceRandomMT19937() {
     requiredSize_ = (sq::SizeType)-1;
-    internalBufSize_ = (sq::SizeType)-1;
+    internalBufSize_ = (sq::SizeType) - 1;
     d_buffer_[0] = NULL;
     pos_ = 0;
 }
 
 DeviceRandomMT19937::~DeviceRandomMT19937() {
-    if (d_buffer_ != NULL)
+    if (d_buffer_[0] != NULL)
         deallocate();
     if (gen_ != NULL)
         throwOnError(curandDestroyGenerator(gen_));
@@ -49,13 +50,16 @@ void DeviceRandomMT19937::setRequiredSize(sq::SizeType requiredSize) {
     int newInternalBufSize = std::max(requiredSize, (sq::SizeType)randGenSize);
     if (newInternalBufSize != internalBufSize_) {
         internalBufSize_ = newInternalBufSize;
-        if (d_buffer_ != NULL)
-            devAlloc_->deallocate(d_buffer_);
-        d_buffer_[0] = NULL;
+        if (d_buffer_[0] != NULL)
+            devAlloc_->deallocate(d_buffer_[0]);
+        devAlloc_->allocate(&d_buffer_[0], internalBufSize_ * 2);
+        d_buffer_[1] = &d_buffer_[0][internalBufSize_];
+        activePlane_ = 0;
+        pos_ = internalBufSize_; /* set no random numbers in buffer */
     }
     requiredSize_ = requiredSize;
 }
-        
+
 
 void DeviceRandomMT19937::deallocate() {
     devAlloc_->deallocate(d_buffer_[0]);
@@ -71,36 +75,28 @@ void DeviceRandomMT19937::seed() {
 }
 
 sq::SizeType DeviceRandomMT19937::getNRands() const {
-    return (sq::SizeType)(randGenSize - pos_);
+    return (sq::SizeType)(internalBufSize_ - pos_);
 }
 
 void DeviceRandomMT19937::generate() {
     throwErrorIf(internalBufSize_ == (sq::SizeType) -1, "DeviceRandom not initialized.");
-    if (d_buffer_ == NULL) {
-        devAlloc_->allocate(&d_buffer_[0], internalBufSize_ * 2);
-        d_buffer_[1] = &d_buffer_[0][internalBufSize_];
-        activePlane_ = 0;
-    }
 
-    int nToGenerate = requiredSize_ - getNRands();
-    nToGenerate = roundUp(nToGenerate, (int)randGenSize);
-    if (0 <= nToGenerate) {
-        int nRands = getNRands();
-        int prevPlane = activePlane_;
-        activePlane_ ^= 1;
+    int nRands = getNRands();
+    int nToGenerate = internalBufSize_ - nRands;
+    int prevPlane = activePlane_;
+    activePlane_ ^= 1;
 #if 1
-        throwOnError(cudaMemcpyAsync(d_buffer_[activePlane_], &d_buffer_[prevPlane][pos_],
-                                     nRands * sizeof(unsigned int), cudaMemcpyDefault, stream_));
-        throwOnError(curandGenerate(gen_, &d_buffer_[activePlane_][nRands], nToGenerate));
+    throwOnError(cudaMemcpyAsync(d_buffer_[activePlane_], &d_buffer_[prevPlane][pos_],
+                                    nRands * sizeof(unsigned int), cudaMemcpyDefault, stream_));
+    throwOnError(curandGenerate(gen_, &d_buffer_[activePlane_][nRands], nToGenerate));
 #else
-        /* generate random numbers on CPU for validation. */
-        synchronize();
-        memmove(d_buffer_[activePlane_], d_buffer_[prevPlane][pos_], nRands * sizeof(unsigned int));
-        for (int idx = 0; idx < nToGenerate; ++idx) {
-            d_buffer_[idx + nRands] = sq::random.randInt32();
+    /* generate random numbers on CPU for validation. */
+    synchronize();
+    memmove(d_buffer_[activePlane_], &d_buffer_[prevPlane][pos_], nRands * sizeof(unsigned int));
+    for (int idx = 0; idx < nToGenerate; ++idx) {
+        d_buffer_[idx + nRands] = sq::random.randInt32();
 #endif
-        pos_ = 0;
-    }
+    pos_ = 0;
 }
 
 const unsigned int *DeviceRandomMT19937::get(sq::SizeType nRands,
