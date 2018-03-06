@@ -51,15 +51,11 @@ void DeviceRandomBuffer::reserve(sq::SizeType size) {
 
 /* generate random */
 __global__ static void
-generateFlipPosKernel(sq::IdxType *d_buffer, sq::SizeType N, sq::SizeType m, sq::SizeType nAllSteps,
+generateFlipPosKernel(sq::IdxType *d_buffer, sq::SizeType N, sq::SizeType nToGenerate,
                       const unsigned int *d_random, sq::IdxType offset, sq::SizeType posToWrap) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    int iStep = gid / m;
-    int iTrotter = gid % m;
-    if (iStep < nAllSteps) {
-        int posOffset = (iStep + iTrotter) & 1;
-        d_buffer[gid] = (2 * d_random[(gid + offset) % posToWrap] + posOffset) % N;
-    }
+    if (gid < nToGenerate)
+        d_buffer[gid] = d_random[(gid + offset) % posToWrap] % N;
 }
 
 void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
@@ -75,7 +71,7 @@ void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
     dim3 blockDim(128);
     dim3 gridDim(divru((sq::SizeType)nToGenerate, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
-    generateFlipPosKernel<<<gridDim, blockDim, 0, stream>>>((int*)d_buffer_, N, m, N * nRuns,
+    generateFlipPosKernel<<<gridDim, blockDim, 0, stream>>>((int*)d_buffer_, N, nToGenerate,
                                                             d_randomNum, offset, posToWrap);
     DEBUG_SYNC;
 
