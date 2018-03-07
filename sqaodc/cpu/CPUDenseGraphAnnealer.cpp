@@ -9,12 +9,12 @@ CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
-    nProcs_ = omp_get_num_procs();
-    sq::log("# processors: %d", nProcs_);
+    nMaxThreads_ = omp_get_max_threads();
+    sq::log("# max threads: %d", nMaxThreads_);
 #else
-    nProcs_ = 1;
+    nMaxThreads_ = 1;
 #endif
-    random_ = new sq::Random[nProcs_];
+    random_ = new sq::Random[nMaxThreads_];
 }
 
 template<class real>
@@ -24,7 +24,7 @@ CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::seed(unsigned int seed) {
-    for (int idx = 0; idx < nProcs_; ++idx)
+    for (int idx = 0; idx < nMaxThreads_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
 }

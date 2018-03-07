@@ -12,12 +12,12 @@ CPUBipartiteGraphBFSearcher<real>::CPUBipartiteGraphBFSearcher() {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
 #ifdef _OPENMP
-    nProcs_ = omp_get_num_procs();
-    sq::log("# processors: %d", nProcs_);
+    nMaxThreads_ = omp_get_max_threads();
+    sq::log("# max threads: %d", nMaxThreads_);
 #else
-    nProcs_ = 1;
+    nMaxThreads_ = 1;
 #endif
-    searchers_ = new BatchSearcher[nProcs_];
+    searchers_ = new BatchSearcher[nMaxThreads_];
 }
 
 template<class real>
@@ -83,7 +83,7 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
         tileSize1_ = (sq::SizeType)x1max_;
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
-    for (int idx = 0; idx < nProcs_; ++idx) {
+    for (int idx = 0; idx < nMaxThreads_; ++idx) {
         searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
         searchers_[idx].initSearch();
     }
@@ -97,7 +97,7 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
     int nMaxSolutions = tileSize0_ + tileSize1_;
     
     sq::PackedBitsPairArray packedXPairList;
-    for (int idx = 0; idx < nProcs_; ++idx) {
+    for (int idx = 0; idx < nMaxThreads_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
         if (searcher.Emin_ < Emin_) {
             Emin_ = searcher.Emin_;
@@ -142,7 +142,7 @@ void CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits x0begin, sq::
 #pragma omp parallel
     {
         sq::SizeType threadNum = omp_get_thread_num();
-        sq::SizeType nBatchSize1PerThread = (nBatchSize1 + nProcs_ - 1) / nProcs_;
+        sq::SizeType nBatchSize1PerThread = (nBatchSize1 + nMaxThreads_ - 1) / nMaxThreads_;
         sq::PackedBits batchBegin1 = x1begin + nBatchSize1PerThread * threadNum;
         sq::PackedBits batchEnd1 = x1begin +
                 std::min(nBatchSize1, nBatchSize1PerThread * (threadNum + 1));

@@ -48,7 +48,7 @@ private:
     Vector E_;
     sq::BitsArray xList_;
 
-    int nProcs_;
+    int nMaxThreads_;
     BatchSearcher *searchers_;
 
     typedef sq::DenseGraphBFSearcher<real> Base;

@@ -13,12 +13,12 @@ CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
-    nProcs_ = omp_get_num_procs();
-    sq::log("# processors: %d", nProcs_);
+    nMaxThreads_ = omp_get_max_threads();
+    sq::log("# max threads: %d", nMaxThreads_);
 #else
-    nProcs_ = 1;
+    nMaxThreads_ = 1;
 #endif
-    random_ = new sq::Random[nProcs_];
+    random_ = new sq::Random[nMaxThreads_];
 }
 
 template<class real>
@@ -29,7 +29,7 @@ CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::seed(unsigned int seed) {
-    for (int idx = 0; idx < nProcs_; ++idx)
+    for (int idx = 0; idx < nMaxThreads_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
 }
@@ -179,7 +179,7 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::initAnneal() {
     if (!isRandSeedGiven())
-        for (int idx = 0; idx < nProcs_; ++idx)
+        for (int idx = 0; idx < nMaxThreads_; ++idx)
             random_[idx].seed();
     setState(solRandSeedGiven);
 
@@ -263,7 +263,7 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int JrowSpan = (J.rows() + nProcs_ - 1) / nProcs_;
+        int JrowSpan = (J.rows() + nMaxThreads_ - 1) / nMaxThreads_;
         int JrowBegin = JrowSpan * threadNum;
         int JrowEnd = std::min(J.rows(), JrowSpan * (threadNum + 1));
         JrowSpan = JrowEnd - JrowBegin;

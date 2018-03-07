@@ -50,7 +50,7 @@ private:
     Vector E_;
     sq::BitsPairArray xPairList_;
 
-    int nProcs_;
+    int nMaxThreads_;
     BatchSearcher *searchers_;
     
     typedef sq::BipartiteGraphBFSearcher<real> Base;

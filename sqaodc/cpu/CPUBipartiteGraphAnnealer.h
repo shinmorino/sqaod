@@ -75,7 +75,7 @@ private:
                                 const EigenMatrix &qFixed, real G, real kT);
 
     sq::Random *random_;
-    int nProcs_;
+    int nMaxThreads_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
     real c_;

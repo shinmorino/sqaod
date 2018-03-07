@@ -69,7 +69,7 @@ private:
     void syncBits();
     
     sq::Random *random_;
-    int nProcs_;
+    int nMaxThreads_;
     Vector E_;
     sq::BitsArray bitsX_;
     sq::BitsArray bitsQ_;
