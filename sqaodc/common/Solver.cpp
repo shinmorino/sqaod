@@ -106,6 +106,9 @@ void Annealer<real>::setPreference(const Preference &pref) {
             Solver<real>::clearState(Solver<real>::solInitialized);
         m_ = pref.nTrotters;
     }
+    else if (pref.name == pnAlgorithm) {
+        this->selectAlgorithm(pref.algo);
+    }
 }
 
 
