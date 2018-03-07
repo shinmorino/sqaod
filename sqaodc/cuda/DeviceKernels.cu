@@ -300,22 +300,6 @@ gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
     throwOnError(cublasSgemm(devStream_->getCublasHandle(), opA, opB, M, N, K, d_alpha, d_A, lda, d_B, ldb, d_beta, d_C, ldc));
 }
 
-template<class D, class S>
-__global__ static void
-castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
-    int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    if (gid < size)
-        d_dst[gid] = (D)d_src[gid];
-}
-
-template<class real> void DeviceMathKernelsType<real>::
-toBits(char *bits, const real *values, sq::SizeType size) {
-    dim3 blockDim(128);
-    dim3 gridDim(divru(size, blockDim.x));
-    castKernel <<<gridDim, blockDim >>> (bits, values, size);
-    DEBUG_SYNC;
-}
-
 template<class real> DeviceMathKernelsType<real>::
 DeviceMathKernelsType(DeviceStream *devStream) {
     devStream_ = devStream;
@@ -381,6 +365,23 @@ copyBroadcastStrided(V *d_buf, const V &v, SizeType size, SizeType stride, IdxTy
 }
 
 
+template<class D, class S>
+__global__ static void
+castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
+    int gid = blockDim.x * blockIdx.x + threadIdx.x;
+    if (gid < size)
+        d_dst[gid] = (D)d_src[gid];
+}
+
+
+template<class Vdst, class Vsrc> void DeviceCopyKernels::
+cast(Vdst *dst, const Vsrc *src, sq::SizeType size) {
+    dim3 blockDim(128);
+    dim3 gridDim(divru(size, blockDim.x));
+    castKernel<<<gridDim, blockDim >>> (dst, src, size);
+    DEBUG_SYNC;
+}
+
 DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
     stream_ = NULL;
     if (stream != NULL)
@@ -419,6 +420,10 @@ template void DeviceCopyKernels::copyBroadcast(unsigned long *, const unsigned l
 template void DeviceCopyKernels::copyBroadcast(long long *, const long long &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(unsigned long long *, const unsigned long long &, SizeType) const;
 
+template void DeviceCopyKernels::cast(char *dst, const float *src, sq::SizeType size);
+template void DeviceCopyKernels::cast(char *dst, const double *src, sq::SizeType size);
+template void DeviceCopyKernels::cast(float *dst, const char *src, sq::SizeType size);
+template void DeviceCopyKernels::cast(double *dst, const char *src, sq::SizeType size);
 
     
 

@@ -39,8 +39,6 @@ struct DeviceMathKernelsType {
               const real *d_alpha, const real *d_A, int lda, const real *d_B, int ldb,
               const real *d_beta, real *d_C, int ldc);
 
-    void toBits(char *bits, const real *values, sq::SizeType size);
-
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
 
     void assignStream(DeviceStream *devStream);
@@ -62,6 +60,9 @@ struct DeviceCopyKernels {
     template<class V>
     void copyBroadcastStrided(V *d_buf, const V &v, sq::SizeType size,
                               sq::SizeType stride, sq::IdxType offset) const;
+
+    template<class Vdst, class Vsrc>
+    void cast(Vdst *dst, const Vsrc *src, sq::SizeType size);
 
     DeviceCopyKernels(DeviceStream *stream = NULL);
 

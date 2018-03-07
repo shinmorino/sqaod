@@ -360,8 +360,8 @@ void CUDABipartiteGraphAnnealer<real>::syncBits() {
     bitsPairX_.clear();
     bitsPairQ_.clear();
 
-    devFormulas_.devMath.toBits(&h_q0_, d_matq0_);
-    devFormulas_.devMath.toBits(&h_q1_, d_matq1_);
+    devCopy_.cast(&h_q0_, d_matq0_);
+    devCopy_.cast(&h_q1_, d_matq1_);
     devStream_->synchronize();
 
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
