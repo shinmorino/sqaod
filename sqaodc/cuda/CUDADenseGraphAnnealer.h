@@ -101,6 +101,7 @@ private:
     DeviceRandomBuffer flipPosBuffer_;
     DeviceRandomBuffer realNumBuffer_;
     HostVector E_;
+    uint2 *d_reachCount_;
 
     sq::BitsArray xlist_;
     sq::BitsArray qlist_;

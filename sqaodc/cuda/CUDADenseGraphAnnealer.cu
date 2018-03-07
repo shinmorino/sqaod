@@ -3,21 +3,21 @@
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
 #include "DeviceSegmentedSum.cuh"
-#include <cooperative_groups.h>
 
 using namespace sqaod_cuda;
-namespace cg = cooperative_groups;
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
     devStream_ = NULL;
     m_ = (SizeType)-1;
+    d_reachCount_ = NULL;
 }
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
     devStream_ = NULL;
     m_ = (SizeType)-1;
+    d_reachCount_ = NULL;
     assignDevice(device);
 }
 
@@ -26,6 +26,9 @@ CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
     if (isInitialized())
         deallocate();
     d_random_.deallocate();
+    if (d_reachCount_ != NULL)
+        devAlloc_->deallocate(d_reachCount_);
+    d_reachCount_ = NULL;
     if (dotJq_ != NULL) {
         delete dotJq_;
         dotJq_ = NULL;
@@ -75,6 +78,8 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     d_random_.assignDevice(device);
     flipPosBuffer_.assignDevice(device);
     realNumBuffer_.assignDevice(device);
+
+    d_reachCount_ = (uint2*)devAlloc_->allocate(sizeof(uint2));
 
     /* initialize sumJq */
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
@@ -185,6 +190,8 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CUDADenseGraphAnnealer<real>::initAnneal() {
     throwErrorIfProblemNotSet();
+    throwErrorIf(devStream_->getNumThreadsToFillDevice() < (m_ + 1) / 2,
+                 "nTrotters too large for this device.");
 
     if (!isRandSeedGiven())
         d_random_.seed();
@@ -192,7 +199,7 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
 
     if (isInitialized())
         deallocateInternalObjects();
-    
+
     HostObjectAllocator halloc;
     devAlloc_->allocate(&d_matq_, m_, N_);
     devAlloc_->allocate(&d_Jq_, m_);
@@ -204,7 +211,8 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     /* estimate # rand nums required per one anneal. */
     int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
     d_random_.setRequiredSize(requiredSize);
-    
+    throwOnError(cudaMemsetAsync(d_reachCount_, 0, sizeof(uint2), devStream_->getCudaStream()));
+
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq.configure(N_, m_, false);
@@ -296,9 +304,8 @@ template<class real>
 __global__ static void
 tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
               const int *d_x, const real *d_random, sq::SizeType N, sq::SizeType m,
-              const real twoDivM, const real coef, const real invKT) {
-
-    cg::thread_block g = cg::this_thread_block();
+              const real twoDivM, const real coef, const real invKT,
+              uint2 *reachCount) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     int y = 2 * gid;
@@ -315,9 +322,22 @@ tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
             if (threshold > d_random[y])
                 d_q[N * y + x] = - qyx;
         }
-        if (loop == 0)
-            g.sync();
+
+        /* wait for all blocks reach here */
+        __syncthreads();
+        if ((loop == 0) && (threadIdx.x == 0)) {
+            int count = atomicAdd(&reachCount->x, 1) + 1;
+            while (count != gridDim.x) {
+                count = *(volatile unsigned int*)(&reachCount->x);
+            }
+        }
+        __syncthreads();
         y += 1;
+    }
+    if (threadIdx.x == 0) {
+        int count = atomicAdd(&reachCount->y, 1) + 1;
+        if (count == gridDim.x)
+            *reachCount = make_uint2(0, 0);
     }
 }
 
@@ -336,11 +356,11 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
 #if 0
     tryFlipKernel<<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
                                          d_x, d_random, N_, m_,
-                                         twoDivM, coef, invKT);
+                                         twoDivM, coef, invKT, d_reachCount_);
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
-                    (void*)&N_, (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&invKT, NULL};
-    cudaLaunchKernel((void*)tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
+                    (void*)&N_, (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&invKT, (void*)&d_reachCount_, NULL};
+    cudaLaunchKernel(tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
 #endif
     DEBUG_SYNC;
 }
