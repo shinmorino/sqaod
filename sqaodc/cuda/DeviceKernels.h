@@ -61,6 +61,9 @@ struct DeviceCopyKernels {
     void copyBroadcastStrided(V *d_buf, const V &v, sq::SizeType size,
                               sq::SizeType stride, sq::IdxType offset) const;
 
+    template<class V>
+    void copyBroadcastVector(V *dst, const V *vec, sq::SizeType size, sq::SizeType nBatch) const;
+
     template<class Vdst, class Vsrc>
     void cast(Vdst *dst, const Vsrc *src, sq::SizeType size);
 

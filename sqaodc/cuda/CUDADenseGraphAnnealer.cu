@@ -82,7 +82,7 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     d_reachCount_ = (uint2*)devAlloc_->allocate(sizeof(uint2));
 
     /* initialize sumJq */
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
     dotJq_ = new DotJq(device);
 }
 
@@ -150,10 +150,9 @@ void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
     throwErrorIf(x.size != N_,
                  "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
 
-    HostVector rx = sq::x_to_q<real>(x);
-    DeviceVector *d_x = devStream_->tempDeviceVector<real>(rx.size);
-    devCopy_(d_x, rx);
-    devFormulas_.devMath.scaleBroadcast(&d_matq_, real(1.), *d_x, opRowwise);
+    DeviceBits *d_x = devStream_->tempDeviceVector<char>(x.size);
+    devCopy_(d_x, x);
+    devCopy_.copyRowwise(&d_matq_, *d_x);
     setState(solQSet);
 }
 
@@ -182,7 +181,9 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
     throwErrorIfQNotSet();
 
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
-    devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, d_matq_);
+    DeviceMatrix *d_realMatQ = devStream_->tempDeviceMatrix<real>(d_matq_.dim());
+    devCopy_.cast(d_realMatQ, d_matq_);
+    devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, *d_realMatQ);
     real sign = (om_ == sq::optMaximize) ? -1. : 1.;
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 }
@@ -213,7 +214,7 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     d_random_.setRequiredSize(requiredSize);
     throwOnError(cudaMemsetAsync(d_reachCount_, 0, sizeof(uint2), devStream_->getCudaStream()));
 
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq.configure(N_, m_, false);
 
@@ -237,7 +238,7 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     xlist_.clear();
     qlist_.clear();
 
-    deviceCopy_.cast(&h_q_, d_matq_);
+    devCopy_(&h_q_, d_matq_);
     devStream_->synchronize();
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q(h_q_.row(idx), N_);
@@ -291,18 +292,18 @@ void annealOneStep(real G, real kT) {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
-                                                const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
+                                                const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                                                 const int *d_flipPos) {
     cudaStream_t stream = devStream_->getCudaStream();
-    InDotPtr<real> inPtr(d_matq.d_data, d_J.d_data);
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, real*, Offset2way> DotJq;
+    In2TypeDotPtr<real, char, real> inPtr(d_matq.d_data, d_J.d_data);
+    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq(inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_));
 }
 
 template<class real>
 __global__ static void
-tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
+tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
               const int *d_x, const real *d_random, sq::SizeType N, sq::SizeType m,
               const real twoDivM, const real coef, const real invKT,
               uint2 *reachCount) {
@@ -312,12 +313,12 @@ tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
     for (int loop = 0; loop < 2; ++loop) {
         if (y < m) {
             int x = d_x[y]; /* N */
-            real qyx = d_q[N * y + x];
+            char qyx = d_q[N * y + x];
 
             int neibour0 = (y == 0) ? m - 1 : y - 1;
             int neibour1 = (y == m - 1) ? 0 : y + 1;
-            real dE = - twoDivM * qyx * (d_Jq[y] + d_h[x]);
-            dE -= qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
+            real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+            dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
             real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
             if (threshold > d_random[y])
                 d_q[N * y + x] = - qyx;
@@ -342,7 +343,7 @@ tryFlipKernel(real *d_q, const real *d_Jq, const real *d_h,
 }
 
 template<class real> void CUDADenseGraphAnnealer<real>::
-annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, const real *d_random,
+annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, const real *d_random,
               const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real kT) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
@@ -360,7 +361,7 @@ annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, co
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
                     (void*)&N_, (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&invKT, (void*)&d_reachCount_, NULL};
-    cudaLaunchKernel(tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
+    cudaLaunchKernel((void*)tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
 #endif
     DEBUG_SYNC;
 }

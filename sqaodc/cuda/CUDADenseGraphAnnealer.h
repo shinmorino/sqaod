@@ -73,11 +73,11 @@ public:
     void annealOneStep(real G, real kT);
 
     /* CUDA Kernels */
-    void annealOneStep(DeviceMatrix *d_matq, const DeviceVector &d_Jq,
+    void annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq,
                        const int *d_x, const real *d_random,
                        const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real kT);
 
-    void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceMatrix &d_matq,
+    void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                       const int *d_flipPos);
 private:
     void deallocateProblem();
@@ -94,7 +94,7 @@ private:
     DeviceMatrix d_J_;
     DeviceVector d_h_;
     DeviceScalar d_c_;
-    DeviceMatrix d_matq_;
+    DeviceBitMatrix d_matq_;
     DeviceVector d_Jq_;
     DeviceVector h_E_;
     DeviceBitMatrix h_q_;

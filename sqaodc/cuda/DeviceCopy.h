@@ -28,6 +28,9 @@ struct DeviceCopy {
     void broadcastStrided(V *d_buf, const V &v, sq::SizeType size,
                           sq::SizeType stride, sq::IdxType offset) const;
     
+    template<class V>
+    void copyRowwise(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const;
+
     template<class Vdst, class Vsrc>
     void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
     template<class Vdst, class Vsrc>
@@ -109,6 +112,13 @@ template<class V> void DeviceCopy::
 broadcastStrided(V *d_buf, const V &v, sq::SizeType size,
                  sq::SizeType stride, sq::IdxType offset) const {
     kernels_.copyBroadcastStrided(d_buf, v, size, stride, offset);
+}
+
+
+template<class V> inline void DeviceCopy::
+copyRowwise(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const {
+    throwErrorIf(dst->cols != src.size, "matrix rows and vector size does not match.");
+    kernels_.copyBroadcastVector(dst->d_data, src.d_data, src.size, dst->rows);
 }
 
 template<class Vdst, class Vsrc> inline void DeviceCopy::

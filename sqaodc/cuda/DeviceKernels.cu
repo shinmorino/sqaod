@@ -365,6 +365,24 @@ copyBroadcastStrided(V *d_buf, const V &v, SizeType size, SizeType stride, IdxTy
 }
 
 
+template<class V>
+__global__ static void
+copyBroadcastVectorKernel(V *d_dst, const V *d_src, sq::SizeType size, sq::SizeType nBatch) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
+    if ((gidx < size) && (gidy < nBatch)) {
+        d_dst[gidx + size * gidy] = d_src[gidx];
+    }
+}
+
+template<class V> inline void DeviceCopyKernels::
+copyBroadcastVector(V *dst, const V *vec, sq::SizeType size, sq::SizeType nBatch) const {
+    dim3 blockDim(64, 2);
+    dim3 gridDim(divru(size, blockDim.x), divru(nBatch, blockDim.y));
+    copyBroadcastVectorKernel << <gridDim, blockDim >> > (dst, vec, size, nBatch);
+}
+
+
 template<class D, class S>
 __global__ static void
 castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
@@ -425,7 +443,10 @@ template void DeviceCopyKernels::cast(char *dst, const double *src, sq::SizeType
 template void DeviceCopyKernels::cast(float *dst, const char *src, sq::SizeType size);
 template void DeviceCopyKernels::cast(double *dst, const char *src, sq::SizeType size);
 
-    
+template void DeviceCopyKernels::copyBroadcastVector(char *dst, const char *vec, sq::SizeType size, sq::SizeType nBatch) const;
+template void DeviceCopyKernels::copyBroadcastVector(float *dst, const float *vec, sq::SizeType size, sq::SizeType nBatch) const;
+template void DeviceCopyKernels::copyBroadcastVector(double *dst, const double *vec, sq::SizeType size, sq::SizeType nBatch) const;
+
 
 template<class V>
 __global__ static
