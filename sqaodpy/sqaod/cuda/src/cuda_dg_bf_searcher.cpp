@@ -246,21 +246,21 @@ PyObject *dg_bf_searcher_fin_search(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *dg_bf_searcher_search_range(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    unsigned long long iBegin, iEnd;
-    if (!PyArg_ParseTuple(args, "OKKO", &objExt, &iBegin, &iEnd, &dtype))
+    if (!PyArg_ParseTuple(args, "OKKO", &objExt, &dtype))
         return NULL;
 
+    sq::PackedBits curX;
+    bool res;
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->searchRange(iBegin, iEnd);
+            res = pyobjToCppObj<double>(objExt)->searchRange(&curX);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->searchRange(iBegin, iEnd);
+            res = pyobjToCppObj<float>(objExt)->searchRange(&curX);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_DgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cuda_DgBfSearcherError);
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_BuildValue("OK", res ? Py_True : Py_False, curX);
 }
 
 extern "C"

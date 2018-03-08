@@ -57,16 +57,15 @@ class DenseGraphBFSearcher :
     def fin_search(self) :
         cext.fin_search(self._cobj, self.dtype);
         
-    def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
-        cext.search_range(self._cobj, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+    def search_range(self) :
+        return cext.search_range(self._cobj, self.dtype)
         
     def _search(self) :
-        N = self._N
-        iMax = 1 << N
-        iStep = min(512, iMax)
         self.init_search()
-        for iTile in range(0, iMax, iStep) :
-            cext.search_range(self._cobj, iTile, iTile + iStep, self.dtype)
+        while True :
+            comp, curx = cext.search_range(self._cobj, self.dtype)
+            if comp :
+                break
         self.fin_search()
         
     def search(self) :

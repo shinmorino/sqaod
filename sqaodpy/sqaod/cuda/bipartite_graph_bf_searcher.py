@@ -58,30 +58,20 @@ class BipartiteGraphBFSearcher :
     def fin_search(self) :
         cext.fin_search(self._cobj, self.dtype);
         
-    def search_range(self, iBegin0, iEnd0, iBegin1, iEnd1) :
-        cext.search_range(self._cobj, iBegin0, iEnd0, iBegin1, iEnd1, self.dtype)
+    def search_range(self) :
+        return cext.search_range(self._cobj, self.dtype)
         
     def search(self) :
         # one liner.  does not accept ctrl+c.
         cext.search(self._cobj, self.dtype);
-        
 
     def _search(self) :
-        nStep = 1024
         self.init_search()
-
-        N0, N1 = self._dim[0], self._dim[1]
-        iMax = 1 << N0
-        jMax = 1 << N1
-
-        iStep = min(nStep, iMax)
-        jStep = min(nStep, jMax)
-        for iTile in range(0, iMax, iStep) :
-            for jTile in range(0, jMax, jStep) :
-                self.search_range(iTile, iTile + iStep, jTile, jTile + jStep)
-        
+        while True :
+            comp, curx0, curx1 = cext.search_range(self._cobj, self.dtype)
+            if comp :
+                break;
         self.fin_search()
-
         
 
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None,

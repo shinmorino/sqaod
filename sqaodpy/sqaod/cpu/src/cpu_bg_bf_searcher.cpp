@@ -239,21 +239,21 @@ PyObject *bg_bf_searcher_fin_search(PyObject *module, PyObject *args) {
 extern "C"
 PyObject *bg_bf_searcher_search_range(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
-    unsigned long long iBegin0, iEnd0, iBegin1, iEnd1;
-    if (!PyArg_ParseTuple(args, "OKKKKO", &objExt, &iBegin0, &iEnd0, &iBegin1, &iEnd1, &dtype))
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
+    sq::PackedBits curX0, curX1;
+    bool res;
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->searchRange(iBegin0, iEnd0, iBegin1, iEnd1);
+            res = pyobjToCppObj<double>(objExt)->searchRange(&curX0, &curX1);
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->searchRange(iBegin0, iEnd0, iBegin1, iEnd1);
+            res = pyobjToCppObj<float>(objExt)->searchRange(&curX0, &curX1);
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgBfSearcherError);
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_BuildValue("OKK", res ? Py_True : Py_False, curX0, curX1);
 }
 
 extern "C"
