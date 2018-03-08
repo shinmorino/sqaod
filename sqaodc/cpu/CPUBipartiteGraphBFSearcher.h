@@ -38,8 +38,7 @@ public:
 
     void finSearch();
 
-    void searchRange(sq::PackedBits iBegin0, sq::PackedBits iEnd0,
-                     sq::PackedBits iBegin1, sq::PackedBits iEnd1);
+    bool searchRange(sq::PackedBits *currentX0, sq::PackedBits *currentX1);
 
     /* void search(); */
     
@@ -59,6 +58,8 @@ private:
     using Base::N1_;
     using Base::tileSize0_;
     using Base::tileSize1_;
+    using Base::x0_;
+    using Base::x1_;
     using Base::x0max_;
     using Base::x1max_;
 

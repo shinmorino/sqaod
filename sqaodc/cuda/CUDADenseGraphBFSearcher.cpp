@@ -79,6 +79,7 @@ void CUDADenseGraphBFSearcher<real>::initSearch() {
     if (isInitialized())
         deallocate();
     
+    x_ = 0;
     sq::SizeType maxTileSize = 1u << N_;
     if (maxTileSize < tileSize_) {
         tileSize_ = maxTileSize;
@@ -120,27 +121,31 @@ void CUDADenseGraphBFSearcher<real>::finSearch() {
 }
 
 template<class real>
-void CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd) {
+bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
     throwErrorIfNotInitialized();
 
     /* FIXME: Use multiple searchers, multi GPU */
-    throwErrorIf(xBegin > xEnd, "xBegin should be larger than xEnd");
-    xBegin = std::min(std::max(0ULL, xBegin), xMax_);
-    xEnd = std::min(std::max(0ULL, xEnd), xMax_);
-    if (xBegin == xEnd)
-        return; /* Nothing to do */
 
-    batchSearch_.calculate_E(xBegin, xEnd);
-    batchSearch_.synchronize();
+    sq::PackedBits xBegin = x_;
+    sq::PackedBits xEnd = std::min(x_ + tileSize_, xMax_);
+    if (xBegin < xEnd) {
+        batchSearch_.calculate_E(xBegin, xEnd);
+        batchSearch_.synchronize();
 
-    real newEmin = batchSearch_.get_Emin();
-    if (newEmin < Emin_) {
-        batchSearch_.partition_xMins(false);
-        Emin_ = newEmin;
+        real newEmin = batchSearch_.get_Emin();
+        if (newEmin < Emin_) {
+            batchSearch_.partition_xMins(false);
+            Emin_ = newEmin;
+        }
+        else if (newEmin == Emin_) {
+            batchSearch_.partition_xMins(true);
+        }
     }
-    else if (newEmin == Emin_) {
-        batchSearch_.partition_xMins(true);
-    }
+    
+    x_ = xEnd;
+    if (curXEnd != NULL)
+        *curXEnd = x_;
+    return x_ == xMax_;
 }
 
 

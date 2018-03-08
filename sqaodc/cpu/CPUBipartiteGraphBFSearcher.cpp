@@ -73,6 +73,7 @@ template<class real>
 void CPUBipartiteGraphBFSearcher<real>::initSearch() {
     Emin_ = FLT_MAX;
     xPairList_.clear();
+    x0_ = x1_ = 0;
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
     if (x0max_ < tileSize0_) {
@@ -128,30 +129,75 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
 }
 
 template<class real>
-void CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
-                                                    sq::PackedBits x1begin, sq::PackedBits x1end) {
+bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::PackedBits *curX1) {
     throwErrorIfNotInitialized();
     
-    x0begin = std::min(std::max(0ULL, x0begin), x0max_);
-    x0end = std::min(std::max(0ULL, x0end), x0max_);
-    x1begin = std::min(std::max(0ULL, x1begin), x1max_);
-    x1end = std::min(std::max(0ULL, x1end), x1max_);
-    
 #ifdef _OPENMP
-    sq::SizeType nBatchSize1 = (sq::SizeType)(x1end - x1begin);
+
+    sq::PackedBitsArray batch0begin(nMaxThreads_), batch0end(nMaxThreads_);
+    sq::PackedBitsArray batch1begin(nMaxThreads_), batch1end(nMaxThreads_);
+
+    /* calculate begin/end */
+    sq::PackedBits x0 = x0_;
+    sq::PackedBits x0end = std::min(x0 + tileSize0_, x0max_);
+    sq::PackedBits x1 = x1_;
+    for (int idx = 0; idx < nMaxThreads_; ++idx) {
+
+        batch1begin.pushBack(x1);
+        sq::PackedBits x1end = std::min(x1 + tileSize1_, x1max_);
+        batch1end.pushBack(x1end);
+        batch0begin.pushBack(x0);
+        batch0end.pushBack(x0end);
+
+        x1 = x1end;
+        if (x1 == x1max_) {
+            x1 = 0;
+            /* move to the next x0 range. */
+            x0 = std::min(x0 + tileSize0_, x0max_);
+            x0end = std::min(x0 + tileSize0_, x0max_);
+        }
+    }
+    
 #pragma omp parallel
     {
         sq::SizeType threadNum = omp_get_thread_num();
-        sq::SizeType nBatchSize1PerThread = (nBatchSize1 + nMaxThreads_ - 1) / nMaxThreads_;
-        sq::PackedBits batchBegin1 = x1begin + nBatchSize1PerThread * threadNum;
-        sq::PackedBits batchEnd1 = x1begin +
-                std::min(nBatchSize1, nBatchSize1PerThread * (threadNum + 1));
-        searchers_[threadNum].searchRange(x0begin, x0end, batchBegin1, batchEnd1);
+        sq::PackedBits b0b = batch0begin[threadNum];
+        sq::PackedBits b0e = batch0end[threadNum];
+        sq::PackedBits b1b = batch1begin[threadNum];
+        sq::PackedBits b1e = batch1end[threadNum];
+        if ((b0b < b0e) && (b1b < b1e))
+            searchers_[threadNum].searchRange(b0b, b0e, b1b, b1e);
     }
+
+    /* move to next batch */
+    x0_ = batch0end[nMaxThreads_ - 1];
+    x1_ = batch1end[nMaxThreads_ - 1];
+
 #else
-    searchers_[0].searchRange(x0begin, x0end, x1begin, x1end);
+    sq::PackedBits batch0begin = x0_;
+    sq::PackedBits batch0end = std::min(x0_ + tileSize0_, x0max_);
+    sq::PackedBits batch1begin = x1_;
+    sq::PackedBits batch1end = std::min(x1_ + tileSize1_, x1max_);
+    if ((batch0begin < batch0end) && (batch1begin < batch1end))
+        searchers_[0].searchRange(batch0begin, batch0end, batch1begin, batch1end);
+
+    x0_ = batch0end;
+    x1_ = batch1end;
 #endif
+
+    if (x1_ == x1max_) {
+        x1_ = 0;
+        x0_ = std::min(x0_ + tileSize0_, x0max_);
+    }
+    
+    if (curX0 != NULL)
+        *curX0 = x0_;
+    if (curX1 != NULL)
+        *curX1 = x1_;
+
+    return (x0_ == x0max_);
 }
+
 
 template class CPUBipartiteGraphBFSearcher<float>;
 template class CPUBipartiteGraphBFSearcher<double>;

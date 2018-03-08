@@ -52,8 +52,7 @@ public:
 
     void finSearch();
 
-    void searchRange(PackedBits x0Begin, PackedBits x0End,
-                     PackedBits x1Begin, PackedBits x1End);
+    bool searchRange(PackedBits *curX0, PackedBits *curX1);
 
     /* void search(); */
     
@@ -78,6 +77,8 @@ private:
     using Base::om_;
     using Base::tileSize0_;
     using Base::tileSize1_;
+    using Base::x0_;
+    using Base::x1_;
     using Base::x0max_;
     using Base::x1max_;
 

@@ -155,13 +155,14 @@ struct DenseGraphBFSearcher
 
     virtual void setPreference(const Preference &pref);
 
-    virtual void searchRange(sqaod::PackedBits xBegin, sqaod::PackedBits xEnd) = 0;
+    virtual bool searchRange(sqaod::PackedBits *curXEnd) = 0;
 
     virtual void search();
 
 protected:
     DenseGraphBFSearcher() :xMax_(0), tileSize_(0) { }
     
+    PackedBits x_;
     PackedBits xMax_;
     SizeType tileSize_;
 };
@@ -192,9 +193,7 @@ struct BipartiteGraphBFSearcher
 
     virtual void setPreference(const Preference &pref);
 
-    virtual void searchRange(sqaod::PackedBits x0Begin, sqaod::PackedBits x0End,
-                             sqaod::PackedBits x1Begin, sqaod::PackedBits x1End) = 0;
-
+    virtual bool searchRange(sqaod::PackedBits *curX0End, sqaod::PackedBits *curX1End) = 0;
 
     virtual void search();
 
@@ -202,6 +201,7 @@ protected:
     BipartiteGraphBFSearcher()
             : x0max_(0), x1max_(0), tileSize0_(0), tileSize1_(0) { }
 
+    PackedBits x0_, x1_;
     PackedBits x0max_, x1max_;
     SizeType tileSize0_, tileSize1_;
 };

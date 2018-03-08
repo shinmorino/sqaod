@@ -145,9 +145,7 @@ void DenseGraphBFSearcher<real>::setPreference(const Preference &pref) {
 template<class real>
 void DenseGraphBFSearcher<real>::search() {
     this->initSearch();
-    PackedBits xStep = std::min(PackedBits(tileSize_), xMax_);
-    for (PackedBits xTile = 0; xTile < xMax_; xTile += xStep)
-        searchRange(xTile, xTile + xStep);
+    while (!searchRange(NULL));
     this->finSearch();
 }
 
@@ -176,15 +174,7 @@ void BipartiteGraphBFSearcher<real>::setPreference(const Preference &pref) {
 template<class real>
 void BipartiteGraphBFSearcher<real>::search() {
     this->initSearch();
-
-    PackedBits xStep0 = std::min((PackedBits)tileSize0_, x0max_);
-    PackedBits xStep1 = std::min((PackedBits)tileSize1_, x1max_);
-    for (PackedBits xTile1 = 0; xTile1 < x1max_; xTile1 += xStep1) {
-        for (PackedBits xTile0 = 0; xTile0 < x0max_; xTile0 += xStep0) {
-            searchRange(xTile0, xTile0 + xStep0, xTile1, xTile1 + xStep1);
-        }
-    }
-
+    while (!searchRange(NULL, NULL));
     this->finSearch();
 }
 

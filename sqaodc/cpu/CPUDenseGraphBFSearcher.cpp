@@ -64,6 +64,7 @@ template<class real>
 void CPUDenseGraphBFSearcher<real>::initSearch() {
     Emin_ = FLT_MAX;
     xList_.clear();
+    x_ = 0;
     xMax_ = 1ull << N_;
     if (xMax_ < tileSize_) {
         tileSize_ = (sq::SizeType)xMax_;
@@ -111,26 +112,33 @@ void CPUDenseGraphBFSearcher<real>::finSearch() {
 
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd) {
+bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
     throwErrorIfNotInitialized();
-
-    xBegin = std::min(std::max(0ULL, xBegin), xMax_);
-    xEnd = std::min(std::max(0ULL, xEnd), xMax_);
     
-// #undef _OPENMP
 #ifdef _OPENMP
-    sq::SizeType nBatchSize = (sq::SizeType)(xEnd - xBegin);
 #pragma omp parallel
     {
         sq::SizeType threadNum = omp_get_thread_num();
-        sq::SizeType nBatchSizePerThread = (nBatchSize + nMaxThreads_ - 1) / nMaxThreads_;
-        sq::PackedBits batchBegin = xBegin + nBatchSizePerThread * threadNum;
-        sq::PackedBits batchEnd = xBegin + std::min(nBatchSize, nBatchSizePerThread * (threadNum + 1));
-        searchers_[threadNum].searchRange(batchBegin, batchEnd);
+        sq::PackedBits batchBegin = x_ + tileSize_ * threadNum;
+        sq::PackedBits batchEnd = x_ + tileSize_ * (threadNum + 1);
+        batchBegin = std::min(std::max(0ULL, batchBegin), xMax_);
+        batchEnd = std::min(std::max(0ULL, batchEnd), xMax_);
+        if (batchBegin < batchEnd)
+            searchers_[threadNum].searchRange(batchBegin, batchEnd);
     }
+    x_ = std::min(sq::PackedBits(x_ + tileSize_ * nMaxThreads_), xMax_);
 #else
+    sq::PackedBits batchBegin = x_;
+    sq::PackedBits batchEnd = std::min(x_ + tileSize_, xMax_); ;
+    if (batchBegin < batchEnd)
+        searchers_[threadNum].searchRange(batchBegin, batchEnd);
+    
     searchers_[0].searchRange(xBegin, xEnd);
+    x_ = batchEnd;
 #endif
+    if (curXEnd != NULL)
+        *curXEnd = x_;
+    return (xMax_ == x_);
 }
 
 template class CPUDenseGraphBFSearcher<float>;

@@ -86,8 +86,9 @@ void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     throwErrorIfProblemNotSet();
     if (isInitialized())
         deallocate();
-
+    
     Emin_ = std::numeric_limits<real>::max();
+    x0_ = x1_ = 0;
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
     if (x0max_ < tileSize0_) {
@@ -131,32 +132,41 @@ void CUDABipartiteGraphBFSearcher<real>::finSearch() {
 }
 
 template<class real>
-void CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits xBegin0, PackedBits xEnd0,
-                                                     PackedBits xBegin1, PackedBits xEnd1) {
+bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits *curX0, PackedBits *curX1) {
     throwErrorIfNotInitialized();
-    
     /* FIXME: Use multiple searchers, multi GPU */
-    throwErrorIf(xBegin0 > xEnd0, "xBegin0 should be larger than xEnd0");
-    throwErrorIf(xBegin1 > xEnd1, "xBegin1 should be larger than xEnd1");
-    if ((xBegin0 == xEnd0) || (xBegin1 == xEnd1))
-        return; /* Nothing to do */
-    xBegin0 = std::min(std::max(0ULL, xBegin0), x0max_);
-    xEnd0 = std::min(std::max(0ULL, xEnd0), x0max_);
-    xBegin1 = std::min(std::max(0ULL, xBegin1), x1max_);
-    xEnd1 = std::min(std::max(0ULL, xEnd1), x1max_);
-    
-    batchSearch_.calculate_E(xBegin0, xEnd0, xBegin1, xEnd1);
-    batchSearch_.synchronize();
 
-    real newEmin = batchSearch_.get_Emin();
-    if (newEmin < Emin_) {
-        batchSearch_.partition_minXPairs(false);
-        Emin_ = newEmin;
+    PackedBits batch0begin = x0_;
+    PackedBits batch0end = std::min(x0max_, batch0begin + tileSize0_);
+    PackedBits batch1begin = x1_;
+    PackedBits batch1end = std::min(x1max_, batch1begin + tileSize1_);
+
+    if ((batch0begin < batch0end) && (batch1begin < batch1end)) {
+    
+        batchSearch_.calculate_E(batch0begin, batch0end, batch1begin, batch1end);
+        batchSearch_.synchronize();
+        
+        real newEmin = batchSearch_.get_Emin();
+        if (newEmin < Emin_) {
+            batchSearch_.partition_minXPairs(false);
+            Emin_ = newEmin;
+        }
+        else if (newEmin == Emin_) {
+            batchSearch_.partition_minXPairs(true);
+        }
+        /* FIXME: add max limits of # min vectors. */
     }
-    else if (newEmin == Emin_) {
-        batchSearch_.partition_minXPairs(true);
+
+    if (x1_ == x1max_) {
+        x1_ = 0;
+        x0_ = std::min(x0_ + tileSize0_, x0max_);
     }
-    /* FIXME: add max limits of # min vectors. */
+
+    if (curX0 != NULL)
+        *curX0 = x0_;
+    if (curX1 != NULL)
+        *curX1 = x1_;
+    return (x0_ == x0max_);
 }
 
 template class sqaod_cuda::CUDABipartiteGraphBFSearcher<float>;
