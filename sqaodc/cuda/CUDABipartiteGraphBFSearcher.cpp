@@ -157,6 +157,7 @@ bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits *curX0, PackedBi
         /* FIXME: add max limits of # min vectors. */
     }
 
+    x1_ = batch1end;
     if (x1_ == x1max_) {
         x1_ = 0;
         x0_ = std::min(x0_ + tileSize0_, x0max_);

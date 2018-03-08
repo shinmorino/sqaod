@@ -170,7 +170,7 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::P
     }
 
     /* move to next batch */
-    x0_ = batch0end[nMaxThreads_ - 1];
+    x0_ = batch0begin[nMaxThreads_ - 1];
     x1_ = batch1end[nMaxThreads_ - 1];
 
 #else
@@ -181,7 +181,6 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::P
     if ((batch0begin < batch0end) && (batch1begin < batch1end))
         searchers_[0].searchRange(batch0begin, batch0end, batch1begin, batch1end);
 
-    x0_ = batch0end;
     x1_ = batch1end;
 #endif
 
