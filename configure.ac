@@ -28,6 +28,18 @@ AC_ARG_ENABLE([cuda],
 esac],[cuda=false])
 AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
 
+if test z${CUDA_ARCH} = z
+then
+  CUDA_ARCH="35 50 60 61 70"
+fi
+
+for arch in ${CUDA_ARCH}
+  do
+    NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_$arch,code=sm_$arch"
+done
+NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_70,code=compute_70"
+echo "NVCC options : $NVCCFLAGS"
+
 AC_ARG_WITH([blas],
 [  --with-blas    use CPU blas.  [[default=yes]]],
 [case "${withval}" in
@@ -50,6 +62,7 @@ then
 fi
 AC_SUBST([DEFINE_SQAODC_CUDA_ENABLED], ${cudadef})
 AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
+AC_SUBST([NVCCFLAGS], $NVCCFLAGS)
 AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
 AC_SUBST([CUDA_INCLUDE], ${cuda_prefix}/include)
 AC_PROG_CC

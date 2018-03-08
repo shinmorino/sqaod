@@ -35,8 +35,8 @@ NVCC=@NVCC@
 
 .cu.o:  # generate dep, and compile
 	@mkdir -p $(DEPDIR)
-	$(NVCC) -M -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)" $<  -o $(DEPDIR)/$*.Tpo
-	$(NVCC) -c -std=c++11 -arch=sm_61 -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)"  $<  -o $*.o
+	$(NVCC) -M -std=c++11 $(NVCCFLAGS) -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)" $<  -o $(DEPDIR)/$*.Tpo
+	$(NVCC) -c -std=c++11 $(NVCCFLAGS) -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)"  $<  -o $*.o
 	sed s/$*.o/$*.lo/ $(DEPDIR)/$*.Tpo > $(DEPDIR)/$*.Po
 	rm -f $(DEPDIR)/$*.Tpo
 
