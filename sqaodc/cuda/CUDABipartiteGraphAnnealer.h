@@ -41,7 +41,7 @@ public:
     
     virtual sq::Algorithm getAlgorithm() const;
     
-    void seed(unsigned int seed);
+    void seed(unsigned long long seed);
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 

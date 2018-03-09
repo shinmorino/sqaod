@@ -89,7 +89,7 @@ struct Annealer : Solver<real> {
 
     virtual void setPreference(const Preference &pref);
 
-    virtual void seed(unsigned int seed) = 0;
+    virtual void seed(unsigned long long seed) = 0;
 
     virtual void randomize_q() = 0;
 

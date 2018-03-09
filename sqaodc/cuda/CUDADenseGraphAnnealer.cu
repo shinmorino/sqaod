@@ -98,7 +98,7 @@ sq::Algorithm CUDADenseGraphAnnealer<real>::getAlgorithm() const {
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::seed(unsigned int seed) {
+void CUDADenseGraphAnnealer<real>::seed(unsigned long long seed) {
     throwErrorIf(devStream_ == NULL, "Device not set.");
     d_random_.seed(seed);
     setState(solRandSeedGiven);

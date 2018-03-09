@@ -20,7 +20,7 @@ public:
     CPUDenseGraphAnnealer();
     ~CPUDenseGraphAnnealer();
 
-    void seed(unsigned int seed);
+    void seed(unsigned long long seed);
 
     sq::Algorithm selectAlgorithm(enum sq::Algorithm algo);
 

@@ -24,7 +24,7 @@ CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::seed(unsigned int seed) {
+void CPUDenseGraphAnnealer<real>::seed(unsigned long long seed) {
     for (int idx = 0; idx < nMaxThreads_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);

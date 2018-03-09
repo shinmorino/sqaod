@@ -84,7 +84,7 @@ sq::Algorithm CUDABipartiteGraphAnnealer<real>::getAlgorithm() const {
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::seed(unsigned int seed) {
+void CUDABipartiteGraphAnnealer<real>::seed(unsigned long long seed) {
     throwErrorIf(devStream_ == NULL, "Device not set.");
     d_random_.seed(seed);
     setState(solRandSeedGiven);

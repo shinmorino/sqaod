@@ -20,7 +20,7 @@ public:
     CPUBipartiteGraphAnnealer();
     ~CPUBipartiteGraphAnnealer();
 
-    void seed(unsigned int seed);
+    void seed(unsigned long long seed);
 
     sq::Algorithm selectAlgorithm(sq::Algorithm algo);
 

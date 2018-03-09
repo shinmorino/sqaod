@@ -40,7 +40,7 @@ public:
     
     virtual sq::Algorithm getAlgorithm() const;
     
-    void seed(unsigned int seed);
+    void seed(unsigned long long seed);
 
     void setProblem(const HostMatrix &W, sq::OptimizeMethod om = sq::optMinimize);
 

@@ -28,7 +28,7 @@ CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::seed(unsigned int seed) {
+void CPUBipartiteGraphAnnealer<real>::seed(unsigned long long seed) {
     for (int idx = 0; idx < nMaxThreads_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
