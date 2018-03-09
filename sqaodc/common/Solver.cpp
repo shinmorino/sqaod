@@ -31,7 +31,26 @@ void Solver<real>::setState(SolverState state) {
 
 template<class real>
 void Solver<real>::clearState(SolverState state) {
-    solverState_ &= ~state;
+    int stateToClear = 0;
+    switch (state) {
+    case solProblemSet :
+        stateToClear |= solProblemSet;
+        /* no break */
+    case solPrepared:
+        stateToClear |= solPrepared;
+        /* no break */
+    case solQSet:
+        stateToClear |= solQSet;
+        /* no break */
+    case solEAvailable:
+    case solSolutionAvailable:
+        stateToClear |= solEAvailable;
+        stateToClear |= solSolutionAvailable;
+        /* no break */
+    default:
+        break;
+    }
+    solverState_ &= ~stateToClear;
 }
 
 template<class real>
@@ -45,8 +64,8 @@ bool Solver<real>::isProblemSet() const {
 }
 
 template<class real>
-bool Solver<real>::isInitialized() const {
-    return bool(solverState_ & solInitialized);
+bool Solver<real>::isPrepared() const {
+    return bool(solverState_ & solPrepared);
 }
 
 template<class real>
@@ -60,10 +79,10 @@ void Solver<real>::throwErrorIfProblemNotSet() const {
 }
 
 template<class real>
-void Solver<real>::throwErrorIfNotInitialized() const {
+void Solver<real>::throwErrorIfNotPrepared() const {
     throwErrorIfProblemNotSet();
-    throwErrorIf(!isInitialized(),
-                 "not initialized, call initAnneal() or initSearch() in advance.");
+    throwErrorIf(!isPrepared(),
+                 "not prepared, call prepare() in advance.");
 }
 
 template<class real>
@@ -73,9 +92,15 @@ void Solver<real>::throwErrorIfQNotSet() const {
 }
 
 template<class real>
+void Solver<real>::throwErrorIfENotAvailable() const {
+    throwErrorIf(!(solverState_ & solEAvailable),
+                 "E is not available.");
+}
+
+template<class real>
 void Solver<real>::throwErrorIfSolutionNotAvailable() const {
     throwErrorIf(!(solverState_ & solSolutionAvailable),
-                 "Bits(x or q) not initialized.  Plase set or randomize in advance.");
+                 "Solution is not available.");
 }
 
 
@@ -103,7 +128,7 @@ void Annealer<real>::setPreference(const Preference &pref) {
     if (pref.name == pnNumTrotters) {
         throwErrorIf(pref.nTrotters <= 0, "# trotters must be a positive integer.");
         if (m_ != pref.nTrotters)
-            Solver<real>::clearState(Solver<real>::solInitialized);
+            Solver<real>::clearState(Solver<real>::solPrepared);
         m_ = pref.nTrotters;
     }
     else if (pref.name == pnAlgorithm) {
@@ -144,9 +169,9 @@ void DenseGraphBFSearcher<real>::setPreference(const Preference &pref) {
 
 template<class real>
 void DenseGraphBFSearcher<real>::search() {
-    this->initSearch();
+    this->prepare();
     while (!searchRange(NULL));
-    this->finSearch();
+    this->makeSolution();
 }
 
 
@@ -173,9 +198,9 @@ void BipartiteGraphBFSearcher<real>::setPreference(const Preference &pref) {
 
 template<class real>
 void BipartiteGraphBFSearcher<real>::search() {
-    this->initSearch();
+    this->prepare();
     while (!searchRange(NULL, NULL));
-    this->finSearch();
+    this->makeSolution();
 }
 
 

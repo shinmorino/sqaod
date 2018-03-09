@@ -29,6 +29,12 @@ struct Solver {
     void setPreferences(const Preferences &prefs);
 
     virtual const VectorType<real> &get_E() const = 0;
+
+    virtual void prepare() = 0;
+
+    virtual void calculate_E() = 0;
+
+    virtual void makeSolution() = 0;
     
 protected:
     Solver() : solverState_(solNone), om_(optNone) { }
@@ -38,11 +44,12 @@ protected:
     enum SolverState {
         solNone = 0,
         solProblemSet = 1,
-        solInitialized = 2,
-        solSolutionAvailable = 4,
+        solPrepared = 2,
+        solEAvailable = 4,
+        solSolutionAvailable = 8,
         /* annealer-specific states */
-        solRandSeedGiven = 8,
-        solQSet = 16,
+        solRandSeedGiven = 16,
+        solQSet = 32,
     };
 
     /* Solver state set/clear/assertions */
@@ -50,11 +57,12 @@ protected:
     void clearState(SolverState state);
     bool isRandSeedGiven() const;
     bool isProblemSet() const;
-    bool isInitialized() const;
+    bool isPrepared() const;
     bool isQSet() const;
     void throwErrorIfProblemNotSet() const;
-    void throwErrorIfNotInitialized() const;
+    void throwErrorIfNotPrepared() const;
     void throwErrorIfQNotSet() const;
+    void throwErrorIfENotAvailable() const;
     void throwErrorIfSolutionNotAvailable() const;
     
     OptimizeMethod om_;
@@ -68,10 +76,6 @@ struct BFSearcher : Solver<real> {
     virtual Algorithm selectAlgorithm(Algorithm algo);
     
     virtual Algorithm getAlgorithm() const;
-    
-    virtual void initSearch() = 0;
-
-    virtual void finSearch() = 0;
 
     virtual void search() = 0;
 
@@ -92,12 +96,6 @@ struct Annealer : Solver<real> {
     virtual void seed(unsigned long long seed) = 0;
 
     virtual void randomize_q() = 0;
-
-    virtual void initAnneal() = 0;
-
-    virtual void finAnneal() = 0;
-
-    virtual void calculate_E() = 0;
     
     virtual void annealOneStep(real G, real kT) = 0;
 
