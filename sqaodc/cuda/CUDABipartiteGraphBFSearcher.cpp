@@ -44,7 +44,8 @@ template<class real>
 void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
                                                     const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!deviceAssigned_, "Device not set.");
-
+    clearState(solProblemSet);
+    
     N0_ = b0.size;
     N1_ = b1.size;
     throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
@@ -77,14 +78,14 @@ const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphBFSearcher<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    throwErrorIfENotAvailable();
     return E_;
 }
 
 template<class real>
-void CUDABipartiteGraphBFSearcher<real>::initSearch() {
+void CUDABipartiteGraphBFSearcher<real>::prepare() {
     throwErrorIfProblemNotSet();
-    if (isInitialized())
+    if (isPrepared())
         deallocate();
     
     Emin_ = std::numeric_limits<real>::max();
@@ -104,12 +105,24 @@ void CUDABipartiteGraphBFSearcher<real>::initSearch() {
     HostObjectAllocator halloc;
     halloc.allocate(&h_packedMinXPairs_, minXPairsSize);
 
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 template<class real>
-void CUDABipartiteGraphBFSearcher<real>::finSearch() {
-    throwErrorIfNotInitialized();
+void CUDABipartiteGraphBFSearcher<real>::calculate_E() {
+    if (minXPairs_.empty())
+        E_.resize(1);
+    else
+        E_.resize(minXPairs_.size());
+    E_ = Emin_;
+    if (om_ == sq::optMaximize)
+        E_ *= real(-1.);
+    setState(solEAvailable);
+}
+
+template<class real>
+void CUDABipartiteGraphBFSearcher<real>::makeSolution() {
+    throwErrorIfNotPrepared();
     batchSearch_.synchronize();
     const DevicePackedBitsPairArray &dPackedXminPairs = batchSearch_.get_minXPairs();
     SizeType nXMin = dPackedXminPairs.size;
@@ -117,23 +130,20 @@ void CUDABipartiteGraphBFSearcher<real>::finSearch() {
     devCopy_.synchronize();
     
     minXPairs_.clear();
-    E_.resize(nXMin);
-    E_ = Emin_;
-    if (om_ == sq::optMaximize)
-        E_ *= real(-1.);
     for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
         sq::Bits bits0, bits1;
         unpackBits(&bits0, h_packedMinXPairs_[idx].bits0, N0_);
         unpackBits(&bits1, h_packedMinXPairs_[idx].bits1, N1_);
         minXPairs_.pushBack(BitsPairArray::ValueType(bits0, bits1)); // FIXME: apply move
     }
-
     setState(solSolutionAvailable);
+    calculate_E();
 }
 
 template<class real>
 bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits *curX0, PackedBits *curX1) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
     /* FIXME: Use multiple searchers, multi GPU */
 
     PackedBits batch0begin = x0_;

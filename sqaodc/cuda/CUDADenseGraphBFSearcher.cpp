@@ -45,6 +45,8 @@ void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMet
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     throwErrorIf(!deviceAssigned_, "Device not set.");
+    clearState(solProblemSet);
+
     N_ = W.rows;
     W_ = W;
     om_ = om;
@@ -74,9 +76,9 @@ const sq::VectorType<real> &CUDADenseGraphBFSearcher<real>::get_E() const {
 }
 
 template<class real>
-void CUDADenseGraphBFSearcher<real>::initSearch() {
+void CUDADenseGraphBFSearcher<real>::prepare() {
     throwErrorIfProblemNotSet();
-    if (isInitialized())
+    if (isPrepared())
         deallocate();
     
     x_ = 0;
@@ -92,13 +94,28 @@ void CUDADenseGraphBFSearcher<real>::initSearch() {
     xList_.clear();
     xMax_ = 1ull << N_;
 
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 
 template<class real>
-void CUDADenseGraphBFSearcher<real>::finSearch() {
-    throwErrorIfNotInitialized();
+void CUDADenseGraphBFSearcher<real>::calculate_E() {
+    throwErrorIfNotPrepared();
+    if (xList_.empty())
+        E_.resize(1);
+    else
+        E_.resize(xList_.size());
+    E_ = Emin_;
+    if (om_ == sq::optMaximize)
+        E_ *= real(-1.);
+
+    setState(solEAvailable);
+}
+
+
+template<class real>
+void CUDADenseGraphBFSearcher<real>::makeSolution() {
+    throwErrorIfNotPrepared();
 
     batchSearch_.synchronize();
     const DevicePackedBitsArray &dPackedXmin = batchSearch_.get_xMins();
@@ -107,22 +124,18 @@ void CUDADenseGraphBFSearcher<real>::finSearch() {
     devCopy_.synchronize();
     
     xList_.clear();
-    E_.resize(nXMin);
-    E_ = Emin_;
-    if (om_ == sq::optMaximize)
-        E_ *= real(-1.);
     for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
         sq::Bits bits;
         unpackBits(&bits, h_packedXmin_[idx], N_);
         xList_.pushBack(bits); // FIXME: apply move
     }
-
     setState(solSolutionAvailable);
+    calculate_E();
 }
 
 template<class real>
 bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
 
     /* FIXME: Use multiple searchers, multi GPU */
 

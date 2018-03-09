@@ -29,8 +29,7 @@ template<class real>
 void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
-    if (N_ != W.rows)
-        clearState(solInitialized);
+    clearState(solProblemSet);
 
     N_ = W.rows;
     W_ = W;
@@ -56,12 +55,12 @@ const sq::BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
 
 template<class real>
 const sq::VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    throwErrorIfENotAvailable();
     return E_;
 }
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::initSearch() {
+void CPUDenseGraphBFSearcher<real>::prepare() {
     Emin_ = FLT_MAX;
     xList_.clear();
     x_ = 0;
@@ -74,14 +73,26 @@ void CPUDenseGraphBFSearcher<real>::initSearch() {
         searchers_[idx].setProblem(W_, tileSize_);
         searchers_[idx].initSearch();
     }
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::finSearch() {
-    xList_.clear();
+void CPUDenseGraphBFSearcher<real>::calculate_E() {
+    throwErrorIfNotPrepared();
+    if (xList_.empty())
+        E_.resize(1);
+    else
+        E_.resize(xList_.size());
+    mapToRowVector(E_).array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
+    setState(solEAvailable);
+}
 
+template<class real>
+void CPUDenseGraphBFSearcher<real>::makeSolution() {
+    throwErrorIfNotPrepared();
+
+    xList_.clear();
     sq::PackedBitsArray packedXList;
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
@@ -104,17 +115,15 @@ void CPUDenseGraphBFSearcher<real>::finSearch() {
         unpackBits(&bits, packedXList[idx], N_);
         xList_.pushBack(bits);
     }
-    E_.resize(nSolutions);
-    mapToRowVector(E_).array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
-
+    calculate_E();
     setState(solSolutionAvailable);
 }
 
 
 template<class real>
 bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
-    throwErrorIfNotInitialized();
-    
+    throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
 #ifdef _OPENMP
 #pragma omp parallel
     {

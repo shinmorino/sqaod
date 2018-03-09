@@ -48,9 +48,11 @@ public:
 
     const HostVector &get_E() const;
 
-    void initSearch();
+    void prepare();
 
-    void finSearch();
+    void calculate_E();
+
+    void makeSolution();
 
     bool searchRange(PackedBits *curX0, PackedBits *curX1);
 
@@ -83,13 +85,16 @@ private:
     using Base::x1max_;
 
     /* searcher state */
-    using Base::solInitialized;
+    using Base::solPrepared;
     using Base::solProblemSet;
+    using Base::solEAvailable;
     using Base::solSolutionAvailable;
     using Base::setState;
-    using Base::isInitialized;
+    using Base::clearState;
+    using Base::isPrepared;
     using Base::throwErrorIfProblemNotSet;
-    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfNotPrepared;
+    using Base::throwErrorIfENotAvailable;
     using Base::throwErrorIfSolutionNotAvailable;
 };
 

@@ -30,8 +30,7 @@ CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
 template<class real>
 void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vector &b1,
                                                    const Matrix &W, sq::OptimizeMethod om) {
-    if ((N0_!= b0.size) || (N1_ != b1.size))
-        clearState(solInitialized);
+    clearState(solProblemSet);
 
     N0_ = b0.size;
     N1_ = b1.size;
@@ -70,7 +69,7 @@ const sq::VectorType<real> &CPUBipartiteGraphBFSearcher<real>::get_E() const {
 }
 
 template<class real>
-void CPUBipartiteGraphBFSearcher<real>::initSearch() {
+void CPUBipartiteGraphBFSearcher<real>::prepare() {
     Emin_ = FLT_MAX;
     xPairList_.clear();
     x0_ = x1_ = 0;
@@ -88,11 +87,22 @@ void CPUBipartiteGraphBFSearcher<real>::initSearch() {
         searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
         searchers_[idx].initSearch();
     }
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 template<class real>
-void CPUBipartiteGraphBFSearcher<real>::finSearch() {
+void CPUBipartiteGraphBFSearcher<real>::calculate_E() {
+    throwErrorIfNotPrepared();
+    if (xPairList_.empty())
+        E_.resize(1);
+    else
+        E_.resize(xPairList_.size());
+    mapToRowVector(E_).array() = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
+    setState(solEAvailable);
+}
+
+template<class real>
+void CPUBipartiteGraphBFSearcher<real>::makeSolution() {
     xPairList_.clear();
 
     int nMaxSolutions = tileSize0_ + tileSize1_;
@@ -130,7 +140,8 @@ void CPUBipartiteGraphBFSearcher<real>::finSearch() {
 
 template<class real>
 bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::PackedBits *curX1) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
     
 #ifdef _OPENMP
 

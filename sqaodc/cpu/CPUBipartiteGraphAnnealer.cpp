@@ -67,7 +67,7 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
                                                  const Matrix &W, sq::OptimizeMethod om) {
     /* FIXME: add qubo dim check */
     if ((N0_ != b0.size) || (N1_ != b1.size))
-        clearState(solInitialized);
+        clearState(solPrepared);
     
     N0_ = (int)b0.size;
     N1_ = (int)b1.size;
@@ -104,7 +104,7 @@ const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const sq::Bits &x0, const sq::Bits &x1) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
     throwErrorIf(x1.size != N1_,
@@ -113,13 +113,15 @@ void CPUBipartiteGraphAnnealer<real>::set_x(const sq::Bits &x0, const sq::Bits &
     EigenRowVector ex1 = mapToRowVector(x1).cast<real>();
     matQ0_ = (ex0.array() * 2 - 1).matrix();
     matQ1_ = (ex1.array() * 2 - 1).matrix();
+
+    clearState(solSolutionAvailable);
     setState(solQSet);
 }
 
 
 template<class real>
 const sq::VectorType<real> &CPUBipartiteGraphAnnealer<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    throwErrorIfENotAvailable();
     return E_;
 }
 
@@ -143,7 +145,7 @@ const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::randomize_q() {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
 #ifndef _OPENMP
     {
         sq::Random &random = random_[0];
@@ -174,10 +176,11 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
                                sq::mapFrom(matQ0_), sq::mapFrom(matQ1_));
     if (om_ == sq::optMaximize)
         mapToRowVector(E_) *= real(-1.);
+    setState(solEAvailable);
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::initAnneal() {
+void CPUBipartiteGraphAnnealer<real>::prepare() {
     if (!isRandSeedGiven())
         seed((unsigned long long)time(NULL));
     setState(solRandSeedGiven);
@@ -186,12 +189,12 @@ void CPUBipartiteGraphAnnealer<real>::initAnneal() {
     matQ1_.resize(m_, N1_);
     E_.resize(m_);
 
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::finAnneal() {
-    throwErrorIfNotInitialized();
+void CPUBipartiteGraphAnnealer<real>::makeSolution() {
+    throwErrorIfNotPrepared();
     syncBits();
     setState(solSolutionAvailable);
     calculate_E();
@@ -233,6 +236,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
                 matQ1_(y, x) = - qyx;
         }
     }
+    clearState(solSolutionAvailable);
 }
 
 template<class real>
@@ -300,6 +304,7 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
             }
         }
     }
+    clearState(solSolutionAvailable);
 }
 
 

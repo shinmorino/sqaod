@@ -46,11 +46,11 @@ public:
 
     void randomize_q();
 
+    void prepare();
+
     void calculate_E();
 
-    void initAnneal();
-
-    void finAnneal();
+    void makeSolution();
 
     void annealOneStep(real G, real kT) {
         (this->*annealMethod_)(G, kT);
@@ -84,18 +84,20 @@ private:
     using Base::m_;
     /* annealer state */
     using Base::solRandSeedGiven;
-    using Base::solInitialized;
+    using Base::solPrepared;
     using Base::solProblemSet;
     using Base::solQSet;
+    using Base::solEAvailable;
     using Base::solSolutionAvailable;
     using Base::setState;
     using Base::clearState;
     using Base::isRandSeedGiven;
     using Base::isProblemSet;
-    using Base::isInitialized;
+    using Base::isPrepared;
     using Base::throwErrorIfProblemNotSet;
-    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfNotPrepared;
     using Base::throwErrorIfQNotSet;
+    using Base::throwErrorIfENotAvailable;
     using Base::throwErrorIfSolutionNotAvailable;
 };
 

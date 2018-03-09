@@ -21,7 +21,7 @@ CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer(Device &device) {
 
 template<class real>
 CUDABipartiteGraphAnnealer<real>::~CUDABipartiteGraphAnnealer() {
-    if (isInitialized())
+    if (isPrepared())
         deallocate();
     d_random_.deallocate();
 }
@@ -51,14 +51,14 @@ void CUDABipartiteGraphAnnealer<real>::deallocateInternalObjects() {
     
     d_randReal_.deallocate();
     
-    clearState(solInitialized);
+    clearState(solPrepared);
 }
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::deallocate() {
     if (isProblemSet())
         deallocateInternalObjects();
-    if (isInitialized())
+    if (isPrepared())
         deallocateInternalObjects();
 }
 
@@ -129,7 +129,7 @@ sq::Preferences CUDABipartiteGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    throwErrorIfENotAvailable();
     return E_;
 }
 
@@ -141,7 +141,7 @@ const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
     throwErrorIf(x1.size != N1_,
@@ -179,7 +179,7 @@ const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::randomize_q() {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
 
     cudaStream_t stream = devStream_->getCudaStream();
     sqaod_cuda::randomize_q(d_matq0_.d_data, d_random_, N0_ * m_, stream);
@@ -196,17 +196,19 @@ void CUDABipartiteGraphAnnealer<real>::calculate_E() {
                              d_matq0_, d_matq1_);
     real sign = (om_ == sq::optMaximize) ? -1. : 1.;
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
+
+    setState(solEAvailable);
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::initAnneal() {
+void CUDABipartiteGraphAnnealer<real>::prepare() {
     throwErrorIfProblemNotSet();
 
     if (!isRandSeedGiven())
         d_random_.seed();
     setState(solRandSeedGiven);
 
-    if (isInitialized())
+    if (isPrepared())
         deallocateInternalObjects();
 
     devAlloc_->allocate(&d_matq0_, m_, N0_);
@@ -222,11 +224,11 @@ void CUDABipartiteGraphAnnealer<real>::initAnneal() {
 
     int requiredSize = ((N0_ + N1_) * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
     d_random_.setRequiredSize(requiredSize);
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::finAnneal() {
+void CUDABipartiteGraphAnnealer<real>::makeSolution() {
     throwErrorIfQNotSet();
 
     syncBits();
@@ -352,6 +354,7 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
     d_randNum = d_randReal_.acquire<real>(N0_ * nTrottersToFlip);
     tryFlip(&d_matq0_, d_Jq0_, N0_, m_, nTrottersToFlip, 1, d_h0_, d_randNum, G, kT);
     DEBUG_SYNC;
+    clearState(solEAvailable);
 }
 
 

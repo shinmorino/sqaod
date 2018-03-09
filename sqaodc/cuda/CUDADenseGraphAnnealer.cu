@@ -23,7 +23,7 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
 
 template<class real>
 CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
-    if (isInitialized())
+    if (isPrepared())
         deallocate();
     d_random_.deallocate();
     if (d_reachCount_ != NULL)
@@ -39,7 +39,7 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::deallocate() {
     if (isProblemSet())
         deallocateProblem();
-    if (isInitialized())
+    if (isPrepared())
         deallocateInternalObjects();
 }
 
@@ -64,7 +64,7 @@ void CUDADenseGraphAnnealer<real>::deallocateInternalObjects() {
     flipPosBuffer_.deallocate();
     realNumBuffer_.deallocate();
 
-    clearState(solInitialized);
+    clearState(solPrepared);
     clearState(solQSet);
 }
 
@@ -108,8 +108,8 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(devStream_ == NULL, "Device not set.");
-    if (W.rows != N_)
-        deallocate();
+    deallocate();
+    clearState(solProblemSet);
 
     N_ = W.rows;
     m_ = N_ / 4;
@@ -133,7 +133,7 @@ sq::Preferences CUDADenseGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    throwErrorIfENotAvailable();
     return E_;
 }
 
@@ -146,7 +146,7 @@ const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
     throwErrorIf(x.size != N_,
                  "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
 
@@ -169,7 +169,7 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::randomize_q() {
-    throwErrorIfNotInitialized();
+    throwErrorIfNotPrepared();
 
     ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
                   devStream_->getCudaStream());
@@ -186,10 +186,12 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
     devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, *d_realMatQ);
     real sign = (om_ == sq::optMaximize) ? -1. : 1.;
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
+
+    setState(solEAvailable);
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::initAnneal() {
+void CUDADenseGraphAnnealer<real>::prepare() {
     throwErrorIfProblemNotSet();
     throwErrorIf(devStream_->getNumThreadsToFillDevice() < (m_ + 1) / 2,
                  "nTrotters too large for this device.");
@@ -198,7 +200,7 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
         d_random_.seed();
     setState(solRandSeedGiven);
 
-    if (isInitialized())
+    if (isPrepared())
         deallocateInternalObjects();
 
     HostObjectAllocator halloc;
@@ -218,11 +220,11 @@ void CUDADenseGraphAnnealer<real>::initAnneal() {
     DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
     dotJq.configure(N_, m_, false);
 
-    setState(solInitialized);
+    setState(solPrepared);
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::finAnneal() {
+void CUDADenseGraphAnnealer<real>::makeSolution() {
     throwErrorIfQNotSet();
 
     devStream_->synchronize();
@@ -371,7 +373,9 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
 template<class real>
 void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
     throwErrorIfQNotSet();
-
+    clearState(solEAvailable);
+    clearState(solSolutionAvailable);
+    
     if (!flipPosBuffer_.available(m_ * N_))
         flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen);
     if (!realNumBuffer_.available(m_ * N_))
@@ -382,6 +386,7 @@ void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real kT) {
         calculate_Jq(&d_Jq_, d_J_, d_matq_, d_flipPos);
         annealOneStep(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, G, kT);
     }
+    clearState(solEAvailable);
 }
 
 

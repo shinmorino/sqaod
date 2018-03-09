@@ -34,9 +34,11 @@ public:
 
     const Vector &get_E() const;
 
-    void initSearch();
+    void prepare();
 
-    void finSearch();
+    void calculate_E();
+
+    void makeSolution();
 
     bool searchRange(sq::PackedBits *currentX0, sq::PackedBits *currentX1);
 
@@ -64,13 +66,15 @@ private:
     using Base::x1max_;
 
     /* searcher state */
-    using Base::solInitialized;
+    using Base::solPrepared;
     using Base::solProblemSet;
+    using Base::solEAvailable;
     using Base::solSolutionAvailable;
     using Base::setState;
     using Base::clearState;
     using Base::throwErrorIfProblemNotSet;
-    using Base::throwErrorIfNotInitialized;
+    using Base::throwErrorIfNotPrepared;
+    using Base::throwErrorIfENotAvailable;
     using Base::throwErrorIfSolutionNotAvailable;
 };
 
