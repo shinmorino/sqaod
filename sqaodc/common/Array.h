@@ -67,6 +67,10 @@ public:
         capacity_ = capacity;
     }
 
+    bool empty() const {
+        return size() == 0;
+    }
+    
     size_t size() const {
         return size_;
     }
