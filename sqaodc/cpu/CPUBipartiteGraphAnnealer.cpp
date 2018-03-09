@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <exception>
 #include "CPUFormulas.h"
-
+#include <time.h>
 
 using namespace sqaod_cpu;
 
@@ -179,8 +179,7 @@ void CPUBipartiteGraphAnnealer<real>::calculate_E() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::initAnneal() {
     if (!isRandSeedGiven())
-        for (int idx = 0; idx < nMaxThreads_; ++idx)
-            random_[idx].seed();
+        seed((unsigned long long)time(NULL));
     setState(solRandSeedGiven);
 
     matQ0_.resize(m_, N0_);

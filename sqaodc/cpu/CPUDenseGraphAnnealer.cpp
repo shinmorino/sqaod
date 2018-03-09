@@ -1,6 +1,7 @@
 #include "CPUDenseGraphAnnealer.h"
 #include "CPUFormulas.h"
 #include <common/Common.h>
+#include <time.h>
 
 using namespace sqaod_cpu;
 
@@ -140,7 +141,7 @@ void CPUDenseGraphAnnealer<real>::randomize_q() {
 template<class real>
 void CPUDenseGraphAnnealer<real>::initAnneal() {
     if (!isRandSeedGiven())
-        random_->seed();
+        seed((unsigned long long)time(NULL));
     setState(solRandSeedGiven);
     bitsX_.reserve(m_);
     bitsQ_.reserve(m_);
