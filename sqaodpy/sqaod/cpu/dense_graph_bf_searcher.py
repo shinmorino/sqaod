@@ -44,22 +44,22 @@ class DenseGraphBFSearcher :
     def get_x(self) :
         return cext.get_x(self._cobj, self.dtype)
 
-    def init_search(self) :
-        cext.init_search(self._cobj, self.dtype);
+    def prepare(self) :
+        cext.prepare(self._cobj, self.dtype);
         
-    def fin_search(self) :
-        cext.fin_search(self._cobj, self.dtype);
+    def make_solution(self) :
+        cext.make_solution(self._cobj, self.dtype);
         
     def search_range(self) :
         return cext.search_range(self._cobj, self.dtype)
         
     def search(self) :
-        self.init_search()
+        self.prepare()
         while True :
             comp, curx = cext.search_range(self._cobj, self.dtype)
             if comp :
                 break;
-        self.fin_search()
+        self.make_solution()
         
     def _search(self) :
         # one liner.  does not accept ctrl+c.

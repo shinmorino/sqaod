@@ -71,14 +71,14 @@ class BipartiteGraphAnnealer :
     def calculate_E(self) :
         cext.calculate_E(self._cobj, self.dtype)
 
-    def init_anneal(self) :
-        cext.init_anneal(self._cobj, self.dtype)
+    def prepare(self) :
+        cext.prepare(self._cobj, self.dtype)
         
     def anneal_one_step(self, G, kT) :
         cext.anneal_one_step(self._cobj, G, kT, self.dtype)
 
-    def fin_anneal(self) :
-        cext.fin_anneal(self._cobj, self.dtype)
+    def make_solution(self) :
+        cext.make_solution(self._cobj, self.dtype)
         N0, N1 = self.get_problem_size()
         prefs = self.get_preferences()
         m = prefs['n_trotters']
@@ -112,13 +112,13 @@ if __name__ == '__main__' :
     n_repeat = 10
 
     for loop in range(0, n_repeat) :
-        an.init_anneal()
+        an.prepare()
         an.randomize_q()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)
             G = G * tau
-        an.fin_anneal()
+        an.make_solution()
 
         E = an.get_E()
         x = an.get_x()

@@ -380,16 +380,16 @@ PyObject *bg_annealer_calculate_E(PyObject *module, PyObject *args) {
 }
     
 extern "C"
-PyObject *bg_annealer_init_anneal(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_prepare(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->initAnneal();
+            pyobjToCppObj<double>(objExt)->prepare();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->initAnneal();
+            pyobjToCppObj<float>(objExt)->prepare();
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
@@ -427,16 +427,16 @@ PyObject *bg_annealer_anneal_one_step(PyObject *module, PyObject *args) {
 }
 
 extern "C"
-PyObject *bg_annealer_fin_anneal(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_make_solution(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->finAnneal();
+            pyobjToCppObj<double>(objExt)->makeSolution();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->finAnneal();
+            pyobjToCppObj<float>(objExt)->makeSolution();
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
@@ -464,8 +464,8 @@ PyMethodDef cpu_bg_annealer_methods[] = {
 	{"get_q", bg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", bg_annealer_radomize_q, METH_VARARGS},
 	{"calculate_E", bg_annealer_calculate_E, METH_VARARGS},
-	{"init_anneal", bg_annealer_init_anneal, METH_VARARGS},
-	{"fin_anneal", bg_annealer_fin_anneal, METH_VARARGS},
+	{"prepare", bg_annealer_prepare, METH_VARARGS},
+	{"make_solution", bg_annealer_make_solution, METH_VARARGS},
 	{"anneal_one_step", bg_annealer_anneal_one_step, METH_VARARGS},
 	{NULL},
 };

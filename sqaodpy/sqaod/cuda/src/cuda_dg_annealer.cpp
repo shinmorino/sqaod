@@ -374,16 +374,16 @@ PyObject *dg_annealer_calculate_E(PyObject *module, PyObject *args) {
 
         
 extern "C"
-PyObject *dg_annealer_init_anneal(PyObject *module, PyObject *args) {
+PyObject *dg_annealer_prepare(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->initAnneal();
+            pyobjToCppObj<double>(objExt)->prepare();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->initAnneal();
+            pyobjToCppObj<float>(objExt)->prepare();
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_DgAnnealerError);
@@ -393,16 +393,16 @@ PyObject *dg_annealer_init_anneal(PyObject *module, PyObject *args) {
 }
     
 extern "C"
-PyObject *dg_annealer_fin_anneal(PyObject *module, PyObject *args) {
+PyObject *dg_annealer_make_solution(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->finAnneal();
+            pyobjToCppObj<double>(objExt)->makeSolution();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->finAnneal();
+            pyobjToCppObj<float>(objExt)->makeSolution();
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_DgAnnealerError);
@@ -460,8 +460,8 @@ PyMethodDef cuda_dg_annealer_methods[] = {
 	{"get_q", dg_annealer_get_q, METH_VARARGS},
 	{"randomize_q", dg_annealer_radomize_q, METH_VARARGS},
 	{"calculate_E", dg_annealer_calculate_E, METH_VARARGS},
-	{"init_anneal", dg_annealer_init_anneal, METH_VARARGS},
-	{"fin_anneal", dg_annealer_fin_anneal, METH_VARARGS},
+	{"prepare", dg_annealer_prepare, METH_VARARGS},
+	{"make_solution", dg_annealer_make_solution, METH_VARARGS},
 	{"anneal_one_step", dg_annealer_anneal_one_step, METH_VARARGS},
 	{NULL},
 };

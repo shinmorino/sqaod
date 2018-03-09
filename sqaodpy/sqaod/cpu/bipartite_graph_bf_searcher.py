@@ -47,11 +47,11 @@ class BipartiteGraphBFSearcher :
     def get_x(self) :
         return cext.get_x(self._cobj, self.dtype);
     
-    def init_search(self) :
-        cext.init_search(self._cobj, self.dtype);
+    def prepare(self) :
+        cext.prepare(self._cobj, self.dtype);
         
-    def fin_search(self) :
-        cext.fin_search(self._cobj, self.dtype);
+    def make_solution(self) :
+        cext.make_solution(self._cobj, self.dtype);
         
     def search_range(self) :
         return cext.search_range(self._cobj, self.dtype)
@@ -61,12 +61,12 @@ class BipartiteGraphBFSearcher :
         cext.search(self._cobj, self.dtype);
 
     def search(self) :
-        self.init_search()
+        self.prepare()
         while True :
             comp, curx0, curx1 = cext.search_range(self._cobj, self.dtype)
             if comp :
                 break;
-        self.fin_search()
+        self.make_solution()
         
 
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64, **prefs) :

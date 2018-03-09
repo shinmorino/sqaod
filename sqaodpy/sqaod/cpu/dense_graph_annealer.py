@@ -69,11 +69,11 @@ class DenseGraphAnnealer :
     def calculate_E(self) :
         cext.calculate_E(self._cobj, self.dtype)
 
-    def init_anneal(self) :
-        cext.init_anneal(self._cobj, self.dtype)
+    def prepare(self) :
+        cext.prepare(self._cobj, self.dtype)
 
-    def fin_anneal(self) :
-        cext.fin_anneal(self._cobj, self.dtype)
+    def make_solution(self) :
+        cext.make_solution(self._cobj, self.dtype)
         N = self.get_problem_size()
         prefs = cext.get_preferences(self._cobj, self.dtype)
         m = prefs['n_trotters']
@@ -125,13 +125,12 @@ if __name__ == '__main__' :
     for loop in range(0, nRepeat) :
         G = Ginit
         ann.set_preferences(n_trotters = 4)
-        ann.init_anneal()
+        ann.prepare()
         ann.randomize_q()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau
-        ann.fin_anneal()
-        ann.calculate_E()
+        ann.make_solution()
         E = ann.get_E()
         q = ann.get_q() 
         print E

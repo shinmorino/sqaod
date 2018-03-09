@@ -220,16 +220,16 @@ PyObject *bg_bf_searcher_get_E(PyObject *module, PyObject *args) {
     
 
 extern "C"
-PyObject *bg_bf_searcher_init_search(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_prepare(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->initSearch();
+            pyobjToCppObj<double>(objExt)->prepare();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->initSearch();
+            pyobjToCppObj<float>(objExt)->prepare();
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
@@ -240,16 +240,35 @@ PyObject *bg_bf_searcher_init_search(PyObject *module, PyObject *args) {
 
 
 extern "C"
-PyObject *bg_bf_searcher_fin_search(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_calculate_E(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->finSearch();
+            pyobjToCppObj<double>(objExt)->calculate_E();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->finSearch();
+            pyobjToCppObj<float>(objExt)->calculate_E();
+        else
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
+extern "C"
+PyObject *bg_bf_searcher_make_solution(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    TRY {
+        if (isFloat64(dtype))
+            pyobjToCppObj<double>(objExt)->makeSolution();
+        else if (isFloat32(dtype))
+            pyobjToCppObj<float>(objExt)->makeSolution();
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
@@ -310,8 +329,9 @@ PyMethodDef cuda_bg_bf_searcher_methods[] = {
 	{"get_preferences", bg_bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", bg_bf_searcher_get_x, METH_VARARGS},
 	{"get_E", bg_bf_searcher_get_E, METH_VARARGS},
-	{"init_search", bg_bf_searcher_init_search, METH_VARARGS},
-	{"fin_search", bg_bf_searcher_fin_search, METH_VARARGS},
+	{"prepare", bg_bf_searcher_prepare, METH_VARARGS},
+	{"calculate_E", bg_bf_searcher_calculate_E, METH_VARARGS},
+	{"make_solution", bg_bf_searcher_make_solution, METH_VARARGS},
 	{"search_range", bg_bf_searcher_search_range, METH_VARARGS},
 	{"search", bg_bf_searcher_search, METH_VARARGS},
 	{NULL},
