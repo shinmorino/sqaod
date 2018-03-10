@@ -274,16 +274,18 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
     devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
-template<class real>
+template<class real, int offset>
 __global__ static void
-tryFlipKernel(real *d_qAnneal, int N, int m, int colorOffset, const real *d_Emat, const real *d_h,
-              const real *d_realRand, real twoDivM, real coef, real invKT) {
+tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h,
+              const real *d_realRand, real twoDivM, real coef, real invKT,
+              bool runLastLine) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
     int iq = gidx;
-    int im = 2 * gidy + colorOffset;
-    
-    if ((iq < N) && (im < m)) {
+    int m2 = m / 2; /* round down */
+
+    if ((iq < N) && (gidy < m2)) {
+        int im = 2 * gidy + offset;
         real q = d_qAnneal[im * N + iq];
         real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
@@ -294,30 +296,40 @@ tryFlipKernel(real *d_qAnneal, int N, int m, int colorOffset, const real *d_Emat
         if (thresh > d_realRand[N * gidy + iq])
             d_qAnneal[im * N + iq] = - q;
     }
+    if (runLastLine && (gidy == m2 - 1)) {
+        int im = m - 1;
+        if (iq < N) {
+            real q = d_qAnneal[im * N + iq];
+            real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
+
+            int neibour0 = im - 2;
+            int neibour1 = 0;
+            dE -= q * (d_qAnneal[neibour0 * N + iq] + d_qAnneal[neibour1 * N + iq]) * coef;
+            real thresh = dE < real(0.) ? real(1.) : exp(- dE * invKT); /* FIXME: check precision */
+            if (thresh > d_realRand[N * gidy + iq])
+                d_qAnneal[im * N + iq] = - q;
+        }
+    }
 }
-
-
 
 
 
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
-    int nTrottersToFlip, int offset, 
-    const DeviceVector &d_h, const real *d_realRand, real G, real kT) {
+        const DeviceVector &d_h, const real *d_realRand, real G, real kT) {
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
     real twoDivM = real(2.) / m_;
+    int m2 = m_ / 2;
+    bool mIsOdd = (m_ & 1) != 0;
 
     dim3 blockDim(64, 2);
-    dim3 gridDim(divru((SizeType)N, blockDim.x), divru((SizeType)nTrottersToFlip, blockDim.y));
-    if (offset == 0) {
-        tryFlipKernel<<<gridDim, blockDim>>>
-                (d_qAnneal->d_data, N, m, 0, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
-    }
-    else {
-        tryFlipKernel<<<gridDim, blockDim>>>
-                (d_qAnneal->d_data, N, m, 1, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT);
-    }
+    dim3 gridDim(divru((SizeType)N, blockDim.x), divru((SizeType)m2, blockDim.y));
+    tryFlipKernel<real, 0><<<gridDim, blockDim>>>
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
+    DEBUG_SYNC;
+    tryFlipKernel<real, 1><<<gridDim, blockDim>>>
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, mIsOdd);
     DEBUG_SYNC;
 }
 
@@ -330,33 +342,21 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
     if (!d_randReal_.available(nRequiredRandNum))
         d_randReal_.generate<real>(d_random_, nRequiredRandNum);
     const real *d_randNum;
-    int nTrottersToFlip;
 
     /* FIXME: consider Jq to use half trotters. */
-    
     /* 1st */
     calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
-    nTrottersToFlip = (m_ + 1) / 2;
-    d_randNum = d_randReal_.acquire<real>(N1_ * nTrottersToFlip);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, nTrottersToFlip, 0, d_h1_, d_randNum, G, kT);
+    d_randNum = d_randReal_.acquire<real>(N1_ * m_);
+    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, G, kT);
     DEBUG_SYNC;
+
     /* 2nd */
-    nTrottersToFlip = m_ / 2;
-    d_randNum = d_randReal_.acquire<real>(N1_ * nTrottersToFlip);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, nTrottersToFlip, 1, d_h1_, d_randNum, G, kT);
-    DEBUG_SYNC;
-    /* 3rd */
     calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
-    nTrottersToFlip = (m_ + 1) / 2;
-    d_randNum = d_randReal_.acquire<real>(N0_ * nTrottersToFlip);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, nTrottersToFlip, 0, d_h0_, d_randNum, G, kT);
+    d_randNum = d_randReal_.acquire<real>(N0_ * m_);
+    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, kT);
     DEBUG_SYNC;
-    /* 4th */
-    nTrottersToFlip = m_ / 2;
-    d_randNum = d_randReal_.acquire<real>(N0_ * nTrottersToFlip);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, nTrottersToFlip, 1, d_h0_, d_randNum, G, kT);
-    DEBUG_SYNC;
-    clearState(solEAvailable);
+
+    clearState(solSolutionAvailable);
 }
 
 

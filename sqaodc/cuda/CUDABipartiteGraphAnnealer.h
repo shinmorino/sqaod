@@ -81,7 +81,6 @@ public:
 
     /* public for debug */
     void tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, 
-                 int nTrottersToFlipe, int offset,
                  const DeviceVector &d_h, const real *d_realRand, real G, real kT);
 
 private:

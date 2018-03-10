@@ -250,14 +250,31 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
     annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, kT);
 }
 
+
+template<class real, class T> static inline
+void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h, const T &J, sq::SizeType N, sq::SizeType m, 
+             real twoDivM, real invKT, real coef, sq::Random &random) {
+    for (int iq = 0; iq < N; ++iq) {
+        real q = qAnneal(im, iq);
+        real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+        int mNeibour0 = (im + m - 1) % m;
+        int mNeibour1 = (im + 1) % m;
+        dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;
+        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
+        if (thresh > random.random<real>())
+            qAnneal(im, iq) = -q;
+    }
+}
+
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                        const EigenRowVector &h, const EigenMatrix &J,
                        const EigenMatrix &qFixed, real G, real kT) {
     real twoDivM = real(2.) / m_;
-    real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
+    real coef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
+    int m2 = (m_ / 2) * 2; /* round down */
 
 #ifndef _OPENMP
     EigenMatrix dEmat = J * qFixed.transpose();
@@ -275,37 +292,19 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
         JrowSpan = JrowEnd - JrowBegin;
         dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
 #pragma omp barrier
-
         sq::Random &random = random_[threadNum];
-#pragma omp for
 #endif
-        for (int im = 0; im < m_; im += 2) {
-            for (int iq = 0; iq < N; ++iq) {
-                real q = qAnneal(im, iq);
-                real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
-                int mNeibour0 = (im + m_ - 1) % m_;
-                int mNeibour1 = (im + 1) % m_;
-                dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
-                real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
-                if (thresh > random.random<real>())
-                    qAnneal(im, iq) = -q;
-            }
-        }
+        for (int offset = 0; offset < 2; ++offset) {
 #ifdef _OPENMP
 #pragma omp for
 #endif
-        for (int im = 1; im < m_; im += 2) {
-            for (int iq = 0; iq < N; ++iq) {
-                real q = qAnneal(im, iq);
-                real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
-                int mNeibour0 = (im + m_ - 1) % m_;
-                int mNeibour1 = (im + 1) % m_;
-                dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
-                real thresh = dE < real(0.) ? real(1.) : std::exp(-dE * invKT);
-                if (thresh > random.random<real>())
-                    qAnneal(im, iq) = -q;
-            }
+            for (int im = offset; im < m2; im += 2)
+                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
         }
+    }
+    if ((m_ % 2) != 0) { /* m is odd. */
+        int im = m_ - 1;
+        tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
     }
     clearState(solSolutionAvailable);
 }

@@ -315,9 +315,10 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
               uint2 *reachCount) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    int y = 2 * gid;
-    for (int loop = 0; loop < 2; ++loop) {
-        if (y < m) {
+    const bool mIsOdd = (m & 1) != 0;
+    for (int offset = 0; offset < 2; ++offset) {
+        if (gid < m / 2) {
+            int y = 2 * gid + offset;
             int x = d_x[y]; /* N */
             char qyx = d_q[N * y + x];
 
@@ -330,17 +331,31 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
                 d_q[N * y + x] = - qyx;
         }
 
-        /* wait for all blocks reach here */
-        __syncthreads();
-        if ((loop == 0) && (threadIdx.x == 0)) {
-            int count = atomicAdd(&reachCount->x, 1) + 1;
-            while (count != gridDim.x) {
-                count = *(volatile unsigned int*)(&reachCount->x);
+
+        if (offset == 0) {
+            __syncthreads();
+            if (threadIdx.x == 0) {
+                int count = atomicAdd(&reachCount->x, 1) + 1;
+                while (count != gridDim.x)
+                    count = *(volatile unsigned int*)(&reachCount->x);
             }
+            __syncthreads();
         }
-        __syncthreads();
-        y += 1;
     }
+    if (mIsOdd && (gid == m / 2 - 1)) {
+        int y = m - 1;
+        int x = d_x[y]; /* N */
+        char qyx = d_q[N * y + x];
+
+        int neibour0 = m - 2;
+        int neibour1 = 0;
+        real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+        dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
+        real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
+        if (threshold > d_random[y])
+            d_q[N * y + x] = - qyx;
+    }
+
     if (threadIdx.x == 0) {
         int count = atomicAdd(&reachCount->y, 1) + 1;
         if (count == gridDim.x)
@@ -357,7 +372,7 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
 
     dim3 blockDim(128);
 
-    int nThreadsToFlipBits = (m_ + 1) / 2;
+    int nThreadsToFlipBits = m_ / 2;
     dim3 gridDim(divru((sq::SizeType)nThreadsToFlipBits, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
 #if 0
