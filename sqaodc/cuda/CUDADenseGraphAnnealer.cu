@@ -9,14 +9,14 @@ using namespace sqaod_cuda;
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
     devStream_ = NULL;
-    m_ = (SizeType)-1;
+    m_ = -1;
     d_reachCount_ = NULL;
 }
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
     devStream_ = NULL;
-    m_ = (SizeType)-1;
+    m_ = -1;
     d_reachCount_ = NULL;
     assignDevice(device);
 }
@@ -249,7 +249,7 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
         Bits q(h_q_.row(idx), N_);
         qlist_.pushBack(q);
-        Bits x(sq::SizeType(qlist_.size()));
+        Bits x(qlist_.size());
         x = x_from_q(q);
         xlist_.pushBack(x);
     }
@@ -373,7 +373,7 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
     dim3 blockDim(128);
 
     int nThreadsToFlipBits = m_ / 2;
-    dim3 gridDim(divru((sq::SizeType)nThreadsToFlipBits, blockDim.x));
+    dim3 gridDim(divru(nThreadsToFlipBits, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
 #if 0
     tryFlipKernel<<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,

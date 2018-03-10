@@ -254,7 +254,7 @@ transposeKernel(real *d_At, const real *d_A, SizeType cols, SizeType rows) {
 template<class real> void DeviceMathKernelsType<real>::
 transpose(real *d_At, const real *d_A, SizeType rows, SizeType cols) {
     dim3 blockDim(32, 32);
-    dim3 gridDim(divru(cols, 32u), divru(rows, 32u));
+    dim3 gridDim(divru(cols, 32), divru(rows, 32));
     transposeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At, d_A, cols, rows);
     DEBUG_SYNC;
 }
@@ -467,8 +467,8 @@ sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBits xBegin, PackedBits
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    SizeType nSeqs = SizeType(xEnd - xBegin);
-    gridDim.x = (unsigned int)divru((unsigned int)(xEnd - xBegin), blockDim.y);
+    SizeType nSeqs = xEnd - xBegin;
+    gridDim.x = divru(xEnd - xBegin, blockDim.y);
     generateBitsSequenceKernel
             <<<gridDim, blockDim, 0, stream>>>(d_data, N, nSeqs, xBegin);
     DEBUG_SYNC;

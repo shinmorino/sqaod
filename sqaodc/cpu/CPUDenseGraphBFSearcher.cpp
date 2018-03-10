@@ -67,8 +67,8 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
     xList_.clear();
     x_ = 0;
     xMax_ = 1ull << N_;
-    if (xMax_ < tileSize_) {
-        tileSize_ = (sq::SizeType)xMax_;
+    if (xMax_ < (sq::PackedBits)tileSize_) {
+        tileSize_ = xMax_;
         sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
@@ -103,7 +103,7 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
             packedXList = searcher.packedXList_;
         }
         else if (searcher.Emin_ == Emin_) {
-            if (packedXList.size() < tileSize_) {
+            if (packedXList.size() < (size_t)tileSize_) {
                 packedXList.insert(searcher.packedXList_.begin(),
                                    searcher.packedXList_.end());
             }
@@ -111,7 +111,7 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
     }
     
     std::sort(packedXList.begin(), packedXList.end());
-    int nSolutions = std::min(tileSize_, (sq::SizeType)packedXList.size());
+    int nSolutions = std::min((size_t)tileSize_, packedXList.size());
     for (int idx = 0; idx < nSolutions; ++idx) {
         sq::Bits bits;
         unpackBits(&bits, packedXList[idx], N_);

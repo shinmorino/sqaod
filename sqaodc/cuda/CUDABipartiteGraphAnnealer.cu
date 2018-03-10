@@ -9,13 +9,13 @@ using namespace sqaod_cuda;
 template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {
     devStream_ = NULL;
-    m_ = (SizeType)-1;
+    m_ = -1;
 }
 
 template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer(Device &device) {
     devStream_ = NULL;
-    m_ = (SizeType)-1;
+    m_ = -1;
     assignDevice(device);
 }
 
@@ -324,7 +324,7 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     bool mIsOdd = (m_ & 1) != 0;
 
     dim3 blockDim(64, 2);
-    dim3 gridDim(divru((SizeType)N, blockDim.x), divru((SizeType)m2, blockDim.y));
+    dim3 gridDim(divru(N, blockDim.x), divru(m2, blockDim.y));
     tryFlipKernel<real, 0><<<gridDim, blockDim>>>
             (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
     DEBUG_SYNC;

@@ -38,12 +38,11 @@ void _throwError(curandStatus_t status, const char *file, unsigned long line, co
 
 
 
-inline unsigned int divru(const unsigned int &v, const unsigned int &base) {
+inline unsigned int divru(unsigned int v, unsigned int base) {
     return (v + base - 1) / base;
 }
 
-template<class V>
-inline V roundUp(const V &v, const V &base) {
+inline unsigned int roundUp(unsigned int v, unsigned int base) {
     return ((v + base - 1) / base) * base;
 }
 

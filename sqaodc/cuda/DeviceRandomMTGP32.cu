@@ -16,8 +16,8 @@ enum {
 
 
 DeviceRandomMTGP32::DeviceRandomMTGP32(Device &device, DeviceStream *devStream) {
-    requiredSize_ = (sq::SizeType)-1;
-    internalBufSize_ = (sq::SizeType)-1;
+    requiredSize_ = -1;
+    internalBufSize_ = -1;
     d_buffer_ = NULL;
     d_randStates_ = NULL;
     d_kernelParams_ = NULL;
@@ -26,8 +26,8 @@ DeviceRandomMTGP32::DeviceRandomMTGP32(Device &device, DeviceStream *devStream) 
 }
 
 DeviceRandomMTGP32::DeviceRandomMTGP32() {
-    requiredSize_ = (sq::SizeType)-1;
-    internalBufSize_ = (sq::SizeType)-1;
+    requiredSize_ = -1;
+    internalBufSize_ = -1;
     d_buffer_ = NULL;
     d_randStates_ = NULL;
     d_kernelParams_ = NULL;
@@ -49,7 +49,7 @@ void DeviceRandomMTGP32::assignDevice(Device &device, DeviceStream *devStream) {
 
 void DeviceRandomMTGP32::setRequiredSize(sq::SizeType requiredSize) {
     /* Should give 2 chunks, 1 is for roundUp(), other is not to make size == 0 when filled up. */
-    int newInternalBufSize = roundUp(requiredSize, (sq::SizeType)randGenSize)+ randGenSize * 2;
+    int newInternalBufSize = roundUp(requiredSize, randGenSize)+ randGenSize * 2;
     if (newInternalBufSize != internalBufSize_) {
         internalBufSize_ = newInternalBufSize;
         if (d_buffer_ != NULL)
@@ -112,7 +112,7 @@ static void genRandKernel(unsigned int *d_buffer, int offset, int nNums, int buf
 
 
 void DeviceRandomMTGP32::generate() {
-    throwErrorIf(internalBufSize_ == (sq::SizeType) -1, "DeviceRandom not initialized.");
+    throwErrorIf(internalBufSize_ == -1, "DeviceRandom not initialized.");
     if (d_buffer_ == NULL)
         devAlloc_->allocate(&d_buffer_, internalBufSize_);
 
@@ -135,7 +135,7 @@ void DeviceRandomMTGP32::generate() {
 
 const unsigned int *DeviceRandomMTGP32::get(sq::SizeType nRands,
                                             sq::IdxType *offset, sq::SizeType *posToWrap, int alignment) {
-    nRands = roundUp(nRands, (sq::SizeType)alignment);
+    nRands = roundUp(nRands, alignment);
     if (getNRands() < nRands)
         generate();
     assert(nRands <= getNRands());

@@ -7,7 +7,7 @@
 
 namespace sqaod {
 
-typedef unsigned int SizeType;
+typedef int SizeType;
 typedef int IdxType;
 
 typedef unsigned long long PackedBits;
@@ -30,7 +30,7 @@ struct PackedBitsPair {
 
 struct Dim {
     Dim() {
-        rows = cols == (SizeType)-1;
+        rows = cols == -1;
     }
     Dim(SizeType _rows, SizeType _cols) {
         rows = _rows;

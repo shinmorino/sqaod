@@ -77,12 +77,12 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
     x0_ = x1_ = 0;
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
-    if (x0max_ < tileSize0_) {
-        tileSize0_ = (sq::SizeType)x0max_;
+    if (x0max_ < (sq::PackedBits)tileSize0_) {
+        tileSize0_ = x0max_;
         sq::log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
     }
-    if (x1max_ < tileSize1_) {
-        tileSize1_ = (sq::SizeType)x1max_;
+    if (x1max_ < (sq::PackedBits)tileSize1_) {
+        tileSize1_ = x1max_;
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
     for (int idx = 0; idx < nMaxThreads_; ++idx) {

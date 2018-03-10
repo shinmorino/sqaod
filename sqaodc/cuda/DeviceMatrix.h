@@ -19,7 +19,7 @@ struct DeviceMatrixType : DeviceObject {
     
     DeviceMatrixType() {
         d_data = NULL;
-        rows = cols = (SizeType)-1;
+        rows = cols = -1;
     }
     
     DeviceMatrixType(V *_d_data, SizeType _rows, SizeType _cols) {
@@ -60,7 +60,7 @@ private:
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = NULL;
-        rows = cols = (SizeType)-1;
+        rows = cols = -1;
     }
 };
     
@@ -72,7 +72,7 @@ struct DeviceVectorType : DeviceObject {
     
     DeviceVectorType() {
         d_data = NULL;
-        size = (SizeType)-1;
+        size = -1;
     }
 
     DeviceVectorType(V *_d_data, SizeType _size) {
@@ -99,7 +99,7 @@ private:
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = NULL;
-        size = (SizeType)-1;
+        size = -1;
     }
 };
 

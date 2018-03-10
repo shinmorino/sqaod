@@ -38,7 +38,7 @@ void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBits xBegin, sq::Pack
             continue;
         }
         else if (Etmp == Emin_) {
-            if (packedXList_.size() < tileSize_)
+            if (packedXList_.size() < (size_t)tileSize_)
                 packedXList_.pushBack(xBegin + idx);
         }
         else {

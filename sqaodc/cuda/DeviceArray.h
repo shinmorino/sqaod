@@ -9,7 +9,7 @@ namespace sq = sqaod;
 
 template<class V>
 struct DeviceArrayType : DeviceObject {
-    DeviceArrayType() : d_data(nullptr), size((sq::SizeType)-1) { }
+    DeviceArrayType() : d_data(nullptr), size(-1) { }
     
     DeviceArrayType(const DeviceArrayType<V>&& arr) noexcept {
         DeviceArrayType newArr;
@@ -18,7 +18,7 @@ struct DeviceArrayType : DeviceObject {
         capacity = arr.capacity;
         arr.d_data = nullptr;
         arr.size = 0;
-        arr.capacity = (sq::SizeType)-1;
+        arr.capacity = -1;
     }
 
     V &operator[](sq::IdxType idx) {
@@ -38,7 +38,7 @@ private:
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = nullptr;
-        size = (sq::SizeType)-1;
+        size = -1;
     }
 };
 

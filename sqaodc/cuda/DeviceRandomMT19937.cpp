@@ -12,8 +12,8 @@ enum {
 
 
 DeviceRandomMT19937::DeviceRandomMT19937(Device &device, DeviceStream *devStream) {
-    requiredSize_ = (sq::SizeType)-1;
-    internalBufSize_ = (sq::SizeType)-1;
+    requiredSize_ = -1;
+    internalBufSize_ = -1;
     gen_ = NULL;
     d_buffer_[0] = NULL;
     pos_ = 0;
@@ -21,8 +21,8 @@ DeviceRandomMT19937::DeviceRandomMT19937(Device &device, DeviceStream *devStream
 }
 
 DeviceRandomMT19937::DeviceRandomMT19937() {
-    requiredSize_ = (sq::SizeType)-1;
-    internalBufSize_ = (sq::SizeType) - 1;
+    requiredSize_ = -1;
+    internalBufSize_ = -1;
     d_buffer_[0] = NULL;
     pos_ = 0;
 }
@@ -75,11 +75,11 @@ void DeviceRandomMT19937::seed() {
 }
 
 sq::SizeType DeviceRandomMT19937::getNRands() const {
-    return (sq::SizeType)(internalBufSize_ - pos_);
+    return internalBufSize_ - pos_;
 }
 
 void DeviceRandomMT19937::generate() {
-    throwErrorIf(internalBufSize_ == (sq::SizeType) -1, "DeviceRandom not initialized.");
+    throwErrorIf(internalBufSize_ == -1, "DeviceRandom not initialized.");
 
     int nRands = getNRands();
     int nToGenerate = internalBufSize_ - nRands;
@@ -101,7 +101,7 @@ void DeviceRandomMT19937::generate() {
 
 const unsigned int *DeviceRandomMT19937::get(sq::SizeType nRands,
                                             sq::IdxType *offset, sq::SizeType *posToWrap, int alignment) {
-    nRands = roundUp(nRands, (sq::SizeType)alignment);
+    nRands = roundUp(nRands, alignment);
     if (getNRands() < nRands)
         generate();
     assert(nRands <= getNRands());

@@ -5,14 +5,14 @@
 using namespace sqaod_cuda;
 
 DeviceRandomBuffer::DeviceRandomBuffer() {
-    sizeInByte_ = (sq::SizeType)-1;
+    sizeInByte_ = -1;
     sizeInElm_ = 0;
     posInElm_ = 0;
     d_buffer_ = NULL;
 }
 
 DeviceRandomBuffer::DeviceRandomBuffer(Device &device, DeviceStream *devStream) {
-    sizeInByte_ = (sq::SizeType)-1;
+    sizeInByte_ = -1;
     d_buffer_ = NULL;
     sizeInElm_ = 0;
     posInElm_ = 0;
@@ -27,8 +27,8 @@ void DeviceRandomBuffer::deallocate() {
     if (d_buffer_ != NULL) {
         devAlloc_->deallocate(d_buffer_);
         d_buffer_ = NULL;
-        sizeInByte_ = (sq::SizeType)-1;
-        sizeInElm_ = (sq::SizeType)-1;
+        sizeInByte_ = -1;
+        sizeInElm_ = -1;
     }
 }
 
@@ -69,7 +69,7 @@ void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
     const unsigned int *d_randomNum = d_random.get(nToGenerate, &offset, &posToWrap);
 
     dim3 blockDim(128);
-    dim3 gridDim(divru((sq::SizeType)nToGenerate, blockDim.x));
+    dim3 gridDim(divru(nToGenerate, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
     generateFlipPosKernel<<<gridDim, blockDim, 0, stream>>>((int*)d_buffer_, N, nToGenerate,
                                                             d_randomNum, offset, posToWrap);

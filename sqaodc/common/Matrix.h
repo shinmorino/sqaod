@@ -68,7 +68,7 @@ struct MatrixType {
 
     void resetState() {
         data = nullptr;
-        rows = cols = (SizeType)-1;
+        rows = cols = -1;
         mapped = false;
     }
     
@@ -116,7 +116,7 @@ struct MatrixType {
     
     void free() {
         assert(!mapped);
-        rows = cols = (SizeType)-1;
+        rows = cols = -1;
         if (data != nullptr)
             ::free(data);
         data = nullptr;
@@ -243,7 +243,7 @@ struct VectorType {
 
     void resetState() {
         data = nullptr;
-        size = (SizeType)-1;
+        size = -1;
         mapped = false;
     }
 
@@ -293,7 +293,7 @@ struct VectorType {
         size = src.size;
         data = src.data;
         mapped = false;
-        src.size = (SizeType)-1;
+        src.size = -1;
         src.data = nullptr;
     }
     
@@ -306,7 +306,7 @@ struct VectorType {
     
     void free() {
         assert(!mapped);
-        size = (SizeType)-1;
+        size = -1;
         if (data != nullptr)
             ::free(data);
         data = nullptr;

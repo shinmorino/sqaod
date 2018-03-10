@@ -244,7 +244,7 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
         enum { BLOCK_DIM = 128 };
 
         dim3 blockDim(BLOCK_DIM);
-        dim3 gridDim(divru(nSegments_, 4u));
+        dim3 gridDim(divru(nSegments_, 4));
 #if 0
         segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1>
             <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
@@ -261,7 +261,7 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
         enum { BLOCK_DIM = 128 };
 
         dim3 blockDim(BLOCK_DIM);
-        dim3 gridDim(divru(nSegments_, 2u));
+        dim3 gridDim(divru(nSegments_, 2));
 #if 0
         segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1>
             <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
@@ -293,7 +293,7 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
         if (N_REDUCE_THREADS == 32) {
             enum { BLOCK_DIM = 128 };
             dim3 blockDim(BLOCK_DIM);
-            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 4u));
+            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 4));
             segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
                 <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
             DEBUG_SYNC;
@@ -301,7 +301,7 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
         else if (N_REDUCE_THREADS == 64) {
             enum { BLOCK_DIM = 128 };
             dim3 blockDim(BLOCK_DIM);
-            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 2u));
+            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 2));
             segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
                 <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
             DEBUG_SYNC;
@@ -317,7 +317,7 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
 
         enum { BLOCK_DIM_32 = 128 };
         dim3 blockDim(BLOCK_DIM_32);
-        dim3 gridDim(divru(nSegments_, sq::SizeType(BLOCK_DIM_32 / WARP_SIZE)));
+        dim3 gridDim(divru(nSegments_, BLOCK_DIM_32 / WARP_SIZE));
         segmentedSumKernel_32<BLOCK_DIM_32, 1, 1>
             <<<gridDim, blockDim, 0, stream_>>>(d_tempStorage_, out, Linear(OUTPUT_PER_SEG, 0), OUTPUT_PER_SEG, nSegments_);
         DEBUG_SYNC;

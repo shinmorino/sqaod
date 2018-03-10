@@ -9,7 +9,7 @@ using namespace sqaod_cuda;
 
 template<class real>
 DeviceDenseGraphBatchSearch<real>::DeviceDenseGraphBatchSearch() {
-    N_ = (sq::SizeType) -1;
+    N_ = -1;
 }
 
 
@@ -23,7 +23,7 @@ void DeviceDenseGraphBatchSearch<real>::assignDevice(Device &device) {
 
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::deallocate() {
-    if (N_ == (sq::SizeType) -1)
+    if (N_ == -1)
         return;
 
     devAlloc_->deallocate(d_W_);
@@ -35,7 +35,7 @@ void DeviceDenseGraphBatchSearch<real>::deallocate() {
     halloc.deallocate(h_nXMins_);
     halloc.deallocate(h_Emin_);
 
-    N_ = (sq::SizeType) -1;
+    N_ = -1;
 }
 
 
@@ -57,7 +57,7 @@ void DeviceDenseGraphBatchSearch<real>::setProblem(const HostMatrix &W, sq::Size
 template<class real>
 void DeviceDenseGraphBatchSearch<real>::calculate_E(sq::PackedBits xBegin, sq::PackedBits xEnd) {
     xBegin_ = xBegin;
-    sq::SizeType nBatch = sq::SizeType(xEnd - xBegin);
+    sq::SizeType nBatch = xEnd - xBegin;
     abortIf(tileSize_ < nBatch,
             "nBatch is too large, tileSize=%d, nBatch=%d", int(tileSize_), int(nBatch));
     int N = d_W_.rows;
@@ -112,8 +112,8 @@ generateBitsSequence(real *d_data, int N,
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
-    gridDim.x = (unsigned int)divru((unsigned int)(xEnd - xBegin), blockDim.y);
+    sq::SizeType nSeqs = xEnd - xBegin;
+    gridDim.x = divru(xEnd - xBegin, blockDim.y);
     generateBitsSequenceKernel
             <<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>(d_data, N, nSeqs, xBegin);
     DEBUG_SYNC;
