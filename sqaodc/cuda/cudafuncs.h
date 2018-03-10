@@ -38,8 +38,7 @@ void _throwError(curandStatus_t status, const char *file, unsigned long line, co
 
 
 
-template<class V>
-inline V divru(const V &v, const V &base) {
+inline unsigned int divru(const unsigned int &v, const unsigned int &base) {
     return (v + base - 1) / base;
 }
 
