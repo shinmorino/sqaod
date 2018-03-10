@@ -142,9 +142,9 @@ bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
     sq::PackedBits batchBegin = x_;
     sq::PackedBits batchEnd = std::min(x_ + tileSize_, xMax_); ;
     if (batchBegin < batchEnd)
-        searchers_[threadNum].searchRange(batchBegin, batchEnd);
+        searchers_[0].searchRange(batchBegin, batchEnd);
     
-    searchers_[0].searchRange(xBegin, xEnd);
+    searchers_[0].searchRange(batchBegin, batchEnd);
     x_ = batchEnd;
 #endif
     if (curXEnd != NULL)
