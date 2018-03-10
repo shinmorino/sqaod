@@ -49,13 +49,15 @@ sq::Preferences CPUDenseGraphBFSearcher<real>::getPreferences() const {
 
 template<class real>
 const sq::BitsArray &CPUDenseGraphBFSearcher<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return xList_;
 }
 
 template<class real>
 const sq::VectorType<real> &CPUDenseGraphBFSearcher<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 

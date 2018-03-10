@@ -23,8 +23,7 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
 
 template<class real>
 CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
-    if (isPrepared())
-        deallocate();
+    deallocate();
     d_random_.deallocate();
     if (d_reachCount_ != NULL)
         devAlloc_->deallocate(d_reachCount_);
@@ -37,10 +36,8 @@ CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::deallocate() {
-    if (isProblemSet())
-        deallocateProblem();
-    if (isPrepared())
-        deallocateInternalObjects();
+    deallocateProblem();
+    deallocateInternalObjects();
 }
 
 template<class real>
@@ -133,13 +130,17 @@ sq::Preferences CUDADenseGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable()) {
+        const_cast<This*>(this)->calculate_E();
+        devStream_->synchronize();
+    }
     return E_;
 }
 
 template<class real>
 const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return xlist_;
 }
 
@@ -165,6 +166,13 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
     devCopy_(J, d_J_);
     devCopy_(c, d_c_);
     devCopy_.synchronize();
+}
+
+template<class real>
+const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_q() const {
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
+    return qlist_;
 }
 
 template<class real>
@@ -200,8 +208,7 @@ void CUDADenseGraphAnnealer<real>::prepare() {
         d_random_.seed();
     setState(solRandSeedGiven);
 
-    if (isPrepared())
-        deallocateInternalObjects();
+    deallocateInternalObjects();
 
     HostObjectAllocator halloc;
     devAlloc_->allocate(&d_matq_, m_, N_);
@@ -226,13 +233,9 @@ void CUDADenseGraphAnnealer<real>::prepare() {
 template<class real>
 void CUDADenseGraphAnnealer<real>::makeSolution() {
     throwErrorIfQNotSet();
-
-    devStream_->synchronize();
     syncBits();
-    calculate_E();
-    devStream_->synchronize();
-
     setState(solSolutionAvailable);
+    calculate_E();
 }
 
 template<class real>

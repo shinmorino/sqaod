@@ -54,6 +54,7 @@ private:
     int nMaxThreads_;
     BatchSearcher *searchers_;
     
+    typedef CPUBipartiteGraphBFSearcher<real> This;
     typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::om_;
     using Base::N0_;
@@ -64,7 +65,6 @@ private:
     using Base::x1_;
     using Base::x0max_;
     using Base::x1max_;
-
     /* searcher state */
     using Base::solPrepared;
     using Base::solProblemSet;
@@ -72,10 +72,10 @@ private:
     using Base::solSolutionAvailable;
     using Base::setState;
     using Base::clearState;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

@@ -92,13 +92,15 @@ sq::Preferences CPUDenseGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CPUDenseGraphAnnealer<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 
 template<class real>
 const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsX_;
 }
 
@@ -123,7 +125,8 @@ void CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
 
 template<class real>
 const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_q() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsQ_;
 }
 

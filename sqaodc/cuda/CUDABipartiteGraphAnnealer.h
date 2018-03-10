@@ -116,6 +116,7 @@ private:
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 
+    typedef CUDABipartiteGraphAnnealer<real> This;
     typedef sq::BipartiteGraphAnnealer<real> Base;
     using Base::om_;
     using Base::N0_;
@@ -131,13 +132,11 @@ private:
     using Base::setState;
     using Base::clearState;
     using Base::isRandSeedGiven;
-    using Base::isProblemSet;
-    using Base::isPrepared;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
     using Base::throwErrorIfQNotSet;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

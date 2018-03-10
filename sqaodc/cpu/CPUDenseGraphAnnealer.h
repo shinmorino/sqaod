@@ -78,6 +78,7 @@ private:
     EigenMatrix J_;
     real c_;
 
+    typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
     using Base::om_;
     using Base::N_;
@@ -92,13 +93,11 @@ private:
     using Base::setState;
     using Base::clearState;
     using Base::isRandSeedGiven;
-    using Base::isProblemSet;
-    using Base::isPrepared;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
     using Base::throwErrorIfQNotSet;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

@@ -53,6 +53,7 @@ private:
     int nMaxThreads_;
     BatchSearcher *searchers_;
 
+    typedef CPUDenseGraphBFSearcher<real> This;
     typedef sq::DenseGraphBFSearcher<real> Base;
     using Base::N_;
     using Base::om_;
@@ -66,10 +67,10 @@ private:
     using Base::solSolutionAvailable;
     using Base::setState;
     using Base::clearState;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

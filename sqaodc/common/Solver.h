@@ -59,11 +59,11 @@ protected:
     bool isProblemSet() const;
     bool isPrepared() const;
     bool isQSet() const;
+    bool isEAvailable() const;
+    bool isSolutionAvailable() const;
     void throwErrorIfProblemNotSet() const;
     void throwErrorIfNotPrepared() const;
     void throwErrorIfQNotSet() const;
-    void throwErrorIfENotAvailable() const;
-    void throwErrorIfSolutionNotAvailable() const;
     
     OptimizeMethod om_;
 };

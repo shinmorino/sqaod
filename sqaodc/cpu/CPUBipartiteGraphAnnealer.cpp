@@ -98,7 +98,8 @@ sq::Preferences CPUBipartiteGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsPairX_;
 }
 
@@ -121,7 +122,8 @@ void CPUBipartiteGraphAnnealer<real>::set_x(const sq::Bits &x0, const sq::Bits &
 
 template<class real>
 const sq::VectorType<real> &CPUBipartiteGraphAnnealer<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 
@@ -139,7 +141,8 @@ void CPUBipartiteGraphAnnealer<real>::get_hJc(Vector *h0, Vector *h1,
 
 template<class real>
 const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsPairQ_;
 }
 

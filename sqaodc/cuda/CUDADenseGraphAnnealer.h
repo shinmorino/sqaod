@@ -56,9 +56,7 @@ public:
 
     void set_x(const Bits &x);
 
-    const sq::BitsArray &get_q() const {
-        return qlist_;
-    }
+    const sq::BitsArray &get_q() const;
 
     void get_hJc(HostVector *h, HostMatrix *J, real *c) const;
 
@@ -113,6 +111,7 @@ private:
     DeviceCopy devCopy_;
     DeviceObjectAllocator *devAlloc_;
 
+    typedef CUDADenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
     using Base::N_;
     using Base::m_;
@@ -127,13 +126,11 @@ private:
     using Base::setState;
     using Base::clearState;
     using Base::isRandSeedGiven;
-    using Base::isProblemSet;
-    using Base::isPrepared;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
     using Base::throwErrorIfQNotSet;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

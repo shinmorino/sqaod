@@ -65,21 +65,22 @@ sq::Preferences CUDADenseGraphBFSearcher<real>::getPreferences() const {
 
 template<class real>
 const sq::BitsArray &CUDADenseGraphBFSearcher<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution(); /* synchronized there */
     return xList_;
 }
 
 template<class real>
 const sq::VectorType<real> &CUDADenseGraphBFSearcher<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 
 template<class real>
 void CUDADenseGraphBFSearcher<real>::prepare() {
     throwErrorIfProblemNotSet();
-    if (isPrepared())
-        deallocate();
+    deallocate();
     
     x_ = 0;
     sq::SizeType maxTileSize = 1u << N_;
@@ -136,6 +137,7 @@ void CUDADenseGraphBFSearcher<real>::makeSolution() {
 template<class real>
 bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
     throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
 
     /* FIXME: Use multiple searchers, multi GPU */
 

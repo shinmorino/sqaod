@@ -58,13 +58,15 @@ sq::Preferences CPUBipartiteGraphBFSearcher<real>::getPreferences() const {
 
 template<class real>
 const sq::BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return xPairList_;
 }
 
 template<class real>
 const sq::VectorType<real> &CPUBipartiteGraphBFSearcher<real>::get_E() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 

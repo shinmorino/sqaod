@@ -72,21 +72,22 @@ sq::Preferences CUDABipartiteGraphBFSearcher<real>::getPreferences() const {
 
 template<class real>
 const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return minXPairs_;
 }
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphBFSearcher<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable())
+        const_cast<This*>(this)->calculate_E();
     return E_;
 }
 
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::prepare() {
     throwErrorIfProblemNotSet();
-    if (isPrepared())
-        deallocate();
+    deallocate();
     
     Emin_ = std::numeric_limits<real>::max();
     x0_ = x1_ = 0;

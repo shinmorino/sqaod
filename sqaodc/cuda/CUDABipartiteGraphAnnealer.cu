@@ -21,8 +21,7 @@ CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer(Device &device) {
 
 template<class real>
 CUDABipartiteGraphAnnealer<real>::~CUDABipartiteGraphAnnealer() {
-    if (isPrepared())
-        deallocate();
+    deallocate();
     d_random_.deallocate();
 }
 
@@ -56,10 +55,8 @@ void CUDABipartiteGraphAnnealer<real>::deallocateInternalObjects() {
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::deallocate() {
-    if (isProblemSet())
-        deallocateInternalObjects();
-    if (isPrepared())
-        deallocateInternalObjects();
+    deallocateProblem();
+    deallocateInternalObjects();
 }
 
 
@@ -129,13 +126,17 @@ sq::Preferences CUDABipartiteGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
-    throwErrorIfENotAvailable();
+    if (!isEAvailable()) {
+        const_cast<This*>(this)->calculate_E();
+        devStream_->synchronize();
+    }
     return E_;
 }
 
 template<class real>
 const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
-    throwErrorIfSolutionNotAvailable();
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsPairX_;
 }
 
@@ -174,6 +175,8 @@ void CUDABipartiteGraphAnnealer<real>::get_hJc(HostVector *h0, HostVector *h1,
 
 template<class real>
 const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
+    if (!isSolutionAvailable())
+        const_cast<This*>(this)->makeSolution();
     return bitsPairQ_;
 }
 
@@ -208,8 +211,7 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
         d_random_.seed();
     setState(solRandSeedGiven);
 
-    if (isPrepared())
-        deallocateInternalObjects();
+    deallocateInternalObjects();
 
     devAlloc_->allocate(&d_matq0_, m_, N0_);
     devAlloc_->allocate(&d_matq1_, m_, N1_);

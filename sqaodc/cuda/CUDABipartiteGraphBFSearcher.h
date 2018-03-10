@@ -73,6 +73,7 @@ private:
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
 
+    typedef CUDABipartiteGraphBFSearcher<real> This;
     typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::N0_;
     using Base::N1_;
@@ -91,11 +92,10 @@ private:
     using Base::solSolutionAvailable;
     using Base::setState;
     using Base::clearState;
-    using Base::isPrepared;
+    using Base::isEAvailable;
+    using Base::isSolutionAvailable;
     using Base::throwErrorIfProblemNotSet;
     using Base::throwErrorIfNotPrepared;
-    using Base::throwErrorIfENotAvailable;
-    using Base::throwErrorIfSolutionNotAvailable;
 };
 
 }

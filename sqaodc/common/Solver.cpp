@@ -74,6 +74,16 @@ bool Solver<real>::isQSet() const {
 }
 
 template<class real>
+bool Solver<real>::isEAvailable() const {
+    return (solverState_ & solEAvailable) != 0;
+}
+
+template<class real>
+bool Solver<real>::isSolutionAvailable() const {
+    return (solverState_ & solSolutionAvailable) != 0;
+}
+
+template<class real>
 void Solver<real>::throwErrorIfProblemNotSet() const {
     throwErrorIf(!isProblemSet(), "Problem is not set.");
 }
@@ -89,18 +99,6 @@ template<class real>
 void Solver<real>::throwErrorIfQNotSet() const {
     throwErrorIf(!isQSet(),
                  "Bits(x or q) not initialized.  Plase set or randomize in advance.");
-}
-
-template<class real>
-void Solver<real>::throwErrorIfENotAvailable() const {
-    throwErrorIf(!(solverState_ & solEAvailable),
-                 "E is not available.");
-}
-
-template<class real>
-void Solver<real>::throwErrorIfSolutionNotAvailable() const {
-    throwErrorIf(!(solverState_ & solSolutionAvailable),
-                 "Solution is not available.");
 }
 
 
