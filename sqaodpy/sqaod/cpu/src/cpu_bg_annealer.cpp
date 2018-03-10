@@ -332,31 +332,29 @@ PyObject *bg_annealer_get_hJc(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_bg_annealer_get_E(PyObject *objExt, PyObject *objE) {
+PyObject *internal_bg_annealer_get_E(PyObject *objExt, int typenum) {
     typedef NpVectorType<real> NpVector;
-    NpVector E(objE);
-    BipartiteGraphAnnealer<real> *ext = pyobjToCppObj<real>(objExt);
-    E.vec = ext->get_E();
+    const sqaod::VectorType<real> &E = pyobjToCppObj<real>(objExt)->get_E();
+    NpVector npE(E.size, typenum); /* allocate PyObject */
+    npE.vec = E;
+    return npE.obj;
 }
 
     
 extern "C"
 PyObject *bg_annealer_get_E(PyObject *module, PyObject *args) {
-    PyObject *objExt, *objE, *dtype;
-    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objE, &dtype))
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            internal_bg_annealer_get_E<double>(objExt, objE);
+            return internal_bg_annealer_get_E<double>(objExt, NPY_FLOAT64);
         else if (isFloat32(dtype))
-            internal_bg_annealer_get_E<float>(objExt, objE);
-        else
-            RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
+            return internal_bg_annealer_get_E<float>(objExt, NPY_FLOAT32);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
 }
 
     

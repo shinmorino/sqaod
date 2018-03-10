@@ -48,7 +48,7 @@ class DenseGraphAnnealer :
         return self._optimize
 
     def get_E(self) :
-        return self._E
+        return cext.get_E(self._cobj, self.dtype)
 
     def get_x(self) :
         return cext.get_x(self._cobj, self.dtype)
@@ -78,11 +78,6 @@ class DenseGraphAnnealer :
 
     def make_solution(self) :
         cext.make_solution(self._cobj, self.dtype)
-        N = self.get_problem_size()
-	prefs = self.get_preferences()
-	m = prefs['n_trotters']
-        self._E = np.empty((m), self.dtype)
-        cext.get_E(self._cobj, self._E, self.dtype)
 
     def anneal_one_step(self, G, kT) :
         cext.anneal_one_step(self._cobj, G, kT, self.dtype)
