@@ -66,7 +66,7 @@ void DeviceRandomMT19937::deallocate() {
     d_buffer_[0] = NULL;
 }
 
-void DeviceRandomMT19937::seed(unsigned int seed) {
+void DeviceRandomMT19937::seed(unsigned long long seed) {
     curandSetPseudoRandomGeneratorSeed(gen_, seed);
 }
 

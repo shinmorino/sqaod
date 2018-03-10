@@ -24,7 +24,7 @@ public:
 
     void seed();
 
-    void seed(unsigned int seed);
+    void seed(unsigned long long seed);
 
     sq::SizeType getNRands() const;
 
