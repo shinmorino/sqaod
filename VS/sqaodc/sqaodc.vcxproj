@@ -19,6 +19,7 @@
     <ClInclude Include="..\..\sqaodc\common\Preference.h" />
     <ClInclude Include="..\..\sqaodc\common\Random.h" />
     <ClInclude Include="..\..\sqaodc\common\Solver.h" />
+    <ClInclude Include="..\..\sqaodc\common\types.h" />
     <ClInclude Include="..\..\sqaodc\common\undef.h" />
     <ClInclude Include="..\..\sqaodc\common\UniformOp.h" />
     <ClInclude Include="..\..\sqaodc\cpu\CPUBipartiteGraphAnnealer.h" />

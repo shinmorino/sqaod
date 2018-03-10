@@ -151,6 +151,9 @@
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.h">
       <Filter>cuda</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\types.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\cuda\Device.cpp">
