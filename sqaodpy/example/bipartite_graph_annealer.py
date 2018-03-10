@@ -51,9 +51,9 @@ print 'c=', c
 # preferences is always repeseted as python dictionay object.
 print ann.get_preferences()
 
-# 9. initialize anneal to setup solver. Annealers must be initialized
-#  before calling randomize_q() and/or anneal_one_step().
-ann.init_anneal()
+# 9. prepare to run anneal. Annealers must be prepared
+#  before calling randomize_q() and anneal_one_step().
+ann.prepare()
 
 # 10. randomize or set x(0 or 1) to set the initial state (mandatory)
 ann.randomize_q()
@@ -71,9 +71,8 @@ while Gfin <= G :
     # 11. call anneal_one_step to try fliping bits for (n_bits x n_trotters) times.
     ann.anneal_one_step(G, kT)
     G *= tau
-
-# 12. finalize anneal to calculate E and get x(0, 1) from q(-1, 1) internally.
-ann.fin_anneal()
+    # 12. you may call get_E() to get a current E value.
+    # ann.get_E()
 
 # 13. some methods to get results
 # - Get list of E for every trogger.
