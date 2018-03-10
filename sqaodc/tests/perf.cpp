@@ -82,7 +82,7 @@ void anneal(A<real> &an) {
     int nSteps = 0;
 
     auto start = std::chrono::system_clock::now();
-    an.initAnneal();
+    an.prepare();
     an.randomize_q();
     real G = Ginit;
     while (Gfin < G) {
@@ -91,7 +91,7 @@ void anneal(A<real> &an) {
         ++nSteps;
         std::cerr << ".";
     }
-    an.finAnneal();
+    an.makeSolution();
     auto end = std::chrono::system_clock::now();
 
     std::cerr << std::endl;
