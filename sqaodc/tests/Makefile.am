@@ -31,8 +31,6 @@ run: $(check_PROGRAMS)
 
 # include ./$(DEPDIR)/DeviceSegmentedSumTest.Po
 
-NVCC=@NVCC@
-
 .cu.o:  # generate dep, and compile
 	@mkdir -p $(DEPDIR)
 	$(NVCC) -M -std=c++11 $(NVCCFLAGS) -Xcompiler "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)" $<  -o $(DEPDIR)/$*.Tpo
