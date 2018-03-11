@@ -110,7 +110,7 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
     q1 = []
     
     for loop in range(0, n_repeat) :
-        annealer.init_anneal()
+        annealer.prepare()
         annealer.randomize_spin()
         G = Ginit
         while Gfin < G :
@@ -120,4 +120,4 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
                 print E
             G = G * tau
 
-        annealer.fin_anneal()
+        annealer.make_solution()

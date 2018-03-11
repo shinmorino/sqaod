@@ -52,13 +52,13 @@ class DenseGraphBFSearcher :
     def get_x(self) :
         return self._x
 
-    def init_search(self) :
+    def prepare(self) :
         N = self._N
         self._tile_size = min(1 << N, self._tile_size)
         self._xMax = 1 << N
         self._Emin = sys.float_info.max
 
-    def fin_search(self) :
+    def make_solution(self) :
         nMinX = len(self._x)
         self._E = np.empty((nMinX))
         self._E[...] = self._optimize.sign(self._Emin)
@@ -80,11 +80,11 @@ class DenseGraphBFSearcher :
                 self._x.append(x[i])
 
     def search(self) :
-        self.init_search()
+        self.prepare()
         xStep = min(self._tile_size, self._xMax)
         for xBegin in range(0, self._xMax, xStep) :
             self.search_range(xBegin, xBegin + xStep)
-        self.fin_search()
+        self.make_solution()
         
     
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, **prefs) :

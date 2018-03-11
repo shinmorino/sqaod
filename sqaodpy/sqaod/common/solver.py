@@ -20,11 +20,11 @@ class Solver :
 class BFSearcher(Solver) :
 
     @abstractmethod
-    def init_search(self) :
+    def prepare(self) :
         raise NotImplementedError()
 
     @abstractmethod
-    def fin_search(self) :
+    def make_solution(self) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -43,11 +43,11 @@ class Annealer(Sovler) :
         raise NotImplementedError()
 
     @abstractmethod
-    def init_anneal(self) :
+    def prepare(self) :
         raise NotImplementedError()
 
     @abstractmethod
-    def fin_anneal(self) :
+    def make_solution(self) :
         raise NotImplementedError()
 
     @abstractmethod

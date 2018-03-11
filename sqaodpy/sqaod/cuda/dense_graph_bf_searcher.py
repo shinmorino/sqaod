@@ -55,7 +55,7 @@ class DenseGraphBFSearcher :
         cext.prepare(self._cobj, self.dtype);
         
     def make_solution(self) :
-        cext.fin_search(self._cobj, self.dtype);
+        cext.make_solution(self._cobj, self.dtype);
         
     def search_range(self) :
         return cext.search_range(self._cobj, self.dtype)

@@ -64,7 +64,7 @@ class BipartiteGraphBFSearcher :
     def get_x(self) :
         return self._xPairs
 
-    def init_search(self) :
+    def prepare(self) :
         N0, N1 = self.get_problem_size()
         self._x0max = 1 << N0
         self._x1max = 1 << N1
@@ -73,7 +73,7 @@ class BipartiteGraphBFSearcher :
         self._Emin = sys.float_info.max
         self._xPairs = []
 
-    def fin_search(self) :
+    def make_solution(self) :
         nXmin = len(self._xPairs)
         self._E = np.empty((nXmin))
         self._E[...] = self._optimize.sign(self._Emin)
@@ -123,7 +123,7 @@ class BipartiteGraphBFSearcher :
                     self._xPairs.append((bits0[x0], bits1[x1]))
                     
     def search(self) :
-        self.init_search()
+        self.prepare()
         
         x0step = min(self._tile_size_0, self._x0max)
         x1step = min(self._tile_size_1, self._x1max)
@@ -131,7 +131,7 @@ class BipartiteGraphBFSearcher :
             for x0 in range(0, self._x0max, x0step) :
                 self.search_range(x0, x0 + x0step, x1, x1 + x1step)
 
-        self.fin_search()
+        self.make_solution()
         
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, **prefs) :
     return BipartiteGraphBFSearcher(b0, b1, W, optimize, prefs)

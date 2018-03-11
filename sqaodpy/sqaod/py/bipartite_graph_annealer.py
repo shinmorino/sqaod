@@ -104,11 +104,11 @@ class BipartiteGraphAnnealer :
             E[idx] = formulas.bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0[idx], q1[idx])
         self._E = self._optimize.sign(E)
 
-    def init_anneal(self) :
+    def prepare(self) :
         self._q0 = np.empty((self._m, self._N0), dtype=np.int8)
         self._q1 = np.empty((self._m, self._N1), dtype=np.int8)
 
-    def fin_anneal(self) :
+    def make_solution(self) :
         self._x_pairs = []
         for idx in range(self._m) :
             x0 = sqaod.bit_from_spin(self._q0[idx])
@@ -210,13 +210,13 @@ if __name__ == '__main__' :
     n_repeat = 10
 
     for loop in range(0, n_repeat) :
-        an.init_anneal()
+        an.prepare()
         an.randomize_spin()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)
             G = G * tau
-        an.fin_anneal()
+        an.make_solution()
         
         E = an.get_E()
         x = an.get_x()
