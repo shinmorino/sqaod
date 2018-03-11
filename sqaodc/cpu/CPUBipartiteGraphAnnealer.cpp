@@ -304,10 +304,11 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     {
         int threadNum = omp_get_thread_num();
         int JrowSpan = (J.rows() + nMaxThreads_ - 1) / nMaxThreads_;
-        int JrowBegin = JrowSpan * threadNum;
+        int JrowBegin = std::min(J.rows(), JrowSpan * threadNum);
         int JrowEnd = std::min(J.rows(), JrowSpan * (threadNum + 1));
         JrowSpan = JrowEnd - JrowBegin;
-        dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
+        if (0 < JrowSpan)
+            dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
 #pragma omp barrier
         sq::Random &random = random_[threadNum];
 #endif
