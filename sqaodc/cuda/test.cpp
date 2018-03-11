@@ -16,7 +16,7 @@ void runBFSearcher() {
     CUDADenseGraphBFSearcher<real> solver;
     solver.assignDevice(device);
     Matrix W = Matrix::eye(N);
-    solver.setProblem(W, sq::optMinimize);
+    solver.setQUBO(W, sq::optMinimize);
     solver.search();
 
     device.finalize();
