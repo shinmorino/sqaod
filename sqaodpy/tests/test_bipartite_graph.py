@@ -13,7 +13,7 @@ class TestMinEnergy(unittest.TestCase):
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
-        an.set_problem(b0, b1, W)
+        an.set_qubo(b0, b1, W)
         an.set_preferences(n_trotters = 1)
         an.prepare()
 
@@ -34,7 +34,7 @@ class TestMinEnergy(unittest.TestCase):
         W = np.random.random((N1, N0)) - 0.5
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
-        an.set_problem(b0, b1, W)
+        an.set_qubo(b0, b1, W)
         an.set_preferences(n_trotters = 1)
         an.prepare()
 
@@ -65,8 +65,8 @@ class TestMinEnergy(unittest.TestCase):
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
 
-        an.set_problem(b0, b1, W)
-        bf.set_problem(b0, b1, W)
+        an.set_qubo(b0, b1, W)
+        bf.set_qubo(b0, b1, W)
         
         bf.search();
         common.anneal(an)

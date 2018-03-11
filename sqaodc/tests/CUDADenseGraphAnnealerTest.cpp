@@ -149,7 +149,7 @@ void CUDADenseGraphAnnealerTest::test() {
         }
 
         CUDADenseGraphAnnealer<real> an(device_);
-        an.setProblem(W);
+        an.setQUBO(W);
         an.setPreference(sq::Preference(sq::pnNumTrotters, m));
         an.seed(0);
         // an.randomize_q();  FIXME: initilization check.

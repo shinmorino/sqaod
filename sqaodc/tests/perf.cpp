@@ -122,14 +122,14 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CPU, %s\n", precisionStr);
             sq::cpu::DenseGraphBFSearcher<real> searcher;
-            searcher.setProblem(W);
+            searcher.setQUBO(W);
             runSearch(searcher);
         }
 #ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CUDA, %s\n", precisionStr);
             sq::cuda::DenseGraphBFSearcher<real> searcher(device);
-            searcher.setProblem(W);
+            searcher.setQUBO(W);
             runSearch(searcher);
         }
 #endif
@@ -144,7 +144,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "Dense graph annealer, CPU, %s\n", precisionStr);
             fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
             sq::cpu::DenseGraphAnnealer<real> annealer;
-            annealer.setProblem(W);
+            annealer.setQUBO(W);
             sq::Preference pref(sq::pnNumTrotters, N / 2);
             annealer.setPreference(pref);
             anneal(annealer);
@@ -154,7 +154,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "Dense graph annealer, CUDA, %s\n", precisionStr);
             fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
             sq::cuda::DenseGraphAnnealer<real> annealer(device);
-            annealer.setProblem(W);
+            annealer.setQUBO(W);
             sq::Preference pref(sq::pnNumTrotters, N / 2);
             annealer.setPreference(pref);
             anneal(annealer);
@@ -173,14 +173,14 @@ void run(const char *precisionStr) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CPU, %s\n", precisionStr);
             fprintf(stderr, "(N0, N1) = (%d, %d)\n", N0, N1);
             sq::cpu::BipartiteGraphBFSearcher<real> searcher;
-            searcher.setProblem(b0, b1, W);
+            searcher.setQUBO(b0, b1, W);
             runSearch(searcher);
         }
 #ifdef SQAODC_CUDA_ENABLED
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CUDA, %s\n", precisionStr);
             sq::cuda::BipartiteGraphBFSearcher<real> searcher(device);
-            searcher.setProblem(b0, b1, W);
+            searcher.setQUBO(b0, b1, W);
             runSearch(searcher);
         }
 #endif
@@ -196,7 +196,7 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Bipartite graph annealer, CPU, %s\n", precisionStr);
             sq::cpu::BipartiteGraphAnnealer<real> annealer;
-            annealer.setProblem(b0, b1, W);
+            annealer.setQUBO(b0, b1, W);
             sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
             annealer.setPreference(pref);
             anneal(annealer);
@@ -205,7 +205,7 @@ void run(const char *precisionStr) {
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
             sq::cuda::BipartiteGraphAnnealer<real> annealer(device);
-            annealer.setProblem(b0, b1, W);
+            annealer.setQUBO(b0, b1, W);
             sq::Preference pref(sq::pnNumTrotters, (N0 + N1) / 2);
             annealer.setPreference(pref);
             anneal(annealer);

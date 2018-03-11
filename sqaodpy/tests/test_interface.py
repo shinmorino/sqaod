@@ -13,9 +13,9 @@ class TestCommon(unittest.TestCase):
         searcher.search()
 
     def run_dense_graph_searcher(self, searcher, dtype) :
-        searcher.set_problem(W, sq.minimize)
+        searcher.set_qubo(W, sq.minimize)
         searcher.search()
-        searcher.set_problem(W, sq.maximize)
+        searcher.set_qubo(W, sq.maximize)
         searcher.search()
 
     def test_generate_dense_graph_problem(self):

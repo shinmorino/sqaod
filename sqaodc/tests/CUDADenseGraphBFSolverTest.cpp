@@ -214,14 +214,14 @@ void CUDADenseGraphBFSolverTest::tests() {
         TEST_ASSERT(sqaod::isSymmetric(W));
 
         sqcpu::CPUDenseGraphBFSearcher<real> cpuSolver;
-        cpuSolver.setProblem(W);
+        cpuSolver.setQUBO(W);
         cpuSolver.search();
         const sq::VectorType<real> &cpuE = cpuSolver.get_E();
         const sq::BitSetArray &cpuX = cpuSolver.get_x();
 
         CUDADenseGraphBFSearcher<real> cudaSolver;
         cudaSolver.assignDevice(device_);
-        cudaSolver.setProblem(W);
+        cudaSolver.setQUBO(W);
         cudaSolver.search();
         const sq::VectorType<real> &cudaE = cudaSolver.get_E();
         const sq::BitSetArray &cudaX = cudaSolver.get_x();
