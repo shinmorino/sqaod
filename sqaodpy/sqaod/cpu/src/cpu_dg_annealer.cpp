@@ -192,7 +192,7 @@ PyObject *internal_dg_annealer_get_x(PyObject *objExt) {
     ann->getProblemSize(&N);
     const sqaod::BitsArray &xList = ann->get_x();
     PyObject *list = PyList_New(xList.size());
-    for (size_t idx = 0; idx < xList.size(); ++idx) {
+    for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
         NpBitVector x(N, NPY_INT8);
         x.vec = xList[idx];
         PyList_SET_ITEM(list, idx, x.obj);
@@ -287,7 +287,7 @@ PyObject *internal_dg_annealer_get_q(PyObject *objExt) {
     ann->getProblemSize(&N);
     const sqaod::BitsArray &qList = ann->get_q();
     PyObject *list = PyList_New(qList.size());
-    for (size_t idx = 0; idx < qList.size(); ++idx) {
+    for (sq::IdxType idx = 0; idx < qList.size(); ++idx) {
         NpBitVector q(N, NPY_INT8);
         q.vec = qList[idx];
         PyList_SET_ITEM(list, idx, q.obj);

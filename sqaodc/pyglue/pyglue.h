@@ -216,7 +216,7 @@ int parsePreference(const char *key, PyObject *valueObj,
     case sqaod::pnTileSize1: {
         if (PyInt_Check(valueObj)) {
             PyIntObject *intObj = (PyIntObject*)valueObj;
-            *pref = sqaod::Preference(prefName, (sqaod::SizeType)intObj->ob_ival);
+            *pref = sqaod::Preference(prefName, intObj->ob_ival);
             return 0;
         }
         else if (PyLong_Check(valueObj)) {

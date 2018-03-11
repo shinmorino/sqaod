@@ -152,7 +152,7 @@ PyObject *internal_dg_bf_searcher_get_x(PyObject *objExt) {
     sol->getProblemSize(&N);
 
     PyObject *list = PyList_New(xList.size());
-    for (size_t idx = 0; idx < xList.size(); ++idx) {
+    for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
         const sq::Bits &bits = xList[idx];
         NpBitVector x(N, NPY_INT8);
         x.vec = bits;
