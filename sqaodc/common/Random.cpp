@@ -67,9 +67,9 @@ void Random::seed() {
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
 /* initializes mt[N] with a seed */
-void Random::seed(unsigned long s)
+void Random::seed(unsigned long long s)
 {
-    mt[0]= s & 0xffffffffUL;
+    mt[0]= (unsigned long)(s & 0xffffffffUL);
     for (mti=1; mti<N; mti++) {
         mt[mti] = 
 	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 

@@ -9,7 +9,7 @@ public:
 
     void seed();
 
-    void seed(unsigned long s);
+    void seed(unsigned long long s);
 
     void initByArray(unsigned long initKey[], int keyLength);
 
