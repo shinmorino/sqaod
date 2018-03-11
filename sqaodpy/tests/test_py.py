@@ -29,7 +29,7 @@ class TestTraits(unittest.TestCase):
         # self.verbose = True
         N = 8
         W = np.ones((N, N), dtype=np.float64)
-        xlist = common.create_bits_sequence(range(0, 2 ** N), N)
+        xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
         self.compare_energy(W, xlist)
 
     def test_engery_of_dense_graph_with_zero_x(self):
@@ -44,13 +44,13 @@ class TestTraits(unittest.TestCase):
     def test_engery_of_dense_graph(self):
         N = 8
         W = common.generate_random_symmetric_W((N), dtype=np.float64)
-        xlist = common.create_bits_sequence(range(0, 2 ** N), N)
+        xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
         self.compare_energy(W, xlist)
 
     def test_engery_of_batched_qubo_energy_func(self):
         N = 8
         W = common.generate_random_symmetric_W((N), dtype=np.float64)
-        xlist = common.create_bits_sequence(range(0, 2 ** N), N)
+        xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
 
         E = []
         for i in range(0, 1 << N) :
@@ -63,8 +63,8 @@ class TestTraits(unittest.TestCase):
     def test_engery_of_batched_spin_energy_func(self):
         N = 8
         W = common.generate_random_symmetric_W((N), dtype=np.float64)
-        xlist = common.create_bits_sequence(range(0, 2 ** N), N)
-        qlist = common.bits_to_spin(xlist)
+        xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
+        qlist = common.bit_to_spin(xlist)
         h, J, c = formulas.dense_graph_calculate_hJc(W)
         
         E = []

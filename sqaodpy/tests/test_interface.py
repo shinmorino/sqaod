@@ -28,9 +28,9 @@ class TestCommon(unittest.TestCase):
     def test_dense_graph_searcher(self):
         W = dense_graph_random(8, dtype=np.float64)
         
-        ann = sq.py.dense_graph_annealer(W, sq.minimize, 4)
+        ann = sq.py.dense_graph_annealer(W, sq.minimize, n_trotters=4)
         self.run_annealer(ann)
-        ann = sq.py.dense_graph_annealer(W, sq.maximize, 4)
+        ann = sq.py.dense_graph_annealer(W, sq.maximize, n_trotters=4)
         self.run_annealer(ann)
 
         ann = sq.py.dense_graph_bf_searcher(W, sq.minimize)
@@ -38,9 +38,9 @@ class TestCommon(unittest.TestCase):
         ann = sq.py.dense_graph_bf_searcher(W, sq.maximize)
         self.run_searcher(ann)
         
-        ann = sq.cpu.dense_graph_annealer(W, 4, sq.minimize, np.float64)
+        ann = sq.cpu.dense_graph_annealer(W, sq.minimize, np.float64, n_trotters=4)
         self.run_annealer(ann)
-        ann = sq.cpu.dense_graph_annealer(W, 4, sq.maximize, np.float64)
+        ann = sq.cpu.dense_graph_annealer(W, sq.maximize, np.float64, n_trotters=4)
         self.run_annealer(ann)
         
         ann = sq.cpu.dense_graph_bf_searcher(W, sq.minimize, np.float64)
@@ -51,9 +51,9 @@ class TestCommon(unittest.TestCase):
     def test_bipartite_graph_solvers(self):
         b0, b1, W = bipartite_graph_random(2, 2, np.float64)
         
-        ann = sq.py.bipartite_graph_annealer(b0, b1, W, sq.minimize, 2)
+        ann = sq.py.bipartite_graph_annealer(b0, b1, W, sq.minimize, n_trotters=2)
         self.run_annealer(ann)
-        ann = sq.py.bipartite_graph_annealer(b0, b1, W, sq.maximize, 2)
+        ann = sq.py.bipartite_graph_annealer(b0, b1, W, sq.maximize, n_trotters=2)
         self.run_annealer(ann)
 
         ann = sq.py.bipartite_graph_bf_searcher(b0, b1, W, sq.minimize)
@@ -61,9 +61,9 @@ class TestCommon(unittest.TestCase):
         ann = sq.py.bipartite_graph_bf_searcher(b0, b1, W, sq.maximize)
         self.run_searcher(ann)
         
-        ann = sq.cpu.bipartite_graph_annealer(b0, b1, W, sq.minimize, 2, np.float64)
+        ann = sq.cpu.bipartite_graph_annealer(b0, b1, W, sq.minimize, np.float64, n_trotters=2)
         self.run_annealer(ann)
-        ann = sq.cpu.bipartite_graph_annealer(b0, b1, W, sq.maximize, 2, np.float64)
+        ann = sq.cpu.bipartite_graph_annealer(b0, b1, W, sq.maximize, np.float64, n_trotters=2)
         self.run_annealer(ann)
 
         ann = sq.cpu.bipartite_graph_bf_searcher(b0, b1, W, sq.minimize, np.float64)

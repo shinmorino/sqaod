@@ -14,7 +14,8 @@ class TestMinEnergy(unittest.TestCase):
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
         an.set_problem(b0, b1, W)
-        an.set_solver_preference(n_trotters = 1)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
 
         x0 = np.ndarray((N0), np.int8)
         x1 = np.ndarray((N1), np.int8)
@@ -34,15 +35,16 @@ class TestMinEnergy(unittest.TestCase):
         b0 = np.random.random((N0)) - 0.5
         b1 = np.random.random((N1)) - 0.5
         an.set_problem(b0, b1, W)
-        an.set_solver_preference(n_trotters = 1)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
 
         iMax = 1 << N0
         jMax = 1 << N1
 
         for i in range(iMax) :
-            x0 = common.create_bits_sequence((i), N0)
+            x0 = common.create_bitset_sequence((i), N0)
             for j in range(jMax) :
-                x1 = common.create_bits_sequence((j), N1)
+                x1 = common.create_bitset_sequence((j), N1)
                 Ebf = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                       + np.dot(x1, np.matmul(W, x0.transpose()))
                 an.set_x(x0, x1)
