@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def sort_bitsset_list(bitsSetList) :
+def sort_bitset_list(bitsSetList) :
     size = len(bitsSetList)
     nBitsSetList = len(bitsSetList[0])
     for bitsIdx in range(nBitsSetList) :
