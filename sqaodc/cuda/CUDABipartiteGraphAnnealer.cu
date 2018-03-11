@@ -134,14 +134,14 @@ const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
 }
 
 template<class real>
-const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
+const sq::BitSetPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsPairX_;
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::set_x(const Bits &x0, const Bits &x1) {
+void CUDABipartiteGraphAnnealer<real>::set_x(const BitSet &x0, const BitSet &x1) {
     throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
@@ -174,7 +174,7 @@ void CUDABipartiteGraphAnnealer<real>::get_hJc(HostVector *h0, HostVector *h1,
 
 
 template<class real>
-const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
+const sq::BitSetPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsPairQ_;
@@ -370,11 +370,11 @@ void CUDABipartiteGraphAnnealer<real>::syncBits() {
     devStream_->synchronize();
 
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        Bits q0(h_q0_.row(idx), N0_);
-        Bits q1(h_q1_.row(idx), N1_);
-        bitsPairQ_.pushBack(BitsPairArray::ValueType(q0, q1));
-        Bits x0 = x_from_q(q0), x1 = x_from_q(q1);
-        bitsPairX_.pushBack(BitsPairArray::ValueType(x0, x1));
+        BitSet q0(h_q0_.row(idx), N0_);
+        BitSet q1(h_q1_.row(idx), N1_);
+        bitsPairQ_.pushBack(BitSetPairArray::ValueType(q0, q1));
+        BitSet x0 = x_from_q(q0), x1 = x_from_q(q1);
+        bitsPairX_.pushBack(BitSetPairArray::ValueType(x0, x1));
     }
 }
 

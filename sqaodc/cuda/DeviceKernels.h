@@ -79,7 +79,7 @@ private:
 
 template<class V>
 void generateBitsSequence(V *d_data, int N,
-                          sq::PackedBits xBegin, sq::PackedBits xEnd,
+                          sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
                           cudaStream_t stream);
 
 

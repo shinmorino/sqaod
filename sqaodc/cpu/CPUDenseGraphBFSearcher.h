@@ -32,7 +32,7 @@ public:
 
     const Vector &get_E() const;
 
-    const sq::BitsArray &get_x() const;
+    const sq::BitSetArray &get_x() const;
     
     void prepare();
 
@@ -40,7 +40,7 @@ public:
     
     void makeSolution();
 
-    bool searchRange(sq::PackedBits *curXEnd);
+    bool searchRange(sq::PackedBitSet *curXEnd);
 
     /* void search(); */
     
@@ -48,7 +48,7 @@ private:
     Matrix W_;
     real Emin_;
     Vector E_;
-    sq::BitsArray xList_;
+    sq::BitSetArray xList_;
 
     int nMaxThreads_;
     BatchSearcher *searchers_;

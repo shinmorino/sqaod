@@ -71,7 +71,7 @@ sq::Preferences CUDABipartiteGraphBFSearcher<real>::getPreferences() const {
 }
 
 template<class real>
-const sq::BitsPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
+const sq::BitSetPairArray &CUDABipartiteGraphBFSearcher<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return minXPairs_;
@@ -93,11 +93,11 @@ void CUDABipartiteGraphBFSearcher<real>::prepare() {
     x0_ = x1_ = 0;
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
-    if (x0max_ < (sq::PackedBits)tileSize0_) {
+    if (x0max_ < (sq::PackedBitSet)tileSize0_) {
         tileSize0_ = x0max_;
         sq::log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
     }
-    if (x1max_ < (sq::PackedBits)tileSize1_) {
+    if (x1max_ < (sq::PackedBitSet)tileSize1_) {
         tileSize1_ = x1max_;
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
@@ -125,32 +125,32 @@ template<class real>
 void CUDABipartiteGraphBFSearcher<real>::makeSolution() {
     throwErrorIfNotPrepared();
     batchSearch_.synchronize();
-    const DevicePackedBitsPairArray &dPackedXminPairs = batchSearch_.get_minXPairs();
+    const DevicePackedBitSetPairArray &dPackedXminPairs = batchSearch_.get_minXPairs();
     SizeType nXMin = dPackedXminPairs.size;
     devCopy_(&h_packedMinXPairs_, dPackedXminPairs);
     devCopy_.synchronize();
     
     minXPairs_.clear();
     for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
-        sq::Bits bits0, bits1;
-        unpackBits(&bits0, h_packedMinXPairs_[idx].bits0, N0_);
-        unpackBits(&bits1, h_packedMinXPairs_[idx].bits1, N1_);
-        minXPairs_.pushBack(BitsPairArray::ValueType(bits0, bits1)); // FIXME: apply move
+        sq::BitSet bits0, bits1;
+        unpackBitSet(&bits0, h_packedMinXPairs_[idx].bits0, N0_);
+        unpackBitSet(&bits1, h_packedMinXPairs_[idx].bits1, N1_);
+        minXPairs_.pushBack(BitSetPairArray::ValueType(bits0, bits1)); // FIXME: apply move
     }
     setState(solSolutionAvailable);
     calculate_E();
 }
 
 template<class real>
-bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBits *curX0, PackedBits *curX1) {
+bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBitSet *curX0, PackedBitSet *curX1) {
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
     /* FIXME: Use multiple searchers, multi GPU */
 
-    PackedBits batch0begin = x0_;
-    PackedBits batch0end = std::min(x0max_, batch0begin + tileSize0_);
-    PackedBits batch1begin = x1_;
-    PackedBits batch1end = std::min(x1max_, batch1begin + tileSize1_);
+    PackedBitSet batch0begin = x0_;
+    PackedBitSet batch0end = std::min(x0max_, batch0begin + tileSize0_);
+    PackedBitSet batch1begin = x1_;
+    PackedBitSet batch1end = std::min(x1max_, batch1begin + tileSize1_);
 
     if ((batch0begin < batch0end) && (batch1begin < batch1end)) {
     

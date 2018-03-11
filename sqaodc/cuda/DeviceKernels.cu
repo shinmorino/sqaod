@@ -9,7 +9,7 @@ using namespace sqaod_cuda;
 
 using sq::SizeType;
 using sq::IdxType;
-using sq::PackedBits;
+using sq::PackedBitSet;
 
 
 template<class OutType, class real>  static __global__
@@ -451,10 +451,10 @@ template void DeviceCopyKernels::copyBroadcastVector(double *dst, const double *
 template<class V>
 __global__ static
 void generateBitsSequenceKernel(V *d_data, int N,
-                                SizeType nSeqs, PackedBits xBegin) {
+                                SizeType nSeqs, PackedBitSet xBegin) {
     IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
     if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
-        PackedBits bits = xBegin + seqIdx;
+        PackedBitSet bits = xBegin + seqIdx;
         bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
         d_data[seqIdx * N + threadIdx.x] = bitSet ? V(1) : V(0);
     }
@@ -462,7 +462,7 @@ void generateBitsSequenceKernel(V *d_data, int N,
 
 
 template<class V> void
-sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBits xBegin, PackedBits xEnd,
+sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBitSet xBegin, PackedBitSet xEnd,
                                  cudaStream_t stream) {
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */

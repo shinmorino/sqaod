@@ -172,11 +172,11 @@ PyObject *internal_bg_annealer_get_x(PyObject *objExt) {
 
     sqaod::SizeType N0, N1;
     ann->getProblemSize(&N0, &N1);
-    const sq::BitsPairArray &xPairList = ann->get_x();
+    const sq::BitSetPairArray &xPairList = ann->get_x();
 
     PyObject *list = PyList_New(xPairList.size());
     for (sq::IdxType idx = 0; idx < xPairList.size(); ++idx) {
-        const sq::BitsPairArray::ValueType &pair = xPairList[idx];
+        const sq::BitSetPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
@@ -241,11 +241,11 @@ PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
 
     sqaod::SizeType N0, N1;
     ann->getProblemSize(&N0, &N1);
-    const sq::BitsPairArray &xPairList = ann->get_q();
+    const sq::BitSetPairArray &xPairList = ann->get_q();
 
     PyObject *list = PyList_New(xPairList.size());
     for (sq::IdxType idx = 0; idx < xPairList.size(); ++idx) {
-        const sq::BitsPairArray::ValueType &pair = xPairList[idx];
+        const sq::BitSetPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector q0(N0, NPY_INT8), q1(N1, NPY_INT8);
         q0.vec = pair.first;

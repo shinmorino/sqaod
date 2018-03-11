@@ -57,7 +57,7 @@ sq::Preferences CPUBipartiteGraphBFSearcher<real>::getPreferences() const {
 }
 
 template<class real>
-const sq::BitsPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
+const sq::BitSetPairArray &CPUBipartiteGraphBFSearcher<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return xPairList_;
@@ -77,11 +77,11 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
     x0_ = x1_ = 0;
     x0max_ = 1ull << N0_;
     x1max_ = 1ull << N1_;
-    if (x0max_ < (sq::PackedBits)tileSize0_) {
+    if (x0max_ < (sq::PackedBitSet)tileSize0_) {
         tileSize0_ = x0max_;
         sq::log("Tile size 0 is adjusted to %d for N0=%d", tileSize0_, N0_);
     }
-    if (x1max_ < (sq::PackedBits)tileSize1_) {
+    if (x1max_ < (sq::PackedBitSet)tileSize1_) {
         tileSize1_ = x1max_;
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
@@ -109,7 +109,7 @@ void CPUBipartiteGraphBFSearcher<real>::makeSolution() {
 
     int nMaxSolutions = tileSize0_ + tileSize1_;
     
-    sq::PackedBitsPairArray packedXPairList;
+    sq::PackedBitSetPairArray packedXPairList;
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
         if (searcher.Emin_ < Emin_) {
@@ -127,11 +127,11 @@ void CPUBipartiteGraphBFSearcher<real>::makeSolution() {
 
     int nSolutions = std::min(nMaxSolutions, (int)packedXPairList.size());
     for (int idx = 0; idx < nSolutions; ++idx) {
-        const sq::PackedBitsPair &pair =  packedXPairList[idx];
-        sq::Bits x0(N0_), x1(N1_);
-        unpackBits(&x0, pair.bits0, N0_);
-        unpackBits(&x1, pair.bits1, N1_);
-        xPairList_.pushBack(sq::BitsPairArray::ValueType(x0, x1));
+        const sq::PackedBitSetPair &pair =  packedXPairList[idx];
+        sq::BitSet x0(N0_), x1(N1_);
+        unpackBitSet(&x0, pair.bits0, N0_);
+        unpackBitSet(&x1, pair.bits1, N1_);
+        xPairList_.pushBack(sq::BitSetPairArray::ValueType(x0, x1));
     }
     real tmpE = (om_ == sq::optMaximize) ? - Emin_ : Emin_;
     E_.resize(nSolutions);
@@ -141,23 +141,23 @@ void CPUBipartiteGraphBFSearcher<real>::makeSolution() {
 }
 
 template<class real>
-bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::PackedBits *curX1) {
+bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curX0, sq::PackedBitSet *curX1) {
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
     
 #ifdef _OPENMP
 
-    sq::PackedBitsArray batch0begin(nMaxThreads_), batch0end(nMaxThreads_);
-    sq::PackedBitsArray batch1begin(nMaxThreads_), batch1end(nMaxThreads_);
+    sq::PackedBitSetArray batch0begin(nMaxThreads_), batch0end(nMaxThreads_);
+    sq::PackedBitSetArray batch1begin(nMaxThreads_), batch1end(nMaxThreads_);
 
     /* calculate begin/end */
-    sq::PackedBits x0 = x0_;
-    sq::PackedBits x0end = std::min(x0 + tileSize0_, x0max_);
-    sq::PackedBits x1 = x1_;
+    sq::PackedBitSet x0 = x0_;
+    sq::PackedBitSet x0end = std::min(x0 + tileSize0_, x0max_);
+    sq::PackedBitSet x1 = x1_;
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
 
         batch1begin.pushBack(x1);
-        sq::PackedBits x1end = std::min(x1 + tileSize1_, x1max_);
+        sq::PackedBitSet x1end = std::min(x1 + tileSize1_, x1max_);
         batch1end.pushBack(x1end);
         batch0begin.pushBack(x0);
         batch0end.pushBack(x0end);
@@ -174,10 +174,10 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::P
 #pragma omp parallel
     {
         sq::SizeType threadNum = omp_get_thread_num();
-        sq::PackedBits b0b = batch0begin[threadNum];
-        sq::PackedBits b0e = batch0end[threadNum];
-        sq::PackedBits b1b = batch1begin[threadNum];
-        sq::PackedBits b1e = batch1end[threadNum];
+        sq::PackedBitSet b0b = batch0begin[threadNum];
+        sq::PackedBitSet b0e = batch0end[threadNum];
+        sq::PackedBitSet b1b = batch1begin[threadNum];
+        sq::PackedBitSet b1e = batch1end[threadNum];
         if ((b0b < b0e) && (b1b < b1e))
             searchers_[threadNum].searchRange(b0b, b0e, b1b, b1e);
     }
@@ -187,10 +187,10 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBits *curX0, sq::P
     x1_ = batch1end[nMaxThreads_ - 1];
 
 #else
-    sq::PackedBits batch0begin = x0_;
-    sq::PackedBits batch0end = std::min(x0_ + tileSize0_, x0max_);
-    sq::PackedBits batch1begin = x1_;
-    sq::PackedBits batch1end = std::min(x1_ + tileSize1_, x1max_);
+    sq::PackedBitSet batch0begin = x0_;
+    sq::PackedBitSet batch0end = std::min(x0_ + tileSize0_, x0max_);
+    sq::PackedBitSet batch1begin = x1_;
+    sq::PackedBitSet batch1end = std::min(x1_ + tileSize1_, x1max_);
     if ((batch0begin < batch0end) && (batch1begin < batch1end))
         searchers_[0].searchRange(batch0begin, batch0end, batch1begin, batch1end);
 

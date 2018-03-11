@@ -27,8 +27,8 @@ void CPUBipartiteGraphBatchSearch<real>::initSearch() {
 
 
 template<class real> void CPUBipartiteGraphBatchSearch<real>::
-searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
-            sq::PackedBits x1begin, sq::PackedBits x1end) {
+searchRange(sq::PackedBitSet x0begin, sq::PackedBitSet x0end,
+            sq::PackedBitSet x1begin, sq::PackedBitSet x1end) {
     int nBatchSize0 = int(x0end - x0begin);
     int nBatchSize1 = int(x1end - x1begin);
 
@@ -38,8 +38,8 @@ searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
     Matrix bitsSeq0(nBatchSize0, N0);
     Matrix bitsSeq1(nBatchSize1, N1);
 
-    sq::createBitsSequence(bitsSeq0.data, N0, x0begin, x0end);
-    sq::createBitsSequence(bitsSeq1.data, N1, x1begin, x1end);
+    sq::createBitSetSequence(bitsSeq0.data, N0, x0begin, x0end);
+    sq::createBitSetSequence(bitsSeq1.data, N1, x1begin, x1end);
 
     int maxNSolutions = W_.rows + W_.cols;
     Matrix EBatch;
@@ -54,12 +54,12 @@ searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
             else if (Etmp == Emin_) {
                 if (packedXPairList_.size() < maxNSolutions)
                     packedXPairList_.pushBack(
-                            sq::PackedBitsPairArray::ValueType(x0begin + idx0, x1begin + idx1));
+                            sq::PackedBitSetPairArray::ValueType(x0begin + idx0, x1begin + idx1));
             }
             else {
                 Emin_ = Etmp;
                 packedXPairList_.clear();
-                packedXPairList_.pushBack(sq::PackedBitsPairArray::ValueType(x0begin + idx0, x1begin + idx1));
+                packedXPairList_.pushBack(sq::PackedBitSetPairArray::ValueType(x0begin + idx0, x1begin + idx1));
             }
         }
     }

@@ -36,11 +36,11 @@ public:
 
     const Vector &get_E() const;
 
-    const sq::BitsArray &get_x() const;
+    const sq::BitSetArray &get_x() const;
 
-    void set_x(const sq::Bits &x);
+    void set_x(const sq::BitSet &x);
 
-    const sq::BitsArray &get_q() const;
+    const sq::BitSetArray &get_q() const;
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
 
@@ -71,8 +71,8 @@ private:
     sq::Random *random_;
     int nMaxThreads_;
     Vector E_;
-    sq::BitsArray bitsX_;
-    sq::BitsArray bitsQ_;
+    sq::BitSetArray bitsX_;
+    sq::BitSetArray bitsQ_;
     EigenMatrix matQ_;
     EigenRowVector h_;
     EigenMatrix J_;

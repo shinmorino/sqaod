@@ -216,7 +216,7 @@ private:
 };
 
 
-typedef ArrayType<PackedBits> PackedBitsArray;
-typedef ArrayType<PackedBitsPair > PackedBitsPairArray;
+typedef ArrayType<PackedBitSet> PackedBitSetArray;
+typedef ArrayType<PackedBitSetPair> PackedBitSetPairArray;
 
 }

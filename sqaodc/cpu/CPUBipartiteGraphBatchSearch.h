@@ -19,15 +19,15 @@ struct CPUBipartiteGraphBatchSearch {
 
     void initSearch();
     
-    void searchRange(sq::PackedBits x0begin, sq::PackedBits x0end,
-                     sq::PackedBits x1begin, sq::PackedBits x1end);
+    void searchRange(sq::PackedBitSet x0begin, sq::PackedBitSet x0end,
+                     sq::PackedBitSet x1begin, sq::PackedBitSet x1end);
 
     Vector b0_, b1_;
     Matrix W_;
     sq::SizeType tileSize0_;
     sq::SizeType tileSize1_;
     real Emin_;
-    sq::PackedBitsPairArray packedXPairList_;
+    sq::PackedBitSetPairArray packedXPairList_;
 };
 
 

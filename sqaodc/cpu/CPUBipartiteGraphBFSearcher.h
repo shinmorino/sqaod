@@ -30,7 +30,7 @@ public:
 
     sq::Preferences getPreferences() const;
     
-    const sq::BitsPairArray &get_x() const;
+    const sq::BitSetPairArray &get_x() const;
 
     const Vector &get_E() const;
 
@@ -40,7 +40,7 @@ public:
 
     void makeSolution();
 
-    bool searchRange(sq::PackedBits *currentX0, sq::PackedBits *currentX1);
+    bool searchRange(sq::PackedBitSet *currentX0, sq::PackedBitSet *currentX1);
 
     /* void search(); */
     
@@ -49,7 +49,7 @@ private:
     Matrix W_;
     real Emin_;
     Vector E_;
-    sq::BitsPairArray xPairList_;
+    sq::BitSetPairArray xPairList_;
 
     int nMaxThreads_;
     BatchSearcher *searchers_;

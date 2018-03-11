@@ -148,12 +148,12 @@ template<class real>
 PyObject *internal_dg_bf_searcher_get_x(PyObject *objExt) {
     sqaod::SizeType N;
     DenseGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
-    const sq::BitsArray &xList = sol->get_x();
+    const sq::BitSetArray &xList = sol->get_x();
     sol->getProblemSize(&N);
 
     PyObject *list = PyList_New(xList.size());
     for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
-        const sq::Bits &bits = xList[idx];
+        const sq::BitSet &bits = xList[idx];
         NpBitVector x(N, NPY_INT8);
         x.vec = bits;
         PyList_SET_ITEM(list, idx, x.obj);
@@ -268,7 +268,7 @@ PyObject *dg_bf_searcher_search_range(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OKKO", &objExt, &dtype))
         return NULL;
 
-    sq::PackedBits curX;
+    sq::PackedBitSet curX;
     bool res;
     TRY {
         if (isFloat64(dtype))

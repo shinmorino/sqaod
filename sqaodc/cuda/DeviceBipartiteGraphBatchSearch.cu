@@ -64,8 +64,8 @@ setProblem(const HostVector &b0, const HostVector &b1,
 
 template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::
-calculate_E(sq::PackedBits xBegin0, sq::PackedBits xEnd0,
-            sq::PackedBits xBegin1, sq::PackedBits xEnd1) {
+calculate_E(sq::PackedBitSet xBegin0, sq::PackedBitSet xEnd0,
+            sq::PackedBitSet xBegin1, sq::PackedBitSet xEnd1) {
     xBegin0_ = xBegin0;
     xBegin1_ = xBegin1;
     sq::SizeType nBatch0 = xEnd0 - xBegin0;
@@ -111,10 +111,10 @@ void DeviceBipartiteGraphBatchSearch<real>::synchronize() {
 template<class real>
 __global__ static
 void generateBitsSequenceKernel(real *d_data, int N,
-                                sq::SizeType nSeqs, sq::PackedBits xBegin) {
+                                sq::SizeType nSeqs, sq::PackedBitSet xBegin) {
     sq::IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
     if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
-        sq::PackedBits bits = xBegin + seqIdx;
+        sq::PackedBitSet bits = xBegin + seqIdx;
         bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
         d_data[seqIdx * N + threadIdx.x] = bitSet ? real(1) : real(0);
     }
@@ -123,7 +123,7 @@ void generateBitsSequenceKernel(real *d_data, int N,
 
 template<class real> void DeviceBipartiteGraphBatchSearch<real>::
 generateBitsSequence(real *d_data, int N,
-                     sq::PackedBits xBegin, sq::PackedBits xEnd) {
+                     sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
@@ -139,7 +139,7 @@ namespace {
 
 struct SelectInputIterator {
     __device__ __forceinline__
-    SelectInputIterator(sq::PackedBitsPair _xPairOffset, int _tileSize0)
+    SelectInputIterator(sq::PackedBitSetPair _xPairOffset, int _tileSize0)
             : xPairOffset(_xPairOffset), tileSize0(_tileSize0) { }
     __host__
     SelectInputIterator(int _tileSize0) { 
@@ -149,51 +149,51 @@ struct SelectInputIterator {
     }
 
     __device__ __forceinline__
-    sq::PackedBitsPair operator[](int idx) const {
-        sq::PackedBitsPair pair;
+    sq::PackedBitSetPair operator[](int idx) const {
+        sq::PackedBitSetPair pair;
         pair.bits0 = xPairOffset.bits0 + (idx % tileSize0);
         pair.bits1 = xPairOffset.bits1 + (idx / tileSize0);
         return pair;
     }
     __device__ __forceinline__
     SelectInputIterator operator+(int idx) {
-        sq::PackedBitsPair pair;
+        sq::PackedBitSetPair pair;
         pair.bits0 = xPairOffset.bits0 + (idx % tileSize0);
         pair.bits1 = xPairOffset.bits1 + (idx / tileSize0);
         return SelectInputIterator(pair, tileSize0);
     }
-    sq::PackedBitsPair xPairOffset;
+    sq::PackedBitSetPair xPairOffset;
     int tileSize0;
 };
 
 
 struct SelectOutput {
     __device__ __forceinline__
-    SelectOutput(sq::PackedBits _xBegin0, sq::PackedBits _xBegin1, sq::PackedBitsPair &_d_out)
+    SelectOutput(sq::PackedBitSet _xBegin0, sq::PackedBitSet _xBegin1, sq::PackedBitSetPair &_d_out)
             : xBegin0(_xBegin0), xBegin1(_xBegin1), d_out(_d_out) { }
     __device__ __forceinline__
-    void operator=(sq::PackedBitsPair &v) const {
-        sq::PackedBitsPair pair;
+    void operator=(sq::PackedBitSetPair &v) const {
+        sq::PackedBitSetPair pair;
         pair.bits0 = v.bits0 + xBegin0;
         pair.bits1 = v.bits1 + xBegin1;
         d_out = pair;
     }
-    sq::PackedBits xBegin0;
-    sq::PackedBits xBegin1;
-    sq::PackedBitsPair &d_out;
+    sq::PackedBitSet xBegin0;
+    sq::PackedBitSet xBegin1;
+    sq::PackedBitSetPair &d_out;
 };
 
 struct SelectOutputIterator {
-    SelectOutputIterator(sq::PackedBits _xBegin0, sq::PackedBits _xBegin1,
-                         sq::PackedBitsPair *_d_out) : xBegin0(_xBegin0), xBegin1(_xBegin1),
+    SelectOutputIterator(sq::PackedBitSet _xBegin0, sq::PackedBitSet _xBegin1,
+                         sq::PackedBitSetPair *_d_out) : xBegin0(_xBegin0), xBegin1(_xBegin1),
                                                          d_out(_d_out) { }
     __device__ __forceinline__
     SelectOutput operator[](unsigned int idx) const {
         return SelectOutput(xBegin0, xBegin1, d_out[idx]);
     }
-    sq::PackedBits xBegin0;
-    sq::PackedBits xBegin1;
-    sq::PackedBitsPair *d_out;
+    sq::PackedBitSet xBegin0;
+    sq::PackedBitSet xBegin1;
+    sq::PackedBitSetPair *d_out;
 };
 
 
@@ -201,7 +201,7 @@ template<class real> struct SelectOp {
     SelectOp(real _val, const real *_d_vals, int _tileSize0)
             : val(_val), d_vals(_d_vals), tileSize0(_tileSize0) { }
     __device__ __forceinline__
-    bool operator()(const sq::PackedBitsPair &idx) const {
+    bool operator()(const sq::PackedBitSetPair &idx) const {
         return val == d_vals[idx.bits1 * tileSize0 + idx.bits0];
     }
     real val;
@@ -213,9 +213,9 @@ template<class real> struct SelectOp {
 
 namespace std {
 template<>
-struct iterator_traits<SelectInputIterator> : sqaod_cuda::base_iterator_traits<sq::PackedBitsPair> { };
+struct iterator_traits<SelectInputIterator> : sqaod_cuda::base_iterator_traits<sq::PackedBitSetPair> { };
 template<>
-struct iterator_traits<SelectOutputIterator> : sqaod_cuda::base_iterator_traits<sq::PackedBitsPair> { };
+struct iterator_traits<SelectOutputIterator> : sqaod_cuda::base_iterator_traits<sq::PackedBitSetPair> { };
 template<class real>
 struct iterator_traits<SelectOp<real> > : sqaod_cuda::base_iterator_traits<real> { };
 
@@ -223,8 +223,8 @@ struct iterator_traits<SelectOp<real> > : sqaod_cuda::base_iterator_traits<real>
 
 
 template<class real> void DeviceBipartiteGraphBatchSearch<real>::
-select(sq::PackedBitsPair *d_out, sq::SizeType *d_nOut,
-       sq::PackedBits xBegin0, sq::PackedBits xBegin1, 
+select(sq::PackedBitSetPair *d_out, sq::SizeType *d_nOut,
+       sq::PackedBitSet xBegin0, sq::PackedBitSet xBegin1, 
        real val, const real *d_vals, sq::SizeType nIn0, sq::SizeType nIn1) {
     SelectInputIterator in(tileSize0_);
 
@@ -252,10 +252,10 @@ template class sqaod_cuda::DeviceBipartiteGraphBatchSearch<float>;
 
 
 // template<class real>
-// void BGFuncs<real>::batchSearch(real *E, PackedBitsPairArray *xPairs,
+// void BGFuncs<real>::batchSearch(real *E, PackedBitSetPairArray *xPairs,
 //                                 const EigenDeviceMatrix &b0, const EigenDeviceMatrix &b1, const EigenDeviceMatrix &W,
-//                                 PackedBits xBegin0, PackedBits xEnd0,
-//                                 PackedBits xBegin1, PackedBits xEnd1) {
+//                                 PackedBitSet xBegin0, PackedBitSet xEnd0,
+//                                 PackedBitSet xBegin1, PackedBitSet xEnd1) {
 //     int nBatch0 = int(xEnd0 - xBegin0);
 //     int nBatch1 = int(xEnd1 - xBegin1);
 
@@ -280,12 +280,12 @@ template class sqaod_cuda::DeviceBipartiteGraphBatchSearch<float>;
 //                 continue;
 //             }
 //             else if (Etmp == Emin) {
-//                 xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+//                 xPairs->push_back(PackedBitSetPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
 //             }
 //             else {
 //                 Emin = Etmp;
 //                 xPairs->clear();
-//                 xPairs->push_back(PackedBitsPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
+//                 xPairs->push_back(PackedBitSetPairArray::value_type(xBegin0 + idx0, xBegin1 + idx1));
 //             }
 //         }
 //     }

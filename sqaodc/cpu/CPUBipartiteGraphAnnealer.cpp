@@ -97,14 +97,14 @@ sq::Preferences CPUBipartiteGraphAnnealer<real>::getPreferences() const {
 }
 
 template<class real>
-const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
+const sq::BitSetPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsPairX_;
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::set_x(const sq::Bits &x0, const sq::Bits &x1) {
+void CPUBipartiteGraphAnnealer<real>::set_x(const sq::BitSet &x0, const sq::BitSet &x1) {
     throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
@@ -140,7 +140,7 @@ void CPUBipartiteGraphAnnealer<real>::get_hJc(Vector *h0, Vector *h1,
 
 
 template<class real>
-const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
+const sq::BitSetPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsPairQ_;
@@ -314,13 +314,13 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::syncBits() {
     bitsPairX_.clear();
     bitsPairQ_.clear();
-    sq::Bits x0, x1;
+    sq::BitSet x0, x1;
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        sq::Bits q0 = sq::extractRow<char>(matQ0_, idx);
-        sq::Bits q1 = sq::extractRow<char>(matQ1_, idx);
-        bitsPairQ_.pushBack(sq::BitsPairArray::ValueType(q0, q1));
-        sq::Bits x0 = x_from_q(q0), x1 = x_from_q(q1);
-        bitsPairX_.pushBack(sq::BitsPairArray::ValueType(x0, x1));
+        sq::BitSet q0 = sq::extractRow<char>(matQ0_, idx);
+        sq::BitSet q1 = sq::extractRow<char>(matQ1_, idx);
+        bitsPairQ_.pushBack(sq::BitSetPairArray::ValueType(q0, q1));
+        sq::BitSet x0 = x_from_q(q0), x1 = x_from_q(q1);
+        bitsPairX_.pushBack(sq::BitSetPairArray::ValueType(x0, x1));
     }
 }
 

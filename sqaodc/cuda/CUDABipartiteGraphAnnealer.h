@@ -18,8 +18,8 @@ template<class real>
 class CUDABipartiteGraphAnnealer : public sq::BipartiteGraphAnnealer<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
-    typedef sq::BitsPairArray BitsPairArray;
-    typedef sq::Bits Bits;
+    typedef sq::BitSetPairArray BitSetPairArray;
+    typedef sq::BitSet BitSet;
     typedef sq::SizeType SizeType;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
@@ -54,15 +54,15 @@ public:
 
     const HostVector &get_E() const;
 
-    const sq::BitsPairArray &get_x() const;
+    const sq::BitSetPairArray &get_x() const;
 
-    void set_x(const Bits &x0, const Bits &x1);
+    void set_x(const BitSet &x0, const BitSet &x1);
 
     /* Ising machine / spins */
 
     void get_hJc(HostVector *h0, HostVector *h1, HostMatrix *J, real *c) const;
 
-    const BitsPairArray &get_q() const;
+    const BitSetPairArray &get_q() const;
 
     void randomizeSpin();
 
@@ -107,8 +107,8 @@ private:
     
     DeviceVector h_E_; /* host mem */
     HostVector E_;
-    BitsPairArray bitsPairX_;
-    BitsPairArray bitsPairQ_;
+    BitSetPairArray bitsPairX_;
+    BitSetPairArray bitsPairQ_;
     
     DeviceStream *devStream_;
     DeviceFormulas devFormulas_;

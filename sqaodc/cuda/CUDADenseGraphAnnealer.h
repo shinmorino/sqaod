@@ -17,8 +17,8 @@ template<class real>
 class CUDADenseGraphAnnealer : public sq::DenseGraphAnnealer<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
-    typedef sq::Bits Bits;
-    typedef sq::BitsArray BitsArray;
+    typedef sq::BitSet BitSet;
+    typedef sq::BitSetArray BitSetArray;
     typedef sq::SizeType SizeType;
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
@@ -52,11 +52,11 @@ public:
     
     const HostVector &get_E() const;
 
-    const BitsArray &get_x() const;
+    const BitSetArray &get_x() const;
 
-    void set_x(const Bits &x);
+    void set_x(const BitSet &x);
 
-    const sq::BitsArray &get_q() const;
+    const sq::BitSetArray &get_q() const;
 
     void get_hJc(HostVector *h, HostMatrix *J, real *c) const;
 
@@ -101,8 +101,8 @@ private:
     HostVector E_;
     uint2 *d_reachCount_;
 
-    sq::BitsArray xlist_;
-    sq::BitsArray qlist_;
+    sq::BitSetArray xlist_;
+    sq::BitSetArray qlist_;
 
     DeviceSegmentedSumType<real> *dotJq_;
 

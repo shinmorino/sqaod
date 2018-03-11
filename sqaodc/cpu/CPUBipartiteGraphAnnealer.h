@@ -38,15 +38,15 @@ public:
 
     const Vector &get_E() const;
 
-    const sq::BitsPairArray &get_x() const;
+    const sq::BitSetPairArray &get_x() const;
 
-    void set_x(const sq::Bits &x0, const sq::Bits &x1);
+    void set_x(const sq::BitSet &x0, const sq::BitSet &x1);
 
     /* Ising machine / spins */
 
     void get_hJc(Vector *h0, Vector *h1, Matrix *J, real *c) const;
 
-    const sq::BitsPairArray &get_q() const;
+    const sq::BitSetPairArray &get_q() const;
 
     void randomizeSpin();
 
@@ -81,8 +81,8 @@ private:
     real c_;
     Vector E_;
     EigenMatrix matQ0_, matQ1_;
-    sq::BitsPairArray bitsPairX_;
-    sq::BitsPairArray bitsPairQ_;
+    sq::BitSetPairArray bitsPairX_;
+    sq::BitSetPairArray bitsPairQ_;
 
     typedef CPUBipartiteGraphAnnealer<real> This;
     typedef sq::BipartiteGraphAnnealer<real> Base;

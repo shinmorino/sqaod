@@ -29,7 +29,7 @@ public:
     
     void setProblem(const HostMatrix &W, sq::SizeType tileSize);
     
-    void calculate_E(sq::PackedBits xBegin, sq::PackedBits xEnd);
+    void calculate_E(sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 
     void partition_xMins(bool append);
     
@@ -38,7 +38,7 @@ public:
         return *h_Emin_.d_data;
     }
 
-    const DevicePackedBitsArray &get_xMins() const {
+    const DevicePackedBitSetArray &get_xMins() const {
         return d_xMins_;
     }
     
@@ -48,9 +48,9 @@ public:
     /* Device kernels, declared as public for tests */
 
     void generateBitsSequence(real *d_data, int N,
-                              sq::PackedBits xBegin, sq::PackedBits xEnd);
+                              sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 
-    void select(sq::PackedBits *d_out, sq::SizeType *d_nOut, sq::PackedBits xBegin, 
+    void select(sq::PackedBitSet *d_out, sq::SizeType *d_nOut, sq::PackedBitSet xBegin, 
                 real val, const real *d_vals, sq::SizeType nIn);
 
 private:
@@ -59,14 +59,14 @@ private:
     sq::SizeType tileSize_;
 
     /* starting x of batch calculation */
-    sq::PackedBits xBegin_;
+    sq::PackedBitSet xBegin_;
 
     /* calculate_E */
     DeviceMatrix d_bitsMat_;
     DeviceVector d_Ebatch_;
     DeviceScalar h_Emin_; /* host mem */
     /* partition */
-    DevicePackedBitsArray d_xMins_;
+    DevicePackedBitSetArray d_xMins_;
     DeviceSize h_nXMins_;
     /* lower level objects. */
     Formulas devFormulas_;

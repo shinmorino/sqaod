@@ -19,9 +19,9 @@ class CUDABipartiteGraphBFSearcher : public sq::BipartiteGraphBFSearcher<real> {
     typedef DeviceBipartiteGraphBatchSearch<real> DeviceBatchSearch;
     typedef DeviceMathType<real> DeviceMath;
 
-    typedef sq::BitsPairArray BitsPairArray;
-    typedef sq::PackedBits PackedBits;
-    typedef sq::PackedBitsPairArray PackedBitsPairArray;
+    typedef sq::BitSetPairArray BitSetPairArray;
+    typedef sq::PackedBitSet PackedBitSet;
+    typedef sq::PackedBitSetPairArray PackedBitSetPairArray;
     typedef sq::SizeType SizeType;
     typedef sq::IdxType IdxType;
     
@@ -44,7 +44,7 @@ public:
 
     sq::Preferences getPreferences() const;
 
-    const BitsPairArray &get_x() const;
+    const BitSetPairArray &get_x() const;
 
     const HostVector &get_E() const;
 
@@ -54,7 +54,7 @@ public:
 
     void makeSolution();
 
-    bool searchRange(PackedBits *curX0, PackedBits *curX1);
+    bool searchRange(PackedBitSet *curX0, PackedBitSet *curX1);
 
     /* void search(); */
     
@@ -65,10 +65,10 @@ private:
     HostVector b0_, b1_;
 
     HostVector E_;
-    BitsPairArray minXPairs_;
+    BitSetPairArray minXPairs_;
     real Emin_;
-    PackedBitsPairArray xPackedPairs_;
-    DevicePackedBitsPairArray h_packedMinXPairs_;
+    PackedBitSetPairArray xPackedPairs_;
+    DevicePackedBitSetPairArray h_packedMinXPairs_;
     
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;

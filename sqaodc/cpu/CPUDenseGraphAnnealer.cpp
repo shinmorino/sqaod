@@ -101,14 +101,14 @@ const sq::VectorType<real> &CPUDenseGraphAnnealer<real>::get_E() const {
 }
 
 template<class real>
-const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_x() const {
+const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsX_;
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::set_x(const sq::Bits &x) {
+void CPUDenseGraphAnnealer<real>::set_x(const sq::BitSet &x) {
     throwErrorIfNotPrepared();
     throwErrorIf(x.size != N_,
                  "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
@@ -127,7 +127,7 @@ void CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
 }
 
 template<class real>
-const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_q() const {
+const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_q() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return bitsQ_;
@@ -179,7 +179,7 @@ void CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        sq::Bits q = sq::extractRow<char>(matQ_, idx);
+        sq::BitSet q = sq::extractRow<char>(matQ_, idx);
         bitsQ_.pushBack(q);
         bitsX_.pushBack(x_from_q(q));
     }

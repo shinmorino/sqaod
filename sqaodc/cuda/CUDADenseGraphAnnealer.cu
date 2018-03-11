@@ -138,7 +138,7 @@ const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {
 }
 
 template<class real>
-const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
+const sq::BitSetArray &CUDADenseGraphAnnealer<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return xlist_;
@@ -146,7 +146,7 @@ const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_x() const {
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::set_x(const Bits &x) {
+void CUDADenseGraphAnnealer<real>::set_x(const BitSet &x) {
     throwErrorIfNotPrepared();
     throwErrorIf(x.size != N_,
                  "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
@@ -169,7 +169,7 @@ void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c
 }
 
 template<class real>
-const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_q() const {
+const sq::BitSetArray &CUDADenseGraphAnnealer<real>::get_q() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution();
     return qlist_;
@@ -247,9 +247,9 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
     devCopy_(&h_q_, d_matq_);
     devStream_->synchronize();
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        Bits q(h_q_.row(idx), N_);
+        BitSet q(h_q_.row(idx), N_);
         qlist_.pushBack(q);
-        Bits x(qlist_.size());
+        BitSet x(qlist_.size());
         x = x_from_q(q);
         xlist_.pushBack(x);
     }

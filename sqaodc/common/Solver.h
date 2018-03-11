@@ -115,7 +115,7 @@ struct DenseGraphSolver {
     virtual void setProblem(const MatrixType<real> &W,
                             OptimizeMethod om = sqaod::optMinimize) = 0;
 
-    virtual const BitsArray &get_x() const = 0;
+    virtual const BitSetArray &get_x() const = 0;
 
 protected:
     DenseGraphSolver() : N_(0) { }
@@ -134,7 +134,7 @@ struct BipartiteGraphSolver {
     virtual void setProblem(const VectorType<real> &b0, const VectorType<real> &b1,
                             const MatrixType<real> &W, OptimizeMethod om = optMinimize) = 0;
 
-    virtual const BitsPairArray &get_x() const = 0;
+    virtual const BitSetPairArray &get_x() const = 0;
 
 protected:
     BipartiteGraphSolver() : N0_(0), N1_(0) { }
@@ -153,15 +153,15 @@ struct DenseGraphBFSearcher
 
     virtual void setPreference(const Preference &pref);
 
-    virtual bool searchRange(sqaod::PackedBits *curXEnd) = 0;
+    virtual bool searchRange(sqaod::PackedBitSet *curXEnd) = 0;
 
     virtual void search();
 
 protected:
     DenseGraphBFSearcher() :xMax_(0), tileSize_(0) { }
     
-    PackedBits x_;
-    PackedBits xMax_;
+    PackedBitSet x_;
+    PackedBitSet xMax_;
     SizeType tileSize_;
 };
 
@@ -173,9 +173,9 @@ struct DenseGraphAnnealer
 
     virtual void get_hJc(VectorType<real> *h, MatrixType<real> *J, real *c) const = 0;
 
-    virtual void set_x(const Bits &x) = 0;
+    virtual void set_x(const BitSet &x) = 0;
 
-    virtual const BitsArray &get_q() const = 0;
+    virtual const BitSetArray &get_q() const = 0;
 
 protected:
     DenseGraphAnnealer() { }
@@ -191,7 +191,7 @@ struct BipartiteGraphBFSearcher
 
     virtual void setPreference(const Preference &pref);
 
-    virtual bool searchRange(sqaod::PackedBits *curX0End, sqaod::PackedBits *curX1End) = 0;
+    virtual bool searchRange(sqaod::PackedBitSet *curX0End, sqaod::PackedBitSet *curX1End) = 0;
 
     virtual void search();
 
@@ -199,8 +199,8 @@ protected:
     BipartiteGraphBFSearcher()
             : x0max_(0), x1max_(0), tileSize0_(0), tileSize1_(0) { }
 
-    PackedBits x0_, x1_;
-    PackedBits x0max_, x1max_;
+    PackedBitSet x0_, x1_;
+    PackedBitSet x0max_, x1max_;
     SizeType tileSize0_, tileSize1_;
 };
 
@@ -213,9 +213,9 @@ struct BipartiteGraphAnnealer
     virtual void get_hJc(VectorType<real> *h0, VectorType<real> *h1,
                          MatrixType<real> *J, real *c) const = 0;
 
-    virtual void set_x(const Bits &x0, const Bits &x1) = 0;
+    virtual void set_x(const BitSet &x0, const BitSet &x1) = 0;
 
-    virtual const BitsPairArray &get_q() const = 0;
+    virtual const BitSetPairArray &get_q() const = 0;
 
 protected:
     BipartiteGraphAnnealer() { }

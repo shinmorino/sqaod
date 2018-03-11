@@ -18,12 +18,12 @@ struct CPUDenseGraphBatchSearch {
 
     void initSearch();
     
-    void searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd);
+    void searchRange(sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 
     Matrix W_;
     sq::SizeType tileSize_;
     real Emin_;
-    sq::PackedBitsArray packedXList_;
+    sq::PackedBitSetArray packedXList_;
 };
 
 

@@ -49,7 +49,7 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
-            sq::PackedBits bits = 1ull << idx;
+            sq::PackedBitSet bits = 1ull << idx;
             search.generateBitsSequence(d_data, N, bits, bits + 1);
             devCopy.copy(data, d_data, N);
             devStream->synchronize();
@@ -73,7 +73,7 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
-            sq::PackedBits bits = 1ull << idx;
+            sq::PackedBitSet bits = 1ull << idx;
             search.generateBitsSequence(d_data, N, bits, bits + 1);
             devCopy.copy(data, d_data, N);
             devStream->synchronize();
@@ -97,15 +97,15 @@ void CUDADenseGraphBFSolverTest::tests() {
         real *d_data = (real*)devAlloc->allocate(sizeof(real) * N * tileSize);
         real *data = new real[N * tileSize];
 
-        const sq::PackedBits xBegin = 1ull << 33;
-        const sq::PackedBits xEnd = xBegin + tileSize;
+        const sq::PackedBitSet xBegin = 1ull << 33;
+        const sq::PackedBitSet xEnd = xBegin + tileSize;
         search.generateBitsSequence(d_data, N, xBegin, xEnd);
         devCopy(data, d_data, N * tileSize);
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBits seq = 0; seq < tileSize; ++seq) {
-            sq::PackedBits bits = xBegin + seq;
+        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+            sq::PackedBitSet bits = xBegin + seq;
             real *valseq = &data[seq * N];
             for (int idx = 0; idx < (int)N; ++idx) {
                 bool bitSet = (bits & (1ull << (N - 1 - idx))) != 0;
@@ -128,15 +128,15 @@ void CUDADenseGraphBFSolverTest::tests() {
         real *d_data = (real*)devAlloc->allocate(sizeof(real) * N * tileSize);
         real *data = new real[N * tileSize];
 
-        const sq::PackedBits xBegin = 1ull << 20;
-        const sq::PackedBits xEnd = xBegin + tileSize;
+        const sq::PackedBitSet xBegin = 1ull << 20;
+        const sq::PackedBitSet xEnd = xBegin + tileSize;
         search.generateBitsSequence(d_data, N, xBegin, xEnd);
         devCopy(data, d_data, N * tileSize);
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBits seq = 0; seq < tileSize; ++seq) {
-            sq::PackedBits bits = xBegin + seq;
+        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+            sq::PackedBitSet bits = xBegin + seq;
             real *valseq = &data[seq * N];
             for (int idx = 0; idx < (int)N; ++idx) {
                 bool bitSet = (bits & (1ull << (N - 1 - idx))) != 0;
@@ -157,7 +157,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         sqaod::SizeType N = 2048;
         real vToPart = 0.;
 
-        sqaod::PackedBits *d_bitsListPart;
+        sqaod::PackedBitSet *d_bitsListPart;
         sqaod::SizeType *d_nPart;
         real *d_values;
 
@@ -185,7 +185,7 @@ void CUDADenseGraphBFSolverTest::tests() {
     //     int tileSize = 4096;
     //     MatrixType W = testMatSymmetric<real>(N);
     //     real E = std::numeric_limits<real>::max();
-    //     sq::PackedBitsArray xList;
+    //     sq::PackedBitSetArray xList;
     //     sq::DGFuncs<real>::batchSearch(&E, &xList, W, 0, tileSize);
 
     //     DeviceDenseGraphBatchSearch<real> batchSearch;
@@ -202,7 +202,7 @@ void CUDADenseGraphBFSolverTest::tests() {
 
     //     batchSearch.partition_xMins(true);
     //     batchSearch.synchronize(); // FIXME: add hook ??
-    //     sq::PackedBitsArray xList2;
+    //     sq::PackedBitSetArray xList2;
     //     xList2.insert(xList.begin(), xList.end());
     //     xList2.insert(xList.begin(), xList.end());
     //     TEST_ASSERT(batchSearch.get_xMins() == xList2)
@@ -217,14 +217,14 @@ void CUDADenseGraphBFSolverTest::tests() {
         cpuSolver.setProblem(W);
         cpuSolver.search();
         const sq::VectorType<real> &cpuE = cpuSolver.get_E();
-        const sq::BitsArray &cpuX = cpuSolver.get_x();
+        const sq::BitSetArray &cpuX = cpuSolver.get_x();
 
         CUDADenseGraphBFSearcher<real> cudaSolver;
         cudaSolver.assignDevice(device_);
         cudaSolver.setProblem(W);
         cudaSolver.search();
         const sq::VectorType<real> &cudaE = cudaSolver.get_E();
-        const sq::BitsArray &cudaX = cudaSolver.get_x();
+        const sq::BitSetArray &cudaX = cudaSolver.get_x();
         TEST_ASSERT(cpuE == cudaE);
         TEST_ASSERT(cpuX == cudaX);
 

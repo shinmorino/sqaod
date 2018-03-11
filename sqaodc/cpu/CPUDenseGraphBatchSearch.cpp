@@ -23,13 +23,13 @@ void CPUDenseGraphBatchSearch<real>::initSearch() {
 
 
 template<class real>
-void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBits xBegin, sq::PackedBits xEnd) {
+void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {
     int nBatchSize = int(xEnd - xBegin);
     int N = W_.rows;
 
     Matrix bitsSeq(nBatchSize, N);
     Vector Ebatch;
-    sq::createBitsSequence(bitsSeq.data, N, xBegin, xEnd);
+    sq::createBitSetSequence(bitsSeq.data, N, xBegin, xEnd);
     DGFuncs<real>::calculate_E(&Ebatch, W_, bitsSeq);
 
     for (int idx = 0; idx < nBatchSize; ++idx) {

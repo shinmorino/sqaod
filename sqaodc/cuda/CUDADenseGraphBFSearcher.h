@@ -39,7 +39,7 @@ public:
 
     sq::Preferences getPreferences() const;
     
-    const sq::BitsArray &get_x() const;
+    const sq::BitSetArray &get_x() const;
 
     const Vector &get_E() const;
 
@@ -51,7 +51,7 @@ public:
     
     void makeSolution();
 
-    bool searchRange(sq::PackedBits *curX);
+    bool searchRange(sq::PackedBitSet *curX);
 
     /* void search(); */
     
@@ -60,9 +60,9 @@ private:
     Matrix W_;
 
     Vector E_;
-    sq::BitsArray xList_;
+    sq::BitSetArray xList_;
     real Emin_;
-    DevicePackedBitsArray h_packedXmin_;
+    DevicePackedBitSetArray h_packedXmin_;
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
 

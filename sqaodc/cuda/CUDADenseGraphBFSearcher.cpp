@@ -64,7 +64,7 @@ sq::Preferences CUDADenseGraphBFSearcher<real>::getPreferences() const {
 }
 
 template<class real>
-const sq::BitsArray &CUDADenseGraphBFSearcher<real>::get_x() const {
+const sq::BitSetArray &CUDADenseGraphBFSearcher<real>::get_x() const {
     if (!isSolutionAvailable())
         const_cast<This*>(this)->makeSolution(); /* synchronized there */
     return xList_;
@@ -119,15 +119,15 @@ void CUDADenseGraphBFSearcher<real>::makeSolution() {
     throwErrorIfNotPrepared();
 
     batchSearch_.synchronize();
-    const DevicePackedBitsArray &dPackedXmin = batchSearch_.get_xMins();
+    const DevicePackedBitSetArray &dPackedXmin = batchSearch_.get_xMins();
     sq::SizeType nXMin = std::min(tileSize_, dPackedXmin.size);
     devCopy_(&h_packedXmin_, dPackedXmin);
     devCopy_.synchronize();
     
     xList_.clear();
     for (sq::IdxType idx = 0; idx < (sq::IdxType)nXMin; ++idx) {
-        sq::Bits bits;
-        unpackBits(&bits, h_packedXmin_[idx], N_);
+        sq::BitSet bits;
+        unpackBitSet(&bits, h_packedXmin_[idx], N_);
         xList_.pushBack(bits); // FIXME: apply move
     }
     setState(solSolutionAvailable);
@@ -135,14 +135,14 @@ void CUDADenseGraphBFSearcher<real>::makeSolution() {
 }
 
 template<class real>
-bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBits *curXEnd) {
+bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
 
     /* FIXME: Use multiple searchers, multi GPU */
 
-    sq::PackedBits xBegin = x_;
-    sq::PackedBits xEnd = std::min(x_ + tileSize_, xMax_);
+    sq::PackedBitSet xBegin = x_;
+    sq::PackedBitSet xEnd = std::min(x_ + tileSize_, xMax_);
     if (xBegin < xEnd) {
         batchSearch_.calculate_E(xBegin, xEnd);
         batchSearch_.synchronize();

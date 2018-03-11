@@ -381,10 +381,10 @@ sqaod::VectorType<newV> cast(const VectorType<V> &vec) {
 
 
 
-typedef VectorType<char> Bits;
+typedef VectorType<char> BitSet;
 typedef MatrixType<char> BitMatrix;
-typedef ArrayType<Bits> BitsArray;
-typedef ArrayType<std::pair<Bits, Bits> > BitsPairArray;
+typedef ArrayType<BitSet> BitSetArray;
+typedef ArrayType<std::pair<BitSet, BitSet> > BitSetPairArray;
 
 //typedef VectorType<char> Spins;
 //typedef std::vector<Bits> SpinsArray;

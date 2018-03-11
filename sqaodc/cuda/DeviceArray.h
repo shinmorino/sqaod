@@ -42,8 +42,8 @@ private:
     }
 };
 
-typedef DeviceArrayType<sq::PackedBits> DevicePackedBitsArray;
-typedef DeviceArrayType<sq::PackedBitsPair> DevicePackedBitsPairArray;
-typedef DeviceArrayType<char> DeviceBitArray;
+typedef DeviceArrayType<sq::PackedBitSet> DevicePackedBitSetArray;
+typedef DeviceArrayType<sq::PackedBitSetPair> DevicePackedBitSetPairArray;
+typedef DeviceArrayType<char> DeviceBitSet;
 
 }
