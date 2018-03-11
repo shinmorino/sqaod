@@ -39,7 +39,7 @@ class DenseGraphAnnealer :
                 MethodType(DenseGraphAnnealer.anneal_one_step_naive, self)
         else :
             self.anneal_one_step = \
-                MethodType(DenseGraphAnnealer.anneal_one_step_colored, self)
+                MethodType(DenseGraphAnnealer.anneal_one_step_coloring, self)
 
     def _get_algorithm(self) :
         if self.anneal_one_step is self.anneal_one_step_naive :
@@ -143,11 +143,10 @@ class DenseGraphAnnealer :
             if threshold > np.random.rand():
                 q[y][x] = - qyx
             
-    def anneal_one_step_colored(self, G, kT) :
-        offset = np.random.randint(2)
+    def anneal_one_step_coloring(self, G, kT) :
         for loop in range(0, self._N) :
-            self.anneal_colored_plane(G, kT, offset)
-            offset ^= 1
+            self.anneal_colored_plane(G, kT, 0)
+            self.anneal_colored_plane(G, kT, 1)
 
                 
 def dense_graph_annealer(W = None, optimize = sqaod.minimize, **prefs) :
