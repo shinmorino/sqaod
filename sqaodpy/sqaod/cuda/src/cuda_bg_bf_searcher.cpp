@@ -156,11 +156,11 @@ PyObject *internal_bg_bf_searcher_get_x(PyObject *objExt) {
     BipartiteGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
     const sq::BitsPairArray &xList = sol->get_x();
 
-    sq::SizeType N0, N1;
+    sqaod::SizeType N0, N1;
     sol->getProblemSize(&N0, &N1);
     
     PyObject *list = PyList_New(xList.size());
-    for (size_t idx = 0; idx < xList.size(); ++idx) {
+    for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
         const sq::BitsPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
