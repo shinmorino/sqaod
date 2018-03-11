@@ -45,4 +45,4 @@ all: $(TARGETS)
 .PHONY:
 
 clean:
-	rm -f $(TARGETS) $(cpu_formulas_so_OBJS) $(cpu_dg_annealer_so_OBJS) $(cpu_bg_annealer_so_OBJS) $(cpu_dg_bf_searcher_so_OBJS)
+	rm -f $(TARGETS) $(cpu_formulas_so_OBJS) $(cpu_dg_annealer_so_OBJS) $(cpu_bg_annealer_so_OBJS) $(cpu_dg_bf_searcher_so_OBJS) $(cpu_bg_bf_searcher_so_OBJS)

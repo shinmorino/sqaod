@@ -49,4 +49,4 @@ all: $(TARGETS)
 .PHONY:
 
 clean:
-	rm -f $(TARGETS) $(cuda_formulas_so_OBJS) $(cuda_dg_annealer_so_OBJS) $(cuda_bg_annealer_so_OBJS) $(cuda_dg_bf_searcher_so_OBJS) $(cuda_device_so_OBJS) $(TARGETS)
+	rm -f $(TARGETS) $(cuda_formulas_so_OBJS) $(cuda_dg_annealer_so_OBJS) $(cuda_bg_annealer_so_OBJS) $(cuda_dg_bf_searcher_so_OBJS) $(cuda_bg_bf_searcher_so_OBJS) $(cuda_device_so_OBJS)
