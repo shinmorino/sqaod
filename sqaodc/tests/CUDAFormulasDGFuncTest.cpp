@@ -88,7 +88,7 @@ void CUDAFormulasDGFuncTest::tests() {
         HostMatrix J;
         real c;
         HostMatrix W = testMatSymmetric<real>(N);
-        DGF::calculate_hJc(&h, &J, &c, W);
+        DGF::calculateHamiltonian(&h, &J, &c, W);
 
         DeviceMatrix dW;
         devCopy(&dW, W);
@@ -96,7 +96,7 @@ void CUDAFormulasDGFuncTest::tests() {
         DeviceMatrix dJ;
         DeviceVector dh;
         DeviceScalar dc;
-        devFuncs.calculate_hJc(&dh, &dJ, &dc, dW);
+        devFuncs.calculateHamiltonian(&dh, &dJ, &dc, dW);
 
         TEST_ASSERT(dh == h);
         TEST_ASSERT(dJ == J);
@@ -111,7 +111,7 @@ void CUDAFormulasDGFuncTest::tests() {
         HostMatrix J;
         real c;
         q = randomizeBits<real>(N);
-        DGF::calculate_hJc(&h, &J, &c, W);
+        DGF::calculateHamiltonian(&h, &J, &c, W);
         real E;
         DGF::calculate_E(&E, h, J, c, q);
 
@@ -121,7 +121,7 @@ void CUDAFormulasDGFuncTest::tests() {
         DeviceScalar dc;
         devCopy(&dW, W);
         devCopy(&dq, q);
-        devFuncs.calculate_hJc(&dh, &dJ, &dc, dW);
+        devFuncs.calculateHamiltonian(&dh, &dJ, &dc, dW);
 
         DeviceScalar dE;
         devFuncs.calculate_E(&dE, dh, dJ, dc, dq);
@@ -134,7 +134,7 @@ void CUDAFormulasDGFuncTest::tests() {
         HostMatrix J;
         real c;
         HostMatrix q = randomizeBits<real>(sqaod::Dim(m, N));
-        DGF::calculate_hJc(&h, &J, &c, W);
+        DGF::calculateHamiltonian(&h, &J, &c, W);
         HostVector E;
         DGF::calculate_E(&E, h, J, c, q);
 
@@ -144,7 +144,7 @@ void CUDAFormulasDGFuncTest::tests() {
         DeviceScalar dc;
         devCopy(&dW, W);
         devCopy(&dq, q);
-        devFuncs.calculate_hJc(&dh, &dJ, &dc, dW);
+        devFuncs.calculateHamiltonian(&dh, &dJ, &dc, dW);
 
         DeviceVector dE;
         devFuncs.calculate_E(&dE, dh, dJ, dc, dq);

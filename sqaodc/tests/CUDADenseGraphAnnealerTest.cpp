@@ -130,7 +130,7 @@ void CUDADenseGraphAnnealerTest::test() {
         HostVector Jq(m);
         HostVector h;
         real c;
-        sqcpu::DGFuncs<real>::calculate_hJc(&h, &J, &c, W);
+        sqcpu::DGFuncs<real>::calculateHamiltonian(&h, &J, &c, W);
         int flippos[m];
         for (int idx = 0; idx < m; ++idx)
             flippos[idx] = (idx * 3) % m;
@@ -164,7 +164,7 @@ void CUDADenseGraphAnnealerTest::test() {
         devAlloc->allocate(&d_Jq, m);
 
         devCopy(&d_W, W);
-        dgFuncs.calculate_hJc(&d_h, &d_J, &d_c, d_W);
+        dgFuncs.calculateHamiltonian(&d_h, &d_J, &d_c, d_W);
         devStream->synchronize();
 
         devCopy(&d_q, q);

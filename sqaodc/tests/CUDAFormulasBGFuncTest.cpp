@@ -106,7 +106,7 @@ void CUDAFormulasBGFuncTest::tests() {
         HostVector h0, h1;
         HostMatrix J;
         real c;
-        BGF::calculate_hJc(&h0, &h1, &J, &c, b0, b1, W);
+        BGF::calculateHamiltonian(&h0, &h1, &J, &c, b0, b1, W);
 
         DeviceMatrix dW;
         DeviceVector db0, db1;
@@ -117,7 +117,7 @@ void CUDAFormulasBGFuncTest::tests() {
         DeviceMatrix dJ;
         DeviceVector dh0, dh1;
         DeviceScalar dc;
-        devFuncs.calculate_hJc(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
+        devFuncs.calculateHamiltonian(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
         
         TEST_ASSERT(dh0 == h0);
         TEST_ASSERT(dh1 == h1);
@@ -134,7 +134,7 @@ void CUDAFormulasBGFuncTest::tests() {
         HostVector h0, h1;
         HostMatrix J;
         real c, E;
-        BGF::calculate_hJc(&h0, &h1, &J, &c, b0, b1, W);
+        BGF::calculateHamiltonian(&h0, &h1, &J, &c, b0, b1, W);
 
         HostVector q0 = randomizeBits<real>(N0);
         HostVector q1 = randomizeBits<real>(N1);
@@ -149,7 +149,7 @@ void CUDAFormulasBGFuncTest::tests() {
         DeviceMatrix dJ;
         DeviceVector dh0, dh1;
         DeviceScalar dc;
-        devFuncs.calculate_hJc(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
+        devFuncs.calculateHamiltonian(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
 
         DeviceVector dq0, dq1;
         DeviceScalar dE;
@@ -169,7 +169,7 @@ void CUDAFormulasBGFuncTest::tests() {
         HostMatrix J;
         real c;
         HostVector E;
-        BGF::calculate_hJc(&h0, &h1, &J, &c, b0, b1, W);
+        BGF::calculateHamiltonian(&h0, &h1, &J, &c, b0, b1, W);
 
         HostMatrix q0 = randomizeBits<real>(sq::Dim(m, N0));
         HostMatrix q1 = randomizeBits<real>(sq::Dim(m, N1));
@@ -184,7 +184,7 @@ void CUDAFormulasBGFuncTest::tests() {
         DeviceMatrix dJ;
         DeviceVector dh0, dh1;
         DeviceScalar dc;
-        devFuncs.calculate_hJc(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
+        devFuncs.calculateHamiltonian(&dh0, &dh1, &dJ, &dc, db0, db1, dW);
 
         DeviceMatrix dq0, dq1;
         DeviceVector dE;

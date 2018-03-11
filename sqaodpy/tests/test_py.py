@@ -14,7 +14,7 @@ class TestTraits(unittest.TestCase):
     def compare_energy(self, W, xlist) :
         Equbo = formulas.dense_graph_batch_calculate_E(W, xlist)
         qlist = common.bit_to_spin(xlist)
-        h, J, c = formulas.dense_graph_calculate_hJc(W)
+        h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         EhJc = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, qlist)
 
         if self.verbose :
@@ -65,7 +65,7 @@ class TestTraits(unittest.TestCase):
         W = common.generate_random_symmetric_W((N), dtype=np.float64)
         xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
         qlist = common.bit_to_spin(xlist)
-        h, J, c = formulas.dense_graph_calculate_hJc(W)
+        h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         
         E = []
         for i in range(0, 1 << N) :
