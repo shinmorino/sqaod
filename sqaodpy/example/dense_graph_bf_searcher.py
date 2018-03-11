@@ -20,7 +20,7 @@ search = sol.dense_graph_bf_searcher()
 # 4. Setting problem
 # Setting W and optimize direction (minimize or maxminize)
 # n_trotters is implicitly set to N/4 by dfault.
-search.set_problem(W, sq.maximize)
+search.set_qubo(W, sq.maximize)
 
 # 5. (optional) set preferences,
 # Set tile_size.  Typical not required.

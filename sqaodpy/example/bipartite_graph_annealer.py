@@ -26,7 +26,7 @@ ann.seed(13255)
 # 5. Setting problem
 # Setting W and optimize direction (minimize or maxminize)
 # n_trotters is implicitly set to N/4 by dfault.
-ann.set_problem(b0, b1, W, sq.maximize)
+ann.set_qubo(b0, b1, W, sq.maximize)
 
 # 6. set preferences,
 # The following line set n_trotters is identical to the dimension of W.
@@ -38,9 +38,9 @@ ann.set_preferences(n_trotters = N0 + N1)
 # ann = sol.dense_graph_annealer(b0, b1, W, sq.minimize, n_trotters = W.shape[0])
 
 # 7. get ising model paramters. (optional)
-# When W and optimize dir are set, ising model parameters of h, J and c are caluclated.
-# By using get_hJc() to get these values. 
-h0, h1, J, c = ann.get_hJc()
+# When W and optimize dir are set, ising hamiltonian of h, J and c are caluclated.
+# By using get_hamiltonian() to get these values. 
+h0, h1, J, c = ann.get_hamiltonian()
 print 'h0=', h0
 print 'h1=', h1
 print 'J=', J
@@ -68,7 +68,7 @@ tau = 0.99
 # annealing loop
 G = Ginit
 while Gfin <= G :
-    # 11. call anneal_one_step to try fliping bits for (n_bits x n_trotters) times.
+    # 11. call anneal_one_step to try flipping spins for (n_bits x n_trotters) times.
     ann.anneal_one_step(G, kT)
     G *= tau
     # 12. you may call get_E() to get a current E value.
