@@ -41,8 +41,8 @@ void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-void CUDABipartiteGraphBFSearcher<real>::setProblem(const HostVector &b0, const HostVector &b1,
-                                                    const HostMatrix &W, sq::OptimizeMethod om) {
+void CUDABipartiteGraphBFSearcher<real>::setQUBO(const HostVector &b0, const HostVector &b1,
+                                                 const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!deviceAssigned_, "Device not set.");
     clearState(solProblemSet);
     
@@ -101,7 +101,7 @@ void CUDABipartiteGraphBFSearcher<real>::prepare() {
         tileSize1_ = x1max_;
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
-    batchSearch_.setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
+    batchSearch_.setQUBO(b0_, b1_, W_, tileSize0_, tileSize1_);
     SizeType minXPairsSize = (tileSize0_ * tileSize1_) * 2;
     HostObjectAllocator halloc;
     halloc.allocate(&h_packedMinXPairs_, minXPairsSize);

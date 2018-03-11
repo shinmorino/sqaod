@@ -16,7 +16,7 @@ class BipartiteGraphBFSearcher :
         self._cobj = cext.new_searcher(dtype)
         self.assign_device(device.active_device)
         if not W is None :
-            self.set_problem(b0, b1, W, optimize)
+            self.set_qubo(b0, b1, W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
@@ -25,11 +25,11 @@ class BipartiteGraphBFSearcher :
     def assign_device(self, dev) :
         cext.assign_device(self._cobj, dev._cobj, self.dtype)
 
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         b0, b1, W = sqaod.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
         self._dim = (b0.shape[0], b1.shape[0])
-        cext.set_problem(self._cobj, b0, b1, W, optimize, self.dtype)
+        cext.set_qubo(self._cobj, b0, b1, W, optimize, self.dtype)
         self._optimize = optimize
 
     def get_problem_size(self) :

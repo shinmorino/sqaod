@@ -15,7 +15,7 @@ class DenseGraphAnnealer :
         self._cobj = cext.new_annealer(dtype)
 	self.assign_device(device.active_device)
         if not W is None :
-            self.set_problem(W, optimize)
+            self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
 
     def __del__(self) :
@@ -27,11 +27,19 @@ class DenseGraphAnnealer :
     def seed(self, seed) :
         cext.seed(self._cobj, seed, self.dtype)
         
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
         W = sqaod.clone_as_ndarray(W, self.dtype)
-        cext.set_problem(self._cobj, W, optimize, self.dtype)
+        cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
+
+    def set_hamiltonian(self, h, J, c) :
+        checkers.dense_graph.hJc(W)
+        h = sqaod.clone_as_ndarray(h, self.dtype)
+        J = sqaod.clone_as_ndarray(J, self.dtype)
+        c = sqaod.clone_as_ndarray(c, self.dtype)
+        cext.set_hamiltonian(self._cobj, h, J, c, self.dtype)
+        self._optimize = sqaod.minimize
 
     def get_problem_size(self) :
         return cext.get_problem_size(self._cobj, self.dtype)
@@ -56,12 +64,12 @@ class DenseGraphAnnealer :
     def set_x(self, x0, x1) :
         cext.set_x(self._cobj, x0, x1, self.dtype)
 
-    def get_hJc(self) :
+    def get_hamiltonian(self) :
         N = self.get_problem_size()
         h = np.empty((N), self.dtype)
         J = np.empty((N, N), self.dtype)
         c = np.empty((1), self.dtype)
-        cext.get_hJc(self._cobj, h, J, c, self.dtype)
+        cext.get_hamiltonian(self._cobj, h, J, c, self.dtype)
         return h, J, c[0]
 
     def get_q(self) :
@@ -110,8 +118,8 @@ if __name__ == '__main__' :
     ann = dense_graph_annealer(W, dtype=np.float64, n_trotters = m)
     import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
-    ann.set_problem(W, sqaod.minimize)
-    h, J, c = ann.get_hJc()
+    ann.set_qubo(W, sqaod.minimize)
+    h, J, c = ann.get_hamiltonian()
     print h
     print J
     print c

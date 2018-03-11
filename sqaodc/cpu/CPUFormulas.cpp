@@ -34,7 +34,7 @@ void DGFuncs<real>::calculate_E(Vector *E, const Matrix &W, const Matrix &x) {
 
 
 template<class real>
-void DGFuncs<real>::calculate_hJc(Vector *h, Matrix *J, real *c, const Matrix &W) {
+void DGFuncs<real>::calculateHamiltonian(Vector *h, Matrix *J, real *c, const Matrix &W) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric, %s.");
     prepVector(h, W.rows, __func__);
     prepMatrix(J, W.dim(), __func__);
@@ -140,8 +140,8 @@ void BGFuncs<real>::calculate_E_2d(Matrix *E,
 
 
 template<class real>
-void BGFuncs<real>::calculate_hJc(Vector *h0, Vector *h1, Matrix *J, real *c,
-                                  const Vector &b0, const Vector &b1, const Matrix &W) {
+void BGFuncs<real>::calculateHamiltonian(Vector *h0, Vector *h1, Matrix *J, real *c,
+                                         const Vector &b0, const Vector &b1, const Matrix &W) {
     
     quboShapeCheck(b0, b1, W, __func__);
 

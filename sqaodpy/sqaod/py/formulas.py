@@ -3,7 +3,7 @@ import sqaod
 
 # dense graph
 
-def dense_graph_calculate_hJc(W) :
+def dense_graph_calculate_hamiltonian(W) :
     if (not sqaod.is_symmetric(W)) :
         raise Exception('W is not symmetric.')
 
@@ -44,7 +44,7 @@ def dense_graph_batch_calculate_E_from_spin(h, J, c, q) :
 
 # bibartite graph
 
-def bipartite_graph_calculate_hJc(b0, b1, W) :
+def bipartite_graph_calculate_hamiltonian(b0, b1, W) :
     N0 = W.shape[1]
     N1 = W.shape[0]
     

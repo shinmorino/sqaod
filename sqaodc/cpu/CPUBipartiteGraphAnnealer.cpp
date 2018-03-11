@@ -63,8 +63,8 @@ sq::Algorithm CPUBipartiteGraphAnnealer<real>::getAlgorithm() const {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector &b1,
-                                                 const Matrix &W, sq::OptimizeMethod om) {
+void CPUBipartiteGraphAnnealer<real>::setQUBO(const Vector &b0, const Vector &b1,
+                                              const Matrix &W, sq::OptimizeMethod om) {
     /* FIXME: add qubo dim check */
     if ((N0_ != b0.size) || (N1_ != b1.size))
         clearState(solPrepared);
@@ -77,7 +77,7 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
     J_.resize(N1_, N0_);
     Vector h0(sq::mapFrom(h0_)), h1(sq::mapFrom(h1_));
     Matrix J(sq::mapFrom(J_));
-    BGFuncs<real>::calculate_hJc(&h0, &h1, &J, &c_, b0, b1, W);
+    BGFuncs<real>::calculateHamiltonian(&h0, &h1, &J, &c_, b0, b1, W);
     
     om_ = om;
     if (om_ == sq::optMaximize) {
@@ -86,6 +86,23 @@ void CPUBipartiteGraphAnnealer<real>::setProblem(const Vector &b0, const Vector 
         J_ *= real(-1.);
         c_ *= real(-1.);
     }
+    setState(solProblemSet);
+}
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::
+setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J, real c) {
+    /* FIXME: add dim check */
+    if ((N0_ != h0.size) || (N1_ != h1.size))
+        clearState(solPrepared);
+    
+    N0_ = (int)h0.size;
+    N1_ = (int)h1.size;
+    m_ = (N0_ + N1_) / 4; /* setting number of trotters. */
+    h0_ = sq::mapToRowVector(h0);
+    h1_ = sq::mapToRowVector(h1);
+    J_ = sq::mapTo(J);
+    om_ = sq::optMinimize;
     setState(solProblemSet);
 }
 
@@ -129,8 +146,8 @@ const sq::VectorType<real> &CPUBipartiteGraphAnnealer<real>::get_E() const {
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::get_hJc(Vector *h0, Vector *h1,
-                                              Matrix *J, real *c) const {
+void CPUBipartiteGraphAnnealer<real>::getHamiltonian(Vector *h0, Vector *h1,
+                                                     Matrix *J, real *c) const {
     throwErrorIfProblemNotSet();
     mapToRowVector(*h0) = h0_;
     mapToRowVector(*h1) = h1_;

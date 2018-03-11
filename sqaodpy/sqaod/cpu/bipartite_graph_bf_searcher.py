@@ -15,17 +15,17 @@ class BipartiteGraphBFSearcher :
         self._optimize = optimize
         self._cobj = cext.new_searcher(dtype)
         if not W is None :
-            self.set_problem(b0, b1, W, optimize)
+            self.set_qubo(b0, b1, W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
         cext.delete_searcher(self._cobj, self.dtype)
 
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         b0, b1, W = sqaod.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
         self._dim = (b0.shape[0], b1.shape[0])
-        cext.set_problem(self._cobj, b0, b1, W, optimize, self.dtype)
+        cext.set_qubo(self._cobj, b0, b1, W, optimize, self.dtype)
 
     def get_problem_size(self) :
         return cext.get_problem_size(self._cobj, self.dtype)

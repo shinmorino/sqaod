@@ -40,7 +40,7 @@ void DeviceDenseGraphBatchSearch<real>::deallocate() {
 
 
 template<class real>
-void DeviceDenseGraphBatchSearch<real>::setProblem(const HostMatrix &W, sq::SizeType tileSize) {
+void DeviceDenseGraphBatchSearch<real>::setQUBO(const HostMatrix &W, sq::SizeType tileSize) {
     N_ = W.rows;
     devCopy_(&d_W_, W);
     tileSize_ = tileSize;

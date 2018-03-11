@@ -27,7 +27,7 @@ public:
 
     void deallocate();
     
-    void setProblem(const HostMatrix &W, sq::SizeType tileSize);
+    void setQUBO(const HostMatrix &W, sq::SizeType tileSize);
     
     void calculate_E(sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 

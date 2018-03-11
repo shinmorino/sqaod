@@ -102,20 +102,20 @@ PyObject *cuda_formulas_dense_graph_batch_calculate_E(PyObject *module, PyObject
 
 
 template<class real>
-void internal_dense_graph_calculate_hJc(PyObject *objH, PyObject *objJ, PyObject *objC,
-                                        PyObject *objW) {
+void internal_dense_graph_calculate_hamiltonian(PyObject *objH, PyObject *objJ, PyObject *objC,
+                                                PyObject *objW) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     NpVector h(objH), c(objC);
     NpMatrix J(objJ);
     const NpMatrix W(objW);
     /* do the native job */
-    dgFuncs<real>().calculate_hJc(&h, &J, c.vec.data, W);
+    dgFuncs<real>().calculateHamiltonian(&h, &J, c.vec.data, W);
 }
 
 
 extern "C"
-PyObject *cuda_formulas_dense_graph_calculate_hJc(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_dense_graph_calculate_hamiltonian(PyObject *module, PyObject *args) {
     PyObject *objH, *objJ, *objC, *objW;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOO", &objH, &objJ, &objC, &objW, &dtype))
@@ -123,9 +123,9 @@ PyObject *cuda_formulas_dense_graph_calculate_hJc(PyObject *module, PyObject *ar
     
     TRY {
         if (isFloat64(dtype))
-            internal_dense_graph_calculate_hJc<double>(objH, objJ, objC, objW);
+            internal_dense_graph_calculate_hamiltonian<double>(objH, objJ, objC, objW);
         else if (isFloat32(dtype))
-            internal_dense_graph_calculate_hJc<float>(objH, objJ, objC, objW);
+            internal_dense_graph_calculate_hamiltonian<float>(objH, objJ, objC, objW);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
     } CATCH_ERROR_AND_RETURN(Cuda_FormulasError);
@@ -332,9 +332,9 @@ PyObject *cuda_formulas_bipartite_graph_batch_calculate_E_2d(PyObject *module, P
 }
     
 template<class real>
-void internal_bipartite_graph_calculate_hJc(PyObject *objH0, PyObject *objH1, PyObject *objJ,
-                                            PyObject *objC,
-                                            PyObject *objB0, PyObject *objB1, PyObject *objW) {
+void internal_bipartite_graph_calculate_hamiltonian(PyObject *objH0, PyObject *objH1, PyObject *objJ,
+                                                    PyObject *objC,
+                                                    PyObject *objB0, PyObject *objB1, PyObject *objW) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     typedef NpScalarRefType<real> NpScalarRef;
@@ -344,12 +344,12 @@ void internal_bipartite_graph_calculate_hJc(PyObject *objH0, PyObject *objH1, Py
     NpScalarRef c(objC);
     NpMatrix J(objJ);
     /* do the native job */
-    bgFuncs<real>().calculate_hJc(&h0, &h1, &J, &c, b0, b1, W);
+    bgFuncs<real>().calculateHamiltonian(&h0, &h1, &J, &c, b0, b1, W);
 }
 
 
 extern "C"
-PyObject *cuda_formulas_bipartite_graph_calculate_hJc(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_bipartite_graph_calculate_hamiltonian(PyObject *module, PyObject *args) {
     PyObject *objH0, *objH1, *objJ, *objC, *objB0, *objB1, *objW;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOOOO", &objH0, &objH1, &objJ, &objC,
@@ -358,11 +358,11 @@ PyObject *cuda_formulas_bipartite_graph_calculate_hJc(PyObject *module, PyObject
     
     TRY {
         if (isFloat64(dtype))
-            internal_bipartite_graph_calculate_hJc<double>(objH0, objH1, objJ, objC,
-                                                           objB0, objB1, objW);
+            internal_bipartite_graph_calculate_hamiltonian<double>(objH0, objH1, objJ, objC,
+                                                                   objB0, objB1, objW);
         else if (isFloat32(dtype))
-            internal_bipartite_graph_calculate_hJc<float>(objH0, objH1, objJ, objC,
-                                                          objB0, objB1, objW);
+            internal_bipartite_graph_calculate_hamiltonian<float>(objH0, objH1, objJ, objC,
+                                                                  objB0, objB1, objW);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
     } CATCH_ERROR_AND_RETURN(Cuda_FormulasError);
@@ -463,13 +463,13 @@ static
 PyMethodDef annealermethods[] = {
 	{"dense_graph_calculate_E", cuda_formulas_dense_graph_calculate_E, METH_VARARGS},
 	{"dense_graph_batch_calculate_E", cuda_formulas_dense_graph_batch_calculate_E, METH_VARARGS},
-	{"dense_graph_calculate_hJc", cuda_formulas_dense_graph_calculate_hJc, METH_VARARGS},
+	{"dense_graph_calculate_hamiltonian", cuda_formulas_dense_graph_calculate_hamiltonian, METH_VARARGS},
 	{"dense_graph_calculate_E_from_spin", cuda_formulas_dense_graph_calculate_E_from_spin, METH_VARARGS},
 	{"dense_graph_batch_calculate_E_from_spin", cuda_formulas_dense_graph_batch_calculate_E_from_spin, METH_VARARGS},
 	{"bipartite_graph_calculate_E", cuda_formulas_bipartite_graph_calculate_E, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E", cuda_formulas_bipartite_graph_batch_calculate_E, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E_2d", cuda_formulas_bipartite_graph_batch_calculate_E_2d, METH_VARARGS},
-	{"bipartite_graph_calculate_hJc", cuda_formulas_bipartite_graph_calculate_hJc, METH_VARARGS},
+	{"bipartite_graph_calculate_hamiltonian", cuda_formulas_bipartite_graph_calculate_hamiltonian, METH_VARARGS},
 	{"bipartite_graph_calculate_E_from_spin", cuda_formulas_bipartite_graph_calculate_E_from_spin, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E_from_spin", cuda_formulas_bipartite_graph_batch_calculate_E_from_spin, METH_VARARGS},
 	{NULL},

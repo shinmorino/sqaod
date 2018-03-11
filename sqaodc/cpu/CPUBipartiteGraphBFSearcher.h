@@ -23,8 +23,8 @@ public:
 
     /* void getProblemSize(int *N0, int *N1) const; */
 
-    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
+                 sq::OptimizeMethod om = sq::optMinimize);
 
     /* void setPreference(const Preference &pref); */
 

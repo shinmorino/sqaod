@@ -11,17 +11,17 @@ class DenseGraphBFSearcher :
         self.dtype = dtype
         self._cobj = cext.new_bf_searcher(dtype)
         if not W is None :
-            self.set_problem(W, optimize)
+            self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
         cext.delete_bf_searcher(self._cobj, self.dtype)
 
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
         W = sqaod.clone_as_ndarray(W, self.dtype)
         self._N = W.shape[0]
-        cext.set_problem(self._cobj, W, optimize, self.dtype)
+        cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
     def get_problem_size(self) :

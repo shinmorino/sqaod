@@ -42,7 +42,9 @@ public:
     
     void seed(unsigned long long seed);
 
-    void setProblem(const HostMatrix &W, sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const HostMatrix &W, sq::OptimizeMethod om = sq::optMinimize);
+
+    void setHamiltonian(const HostVector &h, const HostMatrix &J, real c = real(0.));
 
     /* void getProblemSize(sq::SizeType *N) const; */
 
@@ -58,7 +60,7 @@ public:
 
     const sq::BitSetArray &get_q() const;
 
-    void get_hJc(HostVector *h, HostMatrix *J, real *c) const;
+    void getHamiltonian(HostVector *h, HostMatrix *J, real *c) const;
 
     void randomizeSpin();
 

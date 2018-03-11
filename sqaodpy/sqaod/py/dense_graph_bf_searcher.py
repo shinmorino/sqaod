@@ -8,11 +8,11 @@ class DenseGraphBFSearcher :
     
     def __init__(self, W, optimize, prefdict) :
         if W is not None :
-            self.set_problem(W, optimize)
+            self.set_qubo(W, optimize)
         self._tile_size = 1024
         self.set_preferences(prefdict)
             
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         # FIXME: check W dims, is symmetric ? */
         self._W = W.copy()
         N = W.shape[0]

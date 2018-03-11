@@ -112,8 +112,8 @@ struct DenseGraphSolver {
 
     void getProblemSize(SizeType *N) const;
 
-    virtual void setProblem(const MatrixType<real> &W,
-                            OptimizeMethod om = sqaod::optMinimize) = 0;
+    virtual void setQUBO(const MatrixType<real> &W,
+                         OptimizeMethod om = sqaod::optMinimize) = 0;
 
     virtual const BitSetArray &get_x() const = 0;
 
@@ -131,8 +131,8 @@ struct BipartiteGraphSolver {
 
     void getProblemSize(SizeType *N0, SizeType *N1) const;
     
-    virtual void setProblem(const VectorType<real> &b0, const VectorType<real> &b1,
-                            const MatrixType<real> &W, OptimizeMethod om = optMinimize) = 0;
+    virtual void setQUBO(const VectorType<real> &b0, const VectorType<real> &b1,
+                         const MatrixType<real> &W, OptimizeMethod om = sqaod::optMinimize) = 0;
 
     virtual const BitSetPairArray &get_x() const = 0;
 
@@ -171,8 +171,11 @@ struct DenseGraphAnnealer
         : Annealer<real>, DenseGraphSolver<real> {
     virtual ~DenseGraphAnnealer() { }
 
-    virtual void get_hJc(VectorType<real> *h, MatrixType<real> *J, real *c) const = 0;
+    virtual void setHamiltonian(const VectorType<real> &h, const MatrixType<real> &J,
+                                real c = real(0.)) = 0;
 
+    virtual void getHamiltonian(VectorType<real> *h, MatrixType<real> *J, real *c) const = 0;
+    
     virtual void set_x(const BitSet &x) = 0;
 
     virtual const BitSetArray &get_q() const = 0;
@@ -210,8 +213,11 @@ struct BipartiteGraphAnnealer
         : Annealer<real>, BipartiteGraphSolver<real> {
     virtual ~BipartiteGraphAnnealer() { }
 
-    virtual void get_hJc(VectorType<real> *h0, VectorType<real> *h1,
-                         MatrixType<real> *J, real *c) const = 0;
+    virtual void setHamiltonian(const VectorType<real> &h0, const VectorType<real> &h1,
+                                const MatrixType<real> &J, real c = real(0.)) = 0;
+
+    virtual void getHamiltonian(VectorType<real> *h0, VectorType<real> *h1,
+                                MatrixType<real> *J, real *c) const = 0;
 
     virtual void set_x(const BitSet &x0, const BitSet &x1) = 0;
 
@@ -223,4 +229,3 @@ protected:
 
 
 }
-

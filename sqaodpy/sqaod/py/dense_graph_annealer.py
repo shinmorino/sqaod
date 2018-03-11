@@ -9,7 +9,7 @@ class DenseGraphAnnealer :
 
     def __init__(self, W, optimize, prefdict) :
         if not W is None :
-            self.set_problem(W, optimize)
+            self.set_qubo(W, optimize)
         self._select_algorithm(algo.coloring)
         self.set_preferences(prefdict)
 
@@ -24,13 +24,20 @@ class DenseGraphAnnealer :
     def get_problem_size(self) :
         return self.N_;
 
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
 
-        h, J, c = formulas.dense_graph_calculate_hJc(W)
+        h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         self._optimize = optimize
         self._h, self._J, self._c = optimize.sign(h), optimize.sign(J), optimize.sign(c)
         self._N = W.shape[0]
+        self._m = self._N / 2
+        
+    def set_hamiltonian(self, h, J, c) :
+        # checkers.dense_graph.qubo(W)
+        self._optimize = sqaod.minimize
+        self._h, self._J, self._c = h, J, c
+        self._N = J.shape[0]
         self._m = self._N / 2
         
     def _select_algorithm(self, algoname) :
@@ -80,7 +87,7 @@ class DenseGraphAnnealer :
     
     # Ising model
 
-    def get_hJc(self) :
+    def get_hamiltonian(self) :
         return self._h, self._J, self._c
 
     def get_q(self) :

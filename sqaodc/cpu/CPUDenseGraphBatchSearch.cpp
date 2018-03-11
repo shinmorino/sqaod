@@ -10,7 +10,7 @@ CPUDenseGraphBatchSearch<real>::CPUDenseGraphBatchSearch() {
 }
 
 template<class real>
-void CPUDenseGraphBatchSearch<real>::setProblem(const Matrix &W, sq::SizeType tileSize) {
+void CPUDenseGraphBatchSearch<real>::setQUBO(const Matrix &W, sq::SizeType tileSize) {
     W_.map(W.data, W.rows, W.cols);
     tileSize_ = tileSize;
 }

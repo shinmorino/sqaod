@@ -37,9 +37,9 @@ void DeviceBipartiteGraphBatchSearch<real>::deallocate() {
 
 template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::
-setProblem(const HostVector &b0, const HostVector &b1,
-           const HostMatrix &W,
-           sq::SizeType tileSize0, sq::SizeType tileSize1) {
+setQUBO(const HostVector &b0, const HostVector &b1,
+        const HostMatrix &W,
+        sq::SizeType tileSize0, sq::SizeType tileSize1) {
     if (N0_ != -1)
         deallocate();
 

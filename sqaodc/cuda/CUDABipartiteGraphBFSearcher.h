@@ -37,8 +37,8 @@ public:
     
     /* void getProblemSize(int *N0, int *N1) const; */
 
-    void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
-                    sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
+                 sq::OptimizeMethod om = sq::optMinimize);
 
     /* void setPreference(const Preference &pref); */
 

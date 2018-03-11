@@ -19,7 +19,7 @@ struct CUDADenseGraphFormulas {
     
     void calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x);
     
-    void calculate_hJc(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W);
+    void calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W);
     
     void calculate_E(real *E,
                      const HostVector &h, const HostMatrix &J, const real &c,
@@ -64,8 +64,8 @@ struct CUDABipartiteGraphFormulas {
                         const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                         const HostMatrix &x0, const HostMatrix &x1);
     
-    void calculate_hJc(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
-                       const HostVector &b0, const HostVector &b1, const HostMatrix &W);
+    void calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
+                              const HostVector &b0, const HostVector &b1, const HostMatrix &W);
 
     void calculate_E(real *E,
                      const HostVector &h0, const HostVector &h1, const HostMatrix &J,

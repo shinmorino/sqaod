@@ -28,9 +28,9 @@ public:
 
     void deallocate();
     
-    void setProblem(const HostVector &b0, const HostVector &b1,
-                    const HostMatrix &W,
-                    sq::SizeType tileSize0, sq::SizeType tileSize1);
+    void setQUBO(const HostVector &b0, const HostVector &b1,
+                 const HostMatrix &W,
+                 sq::SizeType tileSize0, sq::SizeType tileSize1);
     
     void calculate_E(sq::PackedBitSet xBegin0, sq::PackedBitSet xEnd0,
                      sq::PackedBitSet xBegin1, sq::PackedBitSet xEnd1);

@@ -64,7 +64,7 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
+void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     clearState(solProblemSet);
 
@@ -75,13 +75,25 @@ void CPUDenseGraphAnnealer<real>::setProblem(const Matrix &W, sq::OptimizeMethod
 
     Vector h(sq::mapFrom(h_));
     Matrix J(sq::mapFrom(J_));
-    DGFuncs<real>::calculate_hJc(&h, &J, &c_, W);
+    DGFuncs<real>::calculateHamiltonian(&h, &J, &c_, W);
     om_ = om;
     if (om_ == sq::optMaximize) {
         h_ *= real(-1.);
         J_ *= real(-1.);
         c_ *= real(-1.);
     }
+    setState(solProblemSet);
+}
+
+template<class real>
+void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &J, real c) {
+    /* FIXME: add dim check. */
+    throwErrorIf(!isSymmetric(J), "J is not symmetric.");
+    clearState(solProblemSet);
+    om_ = sq::optMinimize;
+    sq::mapFrom(h_) = h;
+    sq::mapFrom(J_) = J;
+    c_ = c;
     setState(solProblemSet);
 }
 
@@ -119,7 +131,7 @@ void CPUDenseGraphAnnealer<real>::set_x(const sq::BitSet &x) {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::get_hJc(Vector *h, Matrix *J, real *c) const {
+void CPUDenseGraphAnnealer<real>::getHamiltonian(Vector *h, Matrix *J, real *c) const {
     throwErrorIfProblemNotSet();
     mapToRowVector(*h) = h_;
     mapTo(*J) = J_;

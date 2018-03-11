@@ -12,7 +12,7 @@ class BipartiteGraphBFSearcher :
     def __init__(self, W, b0, b1, optimize, prefdict) :
         self._verbose = False
         if not W is None :
-            self.set_problem(W, b0, b1, optimize)
+            self.set_qubo(W, b0, b1, optimize)
         self._set_prefdict(prefdict)
 
     def _vars(self) :
@@ -21,7 +21,7 @@ class BipartiteGraphBFSearcher :
     def get_problem_size(self) :
         return self._N0, self._N1
     
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         self._N0 = b0.shape[0]
         self._N1 = b1.shape[0]

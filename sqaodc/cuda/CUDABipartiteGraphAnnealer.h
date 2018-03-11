@@ -45,8 +45,11 @@ public:
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
-    void setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
-                    sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W,
+                 sq::OptimizeMethod om = sq::optMinimize);
+
+    void setHamiltonian(const HostVector &h0, const HostVector &h1, const HostMatrix &J,
+                        real c = real(0.));
 
     sq::Preferences getPreferences() const;
 
@@ -60,7 +63,7 @@ public:
 
     /* Ising machine / spins */
 
-    void get_hJc(HostVector *h0, HostVector *h1, HostMatrix *J, real *c) const;
+    void getHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c) const;
 
     const BitSetPairArray &get_q() const;
 

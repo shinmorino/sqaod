@@ -94,18 +94,18 @@ PyObject *bg_annealer_seed(PyObject *module, PyObject *args) {
 }
 
 template<class real>
-void internal_bg_annealer_set_problem(PyObject *objExt,
+void internal_bg_annealer_set_qubo(PyObject *objExt,
                                       PyObject *objB0, PyObject *objB1, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     const NpVector b0(objB0), b1(objB1);
     const NpMatrix W(objW);
     sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
+    pyobjToCppObj<real>(objExt)->setQUBO(b0, b1, W, om);
 }
     
 extern "C"
-PyObject *bg_annealer_set_problem(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_set_qubo(PyObject *module, PyObject *args) {
     PyObject *objExt, *objB0, *objB1, *objW, *dtype;
     int opt;
     if (!PyArg_ParseTuple(args, "OOOOiO", &objExt, &objB0, &objB1, &objW, &opt, &dtype))
@@ -113,9 +113,43 @@ PyObject *bg_annealer_set_problem(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_bg_annealer_set_problem<double>(objExt, objB0, objB1, objW, opt);
+            internal_bg_annealer_set_qubo<double>(objExt, objB0, objB1, objW, opt);
         else if (isFloat32(dtype))
-            internal_bg_annealer_set_problem<float>(objExt, objB0, objB1, objW, opt);
+            internal_bg_annealer_set_qubo<float>(objExt, objB0, objB1, objW, opt);
+        else
+            RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
+    } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
+
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+    
+
+template<class real>
+void internal_bg_annealer_set_hamiltonian(PyObject *objExt, PyObject *objH0, PyObject *objH1,
+                                          PyObject *objJ, PyObject *objC) {
+    typedef NpMatrixType<real> NpMatrix;
+    typedef NpVectorType<real> NpVector;
+    typedef NpConstScalarType<real> NpConstScalar;
+
+    NpVector h0(objH0);
+    NpVector h1(objH1);
+    NpMatrix J(objJ);
+    NpConstScalar c(objC);
+    pyobjToCppObj<real>(objExt)->setHamiltonian(h0, h1, J, c);
+}
+    
+extern "C"
+PyObject *bg_annealer_set_hamiltonian(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objH0, *objH1, *objJ, *objC, *dtype;
+    if (!PyArg_ParseTuple(args, "OOOOOO", &objExt, &objH0, &objH1, &objJ, &objC, &dtype))
+        return NULL;
+
+    TRY {
+        if (isFloat64(dtype))
+            internal_bg_annealer_set_hamiltonian<double>(objExt, objH0, objH1, objJ, objC);
+        else if (isFloat32(dtype))
+            internal_bg_annealer_set_hamiltonian<float>(objExt, objH0, objH1, objJ, objC);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
@@ -318,9 +352,9 @@ PyObject *bg_annealer_randomize_spin(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_bg_annealer_get_hJc(PyObject *objExt,
-                                  PyObject *objH0, PyObject *objH1,
-                                  PyObject *objJ, PyObject *objC) {
+void internal_bg_annealer_get_hamiltonian(PyObject *objExt,
+                                          PyObject *objH0, PyObject *objH1,
+                                          PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     typedef NpScalarRefType<real> NpScalarRef;
@@ -329,21 +363,21 @@ void internal_bg_annealer_get_hJc(PyObject *objExt,
     NpVector h0(objH0), h1(objH1);
     NpScalarRef c(objC);
     NpMatrix J(objJ);
-    ann->get_hJc(&h0, &h0, &J, &c);
+    ann->getHamiltonian(&h0, &h0, &J, &c);
 }
     
     
 extern "C"
-PyObject *bg_annealer_get_hJc(PyObject *module, PyObject *args) {
+PyObject *bg_annealer_get_hamiltonian(PyObject *module, PyObject *args) {
     PyObject *objExt, *objH0, *objH1, *objJ, *objC, *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOO", &objExt, &objH0, &objH1, &objJ, &objC, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            internal_bg_annealer_get_hJc<double>(objExt, objH0, objH1, objJ, objC);
+            internal_bg_annealer_get_hamiltonian<double>(objExt, objH0, objH1, objJ, objC);
         else if (isFloat32(dtype))
-            internal_bg_annealer_get_hJc<float>(objExt, objH0, objH1, objJ, objC);
+            internal_bg_annealer_get_hamiltonian<float>(objExt, objH0, objH1, objJ, objC);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgAnnealerError);
@@ -474,14 +508,15 @@ PyMethodDef cuda_bg_annealer_methods[] = {
 	{"delete_annealer", bg_annealer_delete, METH_VARARGS},
         {"seed", bg_annealer_seed, METH_VARARGS},
 	{"assign_device", bg_annealer_assign_device, METH_VARARGS},
-	{"set_problem", bg_annealer_set_problem, METH_VARARGS},
+	{"set_qubo", bg_annealer_set_qubo, METH_VARARGS},
+	{"set_hamiltonian", bg_annealer_set_hamiltonian, METH_VARARGS},
 	{"get_problem_size", bg_annealer_get_problem_size, METH_VARARGS},
 	{"set_preferences", bg_annealer_set_preferences, METH_VARARGS},
 	{"get_preferences", bg_annealer_get_preferences, METH_VARARGS},
 	{"get_E", bg_annealer_get_E, METH_VARARGS},
 	{"get_x", bg_annealer_get_x, METH_VARARGS},
 	{"set_x", bg_annealer_set_x, METH_VARARGS},
-	{"get_hJc", bg_annealer_get_hJc, METH_VARARGS},
+	{"get_hamiltonian", bg_annealer_get_hamiltonian, METH_VARARGS},
 	{"get_q", bg_annealer_get_q, METH_VARARGS},
 	{"randomize_spin", bg_annealer_randomize_spin, METH_VARARGS},
 	{"calculate_E", bg_annealer_calculate_E, METH_VARARGS},

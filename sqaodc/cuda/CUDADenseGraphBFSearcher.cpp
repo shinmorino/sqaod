@@ -41,7 +41,7 @@ void CUDADenseGraphBFSearcher<real>::assignDevice(Device &device) {
 }
 
 template<class real>
-void CUDADenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
+void CUDADenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     throwErrorIf(!deviceAssigned_, "Device not set.");
@@ -88,7 +88,7 @@ void CUDADenseGraphBFSearcher<real>::prepare() {
         tileSize_ = maxTileSize;
         sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
     }
-    batchSearch_.setProblem(W_, tileSize_);
+    batchSearch_.setQUBO(W_, tileSize_);
     HostObjectAllocator().allocate(&h_packedXmin_, tileSize_ * 2);
 
     Emin_ = std::numeric_limits<real>::max();

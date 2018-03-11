@@ -10,8 +10,8 @@ CPUBipartiteGraphBatchSearch<real>::CPUBipartiteGraphBatchSearch() {
 }
 
 template<class real> void CPUBipartiteGraphBatchSearch<real>::
-setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-           sq::SizeType tileSize0, sq::SizeType tileSize1) {
+setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
+        sq::SizeType tileSize0, sq::SizeType tileSize1) {
     b0_.map(b0.data, b0.size);
     b1_.map(b1.data, b1.size);
     W_.map(W.data, W.rows, W.cols);

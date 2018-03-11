@@ -77,18 +77,18 @@ PyObject *bg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
     
 
 template<class real>
-void internal_bg_bf_searcher_set_problem(PyObject *objExt,
-                                       PyObject *objB0, PyObject *objB1, PyObject *objW, int opt) {
+void internal_bg_bf_searcher_set_qubo(PyObject *objExt,
+                                      PyObject *objB0, PyObject *objB1, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     NpVector b0(objB0), b1(objB1);
     NpMatrix W(objW);
     sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(b0, b1, W, om);
+    pyobjToCppObj<real>(objExt)->setQUBO(b0, b1, W, om);
 }
     
 extern "C"
-PyObject *bg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
+PyObject *bg_bf_searcher_set_qubo(PyObject *module, PyObject *args) {
     PyObject *objExt, *objB0, *objB1, *objW, *dtype;
     int opt;
     if (!PyArg_ParseTuple(args, "OOOOiO", &objExt, &objB0, &objB1, &objW, &opt, &dtype))
@@ -96,9 +96,9 @@ PyObject *bg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_bg_bf_searcher_set_problem<double>(objExt, objB0, objB1, objW, opt);
+            internal_bg_bf_searcher_set_qubo<double>(objExt, objB0, objB1, objW, opt);
         else if (isFloat32(dtype))
-            internal_bg_bf_searcher_set_problem<float>(objExt, objB0, objB1, objW, opt);
+            internal_bg_bf_searcher_set_qubo<float>(objExt, objB0, objB1, objW, opt);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_BgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cuda_BgBfSearcherError);
@@ -324,7 +324,7 @@ PyMethodDef cuda_bg_bf_searcher_methods[] = {
 	{"new_searcher", bg_bf_searcher_create, METH_VARARGS},
 	{"delete_searcher", bg_bf_searcher_delete, METH_VARARGS},
 	{"assign_device", bg_bf_searcher_assign_device, METH_VARARGS},
-	{"set_problem", bg_bf_searcher_set_problem, METH_VARARGS},
+	{"set_qubo", bg_bf_searcher_set_qubo, METH_VARARGS},
 	{"set_preferences", bg_bf_searcher_set_preferences, METH_VARARGS},
 	{"get_preferences", bg_bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", bg_bf_searcher_get_x, METH_VARARGS},

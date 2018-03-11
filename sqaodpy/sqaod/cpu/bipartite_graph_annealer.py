@@ -13,7 +13,7 @@ class BipartiteGraphAnnealer :
         self.dtype = dtype
         self._cobj = cext.new_annealer(dtype)
         if not W is None :
-            self.set_problem(b0, b1, W, optimize)
+            self.set_qubo(b0, b1, W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
@@ -22,10 +22,10 @@ class BipartiteGraphAnnealer :
     def seed(self, seed) :
         cext.seed(self._cobj, seed, self.dtype)
             
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
         b0, b1, W = sqaod.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
-        cext.set_problem(self._cobj, b0, b1, W, optimize, self.dtype);
+        cext.set_qubo(self._cobj, b0, b1, W, optimize, self.dtype);
         self._optimize = optimize
 
     def get_optimize_dir(self) :
@@ -53,13 +53,13 @@ class BipartiteGraphAnnealer :
 
     # Ising model / spins
     
-    def get_hJc(self) :
+    def get_hamiltonian(self) :
         N0, N1 = self.get_problem_size()
         h0 = np.ndarray((N0), self.dtype);
         h1 = np.ndarray((N1), self.dtype);
         J = np.ndarray((N1, N0), self.dtype);
         c = np.ndarray((1), self.dtype)
-        cext.get_hJc(self._cobj, h0, h1, J, c, self.dtype)
+        cext.get_hamiltonian(self._cobj, h0, h1, J, c, self.dtype)
         return h0, h1, J, c[0]
             
     def get_q(self) :

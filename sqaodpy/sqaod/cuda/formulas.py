@@ -2,7 +2,7 @@ import numpy as np
 import numbers
 import sqaod
 from sqaod.common import checkers
-import cuda_formulas
+import formulas as formulas
 
 # dense graph    
 
@@ -14,7 +14,7 @@ def dense_graph_calculate_E(W, x, dtype) :
     checkers.assert_is_vector('x', x)
 
     E = np.ndarray((1), dtype)
-    cpu_formulas.dense_graph_calculate_E(E, W, x, dtype)
+    formulas.dense_graph_calculate_E(E, W, x, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E(W, x, dtype) :
@@ -22,13 +22,13 @@ def dense_graph_batch_calculate_E(W, x, dtype) :
     checkers.dense_graph.bits(W, x)
     
     E = np.empty((x.shape[0]), dtype)
-    cpu_formulas.dense_graph_batch_calculate_E(E, W, x, dtype)
+    formulas.dense_graph_batch_calculate_E(E, W, x, dtype)
     return E
 
 
 # QUBO -> Ising model
 
-def dense_graph_calculate_hJc(W, dtype) :
+def dense_graph_calculate_hamiltonian(W, dtype) :
     if W.dtype != dtype :
         W = clone_as_ndarray(W, dtype)
     checkers.dense_graph.qubo(W, dtype)
@@ -36,7 +36,7 @@ def dense_graph_calculate_hJc(W, dtype) :
     h = np.empty((N), dtype)
     J = np.empty((N, N), dtype)
     c = np.empty((1), dtype)
-    cpu_formulas.dense_graph_calculate_hJc(h, J, c, W, dtype);
+    formulas.dense_graph_calculate_hamiltonian(h, J, c, W, dtype);
     return h, J, c[0]
 
 # Ising model energy functions
@@ -47,7 +47,7 @@ def dense_graph_calculate_E_from_spin(h, J, c, q, dtype) :
     checkers.assert_is_vector('q', q)
     
     E = np.ndarray((1), dtype)
-    cpu_formulas.dense_graph_calculate_E_from_spin(E, h, J, c, q, dtype)
+    formulas.dense_graph_calculate_E_from_spin(E, h, J, c, q, dtype)
     return E[0]
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype) :
@@ -55,7 +55,7 @@ def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype) :
     checkers.dense_graph.bits(J, q);
 
     E = np.empty([q.shape[0]], dtype)
-    cpu_formulas.dense_graph_batch_calculate_E_from_spin(E, h, J, c, q, dtype)
+    formulas.dense_graph_batch_calculate_E_from_spin(E, h, J, c, q, dtype)
     return E
 
 
@@ -67,7 +67,7 @@ def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype) :
     checkers.assert_is_vector('x0', x0)
     checkers.assert_is_vector('x1', x1)
     E = np.ndarray((1), dtype)
-    cpu_formulas.bipartite_graph_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    formulas.bipartite_graph_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E[0]
 
 
@@ -82,7 +82,7 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
     
     nBatch = 1 if len(x0.shape) == 1 else x0.shape[0]
     E = np.empty((nBatch), dtype)
-    cpu_formulas.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
+    formulas.bipartite_graph_batch_calculate_E(E, b0, b1, W, x0, x1, dtype)
     return E
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype) :
@@ -92,11 +92,11 @@ def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype) :
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     E = np.empty((nBatch1, nBatch0), dtype)
-    cpu_formulas.bipartite_graph_batch_calculate_E_2d(E, b0, b1, W, x0, x1, dtype)
+    formulas.bipartite_graph_batch_calculate_E_2d(E, b0, b1, W, x0, x1, dtype)
     return E
 
 
-def bipartite_graph_calculate_hJc(b0, b1, W, dtype) :
+def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype) :
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
 
     N0 = W.shape[1]
@@ -105,7 +105,7 @@ def bipartite_graph_calculate_hJc(b0, b1, W, dtype) :
     h1 = np.empty((N1), dtype)
     J = np.empty((N1, N0), dtype)
     c = np.empty((1), dtype)
-    cpu_formulas.bipartite_graph_calculate_hJc(h0, h1, J, c, b0, b1, W, dtype);
+    formulas.bipartite_graph_calculate_hamiltonian(h0, h1, J, c, b0, b1, W, dtype);
     return h0, h1, J, c[0]
 
 def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
@@ -115,7 +115,7 @@ def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
     checkers.assert_is_vector('q1', q1)
 
     E = np.ndarray((1), dtype)
-    cpu_formulas.bipartite_graph_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
+    formulas.bipartite_graph_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
     return E[0]
 
 
@@ -126,7 +126,7 @@ def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     E = np.empty((nBatch0), dtype)
-    cpu_formulas.bipartite_graph_batch_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
+    formulas.bipartite_graph_batch_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
     return E
 
 
@@ -139,7 +139,7 @@ if __name__ == '__main__' :
 
     try :
         W = np.ones((4, 4), np.int32)
-        dense_graph_calculate_hJc(W, np.int32)
+        dense_graph_calculate_hamiltonian(W, np.int32)
     except Exception as e :
         print e.message
     
@@ -158,8 +158,8 @@ if __name__ == '__main__' :
     E1 = dense_graph_batch_calculate_E(W, xlist, dtype)
     assert np.allclose(E0, E1)
 
-    h0, J0, c0 = py_formulas.dense_graph_calculate_hJc(W)
-    h1, J1, c1 = dense_graph_calculate_hJc(W, dtype)
+    h0, J0, c0 = py_formulas.dense_graph_calculate_hamiltonian(W)
+    h1, J1, c1 = dense_graph_calculate_hamiltonian(W, dtype)
     assert np.allclose(h0, h1);
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
@@ -200,8 +200,8 @@ if __name__ == '__main__' :
     E1 = bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1, dtype)
     assert np.allclose(E0, E1)
   
-    h00, h01, J0, c0 = py_formulas.bipartite_graph_calculate_hJc(b0, b1, W)
-    h10, h11, J1, c1 = bipartite_graph_calculate_hJc(b0, b1, W, dtype)
+    h00, h01, J0, c0 = py_formulas.bipartite_graph_calculate_hamiltonian(b0, b1, W)
+    h10, h11, J1, c1 = bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype)
     assert np.allclose(h00, h10);
     assert np.allclose(h01, h11);
     assert np.allclose(J0, J1);

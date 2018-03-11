@@ -65,7 +65,7 @@ class DenseGraphSolver :
         raise NotImplementedError()
 
     @abstractmethod
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -79,7 +79,7 @@ class BipartiteGraphSolver :
         raise NotImplementedError()
 
     @abstractmethod
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -98,7 +98,11 @@ class DenseGraphBFSearcher(BFSearcher, DenseGraphSolver) :
     
 class DenseGraphAnnealer(Annealer, DenseGraphSolver) :
     @abstractmethod
-    def get_hJc(self, x) :
+    def set_hamiltonian(self, h, J, c = 0.) :
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_hamiltonian(self, x) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -120,7 +124,11 @@ class BipartiteGraphBFSearcher(BFSearcher, BipartiteGraphSolver) :
     
 class BipartiteGraphAnnealer(Annealer, BipartiteGraphSolver) :
     @abstractmethod
-    def get_hJc(self, x0, x1) :
+    def set_hamiltonian(self, h0, h1, J, c = 0.) :
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_hamiltonian(self, x0, x1) :
         raise NotImplementedError()
 
     @abstractmethod

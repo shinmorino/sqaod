@@ -21,7 +21,7 @@ calculate_E(DeviceVector *E, const DeviceMatrix &W, const DeviceMatrix &x) {
 
 
 template<class real> void DeviceDenseGraphFormulas<real>::
-calculate_hJc(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const DeviceMatrix &W) {
+calculateHamiltonian(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const DeviceMatrix &W) {
     devMath.sumBatched(h, 0.5, W, opColwise);
     devMath.scale(J, 0.25, W);
 
@@ -104,8 +104,8 @@ calculate_E_2d(DeviceMatrix *E,
 
 template<class real>
 void DeviceBipartiteGraphFormulas<real>::
-calculate_hJc(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, DeviceScalar *c,
-              const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W) {
+calculateHamiltonian(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, DeviceScalar *c,
+                     const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W) {
     devMath.scale(J, 0.25, W);
     devMath.sumBatched(h0, 1., *J, opColwise);
     devMath.scale(h0, 0.5, b0, 1.);

@@ -15,7 +15,7 @@ struct DeviceDenseGraphFormulas {
     
     void calculate_E(DeviceVector *E, const DeviceMatrix &W, const DeviceMatrix &x);
     
-    void calculate_hJc(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const DeviceMatrix &W);
+    void calculateHamiltonian(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const DeviceMatrix &W);
     
     void calculate_E(DeviceScalar *E,
                      const DeviceVector &h, const DeviceMatrix &J, const DeviceScalar &c,
@@ -56,7 +56,7 @@ struct DeviceBipartiteGraphFormulas {
                         const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W,
                         const DeviceMatrix &x0, const DeviceMatrix &x1);
     
-    void calculate_hJc(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, DeviceScalar *c,
+    void calculateHamiltonian(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, DeviceScalar *c,
                        const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W);
 
     void calculate_E(DeviceScalar *E,

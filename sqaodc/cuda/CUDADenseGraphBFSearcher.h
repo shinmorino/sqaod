@@ -31,7 +31,7 @@ public:
     
     void assignDevice(Device &device);
     
-    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
     /* void getProblemSize(sq::SizeType *N) const; */
 

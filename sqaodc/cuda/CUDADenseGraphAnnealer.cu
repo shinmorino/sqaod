@@ -102,7 +102,7 @@ void CUDADenseGraphAnnealer<real>::seed(unsigned long long seed) {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeMethod om) {
+void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
@@ -116,7 +116,27 @@ void CUDADenseGraphAnnealer<real>::setProblem(const HostMatrix &W, sq::OptimizeM
     devCopy_(dW, W);
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dW, -1., *dW);
-    devFormulas_.calculate_hJc(&d_h_, &d_J_, &d_c_, *dW);
+    devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dW);
+
+    setState(solProblemSet);
+}
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const HostMatrix &J,
+                                                  real c) {
+    /* FIXME: add size check */
+    throwErrorIf(!isSymmetric(J), "J is not symmetric.");
+    throwErrorIf(devStream_ == NULL, "Device not set.");
+    deallocate();
+    clearState(solProblemSet);
+
+    N_ = J.rows;
+    m_ = N_ / 4;
+    om_ = sq::optMinimize;
+
+    devCopy_(&d_h_, h);
+    devCopy_(&d_J_, J);
+    devCopy_(&d_c_, c);
 
     setState(solProblemSet);
 }
@@ -159,7 +179,7 @@ void CUDADenseGraphAnnealer<real>::set_x(const BitSet &x) {
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::get_hJc(HostVector *h, HostMatrix *J, real *c) const {
+void CUDADenseGraphAnnealer<real>::getHamiltonian(HostVector *h, HostMatrix *J, real *c) const {
     throwErrorIfProblemNotSet();
 
     devCopy_(h, d_h_);

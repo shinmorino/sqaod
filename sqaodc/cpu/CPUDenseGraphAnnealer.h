@@ -28,7 +28,9 @@ public:
     
     /* void getProblemSize(SizeType *N) const; */
 
-    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
+
+    void setHamiltonian(const Vector &h, const Matrix &J, real c = real(0.));
 
     /* void setPreference(const Preference &pref); */
 
@@ -42,7 +44,7 @@ public:
 
     const sq::BitSetArray &get_q() const;
 
-    void get_hJc(Vector *h, Matrix *J, real *c) const;
+    void getHamiltonian(Vector *h, Matrix *J, real *c) const;
 
     void randomizeSpin();
 

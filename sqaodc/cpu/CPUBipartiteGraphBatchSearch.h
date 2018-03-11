@@ -14,8 +14,8 @@ struct CPUBipartiteGraphBatchSearch {
     
     CPUBipartiteGraphBatchSearch();
 
-    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    sq::SizeType tileSize0, sq::SizeType tileSize1);
+    void setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
+                 sq::SizeType tileSize0, sq::SizeType tileSize1);
 
     void initSearch();
     

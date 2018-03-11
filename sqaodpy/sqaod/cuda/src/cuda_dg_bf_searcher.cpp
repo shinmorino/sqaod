@@ -74,15 +74,15 @@ PyObject *dg_bf_searcher_assign_device(PyObject *module, PyObject *args) {
 }
 
 template<class real>
-void internal_dg_bf_searcher_set_problem(PyObject *objExt, PyObject *objW, int opt) {
+void internal_dg_bf_searcher_set_qubo(PyObject *objExt, PyObject *objW, int opt) {
     typedef NpMatrixType<real> NpMatrix;
     const NpMatrix W(objW);
     sq::OptimizeMethod om = (opt == 0) ? sq::optMinimize : sq::optMaximize;
-    pyobjToCppObj<real>(objExt)->setProblem(W, om);
+    pyobjToCppObj<real>(objExt)->setQUBO(W, om);
 }
     
 extern "C"
-PyObject *dg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
+PyObject *dg_bf_searcher_set_qubo(PyObject *module, PyObject *args) {
     PyObject *objExt, *objW, *dtype;
     int opt;
     if (!PyArg_ParseTuple(args, "OOiO", &objExt, &objW, &opt, &dtype))
@@ -90,9 +90,9 @@ PyObject *dg_bf_searcher_set_problem(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_dg_bf_searcher_set_problem<double>(objExt, objW, opt);
+            internal_dg_bf_searcher_set_qubo<double>(objExt, objW, opt);
         else if (isFloat32(dtype))
-            internal_dg_bf_searcher_set_problem<float>(objExt, objW, opt);
+            internal_dg_bf_searcher_set_qubo<float>(objExt, objW, opt);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_DgBfSearcherError);
     } CATCH_ERROR_AND_RETURN(Cuda_DgBfSearcherError);
@@ -310,7 +310,7 @@ PyMethodDef cuda_dg_bf_searcher_methods[] = {
 	{"new_bf_searcher", dg_bf_searcher_create, METH_VARARGS},
 	{"delete_bf_searcher", dg_bf_searcher_delete, METH_VARARGS},
 	{"assign_device", dg_bf_searcher_assign_device, METH_VARARGS},
-	{"set_problem", dg_bf_searcher_set_problem, METH_VARARGS},
+	{"set_qubo", dg_bf_searcher_set_qubo, METH_VARARGS},
 	{"set_preferences", dg_bf_searcher_set_preferences, METH_VARARGS},
 	{"get_preferences", dg_bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", dg_bf_searcher_get_x, METH_VARARGS},

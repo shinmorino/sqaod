@@ -89,7 +89,7 @@ void CUDABipartiteGraphAnnealer<real>::seed(unsigned long long seed) {
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::
-setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::OptimizeMethod om) {
+setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::OptimizeMethod om) {
     /* FIXME: add QUBO dim check. */
     throwErrorIf(devStream_ == NULL, "Device not set.");
     if ((W.cols != N0_) || (W.rows != N1_))
@@ -112,7 +112,28 @@ setProblem(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::
         devFormulas_.devMath.scale(d_W, -1., *d_W);
     }
 
-    devFormulas_.calculate_hJc(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
+    devFormulas_.calculateHamiltonian(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
+
+    setState(solProblemSet);
+}
+
+template<class real>
+void CUDABipartiteGraphAnnealer<real>::
+setHamiltonian(const HostVector &h0, const HostVector &h1, const HostMatrix &J, real c) {
+    /* FIXME: add QUBO dim check. */
+    throwErrorIf(devStream_ == NULL, "Device not set.");
+    if ((J.cols != N0_) || (J.rows != N1_))
+        deallocate();
+
+    N0_ = J.cols;
+    N1_ = J.rows;
+    m_ = (N0_ + N1_) / 4;
+    om_ = sq::optMinimize;
+
+    devCopy_(&d_h0_, h0);
+    devCopy_(&d_h1_, h1);
+    devCopy_(&d_J_, J);
+    devCopy_(&d_c_, c);
 
     setState(solProblemSet);
 }
@@ -161,8 +182,8 @@ void CUDABipartiteGraphAnnealer<real>::set_x(const BitSet &x0, const BitSet &x1)
 
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::get_hJc(HostVector *h0, HostVector *h1,
-                                               HostMatrix *J, real *c) const {
+void CUDABipartiteGraphAnnealer<real>::getHamiltonian(HostVector *h0, HostVector *h1,
+                                                      HostMatrix *J, real *c) const {
     throwErrorIfProblemNotSet();
 
     devCopy_(h0, d_h0_);

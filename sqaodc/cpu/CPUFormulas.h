@@ -23,7 +23,7 @@ struct DGFuncs {
     void calculate_E(Vector *E, const Matrix &W, const Matrix &x);
     
     static
-    void calculate_hJc(Vector *h, Matrix *J, real *c, const Matrix &W);
+    void calculateHamiltonian(Vector *h, Matrix *J, real *c, const Matrix &W);
     
     static
     void calculate_E(real *E,
@@ -61,8 +61,8 @@ struct BGFuncs {
                         const Matrix &x0, const Matrix &x1);
     
     static
-    void calculate_hJc(Vector *h0, Vector *h1, Matrix *J, real *c,
-                       const Vector &b0, const Vector &b1, const Matrix &W);
+    void calculateHamiltonian(Vector *h0, Vector *h1, Matrix *J, real *c,
+                              const Vector &b0, const Vector &b1, const Matrix &W);
 
     static
     void calculate_E(real *E,

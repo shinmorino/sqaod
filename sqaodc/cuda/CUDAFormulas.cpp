@@ -31,13 +31,13 @@ calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
 
 
 template<class real> void CUDADenseGraphFormulas<real>::
-calculate_hJc(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W) {
+calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W) {
     DeviceVector *d_h = devStream->tempDeviceVector<real>(W.rows);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(W.dim());
     DeviceScalar *d_c = devStream->tempDeviceScalar<real>();
     DeviceMatrix *d_W = devStream->tempDeviceMatrix<real>(W.dim());
     devCopy(d_W, W);
-    formulas.calculate_hJc(d_h, d_J, d_c, *d_W);
+    formulas.calculateHamiltonian(d_h, d_J, d_c, *d_W);
     devCopy(h, *d_h);
     devCopy(J, *d_J);
     devCopy(c, *d_c);
@@ -159,8 +159,8 @@ calculate_E_2d(HostMatrix *E,
 
 
 template<class real> void CUDABipartiteGraphFormulas<real>::
-calculate_hJc(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
-              const HostVector &b0, const HostVector &b1, const HostMatrix &W) {
+calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
+                     const HostVector &b0, const HostVector &b1, const HostMatrix &W) {
     DeviceVector *d_h0 = devStream->tempDeviceVector<real>(b0.size);
     DeviceVector *d_h1 = devStream->tempDeviceVector<real>(b1.size);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(W.dim());
@@ -172,7 +172,7 @@ calculate_hJc(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
     devCopy(d_b0, b0);
     devCopy(d_b1, b1);
     devCopy(d_W, W);
-    formulas.calculate_hJc(d_h0, d_h1, d_J, d_c, *d_b0, *d_b1, *d_W);
+    formulas.calculateHamiltonian(d_h0, d_h1, d_J, d_c, *d_b0, *d_b1, *d_W);
     devCopy(h0, *d_h0);
     devCopy(h1, *d_h1);
     devCopy(J, *d_J);

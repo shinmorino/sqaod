@@ -14,7 +14,7 @@ struct CPUDenseGraphBatchSearch {
     
     CPUDenseGraphBatchSearch();
 
-    void setProblem(const Matrix &W, sq::SizeType tileSize);
+    void setQUBO(const Matrix &W, sq::SizeType tileSize);
 
     void initSearch();
     

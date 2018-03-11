@@ -24,7 +24,7 @@ public:
 
     /* void getProblemSize(SizeType *N) const; */
 
-    void setProblem(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const Matrix &W, sq::OptimizeMethod om = sq::optMinimize);
 
     sq::Preferences getPreferences() const;
 

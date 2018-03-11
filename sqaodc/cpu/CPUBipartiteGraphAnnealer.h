@@ -28,8 +28,11 @@ public:
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
-    void setProblem(const Vector &b0, const Vector &b1, const Matrix &W,
-                    sq::OptimizeMethod om = sq::optMinimize);
+    void setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
+                 sq::OptimizeMethod om = sq::optMinimize);
+
+    void setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J,
+                        real c = real(0.));
 
     /* FIXME: algo */
     /* void setPreference(const Preference &pref); */
@@ -44,7 +47,7 @@ public:
 
     /* Ising machine / spins */
 
-    void get_hJc(Vector *h0, Vector *h1, Matrix *J, real *c) const;
+    void getHamiltonian(Vector *h0, Vector *h1, Matrix *J, real *c) const;
 
     const sq::BitSetPairArray &get_q() const;
 

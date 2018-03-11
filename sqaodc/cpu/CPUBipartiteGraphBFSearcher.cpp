@@ -28,8 +28,8 @@ CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
 
 
 template<class real>
-void CPUBipartiteGraphBFSearcher<real>::setProblem(const Vector &b0, const Vector &b1,
-                                                   const Matrix &W, sq::OptimizeMethod om) {
+void CPUBipartiteGraphBFSearcher<real>::setQUBO(const Vector &b0, const Vector &b1,
+                                                const Matrix &W, sq::OptimizeMethod om) {
     clearState(solProblemSet);
 
     N0_ = b0.size;
@@ -86,7 +86,7 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
         sq::log("Tile size 1 is adjusted to %d for N1=%d", tileSize1_, N1_);
     }
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
-        searchers_[idx].setProblem(b0_, b1_, W_, tileSize0_, tileSize1_);
+        searchers_[idx].setQUBO(b0_, b1_, W_, tileSize0_, tileSize1_);
         searchers_[idx].initSearch();
     }
     setState(solPrepared);

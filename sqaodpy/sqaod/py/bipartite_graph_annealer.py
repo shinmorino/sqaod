@@ -10,7 +10,7 @@ class BipartiteGraphAnnealer :
 
     def __init__(self, b0, b1, W, optimize, prefdict) : # n_trotters
         if not W is None :
-            self.set_problem(b0, b1, W, optimize)
+            self.set_qubo(b0, b1, W, optimize)
         self._select_algorithm(algo.coloring)    
         self.set_preferences(prefdict)
 
@@ -25,16 +25,25 @@ class BipartiteGraphAnnealer :
     def get_problem_size(self) :
         return self._N0, self._N1;
         
-    def set_problem(self, b0, b1, W, optimize = sqaod.minimize) :
+    def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
 
         self._N0 = W.shape[1]
         self._N1 = W.shape[0]
         self._m = (self._N0 + self._N1) / 4
         self._optimize = optimize
-        h0, h1, J, c = formulas.bipartite_graph_calculate_hJc(b0, b1, W)
+        h0, h1, J, c = formulas.bipartite_graph_calculate_hamiltonian(b0, b1, W)
         self._h0, self._h1 = optimize.sign(h0), optimize.sign(h1)
         self._J, self._c = optimize.sign(J), optimize.sign(c)
+
+    def set_hamiltonian(self, h0, h1,J, c) :
+        checkers.bipartite_graph.hJc(h0, h1, J, c)
+
+        self._N0 = J.shape[1]
+        self._N1 = J.shape[0]
+        self._m = (self._N0 + self._N1) / 4
+        self._optimize = sqaod.minimize
+        self._h0, self._h1 = h0, h1, J, c
         
     def _select_algorithm(self, algoname) :
         if algoname == algo.naive :
@@ -86,7 +95,7 @@ class BipartiteGraphAnnealer :
 
     # Ising model / spin
     
-    def get_hJc(self) :
+    def get_hamiltonian(self) :
         return self._h0, self._h1, self._J, self._c
             
     def get_q(self) :

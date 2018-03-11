@@ -26,7 +26,7 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 }
 
 template<class real>
-void CPUDenseGraphBFSearcher<real>::setProblem(const Matrix &W, sq::OptimizeMethod om) {
+void CPUDenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!isSymmetric(W), "W is not symmetric.");
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     clearState(solProblemSet);
@@ -72,7 +72,7 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
         sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
     for (int idx = 0; idx < nMaxThreads_; ++idx) {
-        searchers_[idx].setProblem(W_, tileSize_);
+        searchers_[idx].setQUBO(W_, tileSize_);
         searchers_[idx].initSearch();
     }
     setState(solPrepared);

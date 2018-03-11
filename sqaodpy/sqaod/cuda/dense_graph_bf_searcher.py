@@ -15,7 +15,7 @@ class DenseGraphBFSearcher :
         self._cobj = cext.new_bf_searcher(dtype)
  	self.assign_device(device.active_device)
         if not W is None :
-            self.set_problem(W, optimize)
+            self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
@@ -24,11 +24,11 @@ class DenseGraphBFSearcher :
     def assign_device(self, dev) :
         cext.assign_device(self._cobj, dev._cobj, self.dtype)
 
-    def set_problem(self, W, optimize = sqaod.minimize) :
+    def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
         W = sqaod.clone_as_ndarray(W, self.dtype)
         self._N = W.shape[0]
-        cext.set_problem(self._cobj, W, optimize, self.dtype)
+        cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
     def get_problem_size(self) :
