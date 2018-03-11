@@ -64,7 +64,7 @@ AC_SUBST([DEFINE_SQAODC_CUDA_ENABLED], ${cudadef})
 AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
 AC_SUBST([NVCCFLAGS], $NVCCFLAGS)
 AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
-AC_SUBST([CUDA_INCLUDE], ${cuda_prefix}/include)
+AC_SUBST([CUDA_INCLUDE], "-I${cuda_prefix}/include")
 AC_PROG_CC
 AC_PROG_CXX
 
@@ -104,5 +104,7 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/common/Makefile
 		 sqaodc/cpu/Makefile
 		 sqaodc/cuda/Makefile
-		 sqaodc/tests/Makefile])
+		 sqaodc/tests/Makefile
+		 sqaodpy/sqaod/cuda/src/Makefile
+])
 AC_OUTPUT
