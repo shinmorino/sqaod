@@ -257,7 +257,7 @@ void DeviceMemoryStore::finalize() {
     fixedSizedChunks_.finalize();
     heapMap_.finalize();
     chunkPropSet_.clear();
-    for (size_t idx = 0; idx < d_mems_.size(); ++idx)
+    for (sq::IdxType idx = 0; idx < d_mems_.size(); ++idx)
         cudaFree(d_mems_[idx]);
     d_mems_.clear();
     initialized_ = false;

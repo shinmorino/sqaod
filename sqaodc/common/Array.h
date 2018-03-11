@@ -31,7 +31,7 @@ public:
     typedef const V* const_iterator;
     typedef V ValueType;
     
-    ArrayType(size_t capacity = 1024) {
+    ArrayType(SizeType capacity = 1024) {
         data_ = nullptr;
         size_ = 0;
         allocate(capacity);
@@ -49,7 +49,7 @@ public:
             deallocate();
     }
     
-    void reserve(size_t capacity) {
+    void reserve(SizeType capacity) {
         if (capacity < capacity_)
             return;
         V *new_data = (V*)malloc(sizeof(V) * capacity);
@@ -57,7 +57,7 @@ public:
             memcpy(new_data, data_, sizeof(V) * size_);
         }
         else {
-            for (size_t idx = 0; idx < size_; ++idx) {
+            for (SizeType idx = 0; idx < size_; ++idx) {
                 new (&new_data[idx]) V(std::move_if_noexcept(data_[idx]));
                 data_[idx].~V();
             }
@@ -71,11 +71,11 @@ public:
         return size() == 0;
     }
     
-    size_t size() const {
+    SizeType size() const {
         return size_;
     }
 
-    size_t capacity() const {
+    SizeType capacity() const {
         return capacity_;
     }
     
@@ -133,12 +133,12 @@ public:
         return data_ + size_;
     }
 
-    V &operator[](size_t idx) {
+    V &operator[](IdxType idx) {
         assert(idx < size_); 
         return data_[idx];
     }
 
-    const V &operator[](size_t idx) const {
+    const V &operator[](IdxType idx) const {
         assert(idx < size_); 
         return data_[idx];
     }
@@ -161,7 +161,7 @@ public:
             return memcmp(data_, rhs.data_, sizeof(V) * size_) == 0;
         }
         else {
-            for (size_t idx = 0; idx < size_; ++idx) {
+            for (IdxType idx = 0; idx < size_; ++idx) {
                 if (data_[idx] != rhs.data_[idx])
                     return false;
             }
@@ -174,7 +174,7 @@ public:
     }
 
     void insert(const_iterator first, const_iterator last) {
-        size_t nElms = last - first;
+        SizeType nElms = last - first;
         if (capacity_ < size_ + nElms)
             reserve(capacity_ * 2);
         if (ValueProp<V>::POD) {
@@ -193,12 +193,12 @@ public:
 private:
     void erase() {
         if (!ValueProp<V>::POD) {
-            for (size_t idx = 0; idx < size_; ++idx)
+            for (IdxType idx = 0; idx < size_; ++idx)
                 data_[idx].~V();
         }
     }
 
-    void allocate(size_t capacity) {
+    void allocate(SizeType capacity) {
         assert(data_ == nullptr);
         data_ = (V*)malloc(sizeof(V) * capacity);
         capacity_ = capacity;
@@ -211,8 +211,8 @@ private:
     }
     
     V *data_;
-    size_t capacity_;
-    size_t size_;
+    SizeType capacity_;
+    SizeType size_;
 };
 
 

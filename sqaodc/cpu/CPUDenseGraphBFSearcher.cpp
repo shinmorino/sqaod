@@ -103,7 +103,7 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
             packedXList = searcher.packedXList_;
         }
         else if (searcher.Emin_ == Emin_) {
-            if (packedXList.size() < (size_t)tileSize_) {
+            if (packedXList.size() < tileSize_) {
                 packedXList.insert(searcher.packedXList_.begin(),
                                    searcher.packedXList_.end());
             }
@@ -111,7 +111,7 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
     }
     
     std::sort(packedXList.begin(), packedXList.end());
-    int nSolutions = std::min((size_t)tileSize_, packedXList.size());
+    int nSolutions = std::min(tileSize_, packedXList.size());
     for (int idx = 0; idx < nSolutions; ++idx) {
         sq::Bits bits;
         unpackBits(&bits, packedXList[idx], N_);
