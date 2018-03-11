@@ -95,7 +95,7 @@ struct Annealer : Solver<real> {
 
     virtual void seed(unsigned long long seed) = 0;
 
-    virtual void randomize_q() = 0;
+    virtual void randomizeSpin() = 0;
     
     virtual void annealOneStep(real G, real kT) = 0;
 

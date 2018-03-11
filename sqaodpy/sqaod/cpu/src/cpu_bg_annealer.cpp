@@ -283,9 +283,9 @@ PyObject *bg_annealer_radomize_q(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->randomize_q();
+            pyobjToCppObj<double>(objExt)->randomizeSpin();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->randomize_q();
+            pyobjToCppObj<float>(objExt)->randomizeSpin();
         else
             RAISE_INVALID_DTYPE(dtype, Cpu_BgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cpu_BgAnnealerError);
@@ -460,7 +460,7 @@ PyMethodDef cpu_bg_annealer_methods[] = {
 	{"set_x", bg_annealer_set_x, METH_VARARGS},
 	{"get_hJc", bg_annealer_get_hJc, METH_VARARGS},
 	{"get_q", bg_annealer_get_q, METH_VARARGS},
-	{"randomize_q", bg_annealer_radomize_q, METH_VARARGS},
+	{"randomize_spin", bg_annealer_radomize_q, METH_VARARGS},
 	{"calculate_E", bg_annealer_calculate_E, METH_VARARGS},
 	{"prepare", bg_annealer_prepare, METH_VARARGS},
 	{"make_solution", bg_annealer_make_solution, METH_VARARGS},

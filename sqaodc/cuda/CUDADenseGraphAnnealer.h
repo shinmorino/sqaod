@@ -60,7 +60,7 @@ public:
 
     void get_hJc(HostVector *h, HostMatrix *J, real *c) const;
 
-    void randomize_q();
+    void randomizeSpin();
 
     void prepare();
 

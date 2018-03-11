@@ -63,8 +63,8 @@ class DenseGraphAnnealer :
     def get_q(self) :
         return cext.get_q(self._cobj, self.dtype)
 
-    def randomize_q(self) :
-        cext.randomize_q(self._cobj, self.dtype)
+    def randomize_spin(self) :
+        cext.randomize_spin(self._cobj, self.dtype)
 
     def prepare(self) :
         cext.prepare(self._cobj, self.dtype)
@@ -118,7 +118,7 @@ if __name__ == '__main__' :
         G = Ginit
         ann.set_preferences(n_trotters = 4)
         ann.prepare()
-        ann.randomize_q()
+        ann.randomize_spin()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

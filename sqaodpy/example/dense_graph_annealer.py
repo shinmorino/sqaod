@@ -48,11 +48,11 @@ print 'c=', c
 print ann.get_preferences()
 
 # 9. prepare to run anneal. Annealers must be prepared
-#  before calling randomize_q() and anneal_one_step().
+#  before calling randomize_spin() and anneal_one_step().
 ann.prepare()
 
 # 10. randomize or set x(0 or 1) to set the initial state (mandatory)
-ann.randomize_q()
+ann.randomize_spin()
 
 # 11. annealing
 

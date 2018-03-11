@@ -90,15 +90,15 @@ def generate_random_bits(N) :
         bit[...] = np.random.choice([0,1])
     return bits
 
-def randomize_qbits(qbits) :
-    for qbit in np.nditer(qbits, [], [['readwrite']]) :
-        qbit[...] = np.random.choice([-1,1])
+def randomize_spin(qmat) :
+    for spinvec in np.nditer(qmat, [], [['readwrite']]) :
+        spinvec[...] = np.random.choice([-1,1])
 
-def bits_to_qbits(x) :
+def bit_to_spin(x) :
     q = x * 2 - 1
     return q
 
-def bits_from_qbits(q) :
+def bit_from_spin(q) :
     x = ((q + 1) >> 1)
     return x
 
@@ -111,7 +111,7 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
     
     for loop in range(0, n_repeat) :
         annealer.init_anneal()
-        annealer.randomize_q()
+        annealer.randomize_spin()
         G = Ginit
         while Gfin < G :
             annealer.anneal_one_step(G, kT)

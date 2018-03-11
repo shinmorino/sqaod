@@ -181,12 +181,12 @@ const sq::BitsPairArray &CUDABipartiteGraphAnnealer<real>::get_q() const {
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::randomize_q() {
+void CUDABipartiteGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
     cudaStream_t stream = devStream_->getCudaStream();
-    sqaod_cuda::randomize_q(d_matq0_.d_data, d_random_, N0_ * m_, stream);
-    sqaod_cuda::randomize_q(d_matq1_.d_data, d_random_, N1_ * m_, stream);
+    sqaod_cuda::randomizeSpin(d_matq0_.d_data, d_random_, N0_ * m_, stream);
+    sqaod_cuda::randomizeSpin(d_matq1_.d_data, d_random_, N1_ * m_, stream);
     setState(solQSet);
 }
 

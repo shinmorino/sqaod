@@ -332,16 +332,16 @@ PyObject *dg_annealer_get_q(PyObject *module, PyObject *args) {
 }
     
 extern "C"
-PyObject *dg_annealer_radomize_q(PyObject *module, PyObject *args) {
+PyObject *dg_annealer_randomize_spin(PyObject *module, PyObject *args) {
     PyObject *objExt, *dtype;
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
     TRY {
         if (isFloat64(dtype))
-            pyobjToCppObj<double>(objExt)->randomize_q();
+            pyobjToCppObj<double>(objExt)->randomizeSpin();
         else if (isFloat32(dtype))
-            pyobjToCppObj<float>(objExt)->randomize_q();
+            pyobjToCppObj<float>(objExt)->randomizeSpin();
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_DgAnnealerError);
     } CATCH_ERROR_AND_RETURN(Cuda_DgAnnealerError);
@@ -455,7 +455,7 @@ PyMethodDef cuda_dg_annealer_methods[] = {
 	{"set_x", dg_annealer_set_x, METH_VARARGS},
 	{"get_hJc", dg_annealer_get_hJc, METH_VARARGS},
 	{"get_q", dg_annealer_get_q, METH_VARARGS},
-	{"randomize_q", dg_annealer_radomize_q, METH_VARARGS},
+	{"randomize_spin", dg_annealer_randomize_spin, METH_VARARGS},
 	{"calculate_E", dg_annealer_calculate_E, METH_VARARGS},
 	{"prepare", dg_annealer_prepare, METH_VARARGS},
 	{"make_solution", dg_annealer_make_solution, METH_VARARGS},

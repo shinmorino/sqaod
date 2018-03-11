@@ -79,12 +79,12 @@ class BipartiteGraphAnnealer :
         return self._x_pairs
 
     def set_x(self, x0, x1) :
-        q0 = sqaod.bits_to_qbits(x0)
-        q1 = sqaod.bits_to_qbits(x1)
+        q0 = sqaod.bit_to_spin(x0)
+        q1 = sqaod.bit_to_spin(x1)
         self._q0[:][...] = q0[:]
         self._q1[:][...] = q1[:]
 
-    # Ising model / spins
+    # Ising model / spin
     
     def get_hJc(self) :
         return self._h0, self._h1, self._J, self._c
@@ -92,16 +92,16 @@ class BipartiteGraphAnnealer :
     def get_q(self) :
         return self._q0, self._q1
 
-    def randomize_q(self) :
-        sqaod.randomize_qbits(self._q0)
-        sqaod.randomize_qbits(self._q1)
+    def randomize_spin(self) :
+        sqaod.randomize_spin(self._q0)
+        sqaod.randomize_spin(self._q1)
 
     def calculate_E(self) :
         h0, h1, J, c, q0, q1 = self._vars()
         E = np.empty((self._m), J.dtype)
         for idx in range(self._m) :
             # FIXME: 1d output for batch calculation
-            E[idx] = formulas.bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0[idx], q1[idx])
+            E[idx] = formulas.bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0[idx], q1[idx])
         self._E = self._optimize.sign(E)
 
     def init_anneal(self) :
@@ -111,8 +111,8 @@ class BipartiteGraphAnnealer :
     def fin_anneal(self) :
         self._x_pairs = []
         for idx in range(self._m) :
-            x0 = sqaod.bits_from_qbits(self._q0[idx])
-            x1 = sqaod.bits_from_qbits(self._q1[idx])
+            x0 = sqaod.bit_from_spin(self._q0[idx])
+            x1 = sqaod.bit_from_spin(self._q1[idx])
             self._x_pairs.append((x0, x1))
         self.calculate_E()
 
@@ -211,7 +211,7 @@ if __name__ == '__main__' :
 
     for loop in range(0, n_repeat) :
         an.init_anneal()
-        an.randomize_q()
+        an.randomize_spin()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)

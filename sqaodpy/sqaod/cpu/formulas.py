@@ -41,21 +41,21 @@ def dense_graph_calculate_hJc(W, dtype) :
 
 # Ising model energy functions
 
-def dense_graph_calculate_E_from_qbits(h, J, c, q, dtype) :
+def dense_graph_calculate_E_from_spin(h, J, c, q, dtype) :
     checkers.dense_graph.hJc(h, J, c, dtype);
     checkers.dense_graph.bits(J, q);
     checkers.assert_is_vector('q', q)
     
     E = np.ndarray((1), dtype)
-    cpu_formulas.dense_graph_calculate_E_from_qbits(E, h, J, c, q, dtype)
+    cpu_formulas.dense_graph_calculate_E_from_spin(E, h, J, c, q, dtype)
     return E[0]
 
-def dense_graph_batch_calculate_E_from_qbits(h, J, c, q, dtype) :
+def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype) :
     checkers.dense_graph.hJc(h, J, c, dtype);
     checkers.dense_graph.bits(J, q);
 
     E = np.empty([q.shape[0]], dtype)
-    cpu_formulas.dense_graph_batch_calculate_E_from_qbits(E, h, J, c, q, dtype)
+    cpu_formulas.dense_graph_batch_calculate_E_from_spin(E, h, J, c, q, dtype)
     return E
 
 
@@ -108,25 +108,25 @@ def bipartite_graph_calculate_hJc(b0, b1, W, dtype) :
     cpu_formulas.bipartite_graph_calculate_hJc(h0, h1, J, c, b0, b1, W, dtype);
     return h0, h1, J, c[0]
 
-def bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
+def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
     checkers.bipartite_graph.hJc(h0, h1, J, c, dtype)
     checkers.bipartite_graph.bits(J, q0, q1)
     checkers.assert_is_vector('q0', q0)
     checkers.assert_is_vector('q1', q1)
 
     E = np.ndarray((1), dtype)
-    cpu_formulas.bipartite_graph_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
+    cpu_formulas.bipartite_graph_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
     return E[0]
 
 
-def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1, dtype) :
+def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
     checkers.bipartite_graph.hJc(h0, h1, J, c, dtype)
     checkers.bipartite_graph.bits(J, q0, q1)
     
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     E = np.empty((nBatch0), dtype)
-    cpu_formulas.bipartite_graph_batch_calculate_E_from_qbits(E, h0, h1, J, c, q0, q1, dtype)
+    cpu_formulas.bipartite_graph_batch_calculate_E_from_spin(E, h0, h1, J, c, q0, q1, dtype)
     return E
 
 
@@ -164,14 +164,14 @@ if __name__ == '__main__' :
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
 
-    q = sqaod.bits_to_qbits(x)
-    E0 = py_formulas.dense_graph_calculate_E_from_qbits(h0, J0, c0, q);
-    E1 = dense_graph_calculate_E_from_qbits(h0, J0, c0, q, dtype);
+    q = sqaod.bit_to_spin(x)
+    E0 = py_formulas.dense_graph_calculate_E_from_spin(h0, J0, c0, q);
+    E1 = dense_graph_calculate_E_from_spin(h0, J0, c0, q, dtype);
     assert np.allclose(E0, E1)
 
-    qlist = sqaod.bits_to_qbits(xlist)
-    E0 = py_formulas.dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist);
-    E1 = dense_graph_batch_calculate_E_from_qbits(h0, J0, c0, qlist, dtype);
+    qlist = sqaod.bit_to_spin(xlist)
+    E0 = py_formulas.dense_graph_batch_calculate_E_from_spin(h0, J0, c0, qlist);
+    E1 = dense_graph_batch_calculate_E_from_spin(h0, J0, c0, qlist, dtype);
     assert np.allclose(E0, E1)
 
     
@@ -207,18 +207,18 @@ if __name__ == '__main__' :
     assert np.allclose(J0, J1);
     assert np.allclose(c0, c1);
 
-    q0 = sqaod.bits_to_qbits(x0)
-    q1 = sqaod.bits_to_qbits(x1)
-    E0 = py_formulas.bipartite_graph_calculate_E_from_qbits(h00, h01, J0, c0, q0, q1);
-    E1 = bipartite_graph_calculate_E_from_qbits(h10, h11, J0, c0, q0, q1, dtype);
+    q0 = sqaod.bit_to_spin(x0)
+    q1 = sqaod.bit_to_spin(x1)
+    E0 = py_formulas.bipartite_graph_calculate_E_from_spin(h00, h01, J0, c0, q0, q1);
+    E1 = bipartite_graph_calculate_E_from_spin(h10, h11, J0, c0, q0, q1, dtype);
     assert np.allclose(E0, E1)
     
     xlist0 = sqaod.create_bits_sequence(range(0, 1 << N0), N0)
     xlist1 = sqaod.create_bits_sequence(range(0, 1 << N0), N1)
-    qlist0 = sqaod.bits_to_qbits(xlist0)
-    qlist1 = sqaod.bits_to_qbits(xlist1)
-    E0 = py_formulas.bipartite_graph_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1);
-    E1 = bipartite_graph_batch_calculate_E_from_qbits(h10, h11, J0, c0, qlist0, qlist1, dtype);
+    qlist0 = sqaod.bit_to_spin(xlist0)
+    qlist1 = sqaod.bit_to_spin(xlist1)
+    E0 = py_formulas.bipartite_graph_batch_calculate_E_from_spin(h10, h11, J0, c0, qlist0, qlist1);
+    E1 = bipartite_graph_batch_calculate_E_from_spin(h10, h11, J0, c0, qlist0, qlist1, dtype);
     assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
     
 

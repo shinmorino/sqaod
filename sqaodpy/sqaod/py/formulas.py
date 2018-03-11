@@ -32,12 +32,12 @@ def dense_graph_batch_calculate_E(W, x) :
     y = x.reshape(x.shape[0], -1)
     return np.sum(y * np.matmul(W, x.T).T, 1)
 
-def dense_graph_calculate_E_from_qbits(h, J, c, q) :
+def dense_graph_calculate_E_from_spin(h, J, c, q) :
     if len(q.shape) != 1 :
         raise Exception('Wrong dimention of q')
     return c + np.dot(h, q) + np.dot(q, np.matmul(J, q.T))
 
-def dense_graph_batch_calculate_E_from_qbits(h, J, c, q) :
+def dense_graph_batch_calculate_E_from_spin(h, J, c, q) :
     return c + np.matmul(h, q.T) + np.sum(q.T * np.matmul(J, q.T), 0)
 
 
@@ -78,10 +78,10 @@ def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1) :
     return np.matmul(b0.T, x0.T).reshape(1, nBatch0) + np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
         + np.matmul(x1, np.matmul(W, x0.T))
 
-def bipartite_graph_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1) :
     return np.dot(h0, q0) + np.dot(h1, q1) + np.dot(q1, np.matmul(J, q0)) + c
 
-def bipartite_graph_batch_calculate_E_from_qbits(h0, h1, J, c, q0, q1) :
+def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1) :
     # FIXME: fix error messages.  move to checkers.py?
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]

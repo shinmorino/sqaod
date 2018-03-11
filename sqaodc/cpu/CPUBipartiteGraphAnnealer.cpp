@@ -147,7 +147,7 @@ const sq::BitsPairArray &CPUBipartiteGraphAnnealer<real>::get_q() const {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::randomize_q() {
+void CPUBipartiteGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 #ifndef _OPENMP
     {

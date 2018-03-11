@@ -136,7 +136,7 @@ PyObject *cuda_formulas_dense_graph_calculate_hJc(PyObject *module, PyObject *ar
 
     
 template<class real> void
-internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
+internal_dense_graph_calculate_E_from_spin(PyObject *objE,
                                             PyObject *objH, PyObject *objJ, PyObject *objC,
                                             PyObject *objQ) {
     typedef NpMatrixType<real> NpMatrix;
@@ -154,7 +154,7 @@ internal_dense_graph_calculate_E_from_qbits(PyObject *objE,
     
 
 extern "C"
-PyObject *cuda_formulas_dense_graph_calculate_E_from_qbits(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_dense_graph_calculate_E_from_spin(PyObject *module, PyObject *args) {
     PyObject *objE, *objH, *objJ, *objC, *objQ;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
@@ -162,9 +162,9 @@ PyObject *cuda_formulas_dense_graph_calculate_E_from_qbits(PyObject *module, PyO
     
     TRY {
         if (isFloat64(dtype))
-            internal_dense_graph_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
+            internal_dense_graph_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
         else if (isFloat32(dtype))
-            internal_dense_graph_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
+            internal_dense_graph_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
     } CATCH_ERROR_AND_RETURN(Cuda_FormulasError);
@@ -175,7 +175,7 @@ PyObject *cuda_formulas_dense_graph_calculate_E_from_qbits(PyObject *module, PyO
 
 
 template<class real>
-void internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
+void internal_dense_graph_batch_calculate_E_from_spin(PyObject *objE,
                                                        PyObject *objH, PyObject *objJ, PyObject *objC,
                                                        PyObject *objQ) {
     typedef NpMatrixType<real> NpMatrix;
@@ -191,7 +191,7 @@ void internal_dense_graph_batch_calculate_E_from_qbits(PyObject *objE,
 }
 
 extern "C"
-PyObject *cuda_formulas_dense_graph_batch_calculate_E_from_qbits(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_dense_graph_batch_calculate_E_from_spin(PyObject *module, PyObject *args) {
     PyObject *objE, *objH, *objJ, *objC, *objQ;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOO", &objE, &objH, &objJ, &objC, &objQ, &dtype))
@@ -199,9 +199,9 @@ PyObject *cuda_formulas_dense_graph_batch_calculate_E_from_qbits(PyObject *modul
     
     TRY {
         if (isFloat64(dtype))
-            internal_dense_graph_batch_calculate_E_from_qbits<double>(objE, objH, objJ, objC, objQ);
+            internal_dense_graph_batch_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
         else if (isFloat32(dtype))
-            internal_dense_graph_batch_calculate_E_from_qbits<float>(objE, objH, objJ, objC, objQ);
+            internal_dense_graph_batch_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
     } CATCH_ERROR_AND_RETURN(Cuda_FormulasError);
@@ -373,7 +373,7 @@ PyObject *cuda_formulas_bipartite_graph_calculate_hJc(PyObject *module, PyObject
     
 
 template<class real> void
-internal_bipartite_graph_calculate_E_from_qbits(PyObject *objE,
+internal_bipartite_graph_calculate_E_from_spin(PyObject *objE,
                                                 PyObject *objH0, PyObject *objH1, PyObject *objJ, PyObject *objC,
                                                 PyObject *objQ0, PyObject *objQ1) {
     typedef NpMatrixType<real> NpMatrix;
@@ -390,7 +390,7 @@ internal_bipartite_graph_calculate_E_from_qbits(PyObject *objE,
 }
     
 extern "C"
-PyObject *cuda_formulas_bipartite_graph_calculate_E_from_qbits(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_bipartite_graph_calculate_E_from_spin(PyObject *module, PyObject *args) {
     PyObject *objE, *objH0, *objH1, *objJ, *objC, *objQ0, *objQ1;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOOOO",
@@ -400,10 +400,10 @@ PyObject *cuda_formulas_bipartite_graph_calculate_E_from_qbits(PyObject *module,
     
     TRY {
         if (isFloat64(dtype))
-            internal_bipartite_graph_calculate_E_from_qbits<double>
+            internal_bipartite_graph_calculate_E_from_spin<double>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else if (isFloat32(dtype))
-            internal_bipartite_graph_calculate_E_from_qbits<float>
+            internal_bipartite_graph_calculate_E_from_spin<float>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
@@ -415,7 +415,7 @@ PyObject *cuda_formulas_bipartite_graph_calculate_E_from_qbits(PyObject *module,
 
 
 template<class real> void
-internal_bipartite_graph_batch_calculate_E_from_qbits(PyObject *objE,
+internal_bipartite_graph_batch_calculate_E_from_spin(PyObject *objE,
                                                       PyObject *objH0, PyObject *objH1, PyObject *objJ, PyObject *objC,
                                                       PyObject *objQ0, PyObject *objQ1) {
     typedef NpMatrixType<real> NpMatrix;
@@ -432,7 +432,7 @@ internal_bipartite_graph_batch_calculate_E_from_qbits(PyObject *objE,
 }
 
 extern "C"
-PyObject *cuda_formulas_bipartite_graph_batch_calculate_E_from_qbits(PyObject *module, PyObject *args) {
+PyObject *cuda_formulas_bipartite_graph_batch_calculate_E_from_spin(PyObject *module, PyObject *args) {
     PyObject *objE, *objH0, *objH1, *objJ, *objC, *objQ0, *objQ1;
     PyObject *dtype;
     if (!PyArg_ParseTuple(args, "OOOOOOOO",
@@ -442,10 +442,10 @@ PyObject *cuda_formulas_bipartite_graph_batch_calculate_E_from_qbits(PyObject *m
     
     TRY {
         if (isFloat64(dtype))
-            internal_bipartite_graph_batch_calculate_E_from_qbits<double>
+            internal_bipartite_graph_batch_calculate_E_from_spin<double>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else if (isFloat32(dtype))
-            internal_bipartite_graph_batch_calculate_E_from_qbits<float>
+            internal_bipartite_graph_batch_calculate_E_from_spin<float>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else
             RAISE_INVALID_DTYPE(dtype, Cuda_FormulasError);
@@ -464,14 +464,14 @@ PyMethodDef annealermethods[] = {
 	{"dense_graph_calculate_E", cuda_formulas_dense_graph_calculate_E, METH_VARARGS},
 	{"dense_graph_batch_calculate_E", cuda_formulas_dense_graph_batch_calculate_E, METH_VARARGS},
 	{"dense_graph_calculate_hJc", cuda_formulas_dense_graph_calculate_hJc, METH_VARARGS},
-	{"dense_graph_calculate_E_from_qbits", cuda_formulas_dense_graph_calculate_E_from_qbits, METH_VARARGS},
-	{"dense_graph_batch_calculate_E_from_qbits", cuda_formulas_dense_graph_batch_calculate_E_from_qbits, METH_VARARGS},
+	{"dense_graph_calculate_E_from_spin", cuda_formulas_dense_graph_calculate_E_from_spin, METH_VARARGS},
+	{"dense_graph_batch_calculate_E_from_spin", cuda_formulas_dense_graph_batch_calculate_E_from_spin, METH_VARARGS},
 	{"bipartite_graph_calculate_E", cuda_formulas_bipartite_graph_calculate_E, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E", cuda_formulas_bipartite_graph_batch_calculate_E, METH_VARARGS},
 	{"bipartite_graph_batch_calculate_E_2d", cuda_formulas_bipartite_graph_batch_calculate_E_2d, METH_VARARGS},
 	{"bipartite_graph_calculate_hJc", cuda_formulas_bipartite_graph_calculate_hJc, METH_VARARGS},
-	{"bipartite_graph_calculate_E_from_qbits", cuda_formulas_bipartite_graph_calculate_E_from_qbits, METH_VARARGS},
-	{"bipartite_graph_batch_calculate_E_from_qbits", cuda_formulas_bipartite_graph_batch_calculate_E_from_qbits, METH_VARARGS},
+	{"bipartite_graph_calculate_E_from_spin", cuda_formulas_bipartite_graph_calculate_E_from_spin, METH_VARARGS},
+	{"bipartite_graph_batch_calculate_E_from_spin", cuda_formulas_bipartite_graph_batch_calculate_E_from_spin, METH_VARARGS},
 	{NULL},
 };
 

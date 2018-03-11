@@ -64,7 +64,7 @@ public:
 
     const BitsPairArray &get_q() const;
 
-    void randomize_q();
+    void randomizeSpin();
 
     void prepare();
 

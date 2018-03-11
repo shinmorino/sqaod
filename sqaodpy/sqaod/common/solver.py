@@ -39,7 +39,7 @@ class Annealer(Sovler) :
         raise NotImplementedError()
 
     @abstractmethod
-    def randomize_q(self) :
+    def randomize_spin(self) :
         raise NotImplementedError()
 
     @abstractmethod

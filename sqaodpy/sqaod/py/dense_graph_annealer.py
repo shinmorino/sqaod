@@ -86,12 +86,12 @@ class DenseGraphAnnealer :
     def get_q(self) :
         return self._q
     
-    def randomize_q(self) :
-        sqaod.randomize_qbits(self._q)
+    def randomize_spin(self) :
+        sqaod.randomize_spin(self._q)
 
     def calculate_E(self) :
         h, J, c, q = self._vars()
-        E = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, q)
+        E = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, q)
         self._E = self._optimize.sign(E)
 
     def init_anneal(self) :
@@ -100,7 +100,7 @@ class DenseGraphAnnealer :
     def fin_anneal(self) :
         self._x = []
         for idx in range(self._m) :
-            x = sqaod.bits_from_qbits(self._q[idx])
+            x = sqaod.bit_from_spin(self._q[idx])
             self._x.append(x)
         self.calculate_E()
 
@@ -188,7 +188,7 @@ if __name__ == '__main__' :
     for loop in range(0, nRepeat) :
         G = Ginit
         ann.init_anneal()
-        ann.randomize_q()
+        ann.randomize_spin()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau
@@ -206,7 +206,7 @@ if __name__ == '__main__' :
     for loop in range(0, nRepeat) :
         G = Ginit
         ann.init_anneal()
-        ann.randomize_q()
+        ann.randomize_spin()
         while Gfin < G :
             ann.anneal_one_step(G, kT)
             G = G * tau

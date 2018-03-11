@@ -13,9 +13,9 @@ class TestTraits(unittest.TestCase):
         
     def compare_energy(self, W, xlist) :
         Equbo = formulas.dense_graph_batch_calculate_E(W, xlist)
-        qlist = common.bits_to_qbits(xlist)
+        qlist = common.bit_to_spin(xlist)
         h, J, c = formulas.dense_graph_calculate_hJc(W)
-        EhJc = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, qlist)
+        EhJc = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, qlist)
 
         if self.verbose :
             print 'xlist', xlist
@@ -60,18 +60,18 @@ class TestTraits(unittest.TestCase):
 
         self.assertTrue(np.allclose(E, Ebatch))
 
-    def test_engery_of_batched_qbits_energy_func(self):
+    def test_engery_of_batched_spin_energy_func(self):
         N = 8
         W = common.generate_random_symmetric_W((N), dtype=np.float64)
         xlist = common.create_bits_sequence(range(0, 2 ** N), N)
-        qlist = common.bits_to_qbits(xlist)
+        qlist = common.bits_to_spin(xlist)
         h, J, c = formulas.dense_graph_calculate_hJc(W)
         
         E = []
         for i in range(0, 1 << N) :
-            E.append(formulas.dense_graph_calculate_E_from_qbits(h, J, c, qlist[i]))
+            E.append(formulas.dense_graph_calculate_E_from_spin(h, J, c, qlist[i]))
 
-        Ebatch = formulas.dense_graph_batch_calculate_E_from_qbits(h, J, c, qlist)
+        Ebatch = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, qlist)
 
         self.assertTrue(np.allclose(E, Ebatch))
         

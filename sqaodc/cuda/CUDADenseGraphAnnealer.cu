@@ -176,11 +176,11 @@ const sq::BitsArray &CUDADenseGraphAnnealer<real>::get_q() const {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::randomize_q() {
+void CUDADenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
-    ::randomize_q(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
-                  devStream_->getCudaStream());
+    ::randomizeSpin(d_matq_.d_data, d_random_, d_matq_.rows * d_matq_.cols,
+                    devStream_->getCudaStream());
     setState(solQSet);
 }
 

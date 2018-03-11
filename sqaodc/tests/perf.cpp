@@ -83,7 +83,7 @@ void anneal(A<real> &an) {
 
     auto start = std::chrono::system_clock::now();
     an.prepare();
-    an.randomize_q();
+    an.randomizeSpin();
     real G = Ginit;
     while (Gfin < G) {
         an.annealOneStep(G, kT);

@@ -134,7 +134,7 @@ const sq::BitsArray &CPUDenseGraphAnnealer<real>::get_q() const {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::randomize_q() {
+void CPUDenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
     real *q = matQ_.data();
     for (int idx = 0; idx < sq::IdxType(N_ * m_); ++idx)

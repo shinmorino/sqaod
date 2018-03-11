@@ -65,8 +65,8 @@ class BipartiteGraphAnnealer :
     def get_q(self) :
         return cext.get_q(self._cobj, self.dtype)
 
-    def randomize_q(self) :
-        cext.randomize_q(self._cobj, self.dtype)
+    def randomize_spin(self) :
+        cext.randomize_spin(self._cobj, self.dtype)
 
     def calculate_E(self) :
         cext.calculate_E(self._cobj, self.dtype)
@@ -108,7 +108,7 @@ if __name__ == '__main__' :
 
     for loop in range(0, n_repeat) :
         an.prepare()
-        an.randomize_q()
+        an.randomize_spin()
         G = Ginit
         while Gfin < G :
             an.anneal_one_step(G, kT)

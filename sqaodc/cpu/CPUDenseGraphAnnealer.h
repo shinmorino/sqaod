@@ -44,7 +44,7 @@ public:
 
     void get_hJc(Vector *h, Matrix *J, real *c) const;
 
-    void randomize_q();
+    void randomizeSpin();
 
     void prepare();
 
