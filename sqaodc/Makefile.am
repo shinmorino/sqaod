@@ -23,7 +23,7 @@ endif
 if CUDA_ENABLED
     lib_LTLIBRARIES+=libsqaodc_cuda.la
     libsqaodc_cuda_la_SOURCES=
-    libsqaodc_cuda_la_LIBADD=cuda/libcuda.la libsqaodc.la -L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand
+    libsqaodc_cuda_la_LIBADD=cuda/libcuda.la libsqaodc.la @CUDA_LDFLAGS@ -lcublas -lcudart -lcurand
     libsqaodc_cuda_la_LDFLAGS=-version-info 0:0:0
 endif
 
