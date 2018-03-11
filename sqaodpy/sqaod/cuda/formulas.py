@@ -153,7 +153,7 @@ if __name__ == '__main__' :
     E1 = dense_graph_calculate_E(W, x, dtype)
     assert np.allclose(E0, E1)
 
-    xlist = sqaod.create_bits_sequence(range(0, 1 << N), N)
+    xlist = sqaod.create_bitset_sequence(range(0, 1 << N), N)
     E0 = py_formulas.dense_graph_batch_calculate_E(W, xlist)
     E1 = dense_graph_batch_calculate_E(W, xlist, dtype)
     assert np.allclose(E0, E1)
@@ -194,8 +194,8 @@ if __name__ == '__main__' :
     E1 = bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype)
     assert np.allclose(E0, E1), "{0} (1)".format((str(E0), str(E1)))
     
-    xlist0 = sqaod.create_bits_sequence(range(0, 1 << N0), N0)
-    xlist1 = sqaod.create_bits_sequence(range(0, 1 << N1), N1)
+    xlist0 = sqaod.create_bitset_sequence(range(0, 1 << N0), N0)
+    xlist1 = sqaod.create_bitset_sequence(range(0, 1 << N1), N1)
     E0 = py_formulas.bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1)
     E1 = bipartite_graph_batch_calculate_E_2d(b0, b1, W, xlist0, xlist1, dtype)
     assert np.allclose(E0, E1)
@@ -213,8 +213,8 @@ if __name__ == '__main__' :
     E1 = bipartite_graph_calculate_E_from_spin(h10, h11, J0, c0, q0, q1, dtype);
     assert np.allclose(E0, E1)
     
-    xlist0 = sqaod.create_bits_sequence(range(0, 1 << N0), N0)
-    xlist1 = sqaod.create_bits_sequence(range(0, 1 << N0), N1)
+    xlist0 = sqaod.create_bitset_sequence(range(0, 1 << N0), N0)
+    xlist1 = sqaod.create_bitset_sequence(range(0, 1 << N0), N1)
     qlist0 = sqaod.bit_to_spin(xlist0)
     qlist1 = sqaod.bit_to_spin(xlist1)
     E0 = py_formulas.bipartite_graph_batch_calculate_E_from_spin(h10, h11, J0, c0, qlist0, qlist1);

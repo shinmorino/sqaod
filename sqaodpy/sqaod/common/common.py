@@ -70,7 +70,7 @@ def clone_as_ndarray_from_vars(vars, dtype) :
         cloned.append(clone)
     return tuple(cloned)
 
-def create_bits_sequence(vals, nbits) :
+def create_bitset_sequence(vals, nbits) :
     if isinstance(vals, list) or isinstance(vals, tuple) :
         seqlen = len(vals)
         x = np.ndarray((seqlen, nbits), np.int8)
@@ -81,7 +81,7 @@ def create_bits_sequence(vals, nbits) :
             iseq += 1
         return x
     vals = np.int32(vals)
-    return create_bits_sequence(range(vals, vals + 1), nbits)
+    return create_bitset_sequence(range(vals, vals + 1), nbits)
 
 
 def generate_random_bits(N) :

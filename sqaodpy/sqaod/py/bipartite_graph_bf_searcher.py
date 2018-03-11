@@ -84,9 +84,9 @@ class BipartiteGraphBFSearcher :
         b0, b1, W = self._vars()
 
         for i0 in range(self._x0max) :
-            x0 = sqaod.create_bits_sequence((i0), N0)
+            x0 = sqaod.create_bitset_sequence((i0), N0)
             for i1 in range(self._x1max) :
-                x1 = sqaod.create_bits_sequence((i1), N1)
+                x1 = sqaod.create_bitset_sequence((i1), N1)
                 Etmp = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                        + np.dot(x1, np.matmul(W, x0.transpose()))
                 if self._Emin < Etmp :
@@ -108,8 +108,8 @@ class BipartiteGraphBFSearcher :
         x0step = x0end - x0begin
         x1step = x1end - x1begin
 
-        bits0 = sqaod.create_bits_sequence(range(x0begin, x0end), N0)
-        bits1 = sqaod.create_bits_sequence(range(x1begin, x1end), N1)
+        bits0 = sqaod.create_bitset_sequence(range(x0begin, x0end), N0)
+        bits1 = sqaod.create_bitset_sequence(range(x1begin, x1end), N1)
         Etmp = np.matmul(b0, bits0.T).reshape(1, x0step) \
                + np.matmul(b1, bits1.T).reshape(x1step, 1) + np.matmul(bits1, np.matmul(W, bits0.T))
         for x1 in range(x1step) :

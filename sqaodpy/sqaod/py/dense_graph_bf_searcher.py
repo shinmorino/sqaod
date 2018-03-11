@@ -68,7 +68,7 @@ class DenseGraphBFSearcher :
         W = self._W
         xBegin = max(0, min(self._xMax, xBegin))
         xEnd = max(0, min(self._xMax, xEnd))
-        x = sqaod.create_bits_sequence(range(xBegin, xEnd), N)
+        x = sqaod.create_bitset_sequence(range(xBegin, xEnd), N)
         Etmp = formulas.dense_graph_batch_calculate_E(W, x)
         for i in range(xEnd - xBegin) :
             if self._Emin < Etmp[i] :

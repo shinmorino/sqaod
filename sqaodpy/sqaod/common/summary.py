@@ -18,9 +18,9 @@ def sort_bitsset_list(bitsSetList) :
     return bitsSetList
 
 
-def sort_bits(bitsSetList) :
+def sort_bitset(bitsSetList) :
     if type(bitsSetList[0]) is tuple or type(bitsSetList[0]) is list :
-        return sort_bitsset_list(bitsSetList)
+        return sort_bitset_list(bitsSetList)
 
     size = len(bitsSetList)
     nBitsSetList = len(bitsSetList)
@@ -36,7 +36,7 @@ def sort_bits(bitsSetList) :
     return bitsSetList
 
 def unique_x(x) :
-    x = sort_bits(x)
+    x = sort_bitset(x)
     u = []
     while len(x) != 0 :
         x0 = x[0]
