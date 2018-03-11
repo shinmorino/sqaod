@@ -79,9 +79,9 @@ fi
 CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -fopenmp"
 AC_SUBST([CFLAGS], $CFLAGS)
 
-CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/eigen"
+CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/3rdparty/eigen"
 AM_COND_IF([CUDA_ENABLED],
-	[CXXFLAGS="$CXXFLAGS -I${cuda_prefix}/include -I\${abs_top_srcdir}/cub"])
+	[CXXFLAGS="$CXXFLAGS -I${cuda_prefix}/include -I\${abs_top_srcdir}/3rdparty/cub"])
 AC_SUBST([CXXFLAGS], $CXXFLAGS)
 
 
@@ -106,5 +106,6 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/cuda/Makefile
 		 sqaodc/tests/Makefile
 		 sqaodpy/sqaod/cuda/src/Makefile
+		 sqaodpy/sqaod/cpu/src/Makefile
 ])
 AC_OUTPUT

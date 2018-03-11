@@ -1,7 +1,9 @@
 .SUFFIXES: .cpp .o .h .c
 
 include incpath
-INCLUDE+=-I../../../.. -I../../../../3rdparty/eigen @CUDA_INCLUDE@
+
+abs_top_srcdir = @abs_top_srcdir@
+abs_top_builddir = @abs_top_builddir@
 
 TARGETS= ../cuda_dg_annealer.so ../cuda_dg_bf_searcher.so ../cuda_bg_annealer.so ../cuda_bg_bf_searcher.so ../cuda_formulas.so ../cuda_device.so
 cuda_formulas_so_OBJS=cuda_formulas.o
@@ -13,10 +15,9 @@ cuda_device_so_OBJS=cuda_device.o
 
 CXX=g++
 CC=gcc
-CFLAGS=-std=c++11 -fpic -DPIC -Wall -ggdb -I$(dir $(abspath Makefile)) -Wno-format-security
-#CFLAGS+=-O2
-CXXFLAGS=$(CFLAGS)
-LDFLAGS=-L../../../../sqaodc/.libs -lsqaodc_cuda -lsqaodc
+CFLAGS=@CFLAGS@ -fPIC
+CXXFLAGS=@CXXFLAGS@ -fPIC
+LDFLAGS=-L$(top_builddir)/sqaodc/.libs -lsqaodc_cuda -lsqaodc
 
 all: $(TARGETS)
 
