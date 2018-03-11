@@ -132,14 +132,14 @@ PyObject *bg_bf_searcher_get_preferences(PyObject *module, PyObject *args) {
 template<class real>
 PyObject *internal_bg_bf_searcher_get_x(PyObject *objExt) {
     BipartiteGraphBFSearcher<real> *sol = pyobjToCppObj<real>(objExt);
-    const sq::BitsPairArray &xList = sol->get_x();
+    const sq::BitSetPairArray &xList = sol->get_x();
 
     sqaod::SizeType N0, N1;
     sol->getProblemSize(&N0, &N1);
     
     PyObject *list = PyList_New(xList.size());
     for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
-        const sq::BitsPairArray::ValueType &pair = xList[idx];
+        const sq::BitSetPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
         x0.vec = pair.first;
         x1.vec = pair.second;
@@ -261,7 +261,7 @@ PyObject *bg_bf_searcher_search_range(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
         return NULL;
 
-    sq::PackedBits curX0, curX1;
+    sq::PackedBitSet curX0, curX1;
     bool res;
     TRY {
         if (isFloat64(dtype))
