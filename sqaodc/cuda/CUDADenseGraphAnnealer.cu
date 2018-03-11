@@ -70,17 +70,17 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     throwErrorIf(devStream_ != NULL, "Device assigned more than once.");
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();
-    devFormulas_.assignDevice(device);
-    devCopy_.assignDevice(device);
-    d_random_.assignDevice(device);
-    flipPosBuffer_.assignDevice(device);
-    realNumBuffer_.assignDevice(device);
+    devFormulas_.assignDevice(device, devStream_);
+    devCopy_.assignDevice(device, devStream_);
+    d_random_.assignDevice(device, devStream_);
+    flipPosBuffer_.assignDevice(device, devStream_);
+    realNumBuffer_.assignDevice(device, devStream_);
 
     d_reachCount_ = (uint2*)devAlloc_->allocate(sizeof(uint2));
 
     /* initialize sumJq */
     typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    dotJq_ = new DotJq(device);
+    dotJq_ = new DotJq(device, devStream_);
 }
 
 template<class real>
