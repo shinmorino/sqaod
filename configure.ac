@@ -131,7 +131,7 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/tests/Makefile
 		 sqaodpy/sqaod/cuda/src/Makefile
 		 sqaodpy/sqaod/cpu/src/Makefile
-		 debian/control
-		 debian/rules
+		 debian/control.gen
+		 debian/rules.gen
 ])
 AC_OUTPUT
