@@ -22,23 +22,44 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_ARG_ENABLE([cuda],
 [  --enable-cuda    enable CUDA solvers. [[default=no]]],
 [case "${enableval}" in
-  yes) cuda=true; cuda_prefix="/usr/local/cuda" ;;
-  no)  cuda=false ;;
+  yes) cuda=true; cuda_prefix="default" ;;
+  no)  cuda=false; cuda_prefix="na" ;;
   *) cuda=true; cuda_prefix=$enableval;;
 esac],[cuda=false])
+
 AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
 
-if test z${CUDA_ARCH} = z
+if test $cuda = true
 then
-  CUDA_ARCH="35 50 60 61 70"
-fi
+  if test z${cuda_prefix} = zdefault
+  then
+    cuda_prefix=`ls -d /usr/local/cuda-* | tail -1`
+  fi
+  echo "CUDA Prefix : $cuda_prefix"
 
-for arch in ${CUDA_ARCH}
-  do
-    NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_$arch,code=sm_$arch"
-done
-NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_70,code=compute_70"
-echo "NVCC options : $NVCCFLAGS"
+  cuda_ver=`echo $cuda_prefix | grep -o -e 9\.[[0-9]]`
+  echo "CUDA Version : $cuda_ver"
+
+  if test $cuda_ver = $cuda_prefix
+  then
+    cuda_prefix=/usr/local/cuda-$cuda_ver
+  fi
+
+  AC_SUBST([CUDA_VER], $cuda_ver)
+
+  if test z${CUDA_ARCH} = z
+  then
+    CUDA_ARCH="35 50 60 61 70"
+  fi
+
+  for arch in ${CUDA_ARCH}
+    do
+      NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_$arch,code=sm_$arch"
+  done
+  NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_70,code=compute_70"
+  echo "NVCC options : $NVCCFLAGS"
+
+fi
 
 AC_ARG_WITH([blas],
 [  --with-blas    use CPU blas.  [[default=yes]]],
@@ -61,10 +82,13 @@ then
   cudadef="/* ${cudadef} */"
 fi
 AC_SUBST([DEFINE_SQAODC_CUDA_ENABLED], ${cudadef})
-AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
-AC_SUBST([NVCCFLAGS], $NVCCFLAGS)
-AC_SUBST([CUDA_LIBDIR], ${cuda_prefix}/lib64)
-AC_SUBST([CUDA_INCLUDE], "-I${cuda_prefix}/include")
+
+AM_COND_IF([CUDA_ENABLED],
+	[AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
+	 AC_SUBST([NVCCFLAGS], $NVCCFLAGS)
+	 AC_SUBST([CUDA_PREFIX], "${cuda_prefix}")
+	 AC_SUBST([CUDA_LIBDIR], "-L${cuda_prefix}/lib64")
+	 AC_SUBST([CUDA_INCLUDE], "-I${cuda_prefix}/include")])
 AC_PROG_CC
 AC_PROG_CXX
 
@@ -107,5 +131,7 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/tests/Makefile
 		 sqaodpy/sqaod/cuda/src/Makefile
 		 sqaodpy/sqaod/cpu/src/Makefile
+		 debian/control
+		 debian/rules
 ])
 AC_OUTPUT

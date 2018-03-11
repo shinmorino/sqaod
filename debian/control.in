@@ -14,8 +14,8 @@ Architecture: amd64
 Depends:  libgomp1:amd64
 Description: sqaodc library
 
-Package: libsqaodc-cuda
+Package: libsqaodc-cuda-@CUDA_VER@
 Section: libs
 Architecture: amd64
-Depends: sqaodc:amd64, cuda-cublas-9-1:amd64, cuda-cudart-9-1:amd64, cuda-curand-9-1:amd64
+Depends: libsqaodc:amd64, cuda-cublas-@CUDA_VER@:amd64, cuda-cudart-@CUDA_VER@:amd64, cuda-curand-@CUDA_VER@:amd64
 Description: sqaodc CUDA library
