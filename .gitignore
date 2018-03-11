@@ -1,6 +1,7 @@
 *.pyc
 *.o
 *.lo
+Makefile
 Makefile.in
 config.h.in
 *.la
