@@ -16,7 +16,7 @@ CXX=g++
 CC=gcc
 CFLAGS=@CFLAGS@ -fPIC
 CXXFLAGS=@CXXFLAGS@ -fPIC
-LDFLAGS=-L$(top_builddir)/sqaodc/.libs -lsqaodc
+LDFLAGS=-L$(abs_top_builddir)/sqaodc/.libs -lsqaodc
 
 all: $(TARGETS)
 
