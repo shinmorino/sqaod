@@ -273,7 +273,7 @@ void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixTy
              real twoDivM, real invKT, real coef, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
-        real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+        real dE = - twoDivM * q * (h[iq] + dEmat(im, iq));
         int mNeibour0 = (im + m - 1) % m;
         int mNeibour1 = (im + 1) % m;
         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;
@@ -298,17 +298,17 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     {
         sq::Random &random = random_[0];
 #else
-    EigenMatrix dEmat(J.rows(), qFixed.rows());
-    // dEmat = J * qFixed.transpose();  // For debug
+    EigenMatrix dEmat(qFixed.rows(), J.rows());
+    // dEmat = qFixed * J.transpose();  // For debug
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int JrowSpan = (J.rows() + nMaxThreads_ - 1) / nMaxThreads_;
-        int JrowBegin = std::min(J.rows(), JrowSpan * threadNum);
-        int JrowEnd = std::min(J.rows(), JrowSpan * (threadNum + 1));
-        JrowSpan = JrowEnd - JrowBegin;
-        if (0 < JrowSpan)
-            dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
+        int QrowSpan = (qFixed.rows() + nMaxThreads_ - 1) / nMaxThreads_;
+        int QrowBegin = std::min(J.rows(), QrowSpan * threadNum);
+        int QrowEnd = std::min(qFixed.rows(), QrowSpan * (threadNum + 1));
+        QrowSpan = QrowEnd - QrowBegin;
+        if (0 < QrowSpan)
+            dEmat.block(QrowBegin, 0, QrowSpan, J.rows()) = qFixed.block(QrowBegin, 0, QrowSpan, qFixed.cols()) * J.transpose();
 #pragma omp barrier
         sq::Random &random = random_[threadNum];
 #endif
