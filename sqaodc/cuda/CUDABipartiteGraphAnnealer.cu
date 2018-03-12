@@ -295,7 +295,7 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
     devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
-template<class real, int offset>
+template<int offset, class real>
 __global__ static void
 tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h,
               const real *d_realRand, real twoDivM, real coef, real invKT,
@@ -317,7 +317,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
         if (thresh > d_realRand[N * gidy + iq])
             d_qAnneal[im * N + iq] = - q;
     }
-    if (runLastLine && (gidy == m2 - 1)) {
+    if ((offset == 0) && runLastLine && (gidy == 0)) {
         int im = m - 1;
         if (iq < N) {
             real q = d_qAnneal[im * N + iq];
@@ -346,11 +346,11 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
 
     dim3 blockDim(64, 2);
     dim3 gridDim(divru(N, blockDim.x), divru(m2, blockDim.y));
-    tryFlipKernel<real, 0><<<gridDim, blockDim>>>
-            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
-    DEBUG_SYNC;
-    tryFlipKernel<real, 1><<<gridDim, blockDim>>>
+    tryFlipKernel<0><<<gridDim, blockDim>>>
             (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, mIsOdd);
+    DEBUG_SYNC;
+    tryFlipKernel<1><<<gridDim, blockDim>>>
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
     DEBUG_SYNC;
 }
 

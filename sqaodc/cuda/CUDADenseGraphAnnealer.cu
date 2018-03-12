@@ -327,7 +327,7 @@ void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
     dotJq(inPtr, d_Jq->d_data, Offset2way(d_flipPos, N_));
 }
 
-template<class real>
+template<bool mIsOdd, class real>
 __global__ static void
 tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
               const int *d_x, const real *d_random, sq::SizeType N, sq::SizeType m,
@@ -335,7 +335,7 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
               uint2 *reachCount) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    const bool mIsOdd = (m & 1) != 0;
+#pragma unroll
     for (int offset = 0; offset < 2; ++offset) {
         if (gid < m / 2) {
             int y = 2 * gid + offset;
@@ -350,9 +350,19 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
             if (threshold > d_random[y])
                 d_q[N * y + x] = - qyx;
         }
-
-
         if (offset == 0) {
+            if ((gid == 0) && mIsOdd) {
+                int y = m - 1;
+                int x = d_x[y]; /* N */
+                char qyx = d_q[N * y + x];
+
+                int neibour0 = m - 2, neibour1 = 0;
+                real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+                dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
+                real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
+                if (threshold > d_random[y])
+                    d_q[N * y + x] = - qyx;
+            }
             __syncthreads();
             if (threadIdx.x == 0) {
                 int count = atomicAdd(&reachCount->x, 1) + 1;
@@ -361,19 +371,6 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
             }
             __syncthreads();
         }
-    }
-    if (mIsOdd && (gid == m / 2 - 1)) {
-        int y = m - 1;
-        int x = d_x[y]; /* N */
-        char qyx = d_q[N * y + x];
-
-        int neibour0 = m - 2;
-        int neibour1 = 0;
-        real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
-        dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
-        real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
-        if (threshold > d_random[y])
-            d_q[N * y + x] = - qyx;
     }
 
     if (threadIdx.x == 0) {
@@ -395,14 +392,25 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
     int nThreadsToFlipBits = m_ / 2;
     dim3 gridDim(divru(nThreadsToFlipBits, blockDim.x));
     cudaStream_t stream = devStream_->getCudaStream();
+    bool mIsOdd = (m_ & 1) != 0;
 #if 0
-    tryFlipKernel<<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
-                                         d_x, d_random, N_, m_,
-                                         twoDivM, coef, invKT, d_reachCount_);
+    if (mIsOdd) {
+        tryFlipKernel<true><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
+                                                              d_x, d_random, N_, m_,
+                                                              twoDivM, coef, invKT, d_reachCount_);
+    }
+    else {
+        tryFlipKernel<false><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_Jq.d_data, d_h.d_data,
+                                                               d_x, d_random, N_, m_,
+                                                               twoDivM, coef, invKT, d_reachCount_);
+    }
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
                     (void*)&N_, (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&invKT, (void*)&d_reachCount_, NULL};
-    cudaLaunchKernel((void*)tryFlipKernel<real>, gridDim, blockDim, args, 0, stream);
+    if (mIsOdd)
+        cudaLaunchKernel((void*)tryFlipKernel<true, real>, gridDim, blockDim, args, 0, stream);
+    else
+        cudaLaunchKernel((void*)tryFlipKernel<false, real>, gridDim, blockDim, args, 0, stream);
 #endif
     DEBUG_SYNC;
 }

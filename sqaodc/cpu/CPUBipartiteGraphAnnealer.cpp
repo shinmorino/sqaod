@@ -294,36 +294,39 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     int m2 = (m_ / 2) * 2; /* round down */
 
 #ifndef _OPENMP
-    EigenMatrix dEmat = J * qFixed.transpose();
-    {
-        sq::Random &random = random_[0];
+    EigenMatrix dEmat = qFixed * J.transpose();
+    sq::Random &random = random_[0];
+    for (int offset = 0; offset < 2; ++offset) {
+        for (int im = offset; im < m_; im += 2)
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+    }
 #else
     EigenMatrix dEmat(qFixed.rows(), J.rows());
     // dEmat = qFixed * J.transpose();  // For debug
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int QrowSpan = (qFixed.rows() + nMaxThreads_ - 1) / nMaxThreads_;
-        int QrowBegin = std::min(J.rows(), QrowSpan * threadNum);
-        int QrowEnd = std::min(qFixed.rows(), QrowSpan * (threadNum + 1));
-        QrowSpan = QrowEnd - QrowBegin;
-        if (0 < QrowSpan)
-            dEmat.block(QrowBegin, 0, QrowSpan, J.rows()) = qFixed.block(QrowBegin, 0, QrowSpan, qFixed.cols()) * J.transpose();
-#pragma omp barrier
+        int qRowSpan = (qFixed.rows() + nMaxThreads_ - 1) / nMaxThreads_;
+        int qRowBegin = std::min(J.rows(), qRowSpan * threadNum);
+        int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadNum + 1));
+        qRowSpan = qRowEnd - qRowBegin;
+        if (0 < qRowSpan)
+            dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) = qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
+#  pragma omp barrier
         sq::Random &random = random_[threadNum];
-#endif
         for (int offset = 0; offset < 2; ++offset) {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-            for (int im = offset; im < m2; im += 2)
+#  pragma omp for
+            for (int im = offset; im < m2; im += 2) {
                 tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+            }
+#  pragma omp single
+            if ((offset == 0) && ((m_ % 2) != 0)) { /* m is odd. */
+                int im = m_ - 1;
+                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
+            }
         }
     }
-    if ((m_ % 2) != 0) { /* m is odd. */
-        int im = m_ - 1;
-        tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
-    }
+#endif
     clearState(solSolutionAvailable);
 }
 
