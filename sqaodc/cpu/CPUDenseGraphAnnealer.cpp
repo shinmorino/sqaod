@@ -203,7 +203,7 @@ void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorTyp
              sq::Random &random, real twoDivM, real coef, real invKT) {
     int N = J.rows();
     int m = matQ.rows();
-    int x = random.randInt32() % N;
+    int x = random.randInt(N);
     real qyx = matQ(y, x);
     real sum = J.row(x).dot(matQ.row(y));
     real dE = - twoDivM * qyx * (h(x) + sum);
