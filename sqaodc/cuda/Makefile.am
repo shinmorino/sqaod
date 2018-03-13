@@ -10,7 +10,7 @@ libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.c
 # check
 test_SOURCES=test.cpp
 test_LDADD=libcuda.la $(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
-LIBS=-L@CUDA_LIBDIR@ -lcublas -lcudart -lcurand -ldl
+LIBS=@CUDA_LDFLAGS@ -lcublas -lcudart -lcurand -ldl
 
 #include ./$(DEPDIR)/CUDADenseGraphAnnealer.Plo
 #include ./$(DEPDIR)/CUDABipartiteGraphAnnealer.Plo

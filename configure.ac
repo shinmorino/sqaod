@@ -87,7 +87,7 @@ AM_COND_IF([CUDA_ENABLED],
 	[AC_SUBST([NVCC], ${cuda_prefix}/bin/nvcc)
 	 AC_SUBST([NVCCFLAGS], $NVCCFLAGS)
 	 AC_SUBST([CUDA_PREFIX], "${cuda_prefix}")
-	 AC_SUBST([CUDA_LIBDIR], "-L${cuda_prefix}/lib64")
+	 AC_SUBST([CUDA_LDFLAGS], "-L${cuda_prefix}/lib64")
 	 AC_SUBST([CUDA_INCLUDE], "-I${cuda_prefix}/include")])
 AC_PROG_CC
 AC_PROG_CXX
@@ -131,7 +131,7 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/tests/Makefile
 		 sqaodpy/sqaod/cuda/src/Makefile
 		 sqaodpy/sqaod/cpu/src/Makefile
-		 debian/control
-		 debian/rules
+		 debian/control.gen
+		 debian/rules.gen
 ])
 AC_OUTPUT
