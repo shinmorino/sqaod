@@ -206,7 +206,7 @@ void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorTyp
     int x = random.randInt(N);
     real qyx = matQ(y, x);
     real sum = J.row(x).dot(matQ.row(y));
-    real dE = - twoDivM * qyx * (h(x) + sum);
+    real dE = twoDivM * qyx * (h(x) + sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;
     dE -= qyx * (matQ(neibour0, x) + matQ(neibour1, x)) * coef;

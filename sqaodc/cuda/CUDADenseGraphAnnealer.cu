@@ -305,7 +305,7 @@ void annealOneStep(real G, real kT) {
             /* flip one bit */
             real qyx = matQ_(y, x[m]);
 
-            real dE = - twoDivM * qyx * (d_Jq[x[y] + h_(x[y])];
+            real dE = twoDivM * qyx * (d_Jq[x[y] + h_(x[y])];
             int neibour0 = (m_ + y - 1) % m_, neibour1 = (y + 1) % m_;
             dE -= qyx * (matQ_(neibour0, x) + matQ_(neibour1, x)) * coef;
             real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
@@ -344,7 +344,7 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
 
             int neibour0 = (y == 0) ? m - 1 : y - 1;
             int neibour1 = (y == m - 1) ? 0 : y + 1;
-            real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+            real dE = twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
             dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
             real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
             if (threshold > d_random[y])
@@ -357,7 +357,7 @@ tryFlipKernel(char *d_q, const real *d_Jq, const real *d_h,
                 char qyx = d_q[N * y + x];
 
                 int neibour0 = m - 2, neibour1 = 0;
-                real dE = - twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+                real dE = twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
                 dE -= (real)qyx * (d_q[N * neibour0 + x] + d_q[N * neibour1 + x]) * coef;
                 real threshold = (dE < real(0.)) ? real(1.) : exp(- dE * invKT);
                 if (threshold > d_random[y])

@@ -22,8 +22,8 @@ calculate_E(DeviceVector *E, const DeviceMatrix &W, const DeviceMatrix &x) {
 
 template<class real> void DeviceDenseGraphFormulas<real>::
 calculateHamiltonian(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const DeviceMatrix &W) {
-    devMath.sumBatched(h, 0.5, W, opColwise);
-    devMath.scale(J, 0.25, W);
+    devMath.sumBatched(h, -0.5, W, opColwise);
+    devMath.scale(J, -0.25, W);
 
     devMath.sumDiagonals(c, *J);
     devMath.sum(c, 1., *J, 1.);
@@ -34,18 +34,18 @@ template<class real> void DeviceDenseGraphFormulas<real>::
 calculate_E(DeviceScalar *E,
             const DeviceVector &h, const DeviceMatrix &J, const DeviceScalar &c,
             const DeviceVector &q) {
-    devMath.vmvProduct(E, 1., q, J, q);
-    devMath.dot(E, 1., h, q, 1.);
-    devMath.scale(E, 1., c, 1.);
+    devMath.vmvProduct(E, -1., q, J, q);
+    devMath.dot(E, -1., h, q, 1.);
+    devMath.scale(E, -1., c, 1.);
 }
 
 template<class real> void DeviceDenseGraphFormulas<real>::
 calculate_E(DeviceVector *E,
             const DeviceVector &h, const DeviceMatrix &J, const DeviceScalar &c,
             const DeviceMatrix &q) {
-    devMath.vmvProductBatched(E, 1., q, J, q);
-    devMath.vmProduct(E, 1., h, q, opTranspose, 1.);
-    devMath.scaleBroadcast(E, 1., c, 1.);
+    devMath.vmvProductBatched(E, -1., q, J, q);
+    devMath.vmProduct(E, -1., h, q, opTranspose, 1.);
+    devMath.scaleBroadcast(E, -1., c, 1.);
 }
 
 template<class real>
@@ -106,7 +106,7 @@ template<class real>
 void DeviceBipartiteGraphFormulas<real>::
 calculateHamiltonian(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, DeviceScalar *c,
                      const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W) {
-    devMath.scale(J, 0.25, W);
+    devMath.scale(J, -0.25, W);
     devMath.sumBatched(h0, 1., *J, opColwise);
     devMath.scale(h0, 0.5, b0, 1.);
     devMath.sumBatched(h1, 1., *J, opRowwise);
@@ -122,10 +122,10 @@ template<class real> void DeviceBipartiteGraphFormulas<real>::
 calculate_E(DeviceScalar *E,
             const DeviceVector &h0, const DeviceVector &h1, const DeviceMatrix &J,
             const DeviceScalar &c, const DeviceVector &q0, const DeviceVector &q1) {
-    devMath.vmvProduct(E, 1., q1, J, q0);
-    devMath.dot(E, 1., h0, q0, 1.);
-    devMath.dot(E, 1., h1, q1, 1.);
-    devMath.scale(E, 1., c, 1.);
+    devMath.vmvProduct(E, -1., q1, J, q0);
+    devMath.dot(E, -1., h0, q0, 1.);
+    devMath.dot(E, -1., h1, q1, 1.);
+    devMath.scale(E, -1., c, 1.);
 }
 
 
@@ -133,10 +133,10 @@ template<class real> void DeviceBipartiteGraphFormulas<real>::
 calculate_E(DeviceVector *E,
             const DeviceVector &h0, const DeviceVector &h1, const DeviceMatrix &J,
             const DeviceScalar &c, const DeviceMatrix &q0, const DeviceMatrix &q1) {
-    devMath.vmvProductBatched(E, 1., q1, J, q0);
-    devMath.vmProduct(E, 1., h0, q0, opTranspose, 1.);
-    devMath.vmProduct(E, 1., h1, q1, opTranspose, 1.);
-    devMath.scaleBroadcast(E, 1., c, 1.);
+    devMath.vmvProductBatched(E, -1., q1, J, q0);
+    devMath.vmProduct(E, -1., h0, q0, opTranspose, 1.);
+    devMath.vmProduct(E, -1., h1, q1, opTranspose, 1.);
+    devMath.scaleBroadcast(E, -1., c, 1.);
 }
 
 template<class real>

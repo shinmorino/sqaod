@@ -235,7 +235,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
         if (x < N0_) {
             real qyx = matQ0_(y, x);
             real sum = J_.transpose().row(x).dot(matQ1_.row(y));
-            real dE = - twoDivM * qyx * (h0_(x) + sum);
+            real dE = twoDivM * qyx * (h0_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ0_(neibour0, x) + matQ0_(neibour1, x)) * coef;
@@ -247,7 +247,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
             x -= N0_;
             real qyx = matQ1_(y, x);
             real sum = J_.row(x).dot(matQ0_.row(y));
-            real dE = - twoDivM * qyx * (h1_(x) + sum);
+            real dE = twoDivM * qyx * (h1_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ1_(neibour0, x) + matQ1_(neibour1, x)) * coef;
@@ -273,7 +273,7 @@ void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixTy
              real twoDivM, real invKT, real coef, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
-        real dE = - twoDivM * q * (h[iq] + dEmat(im, iq));
+        real dE = twoDivM * q * (h[iq] + dEmat(im, iq));
         int mNeibour0 = (im + m - 1) % m;
         int mNeibour1 = (im + 1) % m;
         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;

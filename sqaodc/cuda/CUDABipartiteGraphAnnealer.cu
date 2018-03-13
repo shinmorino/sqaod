@@ -273,7 +273,7 @@ void CUDABipartiteGraphAnnealer<real>::makeSolution() {
 //     real invKT = real(1.) / kT;
 //     for (int loop = 0; loop < IdxType(N * m_); ++loop) {
 //         real q = qAnneal(im, iq);
-//         real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+//         real dE = twoDivM * q * (h[iq] + dEmat(iq, im));
 //         int mNeibour0 = (im + m_ - 1) % m_;
 //         int mNeibour1 = (im + 1) % m_;
 //         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
@@ -308,7 +308,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
     if ((iq < N) && (gidy < m2)) {
         int im = 2 * gidy + offset;
         real q = d_qAnneal[im * N + iq];
-        real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
+        real dE = twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
         int neibour0 = (im == 0) ? m - 1 : im - 1;
         int neibour1 = (im == m - 1) ? 0 : im + 1;
@@ -321,7 +321,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
         int im = m - 1;
         if (iq < N) {
             real q = d_qAnneal[im * N + iq];
-            real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
+            real dE = twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
             int neibour0 = im - 2;
             int neibour1 = 0;

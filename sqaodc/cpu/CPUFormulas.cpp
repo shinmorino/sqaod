@@ -44,9 +44,9 @@ void DGFuncs<real>::calculateHamiltonian(Vector *h, Matrix *J, real *c, const Ma
     EigenMappedMatrix eJ(mapTo(*J));
     EigenMappedRowVector eh(mapToRowVector(*h));
     
-    eh = real(0.5) * eW.colwise().sum();
+    eh = real(-0.5) * eW.colwise().sum();
 
-    eJ = 0.25 * eW;
+    eJ = real(-0.25) * eW;
     real eJsum = eJ.sum();
     real diagSum = eJ.diagonal().sum();
     int N = W.rows;
@@ -64,7 +64,7 @@ void DGFuncs<real>::calculate_E(real *E,
     const EigenMappedRowVector eh(mapToRowVector(h));
     const EigenMappedMatrix eJ(mapTo(J));
     const EigenMappedColumnVector eq(mapToColumnVector(q));
-    *E = c + (eh * eq + eq.transpose() * (eJ * eq))(0, 0);
+    *E = - c - (eh * eq + eq.transpose() * (eJ * eq))(0, 0);
 }
 
 template<class real>
@@ -79,9 +79,9 @@ void DGFuncs<real>::calculate_E(Vector *E,
     
     EigenMatrix tmp = eJ * eq.transpose();
     /* FIXME: further optimization might be required. */
-    EigenMatrix sum = tmp.cwiseProduct(eq.transpose()).colwise().sum(); /* batched dot product. */
-    eE = eh * eq.transpose() + sum;
-    eE.array() += c;
+    EigenMatrix sum = - tmp.cwiseProduct(eq.transpose()).colwise().sum(); /* batched dot product. */
+    eE = - eh * eq.transpose() + sum;
+    eE.array() -= c;
 }
 
 
@@ -157,10 +157,10 @@ void BGFuncs<real>::calculateHamiltonian(Vector *h0, Vector *h1, Matrix *J, real
     EigenMappedMatrix eJ(mapTo(*J));
     // calculate_hJc(&eh0, &eh1, &eJ, c, eb0, eb1, W);
     
-    eJ = real(0.25) * eW;
-    eh0 = real(0.25) * eW.colwise().sum()+ real(0.5) * eb0;
-    eh1 = real(0.25) * eW.rowwise().sum().transpose() + real(0.5) * eb1;
-    *c = real(0.25) * eW.sum() + real(0.5) * (eb0.sum() + eb1.sum());
+    eJ = real(- 0.25) * eW;
+    eh0 = real(- 0.25) * eW.colwise().sum()+ real(0.5) * eb0;
+    eh1 = real(- 0.25) * eW.rowwise().sum().transpose() + real(0.5) * eb1;
+    *c = real(- 0.25) * eW.sum() + real(0.5) * (eb0.sum() + eb1.sum());
 }
 
 
@@ -174,7 +174,7 @@ void BGFuncs<real>::calculate_E(real *E,
     const EigenMappedRowVector eh0(mapToRowVector(h0)), eh1(mapToRowVector(h1));
     const EigenMappedMatrix eJ(mapTo(J));
     const EigenMappedColumnVector eq0(mapToColumnVector(q0)), eq1(mapToColumnVector(q1));
-    *E = (eh0 * eq0 + eh1 * eq1 + eq1.transpose() * (eJ * eq0))(0, 0) + c;
+    *E = - (eh0 * eq0 + eh1 * eq1 + eq1.transpose() * (eJ * eq0))(0, 0) - c;
 }
 
 
@@ -192,10 +192,10 @@ void BGFuncs<real>::calculate_E(Vector *E,
 
     EigenMatrix tmp = eJ * eq0.transpose();
     /* FIXME: further optimization might be required. */
-    eE = tmp.cwiseProduct(eq1.transpose()).colwise().sum(); /* batched dot product. */
-    eE += eh0 * eq0.transpose();
-    eE += eh1 * eq1.transpose();
-    eE.array() += c;
+    eE = - tmp.cwiseProduct(eq1.transpose()).colwise().sum(); /* batched dot product. */
+    eE -= eh0 * eq0.transpose();
+    eE -= eh1 * eq1.transpose();
+    eE.array() -= c;
 }
 
 
