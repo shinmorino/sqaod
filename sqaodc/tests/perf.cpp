@@ -15,39 +15,36 @@ void showDuration(const T &duration) {
               << std::endl;
 }
 
-
 template<class real>
 sq::MatrixType<real> symmetricMatrix(sq::SizeType dim) {
-    sq::Random random;
-    random.seed(0);
-    sq::MatrixType<real> mat(dim, dim);
+    sq::MatrixType<double> mat(dim, dim);
     for (sq::SizeType irow = 0; irow < dim; ++irow) {
         for (sq::SizeType icol = irow; icol < dim; ++icol) {
-            mat(icol, irow) = mat(irow, icol) = random.random<real>() - 0.5f;
+            mat(icol, irow) = mat(irow, icol) = sq::random.random<double>() - 0.5;
         }
     }
-    return mat;
+    return sq::cast<real>(mat);
 }
 
 template<class real>
 sq::MatrixType<real> matrix(const sq::Dim &dim) {
-    sq::MatrixType<real> mat(dim.rows, dim.cols);
+    sq::MatrixType<double> mat(dim.rows, dim.cols);
     for (sq::SizeType irow = 0; irow < dim.rows; ++irow) {
         for (sq::SizeType icol = 0; icol < dim.cols; ++icol) {
-            mat(irow, icol) = sq::random.random<real>() - 0.5f;
+            mat(irow, icol) = sq::random.random<double>() - 0.5;
         }
     }
-    return mat;
+    return sq::cast<real>(mat);
 }
 
 
 template<class real>
 sq::VectorType<real> vector(sq::SizeType size) {
-    sq::VectorType<real> vec(size);
+    sq::VectorType<double> vec(size);
     for (sq::SizeType idx = 0; idx < size; ++idx) {
-        vec(idx) = sq::random.random<real>() - 0.5f;
+        vec(idx) = sq::random.random<double>() - 0.5;
     }
-    return vec;
+    return sq::cast<real>(vec);
 }
 
 template<class real>
