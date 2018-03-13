@@ -68,7 +68,7 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
     x_ = 0;
     xMax_ = 1ull << N_;
     if (xMax_ < (sq::PackedBitSet)tileSize_) {
-        tileSize_ = xMax_;
+        tileSize_ = sq::SizeType(xMax_);
         sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
     for (int idx = 0; idx < nMaxThreads_; ++idx) {

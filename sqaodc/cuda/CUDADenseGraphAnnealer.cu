@@ -212,7 +212,7 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
     DeviceMatrix *d_realMatQ = devStream_->tempDeviceMatrix<real>(d_matq_.dim());
     devCopy_.cast(d_realMatQ, d_matq_);
     devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, *d_realMatQ);
-    real sign = (om_ == sq::optMaximize) ? -1. : 1.;
+    real sign = (om_ == sq::optMaximize) ? real(-1.) : real(1.);
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 
     setState(solEAvailable);

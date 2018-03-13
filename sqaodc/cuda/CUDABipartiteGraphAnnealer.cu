@@ -218,7 +218,7 @@ void CUDABipartiteGraphAnnealer<real>::calculate_E() {
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
     devFormulas_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
                              d_matq0_, d_matq1_);
-    real sign = (om_ == sq::optMaximize) ? -1. : 1.;
+    real sign = (om_ == sq::optMaximize) ? real(-1.) : real(1.);
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 
     setState(solEAvailable);
