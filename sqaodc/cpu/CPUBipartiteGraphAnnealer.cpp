@@ -235,7 +235,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
         if (x < N0_) {
             real qyx = matQ0_(y, x);
             real sum = J_.transpose().row(x).dot(matQ1_.row(y));
-            real dE = - twoDivM * qyx * (h0_(x) + sum);
+            real dE = twoDivM * qyx * (h0_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ0_(neibour0, x) + matQ0_(neibour1, x)) * coef;
@@ -247,7 +247,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
             x -= N0_;
             real qyx = matQ1_(y, x);
             real sum = J_.row(x).dot(matQ0_.row(y));
-            real dE = - twoDivM * qyx * (h1_(x) + sum);
+            real dE = twoDivM * qyx * (h1_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ1_(neibour0, x) + matQ1_(neibour1, x)) * coef;
@@ -273,7 +273,7 @@ void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixTy
              real twoDivM, real invKT, real coef, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
-        real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+        real dE = twoDivM * q * (h[iq] + dEmat(im, iq));
         int mNeibour0 = (im + m - 1) % m;
         int mNeibour1 = (im + 1) % m;
         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;
@@ -294,36 +294,39 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     int m2 = (m_ / 2) * 2; /* round down */
 
 #ifndef _OPENMP
-    EigenMatrix dEmat = J * qFixed.transpose();
-    {
-        sq::Random &random = random_[0];
+    EigenMatrix dEmat = qFixed * J.transpose();
+    sq::Random &random = random_[0];
+    for (int offset = 0; offset < 2; ++offset) {
+        for (int im = offset; im < m_; im += 2)
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+    }
 #else
-    EigenMatrix dEmat(J.rows(), qFixed.rows());
-    // dEmat = J * qFixed.transpose();  // For debug
+    EigenMatrix dEmat(qFixed.rows(), J.rows());
+    // dEmat = qFixed * J.transpose();  // For debug
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int JrowSpan = (J.rows() + nMaxThreads_ - 1) / nMaxThreads_;
-        int JrowBegin = std::min(J.rows(), JrowSpan * threadNum);
-        int JrowEnd = std::min(J.rows(), JrowSpan * (threadNum + 1));
-        JrowSpan = JrowEnd - JrowBegin;
-        if (0 < JrowSpan)
-            dEmat.block(JrowBegin, 0, JrowSpan, qFixed.rows()) = J.block(JrowBegin, 0, JrowSpan, J.cols()) * qFixed.transpose();
-#pragma omp barrier
+        int qRowSpan = (qFixed.rows() + nMaxThreads_ - 1) / nMaxThreads_;
+        int qRowBegin = std::min(J.rows(), qRowSpan * threadNum);
+        int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadNum + 1));
+        qRowSpan = qRowEnd - qRowBegin;
+        if (0 < qRowSpan)
+            dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) = qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
+#  pragma omp barrier
         sq::Random &random = random_[threadNum];
-#endif
         for (int offset = 0; offset < 2; ++offset) {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-            for (int im = offset; im < m2; im += 2)
+#  pragma omp for
+            for (int im = offset; im < m2; im += 2) {
                 tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+            }
+#  pragma omp single
+            if ((offset == 0) && ((m_ % 2) != 0)) { /* m is odd. */
+                int im = m_ - 1;
+                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
+            }
         }
     }
-    if ((m_ % 2) != 0) { /* m is odd. */
-        int im = m_ - 1;
-        tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
-    }
+#endif
     clearState(solSolutionAvailable);
 }
 

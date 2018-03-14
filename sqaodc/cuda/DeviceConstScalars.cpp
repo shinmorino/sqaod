@@ -6,7 +6,7 @@ using namespace sqaod_cuda;
 
 
 template<class real>
-const real DeviceConstScalarsType<real>::hostConsts_[] = {0., 0.25, 0.5, 1.};
+const real DeviceConstScalarsType<real>::hostConsts_[] = {-1., -0.5, -0.25, 0., 0.25, 0.5, 1.};
 template<class real>
 const int DeviceConstScalarsType<real>::nHostConsts_ = sizeof(hostConsts_) / sizeof(real);
 

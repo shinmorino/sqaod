@@ -147,7 +147,7 @@ class BipartiteGraphAnnealer :
             
             if (iq < N0) :
                 q = q0[im][iq]
-                dE = - twoDivM * q * (h0[iq] + np.dot(J.T[iq], q1[im]))
+                dE = twoDivM * q * (h0[iq] + np.dot(J.T[iq], q1[im]))
                 dE -= q * (q0[mNeibour0][iq] + q0[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():
@@ -155,7 +155,7 @@ class BipartiteGraphAnnealer :
             else :
                 iq -= N0
                 q = q1[im][iq]
-                dE = - twoDivM * q * (h1[iq] + np.dot(J[iq], q0[im]))
+                dE = twoDivM * q * (h1[iq] + np.dot(J[iq], q0[im]))
                 dE -= q * (q1[mNeibour0][iq] + q1[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():
@@ -171,7 +171,7 @@ class BipartiteGraphAnnealer :
             mNeibour1 = (im + 1) % m
             for iq in range(0, N) :
                 q = qAnneal[im][iq]
-                dE = - twoDivM * q * (h[iq] + dEmat[iq, im])
+                dE = twoDivM * q * (h[iq] + dEmat[iq, im])
                 dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():
@@ -181,7 +181,7 @@ class BipartiteGraphAnnealer :
             mNeibour1 = (im + 1) % m
             for iq in range(0, N) :
                 q = qAnneal[im][iq]
-                dE = - twoDivM * q * (h[iq] + dEmat[iq, im])
+                dE = twoDivM * q * (h[iq] + dEmat[iq, im])
                 dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
                 thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
                 if thresh > np.random.rand():

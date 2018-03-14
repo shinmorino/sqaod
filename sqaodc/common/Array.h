@@ -174,7 +174,7 @@ public:
     }
 
     void insert(const_iterator first, const_iterator last) {
-        SizeType nElms = last - first;
+        SizeType nElms = SizeType(last - first);
         if (capacity_ < size_ + nElms)
             reserve(capacity_ * 2);
         if (ValueProp<V>::POD) {

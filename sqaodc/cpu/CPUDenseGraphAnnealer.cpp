@@ -203,10 +203,10 @@ void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorTyp
              sq::Random &random, real twoDivM, real coef, real invKT) {
     int N = J.rows();
     int m = matQ.rows();
-    int x = random.randInt32() % N;
+    int x = random.randInt(N);
     real qyx = matQ(y, x);
     real sum = J.row(x).dot(matQ.row(y));
-    real dE = - twoDivM * qyx * (h(x) + sum);
+    real dE = twoDivM * qyx * (h(x) + sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;
     dE -= qyx * (matQ(neibour0, x) + matQ(neibour1, x)) * coef;
@@ -237,27 +237,31 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G / kT / m_)) / kT;
     real invKT = real(1.) / kT;
-    sq::IdxType m2 = (m_ / 2) * 2; /* round down */
 #ifndef _OPENMP
-    {
-        sq::Random &random = random_[0];
+    /* single thread */
+    sq::Random &random = random_[0];
+    for (int yOffset = 0; yOffset < 2; ++yOffset) {
+        for (int y = yOffset; y < m; y += 2)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
+    }
 #else
+    sq::IdxType m2 = (m_ / 2) * 2; /* round down */
 #  pragma omp parallel
     {
         sq::Random &random = random_[omp_get_thread_num()];
-#endif
         for (int yOffset = 0; yOffset < 2; ++yOffset) {
-#ifndef _OPENMP
 #  pragma omp for
-#endif
-            for (int y = yOffset; y < m2; y += 2)
+            for (int y = yOffset; y < m2; y += 2) {
                 tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
+            }
+#  pragma omp single
+            if ((m_ % 2) != 0) { /* m is odd. */
+                sq::Random &random = random_[0];
+                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, invKT);
+            }
         }
     }
-    if ((m_ % 2) != 0) { /* m is odd. */
-        sq::Random &random = random_[0];
-        tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, invKT);
-    }
+#endif
 }
 
 template<class real>

@@ -55,22 +55,22 @@ void Solver<real>::clearState(SolverState state) {
 
 template<class real>
 bool Solver<real>::isRandSeedGiven() const {
-    return bool(solverState_ & solRandSeedGiven);
+    return (solverState_ & solRandSeedGiven) != 0;
 }
 
 template<class real>
 bool Solver<real>::isProblemSet() const {
-    return bool(solverState_ & solProblemSet);
+    return (solverState_ & solProblemSet) != 0;
 }
 
 template<class real>
 bool Solver<real>::isPrepared() const {
-    return bool(solverState_ & solPrepared);
+    return (solverState_ & solPrepared) != 0;
 }
 
 template<class real>
 bool Solver<real>::isQSet() const {
-    return bool(solverState_ & solQSet);
+    return (solverState_ & solQSet) != 0;
 }
 
 template<class real>

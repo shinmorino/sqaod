@@ -218,7 +218,7 @@ void CUDABipartiteGraphAnnealer<real>::calculate_E() {
     DeviceVector *d_E = devStream_->tempDeviceVector<real>(m_);
     devFormulas_.calculate_E(d_E, d_h0_, d_h1_, d_J_, d_c_,
                              d_matq0_, d_matq1_);
-    real sign = (om_ == sq::optMaximize) ? -1. : 1.;
+    real sign = (om_ == sq::optMaximize) ? real(-1.) : real(1.);
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
 
     setState(solEAvailable);
@@ -273,7 +273,7 @@ void CUDABipartiteGraphAnnealer<real>::makeSolution() {
 //     real invKT = real(1.) / kT;
 //     for (int loop = 0; loop < IdxType(N * m_); ++loop) {
 //         real q = qAnneal(im, iq);
-//         real dE = - twoDivM * q * (h[iq] + dEmat(iq, im));
+//         real dE = twoDivM * q * (h[iq] + dEmat(iq, im));
 //         int mNeibour0 = (im + m_ - 1) % m_;
 //         int mNeibour1 = (im + 1) % m_;
 //         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
@@ -295,7 +295,7 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
     devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
-template<class real, int offset>
+template<int offset, class real>
 __global__ static void
 tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h,
               const real *d_realRand, real twoDivM, real coef, real invKT,
@@ -308,7 +308,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
     if ((iq < N) && (gidy < m2)) {
         int im = 2 * gidy + offset;
         real q = d_qAnneal[im * N + iq];
-        real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
+        real dE = twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
         int neibour0 = (im == 0) ? m - 1 : im - 1;
         int neibour1 = (im == m - 1) ? 0 : im + 1;
@@ -317,11 +317,11 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
         if (thresh > d_realRand[N * gidy + iq])
             d_qAnneal[im * N + iq] = - q;
     }
-    if (runLastLine && (gidy == m2 - 1)) {
+    if ((offset == 0) && runLastLine && (gidy == 0)) {
         int im = m - 1;
         if (iq < N) {
             real q = d_qAnneal[im * N + iq];
-            real dE = - twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
+            real dE = twoDivM * q * (d_h[iq] + d_Emat[im * N + iq]);
 
             int neibour0 = im - 2;
             int neibour1 = 0;
@@ -346,11 +346,11 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
 
     dim3 blockDim(64, 2);
     dim3 gridDim(divru(N, blockDim.x), divru(m2, blockDim.y));
-    tryFlipKernel<real, 0><<<gridDim, blockDim>>>
-            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
-    DEBUG_SYNC;
-    tryFlipKernel<real, 1><<<gridDim, blockDim>>>
+    tryFlipKernel<0><<<gridDim, blockDim>>>
             (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, mIsOdd);
+    DEBUG_SYNC;
+    tryFlipKernel<1><<<gridDim, blockDim>>>
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
     DEBUG_SYNC;
 }
 

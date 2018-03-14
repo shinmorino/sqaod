@@ -68,8 +68,8 @@ calculate_E(sq::PackedBitSet xBegin0, sq::PackedBitSet xEnd0,
             sq::PackedBitSet xBegin1, sq::PackedBitSet xEnd1) {
     xBegin0_ = xBegin0;
     xBegin1_ = xBegin1;
-    sq::SizeType nBatch0 = xEnd0 - xBegin0;
-    sq::SizeType nBatch1 = xEnd1 - xBegin1;
+    sq::SizeType nBatch0 = sq::SizeType(xEnd0 - xBegin0);
+    sq::SizeType nBatch1 = sq::SizeType(xEnd1 - xBegin1);
     abortIf(tileSize0_ < nBatch0,
             "nBatch0 is too large, tileSize0=%d, nBatch0=%d", int(tileSize0_), int(nBatch0));
     abortIf(tileSize0_ < nBatch0,
@@ -127,8 +127,8 @@ generateBitsSequence(real *d_data, int N,
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    sq::SizeType nSeqs = xEnd - xBegin;
-    gridDim.x = divru(xEnd - xBegin, blockDim.y);
+    sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
+    gridDim.x = divru(unsigned int(xEnd - xBegin), blockDim.y);
     generateBitsSequenceKernel
             <<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>(d_data, N, nSeqs, xBegin);
     DEBUG_SYNC;
