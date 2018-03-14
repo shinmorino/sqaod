@@ -1,8 +1,10 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 import random
 import sqaod
 from sqaod.common import checkers
-import cpu_dg_annealer as cext
+from . import cpu_dg_annealer as cext
 
 class DenseGraphAnnealer :
     
@@ -10,14 +12,14 @@ class DenseGraphAnnealer :
     
     def __init__(self, W, optimize, dtype, prefdict) :
         self.dtype = dtype
-        self._cobj = cext.new_annealer(dtype)
+        self._cobj = cext.new(dtype)
         if not W is None :
             self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
 
     def __del__(self) :
         if hasattr(self, '_cobj') :
-            cext.delete_annealer(self._cobj, self.dtype)
+            cext.delete(self._cobj, self.dtype)
             self._cext = None
         
     def seed(self, seed) :
@@ -103,9 +105,9 @@ if __name__ == '__main__' :
     #import sqaod.py as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     h, J, c = ann.get_hamiltonian()
-    print h
-    print J
-    print c
+    print(h)
+    print(J)
+    print(c)
     
     Ginit = 5.
     Gfin = 0.001
@@ -125,6 +127,6 @@ if __name__ == '__main__' :
         ann.make_solution()
         E = ann.get_E()
         q = ann.get_q() 
-        print E
-        print q
-        print ann.get_preferences()
+        print(E)
+        print(q)
+        print(ann.get_preferences())

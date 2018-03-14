@@ -8,6 +8,18 @@
 #else
 #  include <Python.h>
 #endif
+#include <bytesobject.h>
+
+
+#if PY_MAJOR_VERSION >= 3
+
+#define IsIntegerType(o) (PyLong_Check(o))
+
+#else
+
+#define IsIntegerType(o) (PyLong_Check(o) || PyInt_Check(o))
+
+#endif
 
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -17,6 +29,7 @@
 #include <sqaodc/common/Common.h>
 #include <algorithm>
 
+namespace sq = sqaod;
 
 template<class real>
 struct NpMatrixType {
@@ -190,23 +203,48 @@ bool isFloat32(PyObject *dtype) {
     return dtype == (PyObject*)&PyFloat32ArrType_Type;
 }
 
+#define ASSERT_DTYPE(dtype) if (!isFloat32(dtype) && !isFloat64(dtype)) \
+        {   PyErr_SetString(PyExc_RuntimeError, "dtype is not float64 nor float32."); \
+            return NULL; }
+
 
 typedef NpMatrixType<char> NpBitMatrix;
 typedef NpVectorType<char> NpBitVector;
 
+
+/* Helpers for String */
+const char *getStringFromObject(PyObject *pyObj) {
+#if PY_MAJOR_VERSION >= 3
+    return PyUnicode_AsUTF8(pyObj);
+#else
+    return PyString_AsString(pyObj);
+#endif
+}
+
+/* Helpers for String */
+bool isStringObject(PyObject *pyObj) {
+#if PY_MAJOR_VERSION >= 3
+    return PyUnicode_Check(pyObj);
+#else
+    return PyString_Check(pyObj);
+#endif
+}
+
+
+
+
 /* Preference */
 
-int parsePreference(const char *key, PyObject *valueObj,
-                    sqaod::Preference *pref, PyObject *errObj) {
+int parsePreference(const char *key, PyObject *valueObj, sqaod::Preference *pref) {
 
     sqaod::PreferenceName prefName = sqaod::preferenceNameFromString(key);
     switch (prefName) {
     case sqaod::pnAlgorithm: {
-        if (!PyString_Check(valueObj)) {
-            PyErr_SetString(errObj, "algorithm value is not a string");
+        if (!isStringObject(valueObj)) {
+            PyErr_SetString(PyExc_RuntimeError, "algorithm value is not a string");
             return -1;
         }
-        sqaod::Algorithm algo = sqaod::algorithmFromString(PyString_AsString(valueObj));
+        sqaod::Algorithm algo = sqaod::algorithmFromString(getStringFromObject(valueObj));
         *pref = sqaod::Preference(sqaod::pnAlgorithm, algo);
         return 0;
     }
@@ -214,9 +252,8 @@ int parsePreference(const char *key, PyObject *valueObj,
     case sqaod::pnTileSize:
     case sqaod::pnTileSize0:
     case sqaod::pnTileSize1: {
-        if (PyInt_Check(valueObj)) {
-            PyIntObject *intObj = (PyIntObject*)valueObj;
-            *pref = sqaod::Preference(prefName, intObj->ob_ival);
+        if (IsIntegerType(valueObj)) {
+            *pref = sqaod::Preference(prefName, PyLong_AsLong(valueObj));
             return 0;
         }
         else if (PyLong_Check(valueObj)) {
@@ -224,12 +261,12 @@ int parsePreference(const char *key, PyObject *valueObj,
             return 0;
         }
         else {
-            PyErr_SetString(errObj, "Not an integer value.");
+            PyErr_SetString(PyExc_RuntimeError, "Not an integer value.");
             return -1;
         }
     }
     default:
-        PyErr_SetString(errObj, "unknown preference name");
+        PyErr_SetString(PyExc_RuntimeError, "unknown preference name");
         return -1;
     }
 }
@@ -237,7 +274,7 @@ int parsePreference(const char *key, PyObject *valueObj,
 
 
 inline
-int parsePreferences(PyObject *pyObj, sqaod::Preferences *prefs, PyObject *errObj) {
+int parsePreferences(PyObject *pyObj, sqaod::Preferences *prefs) {
 
     if (!PyDict_Check(pyObj)) {
         abort_("Unexpected object.");
@@ -252,12 +289,12 @@ int parsePreferences(PyObject *pyObj, sqaod::Preferences *prefs, PyObject *errOb
         assert(PyTuple_Check(item));
         PyTupleObject *tuple = (PyTupleObject*)item;
         PyObject *nameObj = PyTuple_GET_ITEM(tuple, 0);
-        assert(PyString_Check(nameObj));
-        const char *name = PyString_AsString(nameObj);
+        assert(isStringObject(nameObj));
+        const char *name = getStringFromObject(nameObj);
         PyObject *valueObj = PyTuple_GET_ITEM(tuple, 1);
 
         sqaod::Preference pref;
-        if (parsePreference(name, valueObj, &pref, errObj) == -1)
+        if (parsePreference(name, valueObj, &pref) == -1)
             return -1;
         prefs->pushBack(pref);
     }
@@ -306,17 +343,25 @@ PyObject *createPreferences(const sqaod::Preferences &prefs) {
 /* exception handling macro */
 
 #define TRY try
-#define CATCH_ERROR_AND_RETURN(errObj)                      \
+#define CATCH_ERROR_AND_RETURN                      \
         catch (const std::exception &e) {                   \
-            PyErr_SetString(errObj, e.what());              \
+            PyErr_SetString(PyExc_RuntimeError, e.what());  \
             return NULL;                                    \
         }
 
-#define RAISE_INVALID_DTYPE(dtype, errObj)                                     \
-        {                                                               \
-            PyErr_SetString(errObj, "dtype must be numpy.float64 or numpy.float32."); \
-            return NULL; \
-        }
+
+
+#if PY_MAJOR_VERSION >= 3
+
+#define INITFUNCNAME(name) PyInit_##name
+
+#else
+
+#define INITFUNCNAME(name) init##name
+
+#endif
+
+
 
 /* references 
  * http://owa.as.wakwak.ne.jp/zope/docs/Python/BindingC/

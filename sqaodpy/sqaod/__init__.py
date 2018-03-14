@@ -1,10 +1,10 @@
 
 # imports
-from sqaod.common.cuda import is_cuda_available
-from sqaod.common.preference import algorithm
-from sqaod.common.preference import minimize
-from sqaod.common.preference import maximize
+from .common.cuda import is_cuda_available
+from .common.preference import algorithm
+from .common.preference import minimize
+from .common.preference import maximize
 
-from sqaod.common import *
-import sqaod.py
-import sqaod.cpu
+from .common import *
+from . import py
+from . import cpu

@@ -151,6 +151,6 @@ if __name__ == '__main__' :
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
-    print E
-    print x
-    print bf.get_preferences()
+    print(E)
+    print(x)
+    print(bf.get_preferences())

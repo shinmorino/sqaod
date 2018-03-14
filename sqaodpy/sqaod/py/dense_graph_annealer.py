@@ -1,6 +1,7 @@
+from __future__ import print_function
 import numpy as np
 import sqaod
-import formulas
+from . import formulas
 from sqaod.common import checkers
 from types import MethodType
 from sqaod import algorithm as algo
@@ -203,10 +204,10 @@ if __name__ == '__main__' :
         ann.make_solution()
         E = ann.get_E()
         #x = ann.get_x()
-        print E #, x
+        print(E) # ,x
 
     prefs = ann.get_preferences()
-    print prefs
+    print(prefs)
         
     ann = dense_graph_annealer(W, sqaod.maximize)
     ann.set_preferences(prefs)
@@ -221,7 +222,7 @@ if __name__ == '__main__' :
         ann.make_solution()
         E = ann.get_E()
         #x = ann.get_x()
-        print E #, x
+        print(E) # ,x
 
     prefs = ann.get_preferences()
-    print prefs
+    print(prefs)

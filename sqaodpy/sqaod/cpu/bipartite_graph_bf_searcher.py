@@ -3,7 +3,7 @@ import random
 import sys
 import sqaod
 from sqaod.common import checkers
-import cpu_bg_bf_searcher as cext
+from . import cpu_bg_bf_searcher as cext
 
 
 class BipartiteGraphBFSearcher :
@@ -13,13 +13,13 @@ class BipartiteGraphBFSearcher :
     def __init__(self, b0, b1, W, optimize, dtype, prefdict) :
         self.dtype = dtype
         self._optimize = optimize
-        self._cobj = cext.new_searcher(dtype)
+        self._cobj = cext.new(dtype)
         if not W is None :
             self.set_qubo(b0, b1, W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
-        cext.delete_searcher(self._cobj, self.dtype)
+        cext.delete(self._cobj, self.dtype)
 
     def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
@@ -88,6 +88,6 @@ if __name__ == '__main__' :
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
-    print E.shape, E
-    print x
-    print bf.get_preferences()
+    print(E.shape, E)
+    print(x)
+    print(bf.get_preferences())

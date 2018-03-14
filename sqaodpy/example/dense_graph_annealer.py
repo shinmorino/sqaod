@@ -1,6 +1,7 @@
+from __future__ import print_function
 import numpy as np
 import sqaod as sq
-    
+
 
 N = 8
 
@@ -38,14 +39,14 @@ ann.set_preferences(n_trotters = W.shape[0])
 # When W and optimize dir are set, ising hamiltonian of h, J and c are caluclated.
 # By using get_hamiltonian() to get these values. 
 h, J, c = ann.get_hamiltonian()
-print 'h=', h
-print 'J=', J
-print 'c=', c
+print('h=', h)
+print('J=', J)
+print('c=', c)
 
 # 8. showing preferences (optional)
 # preferences of solvers are obtained by calling get_preference().
 # preferences is always repeseted as python dictionay object.
-print ann.get_preferences()
+print(ann.get_preferences())
 
 # 9. prepare to run anneal. Annealers must be prepared
 #  before calling randomize_spin() and anneal_one_step().
@@ -83,12 +84,12 @@ x = ann.get_x()
 summary = sq.make_summary(ann)
 
 # 15. get the best engergy(for min E for minimizing problem, and max E for maxmizing problem)
-print 'E {}'.format(summary.E)
+print('E {}'.format(summary.E))
 
 # 16. show the number of solutions that has the same energy of the best E.
-print 'Number of solutions : {}'.format(len(summary.xlist))
+print('Number of solutions : {}'.format(len(summary.xlist)))
 
 # 17. show solutions. Max number of x is limited to 4.
 nToShow = min(len(summary.xlist), 4)
 for idx in range(nToShow) :
-    print summary.xlist[idx]
+    print (summary.xlist[idx])

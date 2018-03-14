@@ -1,5 +1,5 @@
 import numpy as np
-import common
+from . import common
 
 # raising exceptions
 

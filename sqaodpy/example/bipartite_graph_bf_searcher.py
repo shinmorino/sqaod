@@ -37,7 +37,7 @@ search.set_preferences(tile_size_0 = W.shape[1], tile_size_1 = W.shape[0])
 # 6. showing preferences (optional)
 # preferences of solvers are obtained by calling get_preference().
 # preferences is always repeseted as python dictionay object.
-print search.get_preferences()
+print(search.get_preferences())
 
 # 7. do brute-force search
 # during search, x vectors that has minimum E values at the point of scan are saved.
@@ -54,12 +54,12 @@ x = search.get_x()
 summary = sq.make_summary(search)
 
 # 10. get the best engergy(for min E for minimizing problem, and max E for maxmizing problem)
-print 'E {}'.format(summary.E)
+print('E {}'.format(summary.E))
 
 # 11. show the number of solutions that has the same energy of the best E.
-print 'Number of solutions : {}'.format(len(summary.xlist))
+print('Number of solutions : {}'.format(len(summary.xlist)))
 
 # 12. show solutions. Max number of x is limited to 4.
 nToShow = min(len(summary.xlist), 4)
 for idx in range(nToShow) :
-    print summary.xlist[idx]
+    print(summary.xlist[idx])

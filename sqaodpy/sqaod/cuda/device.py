@@ -7,7 +7,7 @@ class Device :
 
     def __init__(self, devno) :
         self._cobj = cuda_device.device_new()
-        cuda_device.device_initialize(self._cobj, devno)
+        cuda_device.initialize(self._cobj, devno)
 
     def __del__(self) :
         if not self._cobj is None :
@@ -15,8 +15,8 @@ class Device :
 	self._cobj = None
 
     def finalize(self) :
-        cuda_device.device_finalize(self._cobj);
-        cuda_device.device_delete(self._cobj)
+        cuda_device.finalize(self._cobj);
+        cuda_device.delete(self._cobj)
         self._cobj = None
         
 def create_device(devno = 0) :

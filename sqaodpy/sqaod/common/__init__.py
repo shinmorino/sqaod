@@ -1,3 +1,3 @@
-from common import *
-from summary import *
-import checkers
+from .common import *
+from .summary import *
+from . import checkers

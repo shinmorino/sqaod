@@ -1,8 +1,4 @@
 #include <sqaodc/pyglue/pyglue.h>
-#include <sqaodc/sqaodc.h>
-
-static PyObject *Cuda_DeviceError;
-namespace sq = sqaod;
 
 namespace {
 
@@ -11,7 +7,7 @@ PyObject *cuda_device_new(PyObject *module, PyObject *args) {
     sq::cuda::Device *device;
     TRY {
         device = new sq::cuda::Device();
-    } CATCH_ERROR_AND_RETURN(PyExc_RuntimeError);
+    } CATCH_ERROR_AND_RETURN;
 
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)device);
@@ -40,7 +36,7 @@ PyObject *cuda_device_initialize(PyObject *module, PyObject *args) {
     sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->initialize(devNo);
-    } CATCH_ERROR_AND_RETURN(PyExc_RuntimeError);
+    } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -55,7 +51,7 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
     sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     TRY {
         device->finalize();
-    } CATCH_ERROR_AND_RETURN(Cuda_DeviceError);
+    } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
     return Py_None;    
@@ -68,25 +64,42 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
 
 static
 PyMethodDef cuda_device_methods[] = {
-    {"device_new", cuda_device_new, METH_VARARGS},
-    {"device_delete", cuda_device_delete, METH_VARARGS},
-    {"device_initialize", cuda_device_initialize, METH_VARARGS},
-    {"device_finalize", cuda_device_finalize, METH_VARARGS},
+    {"new", cuda_device_new, METH_VARARGS},
+    {"delete", cuda_device_delete, METH_VARARGS},
+    {"initialize", cuda_device_initialize, METH_VARARGS},
+    {"finalize", cuda_device_finalize, METH_VARARGS},
     {NULL},
 };
 
+
+
+#if PY_MAJOR_VERSION >= 3
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "cuda_device",
+        NULL, 0,
+        cuda_device_methods,
+        NULL, NULL, NULL, NULL
+};
+
 extern "C"
-PyMODINIT_FUNC
-initcuda_device(void) {
-    PyObject *m;
-    
-    m = Py_InitModule("cuda_device", cuda_device_methods);
+PyMODINIT_FUNC PyInit_cuda_device(void) {
+    PyObject *module = PyModule_Create(&moduledef);
+    if (module == NULL)
+        return NULL;
     import_array();
-    if (m == NULL)
-        return;
-    
-    char name[] = "cuda_device.error";
-    Cuda_DeviceError = PyErr_NewException(name, NULL, NULL);
-    Py_INCREF(Cuda_DeviceError);
-    PyModule_AddObject(m, "error", Cuda_DeviceError);
+    return module;
 }
+
+#else
+
+extern "C"
+void initcuda_device(void) {
+    PyObject *module = Py_InitModule("cuda_device", cuda_device_methods);
+    if (module == NULL)
+        return;
+    import_array();
+}
+
+#endif

@@ -1,8 +1,9 @@
+from __future__ import print_function
 import numpy as np
 import sys
 import sqaod
-import formulas
 from sqaod import algorithm as algo
+from . import formulas
 
 class DenseGraphBFSearcher :
     
@@ -108,10 +109,10 @@ if __name__ == '__main__' :
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
-    print E, len(x), x[0]
+    print(E, len(x), x[0])
 
     bf = dense_graph_bf_searcher(W, sqaod.maximize)
     bf.search()
     E = bf.get_E()
     x = bf.get_x() 
-    print E, len(x), x[0]
+    print(E, len(x), x[0])

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import sqaod
 import device
@@ -12,14 +13,14 @@ class DenseGraphBFSearcher :
     def __init__(self, W, optimize, dtype, prefdict) :
         self._cext = cext
         self.dtype = dtype
-        self._cobj = cext.new_bf_searcher(dtype)
+        self._cobj = cext.new(dtype)
  	self.assign_device(device.active_device)
         if not W is None :
             self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
-        cext.delete_bf_searcher(self._cobj, self.dtype)
+        cext.delete(self._cobj, self.dtype)
 
     def assign_device(self, dev) :
         cext.assign_device(self._cobj, dev._cobj, self.dtype)
@@ -104,8 +105,8 @@ if __name__ == '__main__' :
     
     x = bf.get_x() 
     E = bf.get_E()
-    print E
-    print x
+    print(E)
+    print(x)
 
 #    import sqaod.py.formulas
 #    E = np.empty((1), dtype)

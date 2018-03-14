@@ -1,15 +1,16 @@
+from __future__ import print_function
 import numpy as np
-import sqaod
-import formulas
-from sqaod.common import checkers
 from types import MethodType
+import sqaod
 from sqaod import algorithm as algo
+from sqaod.common import checkers
+from . import formulas
 
 
 class BipartiteGraphAnnealer :
 
     def __init__(self, b0, b1, W, optimize, prefdict) : # n_trotters
-        if not W is None :
+        if not W is Noprintne :
             self.set_qubo(b0, b1, W, optimize)
         self._select_algorithm(algo.coloring)    
         self.set_preferences(prefdict)
@@ -229,5 +230,5 @@ if __name__ == '__main__' :
         
         E = an.get_E()
         x = an.get_x()
-        print E
-        #print x
+        print(E)
+        #print(x)

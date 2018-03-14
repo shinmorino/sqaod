@@ -117,7 +117,7 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
             annealer.anneal_one_step(G, kT)
             if verbose :
                 E - annealer.calculate_E()
-                print E
+                print(E)
             G = G * tau
 
         annealer.make_solution()

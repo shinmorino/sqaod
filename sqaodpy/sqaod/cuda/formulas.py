@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import numbers
 import sqaod
@@ -141,7 +142,7 @@ if __name__ == '__main__' :
         W = np.ones((4, 4), np.int32)
         dense_graph_calculate_hamiltonian(W, np.int32)
     except Exception as e :
-        print e.message
+        print(e.message)
     
     
     # dense graph
@@ -228,7 +229,7 @@ if __name__ == '__main__' :
         
 
     """
-    print q
-    print E0
-    print E1
+    print(q)
+    print(E0)
+    print(E1)
     """    

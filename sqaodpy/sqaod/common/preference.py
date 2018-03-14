@@ -20,7 +20,7 @@ class Minimize :
     @staticmethod
     def sort(list) :
         return sorted(list)
-    def __trunc__(self) :
+    def __int__(self) :
         return 0
 
     
@@ -34,7 +34,7 @@ class Maximize :
     @staticmethod
     def sort(list) :
         return sorted(list, reverse = true)
-    def __trunc__(self) :
+    def __int__(self) :
         return 1
 
 minimize = Minimize()

@@ -1,7 +1,8 @@
+from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common import checkers
-import cpu_dg_bf_searcher as cext
+from . import cpu_dg_bf_searcher as cext
 
 class DenseGraphBFSearcher :
 
@@ -9,13 +10,13 @@ class DenseGraphBFSearcher :
     
     def __init__(self, W, optimize, dtype, prefdict) :
         self.dtype = dtype
-        self._cobj = cext.new_bf_searcher(dtype)
+        self._cobj = cext.new(dtype)
         if not W is None :
             self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
             
     def __del__(self) :
-        cext.delete_bf_searcher(self._cobj, self.dtype)
+        cext.delete(self._cobj, self.dtype)
 
     def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
@@ -98,9 +99,9 @@ if __name__ == '__main__' :
     
     x = bf.get_x() 
     E = bf.get_E()
-    print E
-    print x
-    print bf.get_preferences()
+    print(E)
+    print(x)
+    print(bf.get_preferences())
     
 #    import sqaod.py.formulas
 #    E = np.empty((1), dtype)

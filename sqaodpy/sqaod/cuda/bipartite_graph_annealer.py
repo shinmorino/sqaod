@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common import checkers
@@ -13,14 +14,14 @@ class BipartiteGraphAnnealer :
     
     def __init__(self, b0, b1, W, optimize, dtype, prefdict) : # n_trotters
         self.dtype = dtype
-        self._cobj = cext.new_annealer(dtype)
+        self._cobj = cext.new(dtype)
 	self.assign_device(device.active_device)
         if not W is None :
             self.set_qubo(b0, b1, W, optimize)
         self.set_preferences(prefdict)
 
     def __del__(self) :
-        cext.delete_annealer(self._cobj, self.dtype)
+        cext.delete(self._cobj, self.dtype)
 
     def assign_device(self, device) :
         cext.assign_device(self._cobj, device._cobj, self.dtype)
@@ -125,5 +126,5 @@ if __name__ == '__main__' :
 
         E = an.get_E()
         x = an.get_x()
-        print E.shape, E
-        print x
+        print(E.shape, E)
+        print(x)

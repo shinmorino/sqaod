@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import random
 import sqaod
@@ -12,14 +13,14 @@ class DenseGraphAnnealer :
     
     def __init__(self, W, optimize, dtype, prefdict) :
         self.dtype = dtype
-        self._cobj = cext.new_annealer(dtype)
+        self._cobj = cext.new(dtype)
 	self.assign_device(device.active_device)
         if not W is None :
             self.set_qubo(W, optimize)
         self.set_preferences(prefdict)
 
     def __del__(self) :
-        cext.delete_annealer(self._cobj, self.dtype)
+        cext.delete(self._cobj, self.dtype)
         
     def assign_device(self, device) :
         cext.assign_device(self._cobj, device._cobj, self.dtype)
@@ -120,9 +121,9 @@ if __name__ == '__main__' :
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_qubo(W, sqaod.minimize)
     h, J, c = ann.get_hamiltonian()
-    print h
-    print J
-    print c
+    print(h)
+    print(J)
+    print(c)
 
     
     Ginit = 5.
@@ -142,5 +143,5 @@ if __name__ == '__main__' :
         ann.make_solution()
         E = ann.get_E()
         q = ann.get_q() 
-        print E
-        print q
+        print(E)
+        print(q)
