@@ -444,18 +444,7 @@ PyMethodDef bf_searcher_methods[] = {
 };
 
 
-#if PY_MAJOR_VERSION == 2
-
-PyMODINIT_FUNC
-INIT_MODULE(void) {
-    PyObject *m = Py_InitModule(modname, bf_searcher_methods);
-    if (m == NULL)
-        return;
-    import_array();
-}
-
-
-#else
+#if PY_MAJOR_VERSION >= 3
 
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
@@ -471,6 +460,15 @@ PyMODINIT_FUNC INIT_MODULE(void) {
         return NULL;
     import_array();
     return module;
+}
+
+#else
+
+PyMODINIT_FUNC INIT_MODULE(void) {
+    PyObject *module = Py_InitModule(modname, bf_searcher_methods);
+    if (module == NULL)
+        return;
+    import_array();
 }
 
 #endif

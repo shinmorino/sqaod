@@ -447,17 +447,7 @@ PyMethodDef formulas_methods[] = {
 
 
 
-#if PY_MAJOR_VERSION == 2
-
-extern "C"
-void INIT_MODULE(void) {
-    PyObject *module = Py_InitModule(modname, formulas_methods);
-    if (module == NULL)
-        return;
-    import_array();
-}
-
-#else
+#if PY_MAJOR_VERSION >= 3
 
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
@@ -474,6 +464,15 @@ PyMODINIT_FUNC INIT_MODULE(void) {
         return NULL;
     import_array();
     return module;
+}
+
+#else
+
+PyMODINIT_FUNC INIT_MODULE(void) {
+    PyObject *module = Py_InitModule(modname, formulas_methods);
+    if (module == NULL)
+        return;
+    import_array();
 }
 
 #endif

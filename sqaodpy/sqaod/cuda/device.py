@@ -6,7 +6,7 @@ class Device :
     _cext = cuda_device
 
     def __init__(self, devno) :
-        self._cobj = cuda_device.device_new()
+        self._cobj = cuda_device.new()
         cuda_device.initialize(self._cobj, devno)
 
     def __del__(self) :

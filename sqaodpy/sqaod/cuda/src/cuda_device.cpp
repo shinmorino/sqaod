@@ -23,7 +23,7 @@ PyObject *cuda_device_delete(PyObject *module, PyObject *args) {
     sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
     delete device;
     Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_None;
 }
 
 
@@ -39,7 +39,7 @@ PyObject *cuda_device_initialize(PyObject *module, PyObject *args) {
     } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_None;
 }
 
 
@@ -54,7 +54,7 @@ PyObject *cuda_device_finalize(PyObject *module, PyObject *args) {
     } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
-    return Py_None;    
+    return Py_None;
 }
 
 }
@@ -94,8 +94,7 @@ PyMODINIT_FUNC PyInit_cuda_device(void) {
 
 #else
 
-extern "C"
-void initcuda_device(void) {
+PyMODINIT_FUNC initcuda_device(void) {
     PyObject *module = Py_InitModule("cuda_device", cuda_device_methods);
     if (module == NULL)
         return;
