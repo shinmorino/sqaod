@@ -128,7 +128,7 @@ generateBitsSequence(real *d_data, int N,
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
     sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
-    gridDim.x = divru(unsigned int(xEnd - xBegin), blockDim.y);
+    gridDim.x = divru((unsigned int)(xEnd - xBegin), blockDim.y);
     generateBitsSequenceKernel
             <<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>(d_data, N, nSeqs, xBegin);
     DEBUG_SYNC;
