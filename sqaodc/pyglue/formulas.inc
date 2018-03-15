@@ -453,7 +453,7 @@ static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         modname,
         NULL, 0,
-        cpu_formulas_methods,
+        formulas_methods,
         NULL, NULL, NULL, NULL
 };
 
