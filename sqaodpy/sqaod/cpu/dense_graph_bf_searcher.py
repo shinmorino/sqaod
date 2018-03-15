@@ -1,70 +1,14 @@
 from __future__ import print_function
 import numpy as np
 import sqaod
-from sqaod.common import checkers
+from sqaod.common.dense_graph_bf_searcher_base import DenseGraphBFSearcherBase
 from . import cpu_dg_bf_searcher as cext
 
-class DenseGraphBFSearcher :
+class DenseGraphBFSearcher(DenseGraphBFSearcherBase) :
 
-    _cext = cext
-    
     def __init__(self, W, optimize, dtype, prefdict) :
-        self.dtype = dtype
         self._cobj = cext.new(dtype)
-        if not W is None :
-            self.set_qubo(W, optimize)
-        self.set_preferences(prefdict)
-            
-    def __del__(self) :
-        cext.delete(self._cobj, self.dtype)
-
-    def set_qubo(self, W, optimize = sqaod.minimize) :
-        checkers.dense_graph.qubo(W)
-        W = sqaod.clone_as_ndarray(W, self.dtype)
-        self._N = W.shape[0]
-        cext.set_qubo(self._cobj, W, optimize, self.dtype)
-        self._optimize = optimize
-
-    def get_problem_size(self) :
-        return cext.get_problem_size(self._cobj, self.dtype)
-
-    def set_preferences(self, prefdict = None, **prefs) :
-        if not prefdict is None :
-            cext.set_preferences(self._cobj, prefdict, self.dtype)
-        cext.set_preferences(self._cobj, prefs, self.dtype)
-
-    def get_preferences(self) :
-        return cext.get_preferences(self._cobj, self.dtype);
-
-    def get_optimize_dir(self) :
-        return self._optimize
-
-    def get_E(self) :
-        return cext.get_E(self._cobj, self.dtype)
-
-    def get_x(self) :
-        return cext.get_x(self._cobj, self.dtype)
-
-    def prepare(self) :
-        cext.prepare(self._cobj, self.dtype);
-        
-    def make_solution(self) :
-        cext.make_solution(self._cobj, self.dtype);
-        
-    def search_range(self) :
-        return cext.search_range(self._cobj, self.dtype)
-        
-    def search(self) :
-        self.prepare()
-        while True :
-            comp, curx = cext.search_range(self._cobj, self.dtype)
-            if comp :
-                break;
-        self.make_solution()
-        
-    def _search(self) :
-        # one liner.  does not accept ctrl+c.
-        cext.search(self._cobj, self.dtype)
+        DenseGraphBFSearcherBase.__init__(self, cext, dtype, W, optimize, prefdict)
 
 
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64, **prefs) :
