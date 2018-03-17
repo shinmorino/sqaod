@@ -74,10 +74,6 @@ struct BGFuncs {
                      const Vector &h0, const Vector &h1, const Matrix &J, real c,
                      const Matrix &q0, const Matrix &q1);
     
-    /* Eigen ver */
-    static
-    void calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenMatrix *J, real *c,
-                       const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W);
 };
 
 }

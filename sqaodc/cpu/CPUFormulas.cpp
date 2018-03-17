@@ -163,10 +163,10 @@ void BGFuncs<real>::calculateHamiltonian(Vector *h0, Vector *h1, Matrix *J, real
     EigenMappedMatrix eJ(mapTo(*J));
     // calculate_hJc(&eh0, &eh1, &eJ, c, eb0, eb1, W);
     
-    eJ = real(- 0.25) * eW;
-    eh0 = real(- 0.25) * eW.colwise().sum()+ real(0.5) * eb0;
-    eh1 = real(- 0.25) * eW.rowwise().sum().transpose() + real(0.5) * eb1;
-    *c = real(- 0.25) * eW.sum() + real(0.5) * (eb0.sum() + eb1.sum());
+    eJ = real(-0.25) * eW;
+    eh0 = real(-0.25) * eW.colwise().sum() + real(-0.5) * eb0;
+    eh1 = real(-0.25) * eW.rowwise().sum().transpose() + real(-0.5) * eb1;
+    *c = real(-0.25) * eW.sum() + real(-0.5) * (eb0.sum() + eb1.sum());
 }
 
 
@@ -202,19 +202,6 @@ void BGFuncs<real>::calculate_E(Vector *E,
     eE -= eh0 * eq0.transpose();
     eE -= eh1 * eq1.transpose();
     eE.array() -= c;
-}
-
-
-/* Eigen versions */
-
-template<class real>
-void BGFuncs<real>::calculate_hJc(EigenRowVector *h0, EigenRowVector *h1, EigenMatrix *J, real *c,
-                                  const EigenRowVector &b0, const EigenRowVector &b1, const EigenMatrix &W) {
-
-    *J = real(0.25) * W;
-    *h0 = real(0.25) * W.colwise().sum().transpose() + real(0.5) * b0;
-    *h1 = real(0.25) * W.rowwise().sum() + real(0.5) * b1;
-    *c = real(0.25) * W.sum() + real(0.5) * (b0.sum() + b1.sum());
 }
 
 
