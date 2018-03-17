@@ -1,10 +1,12 @@
 #include "CUDADenseGraphBFSearcher.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include "Device.h"
 #include <cmath>
 #include <float.h>
 #include <algorithm>
 #include <limits>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
 template<class real>
@@ -42,10 +44,9 @@ void CUDADenseGraphBFSearcher<real>::assignDevice(Device &device) {
 
 template<class real>
 void CUDADenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
-    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     throwErrorIf(!deviceAssigned_, "Device not set.");
-    clearState(solProblemSet);
+    sqint::quboShapeCheck(W, __func__);
+    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
 
     N_ = W.rows;
     W_ = W;

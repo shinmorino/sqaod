@@ -1,9 +1,11 @@
 #include "CUDABipartiteGraphAnnealer.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
 #include <algorithm>
 #include <exception>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
 template<class real>
@@ -90,7 +92,7 @@ void CUDABipartiteGraphAnnealer<real>::seed(unsigned long long seed) {
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::
 setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::OptimizeMethod om) {
-    /* FIXME: add QUBO dim check. */
+    sqint::quboShapeCheck(b0, b1, W, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     if ((W.cols != N0_) || (W.rows != N1_))
         deallocate();
@@ -120,7 +122,7 @@ setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::Opt
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::
 setHamiltonian(const HostVector &h0, const HostVector &h1, const HostMatrix &J, real c) {
-    /* FIXME: add QUBO dim check. */
+    sqint::isingModelShapeCheck(h0, h1, J, c, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     if ((J.cols != N0_) || (J.rows != N1_))
         deallocate();
@@ -163,6 +165,7 @@ const sq::BitSetPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::set_x(const BitSet &x0, const BitSet &x1) {
+    sqint::isingModelSolutionShapeCheck(N0_, N1_, x0, x1, __func__);
     throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);

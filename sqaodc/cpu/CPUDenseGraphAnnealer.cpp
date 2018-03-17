@@ -1,8 +1,10 @@
 #include "CPUDenseGraphAnnealer.h"
 #include "CPUFormulas.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <common/Common.h>
 #include <time.h>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
 template<class real>
@@ -65,7 +67,7 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    sqint::quboShapeCheck(W, __func__);
     clearState(solProblemSet);
 
     N_ = W.rows;
@@ -87,7 +89,8 @@ void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &J, real c) {
-    /* FIXME: add dim check. */
+    sqint::isingModelShapeCheck(h, J, c, __func__);
+    
     throwErrorIf(!isSymmetric(J), "J is not symmetric.");
     clearState(solProblemSet);
     om_ = sq::optMinimize;
@@ -121,6 +124,7 @@ const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::set_x(const sq::BitSet &x) {
+    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, x, __func__);
     throwErrorIfNotPrepared();
     throwErrorIf(x.size != N_,
                  "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);

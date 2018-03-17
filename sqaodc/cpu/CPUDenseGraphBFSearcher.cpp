@@ -1,10 +1,12 @@
 #include "CPUDenseGraphBFSearcher.h"
-#include <cpu/CPUDenseGraphBatchSearch.h>
+#include "CPUDenseGraphBatchSearch.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <cmath>
 
 #include <float.h>
 #include <algorithm>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
 template<class real>
@@ -27,7 +29,7 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 
 template<class real>
 void CPUDenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    sqint::quboShapeCheck(W, __func__);
     throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
     clearState(solProblemSet);
 

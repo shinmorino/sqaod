@@ -1,9 +1,11 @@
 #include "CUDADenseGraphAnnealer.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
 #include "DeviceSegmentedSum.cuh"
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
 template<class real>
@@ -103,7 +105,7 @@ void CUDADenseGraphAnnealer<real>::seed(unsigned long long seed) {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMethod om) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric.");
+    sqint::quboShapeCheck(W, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
     clearState(solProblemSet);
@@ -124,8 +126,7 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
 template<class real>
 void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const HostMatrix &J,
                                                   real c) {
-    /* FIXME: add size check */
-    throwErrorIf(!isSymmetric(J), "J is not symmetric.");
+    sqint::isingModelShapeCheck(h, J, c, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
     clearState(solProblemSet);
@@ -167,13 +168,13 @@ const sq::BitSetArray &CUDADenseGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::set_x(const BitSet &x) {
+    sqint::isingModelSolutionShapeCheck(N_, x, __func__);
     throwErrorIfNotPrepared();
-    throwErrorIf(x.size != N_,
-                 "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
-
-    DeviceBits *d_x = devStream_->tempDeviceVector<char>(x.size);
-    devCopy_(d_x, x);
-    devCopy_.copyRowwise(&d_matq_, *d_x);
+    
+    BitSet q = sq::x_to_q<char>(x);
+    DeviceBits *d_q = devStream_->tempDeviceVector<char>(x.size);
+    devCopy_(d_q, q);
+    devCopy_.copyRowwise(&d_matq_, *d_q);
     setState(solQSet);
 }
 

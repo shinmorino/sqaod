@@ -1,37 +1,26 @@
 #pragma once
 
+#include <sqaodc/common/Common.h>
 
-namespace sqaod_cpu {
 
-namespace sqaod = sq;
+namespace sqaod_internal {
 
-template<class real> inline
-void prepMatrix(sq::MatrixType<real> *mat, const sq::Dim &dim, const char *func) {
-    if (mat->data == NULL)
-        mat->resize(dim);
-    throwErrorIf(mat->dim() != dim, "%s, Shape don't match.", func);
-}
-
-template<class real> inline
-void prepVector(sq::VectorType<real> *vec, const sq::SizeType size, const char *func) {
-    if (vec->data == NULL)
-        vec->resize(size);
-    throwErrorIf(vec->size != size, "%s, Shape don't match.", func);
-}
-
-template<class real> inline
-void validateScalar(real *sc, const char *func) {
-    throwErrorIf(sc == NULL, "%s, Scalar is null.", func);
-}
+namespace sq = sqaod;
 
 
 /* Dense graph */
 
 template<class real>
 void quboShapeCheck(const sq::MatrixType<real> &W,
+                    const char *func) {
+    throwErrorIf(!sq::isSymmetric(W), "%s, W is not symmetric.", func);
+}
+
+template<class real>
+void quboShapeCheck(const sq::MatrixType<real> &W,
                     const sq::VectorType<real> &x,
                     const char *func) {
-    throwErrorIf(!isSymmetric(W), "%s, W is not symmetric.", func);
+    quboShapeCheck(W, func);
     throwErrorIf(W.cols != x.size, "%s, Shape does not match.", func);
 }
 
@@ -39,30 +28,44 @@ template<class real>
 void quboShapeCheck(const sq::MatrixType<real> &W,
                     const sq::MatrixType<real> &x,
                     const char *func) {
-    throwErrorIf(!isSymmetric(W), "%s, W is not symmetric.", func);
+    throwErrorIf(!sq::isSymmetric(W), "%s, W is not symmetric.", func);
     throwErrorIf(W.cols != x.cols, "%s, Shape does not match.", func);
 }
 
 template<class real>
 void isingModelShapeCheck(const sq::VectorType<real> &h,
                           const sq::MatrixType<real> &J, real c,
-                          const sq::VectorType<real> &q,
                           const char *func) {
-    throwErrorIf(!isSymmetric(J), "%s, J is not symmetric.", func);
+    throwErrorIf(!sq::isSymmetric(J), "%s, J is not symmetric.", func);
     sq::SizeType N = J.cols;
     throwErrorIf(h.size != N, "%s, Shape does not match.", func);
+}
+
+template<class V0, class V1>
+void isingModelShapeCheck(const sq::VectorType<V0> &h,
+                          const sq::MatrixType<V0> &J, V0 c,
+                          const sq::VectorType<V1> &q,
+                          const char *func) {
+    isingModelShapeCheck(h, J, c, func);
+    sq::SizeType N = J.cols;
     throwErrorIf(q.size != N, "%s, Shape does not match.", func);
 }
 
-template<class real>
-void isingModelShapeCheck(const sq::VectorType<real> &h,
-                          const sq::MatrixType<real> &J, real c,
-                          const sq::MatrixType<real> &q,
+template<class V0, class V1>
+void isingModelShapeCheck(const sq::VectorType<V0> &h,
+                          const sq::MatrixType<V0> &J, V0 c,
+                          const sq::MatrixType<V1> &q,
                           const char *func) {
-    throwErrorIf(!isSymmetric(J), "%s, J is not symmetric.", func);
+    isingModelShapeCheck(h, J, c, func);
     sq::SizeType N = J.cols;
-    throwErrorIf(h.size != N, "%s, Shape does not match.", func);
     throwErrorIf(q.cols != N, "%s, Shape does not match.", func);
+}
+
+template<class V>
+void isingModelSolutionShapeCheck(sq::SizeType N,
+                                  const sq::VectorType<V> &q,
+                                  const char *func) {
+    throwErrorIf(q.size != N, "%s, Shape does not match.", func);
 }
 
 /* Bipartite graph */
@@ -119,8 +122,17 @@ template<class real>
 void isingModelShapeCheck(const sq::VectorType<real> &h0,
                           const sq::VectorType<real> &h1,
                           const sq::MatrixType<real> &J, real c,
-                          const sq::VectorType<real> &q0,
-                          const sq::VectorType<real> &q1,
+                          const char *func) {
+    bool shapeMatched = (h0.size == J.cols) && (h1.size == J.rows);
+    throwErrorIf(!shapeMatched, "%s, Shape does not match.", func);
+}
+
+template<class V0, class V1>
+void isingModelShapeCheck(const sq::VectorType<V0> &h0,
+                          const sq::VectorType<V0> &h1,
+                          const sq::MatrixType<V0> &J, V0 c,
+                          const sq::VectorType<V1> &q0,
+                          const sq::VectorType<V1> &q1,
                           const char *func) {
     bool shapeMatched = (h0.size == q0.size) && (h1.size == q1.size) &&
             (J.cols == q0.size) && (J.rows == q1.size);
@@ -139,6 +151,40 @@ void isingModelShapeCheck(const sq::VectorType<real> &h0,
     shapeMatched &= (q0.rows == q1.rows);
     throwErrorIf(!shapeMatched, "%s, Shape does not match.", func);
 }
+
+template<class V>
+void isingModelSolutionShapeCheck(sq::SizeType N0, sq::SizeType N1,
+                                  const sq::VectorType<V> &q0,
+                                  const sq::VectorType<V> &q1,
+                                  const char *func) {
+    bool shapeMatched = (N0 == q0.size) && (N1 == q1.size);
+    throwErrorIf(!shapeMatched, "%s, Shape does not match.", func);
+}
+
+
+/* helpers to check  out parameters */
+
+template<class real> inline
+void prepMatrix(sq::MatrixType<real> *mat, const sq::Dim &dim, const char *func) {
+    throwErrorIf(mat == NULL, "%s, matrix is NULL.", func);
+    if (mat->data == NULL)
+        mat->resize(dim);
+    throwErrorIf(mat->dim() != dim, "%s, Shape don't match.", func);
+}
+
+template<class real> inline
+void prepVector(sq::VectorType<real> *vec, const sq::SizeType size, const char *func) {
+    throwErrorIf(vec == NULL, "%s, vector is NULL.", func);
+    if (vec->data == NULL)
+        vec->resize(size);
+    throwErrorIf(vec->size != size, "%s, Shape don't match.", func);
+}
+
+template<class real> inline
+void validateScalar(real *sc, const char *func) {
+    throwErrorIf(sc == NULL, "%s, Scalar is null.", func);
+}
+
 
 }
 

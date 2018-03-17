@@ -1,4 +1,5 @@
 #include "CPUBipartiteGraphAnnealer.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
 #include <algorithm>
@@ -6,6 +7,7 @@
 #include "CPUFormulas.h"
 #include <time.h>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
 template<class real>
@@ -65,6 +67,7 @@ sq::Algorithm CPUBipartiteGraphAnnealer<real>::getAlgorithm() const {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::setQUBO(const Vector &b0, const Vector &b1,
                                               const Matrix &W, sq::OptimizeMethod om) {
+    sqint::quboShapeCheck(b0, b1, W, __func__);
     /* FIXME: add qubo dim check */
     if ((N0_ != b0.size) || (N1_ != b1.size))
         clearState(solPrepared);
@@ -92,9 +95,8 @@ void CPUBipartiteGraphAnnealer<real>::setQUBO(const Vector &b0, const Vector &b1
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J, real c) {
-    /* FIXME: add dim check */
-    if ((N0_ != h0.size) || (N1_ != h1.size))
-        clearState(solPrepared);
+    sqint::isingModelShapeCheck(h0, h1, J, c, __func__);
+    clearState(solPrepared);
     
     N0_ = (int)h0.size;
     N1_ = (int)h1.size;
@@ -122,6 +124,8 @@ const sq::BitSetPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_x(const sq::BitSet &x0, const sq::BitSet &x1) {
+    sqint::isingModelShapeCheck(sq::mapFrom(h0_), sq::mapFrom(h1_), sq::mapFrom(J_), c_,
+                                x0, x1, __func__);
     throwErrorIfNotPrepared();
     throwErrorIf(x0.size != N0_,
                  "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);

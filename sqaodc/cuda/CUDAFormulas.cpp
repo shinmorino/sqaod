@@ -1,11 +1,13 @@
 #include "CUDAFormulas.h"
-#include <float.h>
+#include <sqaodc/common/ShapeChecker.h>
 
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
 template<class real> void CUDADenseGraphFormulas<real>::
 calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
+    sqint::validateScalar(E, __func__);
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
     DeviceMatrix *d_W = devStream->tempDeviceMatrix<real>(W.dim());
     DeviceVector *d_x = devStream->tempDeviceVector<real>(x.size);
@@ -19,6 +21,9 @@ calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
 
 template<class real> void CUDADenseGraphFormulas<real>::
 calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
+    sqint::quboShapeCheck(W, x, __func__);
+    sqint::validateScalar(E, __func__);
+
     DeviceVector *d_E = devStream->tempDeviceVector<real>(x.rows);
     DeviceMatrix *d_W = devStream->tempDeviceMatrix<real>(W.dim());
     DeviceMatrix *d_x = devStream->tempDeviceMatrix<real>(x.dim());
@@ -32,6 +37,11 @@ calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
 
 template<class real> void CUDADenseGraphFormulas<real>::
 calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W) {
+    sqint::quboShapeCheck(W, __func__);
+    sqint::prepVector(h, W.rows, __func__);
+    sqint::prepMatrix(J, W.dim(), __func__);
+    sqint::validateScalar(c, __func__);
+    
     DeviceVector *d_h = devStream->tempDeviceVector<real>(W.rows);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(W.dim());
     DeviceScalar *d_c = devStream->tempDeviceScalar<real>();
@@ -48,6 +58,9 @@ template<class real> void CUDADenseGraphFormulas<real>::
 calculate_E(real *E,
             const HostVector &h, const HostMatrix &J, const real &c,
             const HostVector &q) {
+    sqint::isingModelShapeCheck(h, J, c, q, __func__);
+    sqint::validateScalar(E, __func__);
+    
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
     DeviceVector *d_h = devStream->tempDeviceVector<real>(h.size);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(J.dim());
@@ -62,6 +75,9 @@ template<class real> void CUDADenseGraphFormulas<real>::
 calculate_E(HostVector *E,
             const HostVector &h, const HostMatrix &J, const real &c,
             const HostMatrix &q) {
+    sqint::isingModelShapeCheck(h, J, c, q,  __func__);
+    sqint::prepVector(E, q.rows, __func__);
+
     DeviceVector *d_E = devStream->tempDeviceVector<real>(q.rows);
     DeviceVector *d_h = devStream->tempDeviceVector<real>(h.size);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(J.dim());
@@ -96,6 +112,9 @@ template<class real> void CUDABipartiteGraphFormulas<real>::
 calculate_E(real *E,
             const HostVector &b0, const HostVector &b1, const HostMatrix &W,
             const HostVector &x0, const HostVector &x1) {
+    sqint::quboShapeCheck(b0, b1, W, x0, x1, __func__);
+    sqint::validateScalar(E, __func__);
+
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
     DeviceVector *d_b0 = devStream->tempDeviceVector<real>(b0.size);
     DeviceVector *d_b1 = devStream->tempDeviceVector<real>(b1.size);
@@ -116,6 +135,9 @@ template<class real> void CUDABipartiteGraphFormulas<real>::
 calculate_E(HostVector *E,
             const HostVector &b0, const HostVector &b1, const HostMatrix &W,
             const HostMatrix &x0, const HostMatrix &x1) {
+    sqint::quboShapeCheck(b0, b1, W, x0, x1, __func__);
+    sqint::prepVector(E, x1.rows, __func__);
+
     DeviceVector *d_E = devStream->tempDeviceVector<real>(x0.rows);
     DeviceVector *d_b0 = devStream->tempDeviceVector<real>(b0.size);
     DeviceVector *d_b1 = devStream->tempDeviceVector<real>(b1.size);
@@ -137,6 +159,9 @@ void CUDABipartiteGraphFormulas<real>::
 calculate_E_2d(HostMatrix *E,
                const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                const HostMatrix &x0, const HostMatrix &x1) {
+    sqint::quboShapeCheck_2d(b0, b1, W, x0, x1, __func__);
+    sqint::prepMatrix(E, sq::Dim(x1.rows, x0.rows), __func__);
+
     DeviceMatrix *d_E = devStream->tempDeviceMatrix<real>(x1.rows, x0.rows);
     DeviceVector *d_b0 = devStream->tempDeviceVector<real>(b0.size);
     DeviceVector *d_b1 = devStream->tempDeviceVector<real>(b1.size);
@@ -157,6 +182,12 @@ calculate_E_2d(HostMatrix *E,
 template<class real> void CUDABipartiteGraphFormulas<real>::
 calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
                      const HostVector &b0, const HostVector &b1, const HostMatrix &W) {
+    sqint::quboShapeCheck(b0, b1, W, __func__);
+    sqint::prepVector(h0, b0.size, __func__);
+    sqint::prepVector(h1, b1.size, __func__);
+    sqint::prepMatrix(J, W.dim(), __func__);
+    sqint::validateScalar(c, __func__);
+    
     DeviceVector *d_h0 = devStream->tempDeviceVector<real>(b0.size);
     DeviceVector *d_h1 = devStream->tempDeviceVector<real>(b1.size);
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(W.dim());
@@ -182,6 +213,9 @@ void CUDABipartiteGraphFormulas<real>::
 calculate_E(real *E,
             const HostVector &h0, const HostVector &h1, const HostMatrix &J, const real &c,
             const HostVector &q0, const HostVector &q1) {
+    sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
+    sqint::validateScalar(E, __func__);
+
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
     DeviceVector *d_h0 = devStream->tempDeviceVector<real>(h0.size);
     DeviceVector *d_h1 = devStream->tempDeviceVector<real>(h1.size);
@@ -205,6 +239,9 @@ template<class real> void CUDABipartiteGraphFormulas<real>::
 calculate_E(HostVector *E,
             const HostVector &h0, const HostVector &h1, const HostMatrix &J, const real &c,
             const HostMatrix &q0, const HostMatrix &q1) {
+    sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
+    sqint::prepVector(E, q0.rows, __func__);
+
     DeviceVector *d_E = devStream->tempDeviceVector<real>(q0.rows);
     DeviceVector *d_h0 = devStream->tempDeviceVector<real>(h0.size);
     DeviceVector *d_h1 = devStream->tempDeviceVector<real>(h1.size);

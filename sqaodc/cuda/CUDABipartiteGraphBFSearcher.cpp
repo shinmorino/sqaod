@@ -1,9 +1,11 @@
 #include "CUDABipartiteGraphBFSearcher.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
 #include <algorithm>
 #include <exception>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
 template<class real>
@@ -43,6 +45,7 @@ void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
 template<class real>
 void CUDABipartiteGraphBFSearcher<real>::setQUBO(const HostVector &b0, const HostVector &b1,
                                                  const HostMatrix &W, sq::OptimizeMethod om) {
+    sqint::quboShapeCheck(b0, b1, W, __func__);
     throwErrorIf(!deviceAssigned_, "Device not set.");
     clearState(solProblemSet);
     

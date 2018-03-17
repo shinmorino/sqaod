@@ -1,17 +1,25 @@
 #include "CPUFormulas.h"
-#include "CPUObjectPrep.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <iostream>
-#include <float.h>
 
 
+namespace {
+
+namespace sq = sqaod;
+
+
+}
+
+
+namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
 
 template<class real>
 void DGFuncs<real>::calculate_E(real *E,
                                 const Matrix &W, const Vector &x) {
-    validateScalar(E, __func__);
-    quboShapeCheck(W, x, __func__);
+    sqint::quboShapeCheck(W, x, __func__);
+    sqint::validateScalar(E, __func__);
     
     const EigenMappedMatrix eW(mapTo(W));
     EigenMappedColumnVector ex(mapToColumnVector(x)); 
@@ -22,8 +30,8 @@ void DGFuncs<real>::calculate_E(real *E,
 
 template<class real>
 void DGFuncs<real>::calculate_E(Vector *E, const Matrix &W, const Matrix &x) {
-    prepVector(E, x.rows, __func__);
-    quboShapeCheck(W, x, __func__);
+    sqint::prepVector(E, x.rows, __func__);
+    sqint::quboShapeCheck(W, x, __func__);
 
     EigenMappedMatrix ex(mapTo(x));
     EigenMatrix eWx = mapTo(W) * ex.transpose();
@@ -35,10 +43,10 @@ void DGFuncs<real>::calculate_E(Vector *E, const Matrix &W, const Matrix &x) {
 
 template<class real>
 void DGFuncs<real>::calculateHamiltonian(Vector *h, Matrix *J, real *c, const Matrix &W) {
-    throwErrorIf(!isSymmetric(W), "W is not symmetric, %s.");
-    prepVector(h, W.rows, __func__);
-    prepMatrix(J, W.dim(), __func__);
-    validateScalar(c, __func__);
+    sqint::quboShapeCheck(W, __func__);
+    sqint::prepVector(h, W.rows, __func__);
+    sqint::prepMatrix(J, W.dim(), __func__);
+    sqint::validateScalar(c, __func__);
 
     const EigenMappedMatrix eW(mapTo(W));
     EigenMappedMatrix eJ(mapTo(*J));
@@ -58,8 +66,8 @@ void DGFuncs<real>::calculateHamiltonian(Vector *h, Matrix *J, real *c, const Ma
 template<class real>
 void DGFuncs<real>::calculate_E(real *E,
                                 const Vector &h, const Matrix &J, real c, const Vector &q) {
-    validateScalar(E, __func__);
-    isingModelShapeCheck(h, J, c, q, __func__);
+    sqint::isingModelShapeCheck(h, J, c, q, __func__);
+    sqint::validateScalar(E, __func__);
 
     const EigenMappedRowVector eh(mapToRowVector(h));
     const EigenMappedMatrix eJ(mapTo(J));
@@ -70,8 +78,8 @@ void DGFuncs<real>::calculate_E(real *E,
 template<class real>
 void DGFuncs<real>::calculate_E(Vector *E,
                                 const Vector &h, const Matrix &J, real c, const Matrix &q) {
-    isingModelShapeCheck(h, J, c, q, __func__);
-    prepVector(E, q.rows, __func__);
+    sqint::isingModelShapeCheck(h, J, c, q, __func__);
+    sqint::prepVector(E, q.rows, __func__);
     
     const EigenMappedRowVector eh(mapToRowVector(h));
     const EigenMappedMatrix eJ(mapTo(J)), eq(mapTo(q));
@@ -85,14 +93,14 @@ void DGFuncs<real>::calculate_E(Vector *E,
 }
 
 
-/* rbm */
+/* bipartite graph */
 
 template<class real>
 void BGFuncs<real>::calculate_E(real *E,
                                 const Vector &b0, const Vector &b1, const Matrix &W,
                                 const Vector &x0, const Vector &x1) {
-    quboShapeCheck(b0, b1, W, x0, x1, __func__);
-    validateScalar(E, __func__);
+    sqint::quboShapeCheck(b0, b1, W, x0, x1, __func__);
+    sqint::validateScalar(E, __func__);
     
     const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
     const EigenMappedMatrix eW(mapTo(W));
@@ -105,8 +113,8 @@ template<class real>
 void BGFuncs<real>::calculate_E(Vector *E,
                                 const Vector &b0, const Vector &b1, const Matrix &W,
                                 const Matrix &x0, const Matrix &x1) {
-    quboShapeCheck(b0, b1, W, x0, x1, __func__);
-    prepVector(E, x1.rows, __func__);
+    sqint::quboShapeCheck(b0, b1, W, x0, x1, __func__);
+    sqint::prepVector(E, x1.rows, __func__);
 
     throwErrorIf(E == NULL, "E is NULL.");
     EigenMappedRowVector eE(mapToRowVector(*E));
@@ -124,8 +132,8 @@ template<class real>
 void BGFuncs<real>::calculate_E_2d(Matrix *E,
                                    const Vector &b0, const Vector &b1, const Matrix &W,
                                    const Matrix &x0, const Matrix &x1) {    
-    quboShapeCheck_2d(b0, b1, W, x0, x1, __func__);
-    prepMatrix(E, sq::Dim(x1.rows, x0.rows), __func__);
+    sqint::quboShapeCheck_2d(b0, b1, W, x0, x1, __func__);
+    sqint::prepMatrix(E, sq::Dim(x1.rows, x0.rows), __func__);
     
     EigenMappedMatrix eE(mapTo(*E));
     const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
@@ -143,13 +151,11 @@ template<class real>
 void BGFuncs<real>::calculateHamiltonian(Vector *h0, Vector *h1, Matrix *J, real *c,
                                          const Vector &b0, const Vector &b1, const Matrix &W) {
     
-    quboShapeCheck(b0, b1, W, __func__);
-
-    prepVector(h0, b0.size, __func__);
-    prepVector(h1, b1.size, __func__);
-    prepMatrix(J, W.dim(), __func__);
-    validateScalar(c, __func__);
-    quboShapeCheck(*h0, *h1, *J, __func__);
+    sqint::quboShapeCheck(b0, b1, W, __func__);
+    sqint::prepVector(h0, b0.size, __func__);
+    sqint::prepVector(h1, b1.size, __func__);
+    sqint::prepMatrix(J, W.dim(), __func__);
+    sqint::validateScalar(c, __func__);
 
     const EigenMappedRowVector eb0(mapToRowVector(b0)), eb1(mapToRowVector(b1));
     const EigenMappedMatrix eW(mapTo(W));
@@ -168,8 +174,8 @@ template<class real>
 void BGFuncs<real>::calculate_E(real *E,
                                 const Vector &h0, const Vector &h1, const Matrix &J, real c,
                                 const Vector &q0, const Vector &q1) {
-    isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
-    validateScalar(E, __func__);
+    sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
+    sqint::validateScalar(E, __func__);
     
     const EigenMappedRowVector eh0(mapToRowVector(h0)), eh1(mapToRowVector(h1));
     const EigenMappedMatrix eJ(mapTo(J));
@@ -182,8 +188,8 @@ template<class real>
 void BGFuncs<real>::calculate_E(Vector *E,
                                 const Vector &h0, const Vector &h1, const Matrix &J, real c,
                                 const Matrix &q0, const Matrix &q1) {
-    isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
-    prepVector(E, q0.rows, __func__);
+    sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
+    sqint::prepVector(E, q0.rows, __func__);
 
     const EigenMappedRowVector eh0(mapToRowVector(h0)), eh1(mapToRowVector(h1));
     const EigenMappedMatrix eJ(mapTo(J));

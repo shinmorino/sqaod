@@ -1,10 +1,12 @@
 #include "CPUBipartiteGraphBFSearcher.h"
 #include "CPUBipartiteGraphBatchSearch.h"
+#include <sqaodc/common/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
 #include <algorithm>
 #include <exception>
 
+namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
 template<class real>
@@ -30,6 +32,7 @@ CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
 template<class real>
 void CPUBipartiteGraphBFSearcher<real>::setQUBO(const Vector &b0, const Vector &b1,
                                                 const Matrix &W, sq::OptimizeMethod om) {
+    sqint::quboShapeCheck(b0, b1, W, __func__);
     clearState(solProblemSet);
 
     N0_ = b0.size;
