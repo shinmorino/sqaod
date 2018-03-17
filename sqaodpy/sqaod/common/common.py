@@ -70,17 +70,14 @@ def clone_as_ndarray_from_vars(vars, dtype) :
     return tuple(cloned)
 
 def create_bitset_sequence(vals, nbits) :
-    if isinstance(vals, list) or isinstance(vals, tuple) or isinstance(vals, range) :
-        seqlen = len(vals)
-        x = np.ndarray((seqlen, nbits), np.int8)
-        iseq = 0
-        for v in vals :
-            for pos in range(nbits) :
-                x[iseq][pos] = np.int8(v >> (nbits - 1 - pos) & 1)
-            iseq += 1
-        return x
-    vals = np.int32(vals)
-    return create_bitset_sequence(range(vals, vals + 1), nbits)
+    seqlen = len(vals)
+    x = np.ndarray((seqlen, nbits), np.int8)
+    iseq = 0
+    for v in vals :
+        for pos in range(nbits) :
+            x[iseq][pos] = np.int8(v >> (nbits - 1 - pos) & 1)
+        iseq += 1
+    return x
 
 
 def generate_random_bits(N) :

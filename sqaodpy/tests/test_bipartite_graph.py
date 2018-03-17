@@ -43,9 +43,9 @@ class TestMinEnergy(unittest.TestCase):
         jMax = 1 << N1
 
         for i in range(iMax) :
-            x0 = common.create_bitset_sequence((i), N0)
+            x0 = common.create_bitset_sequence((i,), N0)
             for j in range(jMax) :
-                x1 = common.create_bitset_sequence((j), N1)
+                x1 = common.create_bitset_sequence((j,), N1)
                 Ebf = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                       + np.dot(x1, np.matmul(W, x0.transpose()))
                 an.set_x(x0, x1)
