@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sqaod
 import numpy as np
 
@@ -9,15 +10,15 @@ else :
 
 def output(searcher) :
     summary = sqaod.make_summary(searcher)
-    print 'E {}'.format(summary.E)
-    print 'Number of solutions : {}'.format(len(summary.xlist))
+    print('E {}'.format(summary.E))
+    print('Number of solutions : {}'.format(len(summary.xlist)))
     nToShow = min(len(summary.xlist), 4)
     for idx in range(nToShow) :
-        print summary.xlist[idx]
+        print(summary.xlist[idx])
 
 
 def anneal(ann) :
-    print ann.__class__
+    print(ann.__class__)
     
     Ginit = 5.
     Gfin = 0.01

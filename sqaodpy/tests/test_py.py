@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 import sqaod.common as common
@@ -18,11 +19,11 @@ class TestTraits(unittest.TestCase):
         EhJc = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, qlist)
 
         if self.verbose :
-            print 'xlist', xlist
-            print 'qlist', qlist
-            print 'E qubo \n', Equbo
-            print 'E hJc  \n', EhJc
-            print 'diff \n', np.absolute(Equbo - EhJc)
+            print('xlist', xlist)
+            print('qlist', qlist)
+            print('E qubo \n', Equbo)
+            print('E hJc  \n', EhJc)
+            print('diff \n', np.absolute(Equbo - EhJc))
         self.assertTrue(np.allclose(Equbo, EhJc))
     
     def test_engery_of_known_W(self):

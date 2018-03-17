@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 import sqaod.py as py
@@ -51,7 +52,7 @@ class TestMinEnergy(unittest.TestCase):
                 an.calculate_E()
                 Ean = an.get_E()
                 if not np.allclose(Ebf, Ean) :
-                    print i, j, Ebf, Ean
+                    print(i, j, Ebf, Ean)
                 self.assertTrue(np.allclose(Ebf,  Ean))
 
     def test_bf_searcher(self):
@@ -78,8 +79,8 @@ class TestMinEnergy(unittest.TestCase):
         Ean = an.get_E()[0]
         anx0, anx1 = an.get_x()[0]
         if not np.allclose(bfx0, anx0) or not np.allclose(bfx1, anx1) :
-            print bfx0, anx0, an.get_E()
-            print bfx1, anx1, bf.get_E()
+            print(bfx0, anx0, an.get_E())
+            print(bfx1, anx1, bf.get_E())
         self.assertTrue(np.allclose(bfx0, anx0))
         self.assertTrue(np.allclose(bfx1, anx1))
 
