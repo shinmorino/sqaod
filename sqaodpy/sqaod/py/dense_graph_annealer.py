@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import division
 import numpy as np
 import sqaod
 from . import formulas
@@ -32,14 +33,14 @@ class DenseGraphAnnealer :
         self._optimize = optimize
         self._h, self._J, self._c = optimize.sign(h), optimize.sign(J), optimize.sign(c)
         self._N = W.shape[0]
-        self._m = self._N / 2
+        self._m = self._N // 2
         
     def set_hamiltonian(self, h, J, c) :
-        # checkers.dense_graph.qubo(W)
+        checkers.dense_graph.hJc(h, J, c)
         self._optimize = sqaod.minimize
         self._h, self._J, self._c = h, J, c
         self._N = J.shape[0]
-        self._m = self._N / 2
+        self._m = self._N // 2
         
     def _select_algorithm(self, algoname) :
         if algoname == algo.naive :

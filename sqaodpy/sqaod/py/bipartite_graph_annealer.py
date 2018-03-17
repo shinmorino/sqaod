@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import division
 import numpy as np
 from types import MethodType
 import sqaod
@@ -10,7 +11,7 @@ from . import formulas
 class BipartiteGraphAnnealer :
 
     def __init__(self, b0, b1, W, optimize, prefdict) : # n_trotters
-        if not W is Noprintne :
+        if not W is None :
             self.set_qubo(b0, b1, W, optimize)
         self._select_algorithm(algo.coloring)    
         self.set_preferences(prefdict)
@@ -31,7 +32,7 @@ class BipartiteGraphAnnealer :
 
         self._N0 = W.shape[1]
         self._N1 = W.shape[0]
-        self._m = (self._N0 + self._N1) / 4
+        self._m = (self._N0 + self._N1) // 4
         self._optimize = optimize
         h0, h1, J, c = formulas.bipartite_graph_calculate_hamiltonian(b0, b1, W)
         self._h0, self._h1 = optimize.sign(h0), optimize.sign(h1)
@@ -42,7 +43,7 @@ class BipartiteGraphAnnealer :
 
         self._N0 = J.shape[1]
         self._N1 = J.shape[0]
-        self._m = (self._N0 + self._N1) / 4
+        self._m = (self._N0 + self._N1) // 4
         self._optimize = sqaod.minimize
         self._h0, self._h1 = h0, h1, J, c
         

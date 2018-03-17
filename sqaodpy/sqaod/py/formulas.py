@@ -9,7 +9,6 @@ def dense_graph_calculate_hamiltonian(W) :
 
     N = W.shape[0]
     h = np.ndarray((N), dtype=np.float64)
-    W4 = np.ndarray((N, N), dtype=np.float64)
     W4 = - 0.25 * W
 
     for i in range(N) :

@@ -142,8 +142,7 @@ if __name__ == '__main__' :
         W = np.ones((4, 4), np.int32)
         dense_graph_calculate_hamiltonian(W, np.int32)
     except Exception as e :
-        print(e.message)
-    
+        print(str(e))
     
     # dense graph
     N = 16
