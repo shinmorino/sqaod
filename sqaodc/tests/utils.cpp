@@ -1,31 +1,6 @@
 #include "utils.h"
-#include <cuda/DeviceCopy.h>
 #include <common/EigenBridge.h>
 
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat) {
-    sqaod::MatrixType<real> hmat;
-    DeviceCopy()(&hmat, dmat);
-    ostm << sq::mapTo(hmat) << std::endl;
-    return ostm;
-}
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec) {
-    sqaod::VectorType<real> hvec;
-    DeviceCopy()(&hvec, dvec);
-    ostm << mapToRowVector(hvec) << std::endl;
-    return ostm;
-}
-
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds) {
-    real hs;
-    DeviceCopy()(&hs, ds);
-    ostm << hs << std::endl;
-    return ostm;
-}
 
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<real> &arr) {
@@ -61,20 +36,11 @@ void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorTyp
         << mapToRowVector(hvec) << std::endl; 
 }
 
-
-
-
-template std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<double> &dmat);
-template std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<double> &dvec);
-template std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<double> &ds);
 template std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<double> &arr);
 template std::ostream &operator<<(std::ostream &ostm, const sq::VectorType<double> &vec);
 template void show(const sqaod_cuda::DeviceMatrixType<double> &dmat, const sqaod::MatrixType<double> &hmat);
 template void show(const sqaod_cuda::DeviceVectorType<double> &dvec, const sqaod::VectorType<double> &hvec);
 
-template std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<float> &dmat);
-template std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<float> &dvec);
-template std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<float> &ds);
 template std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<float> &arr);
 template std::ostream &operator<<(std::ostream &ostm, const sq::VectorType<float> &vec);
 template void show(const sqaod_cuda::DeviceMatrixType<float> &dmat, const sqaod::MatrixType<float> &hmat);
@@ -94,10 +60,51 @@ template sq::VectorType<double> segmentedSum(const sq::MatrixType<double> &A, sq
 template sq::VectorType<float> segmentedSum(const sq::MatrixType<float> &A, sq::SizeType segLen, sq::SizeType nSegments);
 
 
+#ifdef SQAODC_CUDA_ENABLED
+
+#include <cuda/DeviceCopy.h>
+
+namespace sqcu = sqaod_cuda;
+
 template<class real>
-bool allclose(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron) {
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceMatrixType<real> &dmat) {
+    sqaod::MatrixType<real> hmat;
+    sqcu::DeviceCopy()(&hmat, dmat);
+    ostm << sq::mapTo(hmat) << std::endl;
+    return ostm;
+}
+
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceVectorType<real> &dvec) {
+    sqaod::VectorType<real> hvec;
+    sqcu::DeviceCopy()(&hvec, dvec);
+    ostm << mapToRowVector(hvec) << std::endl;
+    return ostm;
+}
+
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceScalarType<real> &ds) {
+    real hs;
+    sqcu::DeviceCopy()(&hs, ds);
+    ostm << hs << std::endl;
+    return ostm;
+}
+
+
+
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceMatrixType<double> &dmat);
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceVectorType<double> &dvec);
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceScalarType<double> &ds);
+
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceMatrixType<float> &dmat);
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceVectorType<float> &dvec);
+template std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceScalarType<float> &ds);
+
+
+template<class real>
+bool allclose(const sqcu::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron) {
     sqaod::VectorType<real> copied;
-    DeviceCopy devCopy;
+    sqcu::DeviceCopy devCopy;
     devCopy(&copied, dvec);
     devCopy.synchronize();
     real absDiff = (sq::mapToRowVector(copied) - sq::mapToRowVector(hvec)).array().abs().sum();
@@ -108,5 +115,7 @@ bool allclose(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> 
     return ((absDiff / absVal) < epsiron);
 }
 
-template bool allclose(const DeviceVectorType<float> &dvec, const sqaod::VectorType<float> &hvec, float epsiron);
-template bool allclose(const DeviceVectorType<double> &dvec, const sqaod::VectorType<double> &hvec, double epsiron);
+template bool allclose(const sqcu::DeviceVectorType<float> &dvec, const sqaod::VectorType<float> &hvec, float epsiron);
+template bool allclose(const sqcu::DeviceVectorType<double> &dvec, const sqaod::VectorType<double> &hvec, double epsiron);
+
+#endif

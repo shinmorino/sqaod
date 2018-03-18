@@ -5,7 +5,7 @@
 //#include <common/Matrix.h>
 #include "utils.h"
 
-using namespace sqaod_cuda;
+namespace sqcu = sqaod_cuda;
 
 DeviceSegmentedSumTest::DeviceSegmentedSumTest(void) : MinimalTestSuite("DeviceSegmentedSumTest")
 {
@@ -29,15 +29,15 @@ void DeviceSegmentedSumTest::tearDown() {
 
 template<class V>
 void DeviceSegmentedSumTest::runSegmentedSum(int segLen, int nSegments) {
-    DeviceObjectAllocator *alloc = device_.objectAllocator();
-    DeviceCopy copy(device_);
+    sqcu::DeviceObjectAllocator *alloc = device_.objectAllocator();
+    sqcu::DeviceCopy copy(device_);
 
-    typedef DeviceMatrixType<V> DeviceMatrix;
-    typedef DeviceVectorType<V> DeviceVector;
+    typedef sqcu::DeviceMatrixType<V> DeviceMatrix;
+    typedef sqcu::DeviceVectorType<V> DeviceVector;
     typedef sq::MatrixType<V> HostMatrix;
     typedef sq::VectorType<V> HostVector;
 
-    typedef DeviceSegmentedSumTypeImpl<V, V*, V*, Linear> SegmentedSum;
+    typedef sqcu::DeviceSegmentedSumTypeImpl<V, V*, V*, sqcu::Linear> SegmentedSum;
 
     testcase("SegmentedSum") {
         SegmentedSum segSum(device_);
@@ -53,7 +53,7 @@ void DeviceSegmentedSumTest::runSegmentedSum(int segLen, int nSegments) {
         copy(&dA, A);
         alloc->allocate(&dx, nSegments);
         segSum.configure(segLen, nSegments, false);
-        segSum(dA.d_data, dx.d_data, Linear(segLen, 0));
+        segSum(dA.d_data, dx.d_data, sqcu::Linear(segLen, 0));
         device_.synchronize();
 
         TEST_ASSERT(allclose(dx, x, epusiron<V>()));
@@ -66,7 +66,7 @@ void DeviceSegmentedSumTest::runSegmentedSum(int segLen, int nSegments) {
 template<class V>
 void DeviceSegmentedSumTest::test() {
 #if 1
-    typedef DeviceSegmentedSumTypeImpl<V, V*, V*, Linear> SegmentedSum;
+    typedef sqcu::DeviceSegmentedSumTypeImpl<V, V*, V*, sqcu::Linear> SegmentedSum;
     SegmentedSum segSum(device_);
     for (typename SegmentedSum::MethodMap::iterator it = segSum.methodMap_.begin();
         it != segSum.methodMap_.end(); ++it) {

@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include "utils.h"
 
-using namespace sqaod_cpu;
-namespace _sq = sqaod;
+namespace sqcpu = sqaod_cpu;
+namespace sqcu = sqaod_cuda;
+namespace sq = sqaod;
 
 CUDAFormulasDGFuncTest::CUDAFormulasDGFuncTest(void) : MinimalTestSuite("CUDAFormulasDGFuncTest") {
 }
@@ -31,21 +32,21 @@ void CUDAFormulasDGFuncTest::run(std::ostream &ostm) {
 template<class real>
 void CUDAFormulasDGFuncTest::tests() {
 
-    typedef _sq::MatrixType<real> HostMatrix;
-    typedef _sq::VectorType<real> HostVector;
-    // typedef _sq::EigenMatrixType<real> EigenMatrix;
-    // typedef _sq::EigenRowVectorType<real> EigenRowVector;
-    // typedef _sq::EigenColumnVectorType<real> EigenColumnVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
+    typedef sq::MatrixType<real> HostMatrix;
+    typedef sq::VectorType<real> HostVector;
+    // typedef sq::EigenMatrixType<real> EigenMatrix;
+    // typedef sq::EigenRowVectorType<real> EigenRowVector;
+    // typedef sq::EigenColumnVectorType<real> EigenColumnVector;
+    typedef sqcu::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqcu::DeviceVectorType<real> DeviceVector;
+    typedef sqcu::DeviceScalarType<real> DeviceScalar;
 
-    DeviceCopy devCopy(device_);
-    // DeviceStream *devStream = device_.defaultStream();
-    // Device::ObjectAllocator *alloc = device_.objectAllocator();
+    sqcu::DeviceCopy devCopy(device_);
+    // sqcu::DeviceStream *devStream = device_.defaultStream();
+    // sqcu::Device::ObjectAllocator *alloc = device_.objectAllocator();
 
-    typedef DGFuncs<real> DGF;
-    DeviceDenseGraphFormulas<real> devFuncs;
+    typedef sqcpu::DGFuncs<real> DGF;
+    sqcu::DeviceDenseGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 
     const int N = 120;
@@ -69,7 +70,7 @@ void CUDAFormulasDGFuncTest::tests() {
 
     testcase("calculate_E batched") {
         HostMatrix W = testMatSymmetric<real>(N);
-        HostMatrix X = randomizeBits<real>(_sq::Dim(m, N));
+        HostMatrix X = randomizeBits<real>(sq::Dim(m, N));
         HostVector E(m);
         DGF::calculate_E(&E, W, X);
 

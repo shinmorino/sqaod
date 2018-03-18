@@ -144,7 +144,7 @@ sq::VectorType<real> segmentedSum(const sq::MatrixType<real> &A, sq::SizeType se
 #include <cuda/DeviceArray.h>
 #include <cuda/DeviceCopy.h>
 
-using namespace sqcu;
+namespace sqcu = sqaod_cuda;
 
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceMatrixType<real> &dmat);

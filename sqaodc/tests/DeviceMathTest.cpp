@@ -4,6 +4,9 @@
 #include <common/EigenBridge.h>
 #include "utils.h"
 
+namespace sqcu = sqaod_cuda;
+namespace sq = sqaod;
+
 DeviceMathTest::DeviceMathTest(void) : MinimalTestSuite("DeviceMathTest") {
 }
 
@@ -32,17 +35,17 @@ void DeviceMathTest::run(std::ostream &ostm) {
 template<class real>
 void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
-    DeviceMathType<real> devMath(device_);
-    DeviceCopy devCopy(device_);
+    sqcu::DeviceMathType<real> devMath(device_);
+    sqcu::DeviceCopy devCopy(device_);
 
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
     typedef sq::EigenMatrixType<real> EigenMatrix;
     typedef sq::EigenRowVectorType<real> EigenRowVector;
     typedef sq::EigenColumnVectorType<real> EigenColumnVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
+    typedef sqcu::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqcu::DeviceVectorType<real> DeviceVector;
+    typedef sqcu::DeviceScalarType<real> DeviceScalar;
 
 
     auto *alloc = device_.objectAllocator();
@@ -149,22 +152,22 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dx, x);
         devCopy(&dy, y);
 
-        devMath.scaleBroadcast(&dA, 1., dx, opRowwise);
+        devMath.scaleBroadcast(&dA, 1., dx, sqcu::opRowwise);
         sq::mapTo(hmat).rowwise() = sq::mapToRowVector(x);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
-        devMath.scaleBroadcast(&dA, 2., dx, opRowwise, 2.);
+        devMath.scaleBroadcast(&dA, 2., dx, sqcu::opRowwise, 2.);
         sq::mapTo(hmat).rowwise() = 4. * sq::mapToRowVector(x);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
-        devMath.scaleBroadcast(&dA, 1., dy, opColwise);
+        devMath.scaleBroadcast(&dA, 1., dy, sqcu::opColwise);
         sq::mapTo(hmat).colwise() = sq::mapToColumnVector(y);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
 
-        devMath.scaleBroadcast(&dA, 2., dy, opColwise, 2.);
+        devMath.scaleBroadcast(&dA, 2., dy, sqcu::opColwise, 2.);
         sq::mapTo(hmat).colwise() = 4. * sq::mapToColumnVector(y);
         device_.synchronize();
         TEST_ASSERT(dA == hmat);
@@ -223,14 +226,14 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dx, x);
         devCopy(&dy, y);
 
-        devMath.sumBatched(&dx, 2., dA, opRowwise);
+        devMath.sumBatched(&dx, 2., dA, sqcu::opRowwise);
 
         HostVector hvec(dim.rows);
         mapToRowVector(hvec) = 2. * sq::mapTo(hmat).rowwise().sum();
         device_.synchronize();
         TEST_ASSERT(dx == hvec);
 
-        devMath.sumBatched(&dy, 2., dA, opColwise);
+        devMath.sumBatched(&dy, 2., dA, sqcu::opColwise);
         hvec.resize(dim.cols);
         mapToColumnVector(hvec) = 2. * sq::mapTo(hmat).colwise().sum();
         device_.synchronize();
@@ -266,7 +269,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         HostMatrix B = testMatBalanced<real>(dim);
         devCopy(&dA, A);
         devCopy(&dB, B);
-        devMath.dotBatched(&dx, 2., dA, opNone, dB, opNone);
+        devMath.dotBatched(&dx, 2., dA, sqcu::opNone, dB, sqcu::opNone);
 
         EigenMatrix eAB = sq::mapTo(A).array() * sq::mapTo(B).array();
         EigenRowVector vec = 2. * eAB.rowwise().sum();
@@ -274,7 +277,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
         TEST_ASSERT(dx == sq::mapFrom(vec));
 
-        devMath.dotBatched(&dy, 2., dA, opTranspose, dB, opTranspose);
+        devMath.dotBatched(&dy, 2., dA, sqcu::opTranspose, dB, sqcu::opTranspose);
         vec = 2. * eAB.colwise().sum();
         device_.synchronize();
 
@@ -296,14 +299,14 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         HostVector x = testVecBalanced<real>(dim.cols);
         devCopy(&dA, A);
         devCopy(&dx, x);
-        devMath.mvProduct(&dy, 0.5, dA, opNone, dx);
+        devMath.mvProduct(&dy, 0.5, dA, sqcu::opNone, dx);
         EigenRowVector y = 0.5 * sq::mapTo(A) * sq::mapToColumnVector(x);
         device_.synchronize();
         TEST_ASSERT(dy == sq::mapFrom(y));
 
         HostMatrix B = testMatBalanced<real>(dim.transpose());
         devCopy(&dB, B);
-        devMath.mvProduct(&dy, 0.25, dB, opTranspose, dx);
+        devMath.mvProduct(&dy, 0.25, dB, sqcu::opTranspose, dx);
         y = sq::mapTo(B).transpose() * sq::mapToColumnVector(x);
         y *= 0.25;
         device_.synchronize();
@@ -317,7 +320,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
 
         devCopy(&dA, A);
         devCopy(&dB, B);
-        devMath.mmProduct(&dC, 0.5, dA, opNone, dB, opNone);
+        devMath.mmProduct(&dC, 0.5, dA, sqcu::opNone, dB, sqcu::opNone);
         device_.synchronize();
         TEST_ASSERT(dC == sq::mapFrom(C));
 
@@ -330,7 +333,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         alloc->deallocate(dC);
         devCopy(&dA, At);
         devCopy(&dB, Bt);
-        devMath.mmProduct(&dC, 0.5, dA, opTranspose, dB, opTranspose);
+        devMath.mmProduct(&dC, 0.5, dA, sqcu::opTranspose, dB, sqcu::opTranspose);
         device_.synchronize();
         TEST_ASSERT(dC == sq::mapFrom(C));
     }
