@@ -108,13 +108,13 @@ calculateHamiltonian(DeviceVector *h0, DeviceVector *h1, DeviceMatrix *J, Device
                      const DeviceVector &b0, const DeviceVector &b1, const DeviceMatrix &W) {
     devMath.scale(J, -0.25, W);
     devMath.sumBatched(h0, 1., *J, opColwise);
-    devMath.scale(h0, 0.5, b0, 1.);
+    devMath.scale(h0, -0.5, b0, 1.);
     devMath.sumBatched(h1, 1., *J, opRowwise);
-    devMath.scale(h1, 0.5, b1, 1.);
+    devMath.scale(h1, -0.5, b1, 1.);
 
     devMath.sum(c, 1., *J);
-    devMath.sum(c, 0.5, b0, 1.);
-    devMath.sum(c, 0.5, b1, 1.);
+    devMath.sum(c, -0.5, b0, 1.);
+    devMath.sum(c, -0.5, b1, 1.);
 }
 
 
