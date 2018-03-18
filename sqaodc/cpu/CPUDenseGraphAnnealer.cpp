@@ -245,7 +245,7 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
     /* single thread */
     sq::Random &random = random_[0];
     for (int yOffset = 0; yOffset < 2; ++yOffset) {
-        for (int y = yOffset; y < m; y += 2)
+        for (int y = yOffset; y < m_; y += 2)
             tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
     }
 #else
