@@ -189,6 +189,34 @@ public:
         }
     }
 
+    void insert(const_iterator pos, const ValueType &v) {
+        if (capacity_ < size_ + 1)
+            reserve(capacity_ * 2);
+        
+        /* move */
+        SizeType nToMove = end() - pos;
+        IdxType posIdx = pos - begin();
+        if (ValueProp<V>::POD) {
+            memmove(&data_[posIdx + 1], &data_[posIdx], sizeof(V) * nToMove);
+        }
+        else {
+            IdxType dstIdx  = size();
+            IdxType srcIdx  = size() - 1;
+            for (SizeType idx = 0; idx < nToMove; ++idx) {
+                new (&data_[dstIdx - idx]) V(data_[srcIdx - idx]);
+                data_[srcIdx - idx].~V();
+            }
+        }
+        
+        if (ValueProp<V>::POD) {
+            memcpy(&data_[posIdx], &v, sizeof(V));
+        }
+        else {
+            new (&data_[posIdx]) V(v);
+        }
+        ++size_;
+    }
+
 
 private:
     void erase() {
