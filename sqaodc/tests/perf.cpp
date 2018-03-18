@@ -142,8 +142,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
             sq::cpu::DenseGraphAnnealer<real> annealer;
             annealer.setQUBO(W);
-            sq::Preference pref(sq::pnNumTrotters, N / 2);
-            annealer.setPreference(pref);
+            annealer.setPreference(sq::pnNumTrotters, N / 2);
             anneal(annealer);
         }
 #ifdef SQAODC_CUDA_ENABLED
@@ -152,8 +151,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "N = %d, m = %d\n", N, N / 2);
             sq::cuda::DenseGraphAnnealer<real> annealer(device);
             annealer.setQUBO(W);
-            sq::Preference pref(sq::pnNumTrotters, N / 2);
-            annealer.setPreference(pref);
+            annealer.setPreference(sq::pnNumTrotters, N / 2);
             anneal(annealer);
         }
 #endif
@@ -194,8 +192,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "Bipartite graph annealer, CPU, %s\n", precisionStr);
             sq::cpu::BipartiteGraphAnnealer<real> annealer;
             annealer.setQUBO(b0, b1, W);
-            sq::Preference pref(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
-            annealer.setPreference(pref);
+            annealer.setPreference(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
             anneal(annealer);
         }
 #ifdef SQAODC_CUDA_ENABLED
@@ -203,8 +200,7 @@ void run(const char *precisionStr) {
             fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
             sq::cuda::BipartiteGraphAnnealer<real> annealer(device);
             annealer.setQUBO(b0, b1, W);
-            sq::Preference pref(sq::pnNumTrotters, (N0 + N1) / 2);
-            annealer.setPreference(pref);
+            annealer.setPreference(sq::pnNumTrotters, (N0 + N1) / 2);
             anneal(annealer);
         }
 #endif

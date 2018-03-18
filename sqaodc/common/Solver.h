@@ -26,6 +26,12 @@ struct Solver {
 
     virtual void setPreference(const Preference &pref) = 0;
 
+    template<class V>
+    void setPreference(enum PreferenceName name, const V value) {
+        sqaod::Preference pref(name, value);
+        setPreference(pref);
+    }
+
     void setPreferences(const Preferences &prefs);
 
     virtual const VectorType<real> &get_E() const = 0;
@@ -93,6 +99,8 @@ struct Annealer : Solver<real> {
 
     virtual void setPreference(const Preference &pref);
 
+    using Solver<real>::setPreference;
+
     virtual void seed(unsigned long long seed) = 0;
 
     virtual void randomizeSpin() = 0;
@@ -153,6 +161,8 @@ struct DenseGraphBFSearcher
 
     virtual void setPreference(const Preference &pref);
 
+    using Solver<real>::setPreference;
+
     virtual bool searchRange(sqaod::PackedBitSet *curXEnd) = 0;
 
     virtual void search();
@@ -193,6 +203,8 @@ struct BipartiteGraphBFSearcher
     virtual Preferences getPreferences() const;
 
     virtual void setPreference(const Preference &pref);
+
+    using Solver<real>::setPreference;
 
     virtual bool searchRange(sqaod::PackedBitSet *curX0End, sqaod::PackedBitSet *curX1End) = 0;
 
