@@ -194,8 +194,8 @@ public:
             reserve(capacity_ * 2);
         
         /* move */
-        SizeType nToMove = end() - pos;
-        IdxType posIdx = pos - begin();
+        SizeType nToMove = SizeType(end() - pos);
+        IdxType posIdx = SizeType(pos - begin());
         if (ValueProp<V>::POD) {
             memmove(&data_[posIdx + 1], &data_[posIdx], sizeof(V) * nToMove);
         }
