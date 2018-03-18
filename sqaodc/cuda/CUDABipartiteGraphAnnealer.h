@@ -75,7 +75,7 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real kT);
+    void annealOneStep(real G, real beta);
     
 
     /* public for debug */
@@ -84,7 +84,7 @@ public:
 
     /* public for debug */
     void tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, 
-                 const DeviceVector &d_h, const real *d_realRand, real G, real kT);
+                 const DeviceVector &d_h, const real *d_realRand, real G, real beta);
 
 private:
     void deallocateProblem();

@@ -100,7 +100,7 @@ def bit_from_spin(q) :
 
 
 
-def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 10, verbose = False) :
+def anneal(annealer, Ginit = 5., Gfin = 0.01, beta = 1. / 0.02, tau = 0.99, n_repeat = 10, verbose = False) :
     Emin = sys.float_info.max
     q0 = []
     q1 = []
@@ -110,7 +110,7 @@ def anneal(annealer, Ginit = 5., Gfin = 0.01, kT = 0.02, tau = 0.99, n_repeat = 
         annealer.randomize_spin()
         G = Ginit
         while Gfin < G :
-            annealer.anneal_one_step(G, kT)
+            annealer.anneal_one_step(G, beta)
             if verbose :
                 E - annealer.calculate_E()
                 print(E)

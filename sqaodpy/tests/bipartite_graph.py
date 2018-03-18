@@ -23,11 +23,11 @@ def anneal(ann) :
     Gfin = 0.01
 
     nRepeat = 1
-    kT = 0.02
+    beta = 1. / 0.02
     tau = 0.99
 
     for loop in range(0, nRepeat) :
-        sqaod.anneal(ann, Ginit, Gfin, kT)
+        sqaod.anneal(ann, Ginit, Gfin, beta)
         output(ann)
 
 

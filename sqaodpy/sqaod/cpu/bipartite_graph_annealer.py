@@ -33,7 +33,7 @@ if __name__ == '__main__' :
     
     Ginit = 5
     Gfin = 0.01
-    kT = 0.02
+    beta = 1. / 0.02
     tau = 0.99
     n_repeat = 10
 
@@ -42,7 +42,7 @@ if __name__ == '__main__' :
         an.randomize_spin()
         G = Ginit
         while Gfin < G :
-            an.anneal_one_step(G, kT)
+            an.anneal_one_step(G, beta)
             G = G * tau
         an.make_solution()
 

@@ -55,7 +55,7 @@ class Annealer(Sovler) :
         raise NotImplementedError()
 
     @abstractmethod
-    def anneal_one_step(self, G, kT) :
+    def anneal_one_step(self, G, beta) :
         raise NotImplementedError()
 
     

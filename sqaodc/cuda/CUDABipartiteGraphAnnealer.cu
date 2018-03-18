@@ -269,18 +269,17 @@ void CUDABipartiteGraphAnnealer<real>::makeSolution() {
 // template<class real>
 // void CUDABipartiteGraphAnnealer<real>::
 // annealHalfStep(DeviceMatrix *d_qAnneal, int N,
-//                const DeviceVector &d_h, real G, real kT) {
+//                const DeviceVector &d_h, real G, real beta) {
 //     real twoDivM = real(2.) / m_;
 //     bgFuncs_.devMath.matmul(d_Jq, d_J, op, qFixed, opTranspose);
-//     real tempCoef = std::log(std::tanh(G / kT / m_)) / kT;
-//     real invKT = real(1.) / kT;
+//     real tempCoef = std::log(std::tanh(G * beta / m_)) * beta;
 //     for (int loop = 0; loop < IdxType(N * m_); ++loop) {
 //         real q = qAnneal(im, iq);
 //         real dE = twoDivM * q * (h[iq] + dEmat(iq, im));
 //         int mNeibour0 = (im + m_ - 1) % m_;
 //         int mNeibour1 = (im + 1) % m_;
 //         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * tempCoef;
-//         real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
+//         real thresh = dE < real(0.) ? real(1.) : std::exp(-dE * beta);
 //         if (thresh > random_.random<real>())
 //             qAnneal(im, iq) = -q;
 //     }
@@ -301,7 +300,7 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
 template<int offset, class real>
 __global__ static void
 tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h,
-              const real *d_realRand, real twoDivM, real coef, real invKT,
+              const real *d_realRand, real twoDivM, real coef, real beta,
               bool runLastLine) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
@@ -316,7 +315,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
         int neibour0 = (im == 0) ? m - 1 : im - 1;
         int neibour1 = (im == m - 1) ? 0 : im + 1;
         dE -= q * (d_qAnneal[neibour0 * N + iq] + d_qAnneal[neibour1 * N + iq]) * coef;
-        real thresh = dE < real(0.) ? real(1.) : exp(- dE * invKT); /* FIXME: check precision */
+        real thresh = dE < real(0.) ? real(1.) : exp(-dE * beta);
         if (thresh > d_realRand[N * gidy + iq])
             d_qAnneal[im * N + iq] = - q;
     }
@@ -329,7 +328,7 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
             int neibour0 = im - 2;
             int neibour1 = 0;
             dE -= q * (d_qAnneal[neibour0 * N + iq] + d_qAnneal[neibour1 * N + iq]) * coef;
-            real thresh = dE < real(0.) ? real(1.) : exp(- dE * invKT); /* FIXME: check precision */
+            real thresh = dE < real(0.) ? real(1.) : exp(-dE * beta);
             if (thresh > d_realRand[N * gidy + iq])
                 d_qAnneal[im * N + iq] = - q;
         }
@@ -340,9 +339,8 @@ tryFlipKernel(real *d_qAnneal, int N, int m, const real *d_Emat, const real *d_h
 
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
-        const DeviceVector &d_h, const real *d_realRand, real G, real kT) {
-    real coef = std::log(std::tanh(G / kT / m_)) / kT;
-    real invKT = real(1.) / kT;
+        const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
     real twoDivM = real(2.) / m_;
     int m2 = m_ / 2;
     bool mIsOdd = (m_ & 1) != 0;
@@ -350,16 +348,16 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     dim3 blockDim(64, 2);
     dim3 gridDim(divru(N, blockDim.x), divru(m2, blockDim.y));
     tryFlipKernel<0><<<gridDim, blockDim>>>
-            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, mIsOdd);
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, beta, mIsOdd);
     DEBUG_SYNC;
     tryFlipKernel<1><<<gridDim, blockDim>>>
-            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, invKT, false);
+            (d_qAnneal->d_data, N, m_, d_Jq.d_data, d_h.d_data, d_realRand, twoDivM, coef, beta, false);
     DEBUG_SYNC;
 }
 
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
+void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
     throwErrorIfQNotSet();
 
     int nRequiredRandNum = (N0_ + N1_) * m_;
@@ -371,13 +369,13 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real kT) {
     /* 1st */
     calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
     d_randNum = d_randReal_.acquire<real>(N1_ * m_);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, G, kT);
+    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, G, beta);
     DEBUG_SYNC;
 
     /* 2nd */
     calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
     d_randNum = d_randReal_.acquire<real>(N0_ * m_);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, kT);
+    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, beta);
     DEBUG_SYNC;
 
     clearState(solSolutionAvailable);

@@ -715,10 +715,10 @@ PyObject *annealer_make_solution(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objKT) {
+void internal_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objBeta) {
     typedef NpConstScalarType<real> NpConstScalar;
-    NpConstScalar G(objG), kT(objKT);
-    pyobjToCppObj<real>(objExt)->annealOneStep(G, kT);
+    NpConstScalar G(objG), beta(objBeta);
+    pyobjToCppObj<real>(objExt)->annealOneStep(G, beta);
 }
 
 extern "C"

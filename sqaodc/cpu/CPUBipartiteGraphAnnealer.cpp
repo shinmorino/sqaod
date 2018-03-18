@@ -226,11 +226,11 @@ void CPUBipartiteGraphAnnealer<real>::makeSolution() {
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     throwErrorIfQNotSet();
     
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G / kT / m_)) / kT;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
     sq::Random &random = random_[0];
     int N = N0_ + N1_;
     for (int loop = 0; loop < sq::IdxType(N * m_); ++loop) {
@@ -243,7 +243,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ0_(neibour0, x) + matQ0_(neibour1, x)) * coef;
-            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * beta);
             if (threshold > random.random<real>())
                 matQ0_(y, x) = - qyx;
         }
@@ -255,7 +255,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
             dE -= qyx * (matQ1_(neibour0, x) + matQ1_(neibour1, x)) * coef;
-            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE / kT);
+            real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * beta);
             if (threshold > random.random<real>())
                 matQ1_(y, x) = - qyx;
         }
@@ -264,24 +264,24 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
     throwErrorIfQNotSet();
 
-    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, kT);
-    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, kT);
+    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
+    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
 }
 
 
 template<class real, class T> static inline
 void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h, const T &J, sq::SizeType N, sq::SizeType m, 
-             real twoDivM, real invKT, real coef, sq::Random &random) {
+             real twoDivM, real beta, real coef, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
         real dE = twoDivM * q * (h[iq] + dEmat(im, iq));
         int mNeibour0 = (im + m - 1) % m;
         int mNeibour1 = (im + 1) % m;
         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;
-        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
+        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * beta);
         if (thresh > random.random<real>())
             qAnneal(im, iq) = -q;
     }
@@ -291,10 +291,9 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                        const EigenRowVector &h, const EigenMatrix &J,
-                       const EigenMatrix &qFixed, real G, real kT) {
+                       const EigenMatrix &qFixed, real G, real beta) {
     real twoDivM = real(2.) / m_;
-    real coef = std::log(std::tanh(G / kT / m_)) / kT;
-    real invKT = real(1.) / kT;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
     int m2 = (m_ / 2) * 2; /* round down */
 
 #ifndef _OPENMP
@@ -302,7 +301,7 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     sq::Random &random = random_[0];
     for (int offset = 0; offset < 2; ++offset) {
         for (int im = offset; im < m_; im += 2)
-            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
     }
 #else
     EigenMatrix dEmat(qFixed.rows(), J.rows());
@@ -321,12 +320,12 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
         for (int offset = 0; offset < 2; ++offset) {
 #  pragma omp for
             for (int im = offset; im < m2; im += 2) {
-                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random);
+                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
             }
 #  pragma omp single
             if ((offset == 0) && ((m_ % 2) != 0)) { /* m is odd. */
                 int im = m_ - 1;
-                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, invKT, coef, random_[0]);
+                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random_[0]);
             }
         }
     }

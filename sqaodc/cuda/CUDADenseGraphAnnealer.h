@@ -70,12 +70,12 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real kT);
+    void annealOneStep(real G, real beta);
 
     /* CUDA Kernels */
     void annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq,
                        const int *d_x, const real *d_random,
-                       const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real kT);
+                       const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta);
 
     void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                       const int *d_flipPos);

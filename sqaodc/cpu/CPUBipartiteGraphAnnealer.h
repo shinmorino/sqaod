@@ -59,23 +59,23 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real kT) {
-        (this->*annealMethod_)(G, kT);
+    void annealOneStep(real G, real beta) {
+        (this->*annealMethod_)(G, beta);
     }
 
-    void annealOneStepNaive(real G, real kT);
+    void annealOneStepNaive(real G, real beta);
 
-    void annealOneStepColoring(real G, real kT);
+    void annealOneStepColoring(real G, real beta);
     
 private:
-    typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real kT);
+    typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
     
     void syncBits();
 
     void annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                                 const EigenRowVector &h, const EigenMatrix &J,
-                                const EigenMatrix &qFixed, real G, real kT);
+                                const EigenMatrix &qFixed, real G, real beta);
 
     sq::Random *random_;
     int nMaxThreads_;

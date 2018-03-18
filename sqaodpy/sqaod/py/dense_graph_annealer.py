@@ -113,16 +113,16 @@ class DenseGraphAnnealer :
             self._x.append(x)
         self.calculate_E()
 
-    def anneal_one_step(self, G, kT) :
+    def anneal_one_step(self, G, beta) :
         # will be dynamically replaced.
         pass
         
-    def anneal_one_step_naive(self, G, kT) :
+    def anneal_one_step_naive(self, G, beta) :
         h, J, c, q = self._vars()
         N = self._N
         m = self._m
         two_div_m = 2. / np.float64(m)
-        coef = np.log(np.tanh(G/kT/m)) / kT
+        coef = np.log(np.tanh(G * beta / m)) * beta
         
         for i in range(self._N * self._m):
             x = np.random.randint(N)
@@ -131,16 +131,16 @@ class DenseGraphAnnealer :
             sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
             dE = two_div_m * qyx * (h[x] + sum)
             dE -= qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * coef
-            threshold = 1. if (dE <= 0.) else np.exp(-dE / kT)
+            threshold = 1. if (dE <= 0.) else np.exp(-dE * beta)
             if threshold > np.random.rand():
                 q[y][x] = - qyx
 
-    def anneal_colored_plane(self, G, kT, offset) :
+    def anneal_colored_plane(self, G, beta, offset) :
         h, J, c, q = self._vars()
         N = self._N
         m = self._m
         two_div_m = 2. / np.float64(m)
-        coef = np.log(np.tanh(G/kT/m)) / kT
+        coef = np.log(np.tanh(G * beta / m)) * beta
         
         for y in range(self._m):
             x = (offset + np.random.randint(1 << 30) * 2) % N
@@ -148,14 +148,14 @@ class DenseGraphAnnealer :
             sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
             dE = two_div_m * qyx * (h[x] + sum)
             dE -= qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * coef
-            threshold = 1. if (dE <= 0.) else np.exp(-dE / kT)
+            threshold = 1. if (dE <= 0.) else np.exp(-dE * beta)
             if threshold > np.random.rand():
                 q[y][x] = - qyx
             
-    def anneal_one_step_coloring(self, G, kT) :
+    def anneal_one_step_coloring(self, G, beta) :
         for loop in range(0, self._N) :
-            self.anneal_colored_plane(G, kT, 0)
-            self.anneal_colored_plane(G, kT, 1)
+            self.anneal_colored_plane(G, beta, 0)
+            self.anneal_colored_plane(G, beta, 1)
 
                 
 def dense_graph_annealer(W = None, optimize = sqaod.minimize, **prefs) :
@@ -170,7 +170,7 @@ if __name__ == '__main__' :
     Gfin = 0.01
     
     nRepeat = 4
-    kT = 0.02
+    beta = 1. / 0.02
     tau = 0.99
     
     N = 8
@@ -199,7 +199,7 @@ if __name__ == '__main__' :
         ann.prepare()
         ann.randomize_spin()
         while Gfin < G :
-            ann.anneal_one_step(G, kT)
+            ann.anneal_one_step(G, beta)
             G = G * tau
 
         ann.make_solution()
@@ -217,7 +217,7 @@ if __name__ == '__main__' :
         ann.prepare()
         ann.randomize_spin()
         while Gfin < G :
-            ann.anneal_one_step(G, kT)
+            ann.anneal_one_step(G, beta)
             G = G * tau
 
         ann.make_solution()

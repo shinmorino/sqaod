@@ -105,7 +105,7 @@ struct Annealer : Solver<real> {
 
     virtual void randomizeSpin() = 0;
     
-    virtual void annealOneStep(real G, real kT) = 0;
+    virtual void annealOneStep(real G, real beta) = 0;
 
 protected:
     Annealer() : m_(0) { }

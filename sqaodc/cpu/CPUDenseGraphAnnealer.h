@@ -54,19 +54,19 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real kT) {
-        (this->*annealMethod_)(G, kT);
+    void annealOneStep(real G, real beta) {
+        (this->*annealMethod_)(G, beta);
     }
 
-    void annealOneStepNaive(real G, real kT);
-    void annealOneStepColoring(real G, real kT);
+    void annealOneStepNaive(real G, real beta);
+    void annealOneStepColoring(real G, real beta);
 
 private:    
-    typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real kT);
+    typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
 
     /* actual annealing function for annealOneStepColored. */
-    void annealColoredPlane(real G, real kT, int offset);
+    void annealColoredPlane(real G, real beta, int offset);
 
     void syncBits();
     

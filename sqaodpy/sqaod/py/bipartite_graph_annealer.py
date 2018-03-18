@@ -127,18 +127,17 @@ class BipartiteGraphAnnealer :
             self._x_pairs.append((x0, x1))
         self.calculate_E()
 
-    def anneal_one_step(self, G, kT) :
+    def anneal_one_step(self, G, beta) :
         # will be dynamically replaced.
         pass
                 
-    def anneal_one_step_naive(self, G, kT) :
+    def anneal_one_step_naive(self, G, beta) :
         h0, h1, J, c, q0, q1 = self._vars()
         N0, N1 = self.get_problem_size()
         m = self._m
         N = N0 + N1
         twoDivM = 2. / m
-        tempCoef = np.log(np.tanh(G/kT/m)) / kT
-        invKT = 1. / kT
+        tempCoef = np.log(np.tanh(G * beta / m)) * beta
 
         for loop in range(N * m) :
             iq = np.random.randint(N)
@@ -150,7 +149,7 @@ class BipartiteGraphAnnealer :
                 q = q0[im][iq]
                 dE = twoDivM * q * (h0[iq] + np.dot(J.T[iq], q1[im]))
                 dE -= q * (q0[mNeibour0][iq] + q0[mNeibour1][iq]) * tempCoef
-                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                thresh = 1 if dE < 0 else np.exp(-dE * beta) 
                 if thresh > np.random.rand():
                     q0[im][iq] = -q
             else :
@@ -158,15 +157,14 @@ class BipartiteGraphAnnealer :
                 q = q1[im][iq]
                 dE = twoDivM * q * (h1[iq] + np.dot(J[iq], q0[im]))
                 dE -= q * (q1[mNeibour0][iq] + q1[mNeibour1][iq]) * tempCoef
-                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                thresh = 1 if dE < 0 else np.exp(-dE * beta) 
                 if thresh > np.random.rand():
                     q1[im][iq] = -q
         
-    def _anneal_half_step_coloring(self, N, qAnneal, h, J, qFixed, G, kT, m) :
+    def _anneal_half_step_coloring(self, N, qAnneal, h, J, qFixed, G, beta, m) :
         dEmat = np.matmul(J, qFixed.T)
         twoDivM = 2. / m
-        tempCoef = np.log(np.tanh(G/kT/m)) / kT
-        invKT = 1. / kT
+        tempCoef = np.log(np.tanh(G * beta / m)) * beta
         for im in range(0, m, 2) :
             mNeibour0 = (im + m - 1) % m
             mNeibour1 = (im + 1) % m
@@ -174,7 +172,7 @@ class BipartiteGraphAnnealer :
                 q = qAnneal[im][iq]
                 dE = twoDivM * q * (h[iq] + dEmat[iq, im])
                 dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
-                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                thresh = 1 if dE < 0 else np.exp(-dE * beta) 
                 if thresh > np.random.rand():
                     qAnneal[im][iq] = -q
         for im in range(1, m, 2) :
@@ -184,16 +182,16 @@ class BipartiteGraphAnnealer :
                 q = qAnneal[im][iq]
                 dE = twoDivM * q * (h[iq] + dEmat[iq, im])
                 dE -= q * (qAnneal[mNeibour0][iq] + qAnneal[mNeibour1][iq]) * tempCoef
-                thresh = 1 if dE < 0 else np.exp(- dE * invKT) 
+                thresh = 1 if dE < 0 else np.exp(-dE * beta) 
                 if thresh > np.random.rand():
                     qAnneal[im][iq] = -q
                 
-    def anneal_one_step_coloring(self, G, kT) :
+    def anneal_one_step_coloring(self, G, beta) :
         h0, h1, J, c, q0, q1 = self._vars()
         N0, N1 = self.get_problem_size()
         m = self._m
-        self._anneal_half_step_coloring(N1, q1, h1, J, q0, G, kT, m)
-        self._anneal_half_step_coloring(N0, q0, h0, J.T, q1, G, kT, m)
+        self._anneal_half_step_coloring(N1, q1, h1, J, q0, G, beta, m)
+        self._anneal_half_step_coloring(N0, q0, h0, J.T, q1, G, beta, m)
 
 
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
@@ -216,7 +214,7 @@ if __name__ == '__main__' :
     
     Ginit = 5
     Gfin = 0.01
-    kT = 0.02
+    beta = 1. / 0.02
     tau = 0.99
     n_repeat = 10
 
@@ -225,7 +223,7 @@ if __name__ == '__main__' :
         an.randomize_spin()
         G = Ginit
         while Gfin < G :
-            an.anneal_one_step(G, kT)
+            an.anneal_one_step(G, beta)
             G = G * tau
         an.make_solution()
         

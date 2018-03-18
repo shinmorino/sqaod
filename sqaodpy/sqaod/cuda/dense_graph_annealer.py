@@ -54,7 +54,7 @@ if __name__ == '__main__' :
     Gfin = 0.001
     
     nRepeat = 2
-    kT = 0.02
+    beta = 1. / 0.02
     tau = 0.995
     
     for loop in range(0, nRepeat) :
@@ -62,7 +62,7 @@ if __name__ == '__main__' :
         ann.prepare()
         ann.randomize_spin()
         while Gfin < G :
-            ann.anneal_one_step(G, kT)
+            ann.anneal_one_step(G, beta)
             G = G * tau
         ann.make_solution()
         E = ann.get_E()

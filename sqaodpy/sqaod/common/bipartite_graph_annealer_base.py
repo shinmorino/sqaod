@@ -76,5 +76,5 @@ class BipartiteGraphAnnealerBase :
     def make_solution(self) :
         self._cext.make_solution(self._cobj, self.dtype)
         
-    def anneal_one_step(self, G, kT) :
-        self._cext.anneal_one_step(self._cobj, G, kT, self.dtype)
+    def anneal_one_step(self, G, beta) :
+        self._cext.anneal_one_step(self._cobj, G, beta, self.dtype)

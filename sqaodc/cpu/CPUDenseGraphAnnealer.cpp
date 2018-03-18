@@ -204,7 +204,7 @@ void CPUDenseGraphAnnealer<real>::syncBits() {
 
 template<class real> inline static
 void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorType<real> &h, const sq::EigenMatrixType<real> &J, 
-             sq::Random &random, real twoDivM, real coef, real invKT) {
+             sq::Random &random, real twoDivM, real coef, real beta) {
     int N = J.rows();
     int m = matQ.rows();
     int x = random.randInt(N);
@@ -214,39 +214,37 @@ void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorTyp
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;
     dE -= qyx * (matQ(neibour0, x) + matQ(neibour1, x)) * coef;
-    real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
+    real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * beta);
     if (threshold > random.random<real>())
         matQ(y, x) = - qyx;
 }
 
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real kT) {
+void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     throwErrorIfQNotSet();
 
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G / kT / m_)) / kT;
-    real invKT = real(1.) / kT;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
     sq::Random &random = random_[0];
     for (int loop = 0; loop < sq::IdxType(N_ * m_); ++loop) {
         int y = random.randInt(m_);
-        tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
+        tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
     }
     clearState(solSolutionAvailable);
 }
 
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOffset) {
+void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int stepOffset) {
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G / kT / m_)) / kT;
-    real invKT = real(1.) / kT;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
 #ifndef _OPENMP
     /* single thread */
     sq::Random &random = random_[0];
     for (int yOffset = 0; yOffset < 2; ++yOffset) {
         for (int y = yOffset; y < m_; y += 2)
-            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
     }
 #else
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
@@ -256,12 +254,12 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
         for (int yOffset = 0; yOffset < 2; ++yOffset) {
 #  pragma omp for
             for (int y = yOffset; y < m2; y += 2) {
-                tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, invKT);
+                tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
             }
 #  pragma omp single
             if ((m_ % 2) != 0) { /* m is odd. */
                 sq::Random &random = random_[0];
-                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, invKT);
+                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
             }
         }
     }
@@ -269,12 +267,12 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real kT, int stepOf
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real kT) {
+void CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
     throwErrorIfQNotSet();
     
     int stepOffset = random_[0].randInt(2);
     for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
-        annealColoredPlane(G, kT, (stepOffset + idx) & 1);
+        annealColoredPlane(G, beta, (stepOffset + idx) & 1);
     clearState(solSolutionAvailable);
 }
 

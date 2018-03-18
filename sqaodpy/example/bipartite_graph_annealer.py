@@ -63,14 +63,14 @@ ann.randomize_spin()
 
 Ginit = 5.
 Gfin = 0.01
-kT = 0.02
+beta = 1. / 0.02
 tau = 0.99
 
 # annealing loop
 G = Ginit
 while Gfin <= G :
     # 11. call anneal_one_step to try flipping spins for (n_bits x n_trotters) times.
-    ann.anneal_one_step(G, kT)
+    ann.anneal_one_step(G, beta)
     G *= tau
     # 12. you may call get_E() to get a current E value.
     # ann.get_E()

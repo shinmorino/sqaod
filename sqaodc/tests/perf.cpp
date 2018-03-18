@@ -72,7 +72,7 @@ template<class real, template<class real> class A>
 void anneal(A<real> &an) {
     real Ginit = real(5.);
     real Gfin = real(0.01);
-    real kT = real(0.02);
+    real beta = real(1.) / real(0.02);
     real tau = real(0.99);
     tau = (real)0.9;
 
@@ -83,7 +83,7 @@ void anneal(A<real> &an) {
     an.randomizeSpin();
     real G = Ginit;
     while (Gfin < G) {
-        an.annealOneStep(G, kT);
+        an.annealOneStep(G, beta);
         G = G * tau;
         ++nSteps;
         std::cerr << ".";
