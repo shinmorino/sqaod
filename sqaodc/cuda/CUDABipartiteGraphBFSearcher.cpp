@@ -110,6 +110,11 @@ void CUDABipartiteGraphBFSearcher<real>::prepare() {
     halloc.allocate(&h_packedMinXPairs_, minXPairsSize);
 
     setState(solPrepared);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    sq::SizeType nX0Spans = SizeType((x0max_ + tileSize0_ - 1) / tileSize0_);
+    rangeMapArray_.setSize(nX0Spans);
+#endif
 }
 
 template<class real>
@@ -142,6 +147,15 @@ void CUDABipartiteGraphBFSearcher<real>::makeSolution() {
     }
     setState(solSolutionAvailable);
     calculate_E();
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    for (int idx = 0; idx < rangeMapArray_.size(); ++idx) {
+        const sqaod_internal::RangeMap &rangeMap = rangeMapArray_[idx];
+        assert(rangeMap.size() == 1);
+        const sq::PackedBitSetPair &pair = rangeMap[0];
+        assert((pair.bits0 == 0) && (pair.bits1 == x1max_));
+    }
+#endif
 }
 
 template<class real>
@@ -170,6 +184,12 @@ bool CUDABipartiteGraphBFSearcher<real>::searchRange(PackedBitSet *curX0, Packed
         }
         /* FIXME: add max limits of # min vectors. */
     }
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    if ((batch0begin < batch0end) && (batch1begin < batch1end)) {
+        SizeType batchIdx = SizeType(batch0begin / tileSize0_);
+        rangeMapArray_[batchIdx].insert(batch1begin, batch1end);
+    }
+#endif
 
     x1_ = batch1end;
     if (x1_ == x1max_) {

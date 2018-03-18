@@ -6,6 +6,10 @@
 #include <sqaodc/cuda/DeviceMatrix.h>
 #include <sqaodc/cuda/DeviceBipartiteGraphBatchSearch.h>
 
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+#include <sqaodc/common/RangeMap.h>
+#endif
+
 namespace sqaod_cuda {
 
 namespace sq = sqaod;
@@ -73,6 +77,9 @@ private:
     DeviceBatchSearch batchSearch_;
     DeviceCopy devCopy_;
 
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    sqaod_internal::RangeMapArray rangeMapArray_;
+#endif
     typedef CUDABipartiteGraphBFSearcher<real> This;
     typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::N0_;

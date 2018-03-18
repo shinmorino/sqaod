@@ -97,6 +97,10 @@ void CUDADenseGraphBFSearcher<real>::prepare() {
     xMax_ = 1ull << N_;
 
     setState(solPrepared);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    rangeMap_.clear();
+#endif
 }
 
 
@@ -133,6 +137,12 @@ void CUDADenseGraphBFSearcher<real>::makeSolution() {
     }
     setState(solSolutionAvailable);
     calculate_E();
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    assert(rangeMap_.size() == 1);
+    sq::PackedBitSetPair pair = rangeMap_[0];
+    assert((pair.bits0 == 0) && (pair.bits1 == xMax_));
+#endif
 }
 
 template<class real>
@@ -157,7 +167,11 @@ bool CUDADenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
             batchSearch_.partition_xMins(true);
         }
     }
-    
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    if (xBegin < xEnd)
+        rangeMap_.insert(xBegin, xEnd);
+#endif
     x_ = xEnd;
     if (curXEnd != NULL)
         *curXEnd = x_;
