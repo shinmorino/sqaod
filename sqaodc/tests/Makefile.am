@@ -4,27 +4,26 @@ LDADD=
 LIBS=
 AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc -I$(top_srcdir)/3rdparty/eigen -I$(top_srcdir)/3rdparty/cub
 
-check_PROGRAMS=perf
+check_PROGRAMS=perf test
 perf_SOURCES=perf.cpp
-LDADD+=$(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
+test_SOURCES=main.cpp BFSearcherRangeCoverageTest.cpp MinimalTestSuite.cpp 
 
+LDADD+=$(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
 if WITH_BLAS
   LIBS+=-lblas
 endif
 
+run: $(check_PROGRAMS)
+	./test
 
-# test for CUDA code
+
+# test for CUDA
 if CUDA_ENABLED
 
-check_PROGRAMS+=test
-
-test_SOURCES=main.cpp MinimalTestSuite.cpp CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
+test_SOURCES+=CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
 
 LDADD+=$(top_builddir)/sqaodc/cuda/libcuda.la
 LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
-
-run: $(check_PROGRAMS)
-	./test
 
 
 # CUDA build rules

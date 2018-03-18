@@ -1,4 +1,10 @@
+#include <sqaodc/sqaodc.h>
+#include <iostream>
 #include "MinimalTestSuite.h"
+#include "BFSearcherRangeCoverageTest.h"
+
+#ifdef SQAODC_CUDA_ENABLED
+
 #include "DeviceTest.h"
 #include "DeviceMathTest.h"
 #include "CUDAFormulasDGFuncTest.h"
@@ -7,9 +13,13 @@
 #include "CUDADenseGraphBFSolverTest.h"
 #include "DeviceSegmentedSumTest.h"
 #include "CUDADenseGraphAnnealerTest.h"
-#include <iostream>
+
+#endif
 
 int main(int argc, char* argv[]) {
+    
+    runTest<BFSearcherRangeCoverageTest>();
+#ifdef SQAODC_CUDA_ENABLED
     runTest<DeviceTest>();
     runTest<DeviceSegmentedSumTest>();
     runTest<DeviceMathTest>();
@@ -19,5 +29,6 @@ int main(int argc, char* argv[]) {
     runTest<CUDADenseGraphBFSolverTest>();
     runTest<CUDADenseGraphAnnealerTest>();
     cudaDeviceReset();
+#endif
     return MinimalTestSuite::summarize();
 }

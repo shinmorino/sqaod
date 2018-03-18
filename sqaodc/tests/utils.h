@@ -2,12 +2,9 @@
 
 #include <iostream>
 #include <common/Matrix.h>
-#include <cuda/DeviceMatrix.h>
-#include <cuda/DeviceArray.h>
 #include <common/Random.h>
-#include <cuda/DeviceCopy.h>
 
-using namespace sqaod_cuda;
+namespace sq = sqaod;
 
 template<class real>
 real epusiron();
@@ -24,72 +21,9 @@ double epusiron<double>() {
 
 
 template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceMatrixType<real> &dmat);
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceVectorType<real> &dvec);
-template<class real>
-std::ostream &operator<<(std::ostream &ostm, const DeviceScalarType<real> &ds);
-template<class real>
 std::ostream &operator<<(std::ostream &ostm, const sq::ArrayType<real> &arr);
 template<class real>
 std::ostream &operator<<(std::ostream &ostm, const sq::VectorType<real> &vec);
-template<class real>
-void show(const sqaod_cuda::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat);
-
-template<class real>
-void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec);
-
-
-template<class real>
-bool operator==(const DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
-    sqaod::MatrixType<real> copied;
-    DeviceCopy devCopy;
-    devCopy(&copied, dmat);
-    devCopy.synchronize();
-    return copied == hmat;
-}
-
-template<class real>
-bool operator==(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec) {
-    sqaod::VectorType<real> copied;
-    DeviceCopy devCopy;
-    devCopy(&copied, dvec);
-    devCopy.synchronize();
-    return copied == hvec;
-}
-
-template<class real>
-bool operator==(const DeviceScalarType<real> &dsc, const real &hsc) {
-    real copied;
-    DeviceCopy devCopy;
-    devCopy(&copied, dsc);
-    devCopy.synchronize();
-    return copied == hsc;
-}
-
-template<class real>
-bool operator==(const DeviceArrayType<real> &dsc, const sq::ArrayType<real> &hsc) {
-    DeviceArrayType<real> copied;
-    HostObjectAllocator().allocate(&copied, dsc.size);
-    DeviceCopy devCopy;
-    devCopy(&copied, dsc);
-    devCopy.synchronize();
-    if (copied.size != hsc.size()) {
-        HostObjectAllocator().deallocate(copied);
-        return false;
-    }
-    for (int idx = 0; idx < (int)copied.size; ++idx) {
-        if (copied[idx] != hsc[idx]) {
-            HostObjectAllocator().deallocate(copied);
-            return false;
-        }
-    }
-    HostObjectAllocator().deallocate(copied);
-    return true;
-}
-
-template<class real>
-bool allclose(const DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron);
 
 
 template<class real>
@@ -200,3 +134,81 @@ sqaod::MatrixType<real> randomizeBits(const sq::Dim &dim) {
 
 template<class real>
 sq::VectorType<real> segmentedSum(const sq::MatrixType<real> &A, sq::SizeType segLen, sq::SizeType nSegments);
+
+
+
+
+#ifdef SQAODC_CUDA_ENABLED
+
+#include <cuda/DeviceMatrix.h>
+#include <cuda/DeviceArray.h>
+#include <cuda/DeviceCopy.h>
+
+using namespace sqcu;
+
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceMatrixType<real> &dmat);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceVectorType<real> &dvec);
+template<class real>
+std::ostream &operator<<(std::ostream &ostm, const sqcu::DeviceScalarType<real> &ds);
+template<class real>
+void show(const sqaod_cuda::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat);
+
+template<class real>
+void show(const sqaod_cuda::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec);
+
+
+template<class real>
+bool operator==(const sqcu::DeviceMatrixType<real> &dmat, const sqaod::MatrixType<real> &hmat) {
+    sqaod::MatrixType<real> copied;
+    sqcu::DeviceCopy devCopy;
+    devCopy(&copied, dmat);
+    devCopy.synchronize();
+    return copied == hmat;
+}
+
+template<class real>
+bool operator==(const sqcu::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec) {
+    sqaod::VectorType<real> copied;
+    sqcu::DeviceCopy devCopy;
+    devCopy(&copied, dvec);
+    devCopy.synchronize();
+    return copied == hvec;
+}
+
+template<class real>
+bool operator==(const sqcu::DeviceScalarType<real> &dsc, const real &hsc) {
+    real copied;
+    sqcu::DeviceCopy devCopy;
+    devCopy(&copied, dsc);
+    devCopy.synchronize();
+    return copied == hsc;
+}
+
+template<class real>
+bool operator==(const sqcu::DeviceArrayType<real> &dsc, const sq::ArrayType<real> &hsc) {
+    sqcu::DeviceArrayType<real> copied;
+    HostObjectAllocator().allocate(&copied, dsc.size);
+    sqcu::DeviceCopy devCopy;
+    devCopy(&copied, dsc);
+    devCopy.synchronize();
+    if (copied.size != hsc.size()) {
+        HostObjectAllocator().deallocate(copied);
+        return false;
+    }
+    for (int idx = 0; idx < (int)copied.size; ++idx) {
+        if (copied[idx] != hsc[idx]) {
+            HostObjectAllocator().deallocate(copied);
+            return false;
+        }
+    }
+    HostObjectAllocator().deallocate(copied);
+    return true;
+}
+
+template<class real>
+bool allclose(const sqcu::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron);
+
+
+#endif
