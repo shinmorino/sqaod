@@ -16,6 +16,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\sqaodc\tests\BFSearcherRangeCoverageTest.cpp" />
     <ClCompile Include="..\..\sqaodc\tests\CUDADenseGraphAnnealerTest.cpp" />
     <ClCompile Include="..\..\sqaodc\tests\CUDADenseGraphBFSolverTest.cpp" />
     <ClCompile Include="..\..\sqaodc\tests\CUDAFormulasBGFuncTest.cpp" />
@@ -28,6 +29,7 @@
     <ClCompile Include="..\..\sqaodc\tests\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\sqaodc\tests\BFSearcherRangeCoverageTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\CUDADenseGraphAnnealerTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\CUDADenseGraphBFSolverTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\CUDAFormulasBGFuncTest.h" />
