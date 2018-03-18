@@ -218,7 +218,7 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curX0, sq:
     sq::PackedBitSet batch1end = std::min(x1_ + tileSize1_, x1max_);
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
     if ((batch0begin < batch0end) && (batch1begin < batch1end)) {
-        int batchIdx = batch0begin / tileSize0_;
+        sq::SizeType batchIdx = sq::SizeType(batch0begin / tileSize0_);
         rangeMapArray_[batchIdx].insert(batch1begin, batch1end);
     }
 #endif
