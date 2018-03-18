@@ -93,6 +93,12 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
         searchers_[idx].initSearch();
     }
     setState(solPrepared);
+
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    sq::SizeType nX0Spans = (x0max_ + tileSize0_ - 1) / tileSize0_;
+    rangeMapArray_.setSize(nX0Spans);
+#endif
 }
 
 template<class real>
@@ -141,6 +147,16 @@ void CPUBipartiteGraphBFSearcher<real>::makeSolution() {
     mapToRowVector(E_).array() = tmpE;
 
     setState(solSolutionAvailable);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    for (int idx = 0; idx < rangeMapArray_.size(); ++idx) {
+        const sqaod_internal::RangeMap &rangeMap = rangeMapArray_[idx];
+        assert(rangeMap.size() == 1);
+        const sq::PackedBitSetPair &pair = rangeMap[0];
+        assert((pair.bits0 == 0) && (pair.bits1 == x1max_));
+    }
+#endif
+
 }
 
 template<class real>
@@ -173,6 +189,14 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curX0, sq:
             x0end = std::min(x0 + tileSize0_, x0max_);
         }
     }
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    for (int idx = 0; idx < nMaxThreads_; ++idx) {
+        int batchIdx = batch0begin[idx] / tileSize0_;
+        rangeMapArray_[batchIdx].insert(batch1begin[idx], batch1end[idx]);
+    }
+#endif
+
     
 #pragma omp parallel
     {

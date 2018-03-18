@@ -3,6 +3,10 @@
 
 #include <sqaodc/common/Common.h>
 
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+#include <sqaodc/common/RangeMap.h>
+#endif
+
 namespace sqaod_cpu {
 
 namespace sq = sqaod;
@@ -53,7 +57,10 @@ private:
 
     int nMaxThreads_;
     BatchSearcher *searchers_;
-    
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    sqaod_internal::RangeMapArray rangeMapArray_;
+#endif
     typedef CPUBipartiteGraphBFSearcher<real> This;
     typedef sq::BipartiteGraphBFSearcher<real> Base;
     using Base::om_;

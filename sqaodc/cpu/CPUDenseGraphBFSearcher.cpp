@@ -78,6 +78,10 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
         searchers_[idx].initSearch();
     }
     setState(solPrepared);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    rangeMap_.clear();
+#endif
 }
 
 
@@ -121,6 +125,13 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
     }
     calculate_E();
     setState(solSolutionAvailable);
+
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    assert(rangeMap_.size() == 1);
+    sq::PackedBitSetPair pair = rangeMap_[0];
+    assert((pair.bits0 == 0) && (pair.bits1 == xMax_));
+#endif
 }
 
 
@@ -136,6 +147,14 @@ bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
         sq::PackedBitSet batchEnd = x_ + tileSize_ * (threadNum + 1);
         batchBegin = std::min(std::max(0ULL, batchBegin), xMax_);
         batchEnd = std::min(std::max(0ULL, batchEnd), xMax_);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+#pragma omp critical
+        {
+            rangeMap_.insert(batchBegin, batchEnd);
+        }
+#endif
+
         if (batchBegin < batchEnd)
             searchers_[threadNum].searchRange(batchBegin, batchEnd);
     }
@@ -143,6 +162,12 @@ bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
 #else
     sq::PackedBitSet batchBegin = x_;
     sq::PackedBitSet batchEnd = std::min(x_ + tileSize_, xMax_); ;
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    if (batchBegin < batchEnd)
+        rangeMap_.insert(batchBegin, batchEnd);
+#endif
+
     if (batchBegin < batchEnd)
         searchers_[0].searchRange(batchBegin, batchEnd);
     

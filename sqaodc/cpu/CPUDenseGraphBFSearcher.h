@@ -3,6 +3,9 @@
 
 #include <sqaodc/common/Common.h>
 
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+#include <sqaodc/common/RangeMap.h>
+#endif
 
 namespace sqaod_cpu {
 
@@ -53,6 +56,10 @@ private:
     int nMaxThreads_;
     BatchSearcher *searchers_;
 
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    sqaod_internal::RangeMap rangeMap_;
+#endif
+    
     typedef CPUDenseGraphBFSearcher<real> This;
     typedef sq::DenseGraphBFSearcher<real> Base;
     using Base::N_;
