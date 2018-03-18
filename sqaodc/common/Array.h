@@ -94,8 +94,8 @@ public:
                 new (&*it) V(std::move_if_noexcept(*(it + 1)));
             }
             data_[size_ - 1].~V();
-            --size_;
         }
+        --size_;
     }
     
     void pushBack(const V &v) {
