@@ -2,21 +2,19 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.bipartite_graph_annealer_base import BipartiteGraphAnnealerBase
-from . import cpu_bg_annealer as cext
-import device
+from . import cuda_bg_annealer as cext
+from . import device
 
 
 class BipartiteGraphAnnealer(BipartiteGraphAnnealerBase) :
     
     def __init__(self, b0, b1, W, optimize, dtype, prefdict) :
         self._cobj = cext.new(dtype)
-	self.assign_device(device.active_device)
+	cext.assign_device(self._cobj, device.active_device._cobj, dtype)
+	self._device = device.active_device
         BipartiteGraphAnnealerBase.__init__(self, cext, dtype, b0, b1, W, optimize, prefdict)
 
-    def assign_device(self, device) :
-        cext.assign_device(self._cobj, device._cobj, self.dtype)
 
-        
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
                              optimize = sqaod.minimize, dtype = np.float64, **prefs) :
     return BipartiteGraphAnnealer(b0, b1, W, optimize, dtype, prefs)

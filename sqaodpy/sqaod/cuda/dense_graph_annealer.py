@@ -2,19 +2,16 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.dense_graph_annealer_base import DenseGraphAnnealerBase
-from . import cpu_dg_annealer as cext
-import device
+from . import cuda_dg_annealer as cext
+from . import device
 
 class DenseGraphAnnealer(DenseGraphAnnealerBase) :
-    
+
     def __init__(self, W, optimize, dtype, prefdict) :
-        self._cobj = cext.new(dtype)
-	self.assign_device(device.active_device)
-        DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
-        
-    def assign_device(self, device) :
-        cext.assign_device(self._cobj, device._cobj, self.dtype)
-        
+	self._cobj = cext.new(dtype)
+	cext.assign_device(self._cobj, device.active_device._cobj, dtype)
+	self._device = device.active_device
+	DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
     ann = DenseGraphAnnealer(W, optimize, dtype, prefs)
