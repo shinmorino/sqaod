@@ -4,6 +4,8 @@
 export CFLAGS="-O2"
 
 rm -f debian/*.log
+rm -rf debian/libsqaodc
+rm -rf debian/libsqaodc-cuda-*
 
 make clean
 cd debian
