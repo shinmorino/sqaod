@@ -53,6 +53,8 @@ then
   fi
 
   cuda_package_ver=`echo $cuda_ver | tr . -`
+
+  AC_SUBST([CUDA_VER], $cuda_ver)
   AC_SUBST([CUDA_PACKAGE_VER], $cuda_package_ver)
 
   if test z${CUDA_ARCH} = z
