@@ -189,21 +189,21 @@ bool operator==(const sqcu::DeviceScalarType<real> &dsc, const real &hsc) {
 template<class real>
 bool operator==(const sqcu::DeviceArrayType<real> &dsc, const sq::ArrayType<real> &hsc) {
     sqcu::DeviceArrayType<real> copied;
-    HostObjectAllocator().allocate(&copied, dsc.size);
+    sqcu::HostObjectAllocator().allocate(&copied, dsc.size);
     sqcu::DeviceCopy devCopy;
     devCopy(&copied, dsc);
     devCopy.synchronize();
     if (copied.size != hsc.size()) {
-        HostObjectAllocator().deallocate(copied);
+        sqcu::HostObjectAllocator().deallocate(copied);
         return false;
     }
     for (int idx = 0; idx < (int)copied.size; ++idx) {
         if (copied[idx] != hsc[idx]) {
-            HostObjectAllocator().deallocate(copied);
+            sqcu::HostObjectAllocator().deallocate(copied);
             return false;
         }
     }
-    HostObjectAllocator().deallocate(copied);
+    sqcu::HostObjectAllocator().deallocate(copied);
     return true;
 }
 

@@ -5,7 +5,7 @@
 #include "utils.h"
 
 namespace sqcpu = sqaod_cpu;
-using namespace sqaod_cuda;
+namespace sqcu = sqaod_cuda;
 
 CUDAFormulasBGFuncTest::CUDAFormulasBGFuncTest(void) : MinimalTestSuite("CUDAFormulasBGFuncTest") {
 }
@@ -36,15 +36,15 @@ void CUDAFormulasBGFuncTest::tests() {
     // typedef sq::EigenMatrixType<real> EigenMatrix;
     // typedef sq::EigenRowVectorType<real> EigenRowVector;
     // typedef sq::EigenColumnVectorType<real> EigenColumnVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
+    typedef sqcu::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqcu::DeviceVectorType<real> DeviceVector;
+    typedef sqcu::DeviceScalarType<real> DeviceScalar;
 
-    DeviceCopy devCopy(device_);
+    sqcu::DeviceCopy devCopy(device_);
     // DeviceStream *devStream = device_.defaultStream();
 
     typedef sqcpu::BGFuncs<real> BGF;
-    DeviceBipartiteGraphFormulas<real> devFuncs;
+    sqcu::DeviceBipartiteGraphFormulas<real> devFuncs;
     devFuncs.assignDevice(device_);
 
     const int N0 = 100;

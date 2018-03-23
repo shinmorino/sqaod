@@ -8,8 +8,8 @@
 #include <cpu/CPUFormulas.h>
 #include <common/EigenBridge.h>
 
-using namespace sqaod_cuda;
 namespace sqcpu = sqaod_cpu;
+namespace sqcu = sqaod_cuda;
 
 
 CUDADenseGraphAnnealerTest::CUDADenseGraphAnnealerTest(void) : MinimalTestSuite("CUDADenseGraphAnnealerTest")
@@ -41,20 +41,20 @@ void CUDADenseGraphAnnealerTest::test() {
 
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
+    typedef sqcu::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqcu::DeviceVectorType<real> DeviceVector;
+    typedef sqcu::DeviceScalarType<real> DeviceScalar;
 
-    DeviceStream *devStream = device_.defaultStream();
-    DeviceObjectAllocator *devAlloc = device_.objectAllocator();
-    DeviceCopy devCopy(device_);
-    DeviceDenseGraphFormulas<real> dgFuncs(device_);
+    sqcu::DeviceStream *devStream = device_.defaultStream();
+    sqcu::DeviceObjectAllocator *devAlloc = device_.objectAllocator();
+    sqcu::DeviceCopy devCopy(device_);
+    sqcu::DeviceDenseGraphFormulas<real> dgFuncs(device_);
     int N = 40;
     int m = 20;
 
     testcase("DeviceRandomBuffer generateFlipPos()") {
-        DeviceRandom d_random(device_);
-        DeviceRandomBuffer buffer(device_);
+        sqcu::DeviceRandom d_random(device_);
+        sqcu::DeviceRandomBuffer buffer(device_);
         d_random.setRequiredSize(1 << 20);
         d_random.seed(0);
         buffer.generateFlipPositions(d_random, N, m, 8);
@@ -84,8 +84,8 @@ void CUDADenseGraphAnnealerTest::test() {
     }
 
     testcase("DeviceRandomBuffer reandom<real>") {
-        DeviceRandom d_random(device_);
-        DeviceRandomBuffer buffer(device_);
+        sqcu::DeviceRandom d_random(device_);
+        sqcu::DeviceRandomBuffer buffer(device_);
         d_random.setRequiredSize(1 << 20);
         d_random.seed(0);
         buffer.generate<real>(d_random, 1 << 20);
@@ -105,8 +105,8 @@ void CUDADenseGraphAnnealerTest::test() {
 
     testcase("DeviceRandomBuffer buffer access") {
         int N = 1 << 20;
-        DeviceRandom d_random(device_);
-        DeviceRandomBuffer buffer(device_);
+        sqcu::DeviceRandom d_random(device_);
+        sqcu::DeviceRandomBuffer buffer(device_);
         d_random.setRequiredSize(N);
         d_random.seed(0);
         buffer.generate<real>(d_random, N);
@@ -148,7 +148,7 @@ void CUDADenseGraphAnnealerTest::test() {
 #endif
         }
 
-        CUDADenseGraphAnnealer<real> an(device_);
+        sqcu::CUDADenseGraphAnnealer<real> an(device_);
         an.setQUBO(W);
         an.setPreference(sq::Preference(sq::pnNumTrotters, m));
         an.seed(0);
@@ -168,7 +168,7 @@ void CUDADenseGraphAnnealerTest::test() {
         devStream->synchronize();
 
         devCopy(&d_q, q);
-        DeviceBitMatrix *d_bitQ = devStream->tempDeviceMatrix<char>(q.dim());
+        sqcu::DeviceBitMatrix *d_bitQ = devStream->tempDeviceMatrix<char>(q.dim());
         devCopy.cast(d_bitQ , d_q);
 
         devCopy(d_flippos, flippos, m);

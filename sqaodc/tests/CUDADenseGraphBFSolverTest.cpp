@@ -5,7 +5,7 @@
 #include "utils.h"
 
 namespace sqcpu = sqaod_cpu;
-using namespace sqaod_cuda;
+namespace sqcu = sqaod_cuda;
 
 CUDADenseGraphBFSolverTest::CUDADenseGraphBFSolverTest(void) : MinimalTestSuite("TCUDADenseGraphBFSolverTest")
 {
@@ -35,12 +35,12 @@ template<class real>
 void CUDADenseGraphBFSolverTest::tests() {
     typedef sq::MatrixType<real> MatrixType;
 
-    DeviceStream *devStream = device_.defaultStream();
-    DeviceObjectAllocator *devAlloc = device_.objectAllocator();
-    DeviceCopy devCopy(device_);
+    sqcu::DeviceStream *devStream = device_.defaultStream();
+    sqcu::DeviceObjectAllocator *devAlloc = device_.objectAllocator();
+    sqcu::DeviceCopy devCopy(device_);
 
     testcase("test bit set 63") {
-        DeviceDenseGraphBatchSearch<real> search;
+        sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         const sq::SizeType N = 63;
@@ -64,7 +64,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         devAlloc->deallocate(d_data);
     }
     testcase("test bit set 32") {
-        DeviceDenseGraphBatchSearch<real> search;
+        sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         const sq::SizeType N = 32;
@@ -89,7 +89,7 @@ void CUDADenseGraphBFSolverTest::tests() {
     }
 
     testcase("test generate sequence 63") {
-        DeviceDenseGraphBatchSearch<real> search;
+        sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         const sq::SizeType N = 63;
@@ -120,7 +120,7 @@ void CUDADenseGraphBFSolverTest::tests() {
     }
 
     testcase("test generate sequence 24") {
-        DeviceDenseGraphBatchSearch<real> search;
+        sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         const sq::SizeType N = 24;
@@ -151,7 +151,7 @@ void CUDADenseGraphBFSolverTest::tests() {
     }
 
     testcase("partition") {
-        DeviceDenseGraphBatchSearch<real> search;
+        sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         sqaod::SizeType N = 2048;
@@ -219,7 +219,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         const sq::VectorType<real> &cpuE = cpuSolver.get_E();
         const sq::BitSetArray &cpuX = cpuSolver.get_x();
 
-        CUDADenseGraphBFSearcher<real> cudaSolver;
+        sqcu::CUDADenseGraphBFSearcher<real> cudaSolver;
         cudaSolver.assignDevice(device_);
         cudaSolver.setQUBO(W);
         cudaSolver.search();
