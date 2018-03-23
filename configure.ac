@@ -27,6 +27,13 @@ AC_ARG_ENABLE([cuda],
   *) cuda=true; cuda_prefix=$enableval;;
 esac],[cuda=false])
 
+# override CUDA prefix setting if CUDA_PREFIX env var is given.
+if test z${CUDA_PREFIX} != z
+then
+  cuda_prefix=${CUDA_PREFIX}
+  cuda=true
+fi
+
 AM_CONDITIONAL([CUDA_ENABLED], [test x$cuda = xtrue])
 
 if test $cuda = true
@@ -45,7 +52,8 @@ then
     cuda_prefix=/usr/local/cuda-$cuda_ver
   fi
 
-  AC_SUBST([CUDA_VER], $cuda_ver)
+  cuda_package_ver=`echo $cuda_ver | tr . -`
+  AC_SUBST([CUDA_PACKAGE_VER], $cuda_package_ver)
 
   if test z${CUDA_ARCH} = z
   then
@@ -96,9 +104,13 @@ if test x$prefix = xNONE ; then
   prefix=${ac_default_prefix}
 fi
 
-# I want this stuff to go into config.h or confdefs.h
-# AC_DEFINE([STUFF], ["blahblah"], [Stuff])
-# AC_DEFINE_UNQUOTED(DOCDIR, ["${prefix}/share/doc/foo"], [Documentation])
+if test z${SIMD_OPT} != z
+then
+  CFLAGS="$CFLAGS -m${SIMD_OPT}"
+  AC_SUBST([SIMD_POSTFIX], "-${SIMD_OPT}")
+else
+  CFLAGS="$CFLAGS -msse2"
+fi  
 
 CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -fopenmp"
 AC_SUBST([CFLAGS], $CFLAGS)

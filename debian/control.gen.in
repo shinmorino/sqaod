@@ -8,14 +8,15 @@ Homepage: https://github.com/shinmorino/sqaod
 #Vcs-Git: git://anonscm.debian.org/collab-maint/sqaod.git
 #Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/sqaod.git
 
-Package: libsqaodc
+Package: libsqaodc@SIMD_POSTFIX@
+Provides: libsqaodc
 Section: libs
 Architecture: amd64
-Depends:  libgomp1:amd64
+Depends:  libgomp1:amd64, libblas3:amd64, ${shlibs:Depends}, ${misc:Depends}
 Description: sqaodc library
 
-Package: libsqaodc-cuda-@CUDA_VER@
+Package: libsqaodc-cuda-@CUDA_PACKAGE_VER@@SIMD_POSTFIX@
 Section: libs
 Architecture: amd64
-Depends: libsqaodc:amd64, cuda-cublas-@CUDA_VER@:amd64, cuda-cudart-@CUDA_VER@:amd64, cuda-curand-@CUDA_VER@:amd64
+Depends: libsqaodc:amd64, cuda-cublas-@CUDA_PACKAGE_VER@:amd64, cuda-cudart-@CUDA_PACKAGE_VER@:amd64, cuda-curand-@CUDA_PACKAGE_VER@:amd64, ${shlibs:Depends}, ${misc:Depends}
 Description: sqaodc CUDA library
