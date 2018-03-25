@@ -147,3 +147,13 @@ AC_CONFIG_FILES([Makefile
 		 sqaodpy/sqaod/cpu/src/Makefile
 ])
 AC_OUTPUT
+
+top_builddir=.
+top_srcdir=`dirname $0`
+export src=${top_builddir}/config/sqaod_config.h
+export dst=${top_srcdir}/sqaodc/common/sqaod_config.h
+if ! diff $src $dst  >/dev/null 2>&1
+then
+  cp $src $dst
+  echo sqaod_config.h updated.
+fi
