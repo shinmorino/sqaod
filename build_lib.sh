@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get install automake autoconf libtool python-dev
+sudo apt-get install automake autoconf libtool python-dev libblas-dev
 
 pushd .
 
@@ -23,13 +23,3 @@ popd
 ./configure --prefix=/usr --enable-cuda
 make
 sudo make install
-
-cd sqaodpy/sqaod/cpu/src
-python incpathgen.py > incpath
-make
-cd ../../cuda/src
-python incpathgen.py > incpath
-make
-cd ../../..
-python setup.py build
-python setup.py bdist_wheel
