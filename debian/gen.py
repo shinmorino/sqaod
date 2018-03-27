@@ -43,9 +43,9 @@ if len(sys.argv) >= 3:
 if simd == 'sse2' :
     with open('control', 'w') as file:
         file.write(control)
-        file.write(control_libsqaodc.format(simd=simd, package_postfix=package_postfix))
-        file.write(control_libsqaodc_cuda.format(simd=simd, package_postfix=package_postfix,
-                                                cudaver=cudaver))
+        file.write(control_libsqaodc.format(package_postfix=package_postfix))
+        file.write(control_libsqaodc_cuda.format(package_postfix=package_postfix,
+                                                 cudaver=cudaver))
     with open('libsqaodc.install', 'w') as file:
         file.write(libsqaodc_install)
     with open('libsqaodc-cuda-{cudaver}.install'.format(cudaver=cudaver), 'w') as file:
@@ -53,7 +53,7 @@ if simd == 'sse2' :
 else :
     with open('control', 'w') as file:
         file.write(control)
-        file.write(control_libsqaodc.format(simd='-' + simd, package_postfix=package_postfix))
-    with open('libsqaodc-{simd}.install'.format(simd=simd), 'w') as file:
+        file.write(control_libsqaodc.format(package_postfix=package_postfix))
+    with open('libsqaodc{package_postfix}.install'.format(package_postfix=package_postfix), 'w') as file:
         file.write(libsqaodc_install)
     
