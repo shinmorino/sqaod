@@ -5,7 +5,7 @@ cd 3rdparty
 
 if ! test -d eigen
 then
-    git clone https://github.com/Rlovelett/eigen.git
+    git clone https://github.com/eigenteam/eigen-git-mirror.git eigen
 fi
 cd eigen
 git checkout 3.3.4
