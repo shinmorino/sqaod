@@ -2,6 +2,7 @@
 
 
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
+#define EIGEN_MPL2_ONLY
 
 #ifdef _MSC_VER
 #  pragma warning(push)
