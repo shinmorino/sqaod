@@ -7,11 +7,11 @@ from . import device
 
 
 class BipartiteGraphAnnealer(BipartiteGraphAnnealerBase) :
-    
+
     def __init__(self, b0, b1, W, optimize, dtype, prefdict) :
         self._cobj = cext.new(dtype)
-	cext.assign_device(self._cobj, device.active_device._cobj, dtype)
-	self._device = device.active_device
+        cext.assign_device(self._cobj, device.active_device._cobj, dtype)
+        self._device = device.active_device
         BipartiteGraphAnnealerBase.__init__(self, cext, dtype, b0, b1, W, optimize, prefdict)
 
 

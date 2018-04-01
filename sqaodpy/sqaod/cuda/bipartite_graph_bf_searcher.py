@@ -8,10 +8,10 @@ from . import device
 class BipartiteGraphBFSearcher(BipartiteGraphBFSearcherBase) :
     
     def __init__(self, b0, b1, W, optimize, dtype, prefdict) :
-	self._cobj = cext.new(dtype)
-	cext.assign_device(self._cobj, device.active_device._cobj, dtype)
-	self._device = device.active_device
-	BipartiteGraphBFSearcherBase.__init__(self, cext, dtype, b0, b1, W, optimize, prefdict)
+        self._cobj = cext.new(dtype)
+        cext.assign_device(self._cobj, device.active_device._cobj, dtype)
+        self._device = device.active_device
+        BipartiteGraphBFSearcherBase.__init__(self, cext, dtype, b0, b1, W, optimize, prefdict)
 
 
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None,
