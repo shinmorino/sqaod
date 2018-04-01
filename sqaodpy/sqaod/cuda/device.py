@@ -1,4 +1,4 @@
-import cuda_device
+from . import cuda_device
 import sys
 
 class Device :
@@ -11,8 +11,8 @@ class Device :
 
     def __del__(self) :
         if not self._cobj is None :
-           self.finalize();
-	self._cobj = None
+            self.finalize();
+        self._cobj = None
 
     def finalize(self) :
         cuda_device.finalize(self._cobj);
@@ -29,10 +29,9 @@ this_module = sys.modules[__name__]
 
 def unload() :
     if not this_module.active_device is None :
-	this_module.active_device = None
+        this_module.active_device = None
 
 if __name__ != "__main__" :
     this_module.active_device = create_device()
     import atexit
     atexit.register(unload)
-

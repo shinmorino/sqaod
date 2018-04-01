@@ -8,10 +8,10 @@ from . import device
 class DenseGraphAnnealer(DenseGraphAnnealerBase) :
 
     def __init__(self, W, optimize, dtype, prefdict) :
-	self._cobj = cext.new(dtype)
-	cext.assign_device(self._cobj, device.active_device._cobj, dtype)
-	self._device = device.active_device
-	DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
+        self._cobj = cext.new(dtype)
+        cext.assign_device(self._cobj, device.active_device._cobj, dtype)
+        self._device = device.active_device
+        DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
     ann = DenseGraphAnnealer(W, optimize, dtype, prefs)

@@ -3,7 +3,7 @@ import numpy as np
 import numbers
 import sqaod
 from sqaod.common import checkers
-import formulas as formulas
+from . import formulas
 
 # dense graph    
 
