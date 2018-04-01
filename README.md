@@ -30,21 +30,22 @@ Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, d
 Sqaod has its own C++ native libraries which is invoked from python c-extensions.
 
 ~~~
+ $ sudo apt-get install apt-transport-https apt-utils
  # adding sqaod repository
  $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial main' | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
- $ apt-get update
+ $ sudo apt-get update
 
  # install sqaodc native library.
  # if your CPU has avx2 feature, installl libsqaodc-avx2, otherwise install libsqaodc.
- $ apt-get install libsqaodc-avx2   # AVX2 enabled.
- $ apt-get install libsqaodc        # otherwise (SSE2 enabled).
+ $ sudo apt-get install libsqaodc-avx2   # AVX2 enabled.
+ $ sudo apt-get install libsqaodc        # otherwise (SSE2 enabled).
  
  # install CUDA native library if you need CUDA-based solvers.
- $ apt-get install libsqaodc-cuda-9-0
+ $ sudo apt-get install libsqaodc-cuda-9-0
 ~~~
 
-**Note:** You may see a warning during installation : "W: The repository 'https://shinmorino.github.io/sqaod/ubuntu xenial Release' does not have a Release file."<BR>
+**Note:** You may see some wrnings during installation.  Ex.: "W: The repository 'https://shinmorino.github.io/sqaod/ubuntu xenial Release' does not have a Release file."<BR>
 If you get a confirmation like "Install these packages without verification? [y/N]", answer y to proceed installation.<BR>
 It will be fixed by alpha2 release.
 
