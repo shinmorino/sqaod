@@ -58,7 +58,7 @@ Use pip to install.
 ~~~
 
 
-### Running examples
+### 4. Running examples
 
 Python examples are in [sqaod/sqaodpy/examples](https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example).  The below is an example to run dense graph annealer.
 
@@ -71,4 +71,10 @@ $ python dense_graph_annealer.py
 I welcome your feedback and requests.<BR>
 Please file your feedback and/or requests to [Issues](https://github.com/shinmorino/sqaod/issues).<BR>
 
-Enjoy !!!
+### Opensource libraries used in sqaod.
+
+- [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) ([MPL2](https://www.mozilla.org/en-US/MPL/2.0/))
+- [CUB](http://nvlabs.github.io/cub/) ([BSD 3-Clause "New" or "Revised" License](https://github.com/NVlabs/cub/blob/1.8.0/LICENSE.TXT))
+- [libblas](https://packages.ubuntu.com/xenial/libblas3) ([Modified BSD License](http://www.netlib.org/lapack/LICENSE.txt))
+
+### Enjoy !!!
