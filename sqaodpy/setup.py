@@ -14,7 +14,9 @@ else :
     
 isPy2 = sys.version_info[0] == 2
 
-name = 'sqaod-py2' if isPy2 else 'sqaod-py3'
+# name = 'sqaod-py2' if isPy2 else 'sqaod-py3'
+name = 'sqaod'
+
 if isPy2 :
     pyver= [
         'Programming Language :: Python :: 2',
