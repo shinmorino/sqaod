@@ -2,11 +2,9 @@
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).
 
-## Project status (as of 4/1)
-Alpha1 is going to be released by 4/8.<BR>
-Currently apt repository is working, though python packages have not been registered to PyPI yet.<BR>
-
-See milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development status.
+## Project status (as of 4/7)
+Alpha1 release has been doone.<BR>
+See milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development plan.
 
 ## Installation  
 Here's an instruction to install alpha1 binary distribution of sqaod.  Alpha1 binary distribuion is provided only for Ubuntu 16.04.<BR>
