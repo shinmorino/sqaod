@@ -8,6 +8,8 @@ then
     git clone https://github.com/eigenteam/eigen-git-mirror.git eigen
 fi
 cd eigen
+git checkout master
+git pull
 git checkout 3.3.4
 cd ..
 
@@ -16,5 +18,7 @@ then
     git clone https://github.com/NVlabs/cub.git
 fi
 cd cub
-git checkout v1.7.4
+git checkout master
+git pull
+git checkout v1.8.0
 cd ..
