@@ -1,6 +1,6 @@
 # Sqaod
 
-Collections of solvers/annealers for simulated quamtum annealing on CPU and CUDA(NVIDIA GPU).
+Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).
 
 ## Project status (as of 4/1)
 Alpha1 is going to be released by 4/8.<BR>
@@ -45,7 +45,7 @@ Sqaod has its own C++ native libraries which is invoked from python c-extensions
  $ sudo apt-get install libsqaodc-cuda-9-0
 ~~~
 
-**Note:** You may see some wrnings during installation.  Ex.: "W: The repository 'https://shinmorino.github.io/sqaod/ubuntu xenial Release' does not have a Release file."<BR>
+**Note:** You may see some warnings during installation.  Ex.: "W: The repository 'https://shinmorino.github.io/sqaod/ubuntu xenial Release' does not have a Release file."<BR>
 If you get a confirmation like "Install these packages without verification? [y/N]", answer y to proceed installation.<BR>
 It will be fixed by alpha2 release.
 
