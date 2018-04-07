@@ -62,7 +62,7 @@ Use pip to install.
 Python examples are in [sqaod/sqaodpy/examples](https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example).  The below is an example to run dense graph annealer.
 
 ~~~
-$ wget https://github.com/shinmorino/sqaod/blob/master/sqaodpy/example/dense_graph_annealer.py
+$ wget https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example/dense_graph_annealer.py
 $ python dense_graph_annealer.py
 ~~~
 
