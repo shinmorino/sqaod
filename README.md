@@ -3,7 +3,7 @@
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).
 
 ## Project status (as of 4/7)
-Alpha1 release has been doone.<BR>
+Alpha1 release has been done.<BR>
 See milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development plan.
 
 ## Installation  
