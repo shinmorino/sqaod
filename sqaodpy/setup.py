@@ -12,23 +12,17 @@ if 'linux' in sys.platform :
 else :    
     package_data = {'sqaod.cpu' : ['*.pyd', 'sqaod/cpu/*.pyd' ], 'sqaod.cuda' : ['*.pyd', 'sqaod/cuda/*.pyd' ] }
     
-isPy2 = sys.version_info[0] == 2
 
-# name = 'sqaod-py2' if isPy2 else 'sqaod-py3'
 name = 'sqaod'
 
-if isPy2 :
-    pyver= [
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7'
-    ]
-else :
-    pyver= [
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-    ]
+pyver= [
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+]
 
 email = 'shin.morino@gmail.com'    
 author='Shinya Morino'
@@ -42,23 +36,24 @@ classifiers=[
 ]
 
 classifiers = classifiers + pyver
+url = 'https://github.com/shinmorino/sqaod/'
 
 setup(
     name=name,
-    version='0.1.0',
-    url='https://github.com/shinmorino/sqaod/',
+    version='0.1.0a1',
+    url=url,
     author=author,
     author_email=email,
     maintainer=author,
     maintainer_email=email,
-    description='A collection of solvers for simulated quantum annealer.',
-    long_description='',
+    description='A collection of solvers for simulated quantum annealing.',
+    long_description='Sqaod is a collection of sovlers for simulated quantum annealing.  Solvers are acelerated by using OpenMP on multi-core CPUs and by using CUDA on NVIDIA GPUs.' +
+    'Please visit sqaod website for details, ' + url + '.',
     packages=find_packages(exclude=['tests']),
     install_requires=['numpy>=1.11'],
-    keywords='simulated quantum annealing, quantum computing, Monte-Carlo simulation, CPU, GPU, CUDA',
+    keywords='Simulated quantum annealing, Quantum computing, Monte Carlo, OpenMP, GPU, CUDA',
     classifiers=classifiers,
     package_data=package_data,
     include_package_data=True,
     distclass=BinaryDistribution
 )
-
