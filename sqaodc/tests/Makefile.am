@@ -1,17 +1,14 @@
 SUFFICES=.cu .cpp .h
 
+AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc -I$(top_srcdir)/3rdparty/eigen -I$(top_srcdir)/3rdparty/cub
+
 LDADD=
 LIBS=
-AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc -I$(top_srcdir)/3rdparty/eigen -I$(top_srcdir)/3rdparty/cub
+LDFLAGS=
 
 check_PROGRAMS=perf test
 perf_SOURCES=perf.cpp
 test_SOURCES=main.cpp BFSearcherRangeCoverageTest.cpp MinimalTestSuite.cpp 
-
-LDADD+=$(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
-if WITH_BLAS
-  LIBS+=-lblas
-endif
 
 run: $(check_PROGRAMS)
 	./test
@@ -22,9 +19,9 @@ if CUDA_ENABLED
 
 test_SOURCES+=CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
 
-LDADD+=$(top_builddir)/sqaodc/cuda/libcuda.la
-LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
-
+LDADD+=$(top_builddir)/sqaodc/libsqaodc_cuda.la
+LDFLAGS+=-L/usr/local/cuda/lib64 -lcudart -ldl
+#LDFLAGS+=@CUDA_LDFLAGS@ -lcublas -lcurand -lcudart
 
 # CUDA build rules
 
@@ -53,3 +50,11 @@ LIBS+=-L/usr/local/cuda/lib64 -lcublas -lcudart -ldl
 	touch $@
 
 endif
+
+
+LDADD+=$(top_builddir)/sqaodc/libsqaodc.la
+#if WITH_BLAS
+#  LIBS+=-lblas
+#endif
+#LIBS+=-ldl
+

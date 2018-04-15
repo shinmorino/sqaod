@@ -11,20 +11,19 @@ endif
 SUBDIRS+=tests
 
 lib_LTLIBRARIES=libsqaodc.la
-libsqaodc_la_LIBADD=$(top_builddir)/sqaodc/common/libcommon.la $(top_builddir)/sqaodc/cpu/libcpu.la -ldl
+libsqaodc_la_LIBADD=$(top_builddir)/sqaodc/common/libcommon.la $(top_builddir)/sqaodc/cpu/libcpu.la
 libsqaodc_la_SOURCES=
-libsqaodc_la_LDFLAGS=-version-info 0:0:0
-
 if WITH_BLAS
     libsqaodc_la_LIBADD+=-lblas
 endif
+libsqaodc_la_LIBADD+=-ldl
 
 
 if CUDA_ENABLED
     lib_LTLIBRARIES+=libsqaodc_cuda.la
     libsqaodc_cuda_la_SOURCES=
-    libsqaodc_cuda_la_LIBADD=cuda/libcuda.la libsqaodc.la @CUDA_LDFLAGS@ -lcublas -lcudart -lcurand
-    libsqaodc_cuda_la_LDFLAGS=-version-info 0:0:0
+    libsqaodc_cuda_la_LIBADD=cuda/libcuda.la libsqaodc.la
+    libsqaodc_cuda_la_LDFLAGS=-version-info 0:0:0 @CUDA_LDFLAGS@ -lcublas -lcurand -lcudart
 endif
 
 # see how to set version info
