@@ -43,6 +43,9 @@ class DenseGraphAnnealerBase :
     def get_E(self) :
         return self._cext.get_E(self._cobj, self.dtype)
 
+    def calculate_E(self) :
+        self._cext.calculate_E(self._cobj, self.dtype)
+
     def get_x(self) :
         return self._cext.get_x(self._cobj, self.dtype)
 
