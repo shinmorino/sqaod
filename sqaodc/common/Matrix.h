@@ -382,9 +382,18 @@ sqaod::VectorType<newV> cast(const VectorType<V> &vec) {
 
 
 typedef VectorType<char> BitSet;
-typedef MatrixType<char> BitMatrix;
 typedef ArrayType<BitSet> BitSetArray;
-typedef ArrayType<std::pair<BitSet, BitSet> > BitSetPairArray;
+
+struct BitSetPair {
+    BitSetPair() { }
+    BitSetPair(const BitSet &_bits0, const BitSet &_bits1)
+            : bits0(_bits0), bits1(_bits1) { }
+    BitSet bits0;
+    BitSet bits1;
+};
+typedef ArrayType<BitSetPair> BitSetPairArray;
+
+typedef MatrixType<char> BitMatrix;
 
 //typedef VectorType<char> Spins;
 //typedef std::vector<Bits> SpinsArray;
