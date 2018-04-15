@@ -376,6 +376,7 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
     throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
 
     int nRequiredRandNum = (N0_ + N1_) * m_;
     if (!d_randReal_.available(nRequiredRandNum))
@@ -395,7 +396,6 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
     tryFlip(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, beta);
     DEBUG_SYNC;
 
-    clearState(solSolutionAvailable);
 }
 
 

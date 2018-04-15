@@ -108,7 +108,6 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
     sqint::quboShapeCheck(W, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
-    clearState(solProblemSet);
 
     N_ = W.rows;
     m_ = N_ / 4;
@@ -129,7 +128,6 @@ void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const Hos
     sqint::isingModelShapeCheck(h, J, c, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
-    clearState(solProblemSet);
 
     N_ = J.rows;
     m_ = N_ / 4;
@@ -436,7 +434,6 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
 template<class real>
 void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real beta) {
     throwErrorIfQNotSet();
-    clearState(solEAvailable);
     clearState(solSolutionAvailable);
     
     if (!flipPosBuffer_.available(m_ * N_))
@@ -449,7 +446,6 @@ void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real beta) {
         calculate_Jq(&d_Jq_, d_J_, d_matq_, d_flipPos);
         annealOneStep(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, G, beta);
     }
-    clearState(solEAvailable);
 }
 
 

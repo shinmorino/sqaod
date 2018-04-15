@@ -68,9 +68,6 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::setQUBO(const Vector &b0, const Vector &b1,
                                               const Matrix &W, sq::OptimizeMethod om) {
     sqint::quboShapeCheck(b0, b1, W, __func__);
-    /* FIXME: add qubo dim check */
-    if ((N0_ != b0.size) || (N1_ != b1.size))
-        clearState(solPrepared);
     
     N0_ = (int)b0.size;
     N1_ = (int)b1.size;
@@ -96,7 +93,6 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J, real c) {
     sqint::isingModelShapeCheck(h0, h1, J, c, __func__);
-    clearState(solPrepared);
     
     N0_ = (int)h0.size;
     N1_ = (int)h1.size;
@@ -138,8 +134,7 @@ void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
         matQ0_.row(idx) = q0;
         matQ1_.row(idx) = q1;
     }
-    
-    clearState(solSolutionAvailable);
+
     setState(solQSet);
 }
 
@@ -153,7 +148,6 @@ void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPairArray &qPairs) {
         matQ1_.row(idx) = mapToRowVector(qPairs[idx].bits1).cast<real>();
     }
 
-    clearState(solSolutionAvailable);
     setState(solQSet);
 }
 

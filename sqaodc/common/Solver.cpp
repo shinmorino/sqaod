@@ -26,6 +26,7 @@ void Solver<real>::setPreferences(const Preferences &prefs) {
 /* solver state */
 template<class real>
 void Solver<real>::setState(SolverState state) {
+    clearState(state);
     solverState_ |= state;
 }
 
@@ -33,6 +34,9 @@ template<class real>
 void Solver<real>::clearState(SolverState state) {
     int stateToClear = 0;
     switch (state) {
+    case solRandSeedGiven:
+        stateToClear = solRandSeedGiven;
+        break; /* independent state */
     case solProblemSet :
         stateToClear |= solProblemSet;
         /* no break */
