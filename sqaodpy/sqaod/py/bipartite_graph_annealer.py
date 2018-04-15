@@ -89,11 +89,19 @@ class BipartiteGraphAnnealer :
     def get_x(self) :
         return self._x_pairs
 
-    def set_x(self, x0, x1) :
-        q0 = sqaod.bit_to_spin(x0)
-        q1 = sqaod.bit_to_spin(x1)
-        self._q0[:][...] = q0[:]
-        self._q1[:][...] = q1[:]
+    def set_q(self, qpair) :
+        if isinstance(qpair, list) :
+            qpairs = qpair
+            self._m = len(qpairs);
+            self.prepare()
+            for idx in range(0, self._m) :
+                self._q0[idx] = qpairs[idx][0]
+                self._q1[idx] = qpairs[idx][1]
+        else :
+            self.prepare()
+            for idx in range(0, self._m) :
+                self._q0[idx] = qpair[0]
+                self._q1[idx] = qpair[1]
 
     # Ising model / spin
     
@@ -101,7 +109,10 @@ class BipartiteGraphAnnealer :
         return self._h0, self._h1, self._J, self._c
             
     def get_q(self) :
-        return self._q0, self._q1
+        qlist = []
+        for qpair in zip(self._q0, self._q1) :
+            qlist.append(qpair)
+        return qlist
 
     def randomize_spin(self) :
         sqaod.randomize_spin(self._q0)
