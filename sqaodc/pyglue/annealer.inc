@@ -573,7 +573,7 @@ extern "C"
 PyObject *annealer_set_q(PyObject *module, PyObject *args) {
     PyObject *objExt, *objQPair, *dtype;
     
-    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objQPair, &dtype))
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objQPair, &dtype))
         return NULL;
 
     ASSERT_DTYPE(dtype);
