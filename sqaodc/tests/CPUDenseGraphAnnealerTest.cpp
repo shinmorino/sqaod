@@ -1,5 +1,5 @@
 #include "CPUDenseGraphAnnealerTest.h"
-#include <utils.h>
+#include "utils.h"
 
 namespace sqcpu = sqaod_cpu;
 
@@ -37,6 +37,8 @@ void CPUDenseGraphAnnealerTest::run(std::ostream &ostm) {
     }
 
     testcase("set_q(), N x 2") {
+        annealer.prepare();
+
         sq::BitSet bsetin;
         sq::BitSetArray bsetout;
         bsetin = createRandomizedSpinSet(N);

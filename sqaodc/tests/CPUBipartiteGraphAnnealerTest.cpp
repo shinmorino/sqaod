@@ -1,5 +1,5 @@
 #include "CPUBipartiteGraphAnnealerTest.h"
-#include <utils.h>
+#include "utils.h"
 
 namespace sqcpu = sqaod_cpu;
 

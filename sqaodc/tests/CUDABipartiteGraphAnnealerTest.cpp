@@ -1,5 +1,5 @@
 #include "CUDABipartiteGraphAnnealerTest.h"
-#include <utils.h>
+#include "utils.h"
 
 namespace sqcu = sqaod_cuda;
 

@@ -207,6 +207,8 @@ void CUDADenseGraphAnnealerTest::test_setq() {
     }
 
     testcase("set_q(), N x 2") {
+        annealer.prepare();
+
         sq::BitSet bsetin;
         sq::BitSetArray bsetout;
         bsetin = createRandomizedSpinSet(N);

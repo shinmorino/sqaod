@@ -44,7 +44,9 @@ void runTest() {
     T t;
 
     t.reset(-1);
+    t.setUp();
     t.run(std::cerr);
+    t.tearDown();
     int nTests = t.testNo_;
     
     for (t.curNo_ = 0; t.curNo_ < nTests; ++t.curNo_) {
