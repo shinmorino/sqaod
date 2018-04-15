@@ -376,24 +376,42 @@ PyObject *annealer_get_x(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_set_x(PyObject *objExt, PyObject *objX) {
-    NpBitVector x(objX);
-    pyobjToCppObj<real>(objExt)->set_x(x);
+void internal_set_q(PyObject *objExt, PyObject *objQ) {
+    if (PyList_Check(objQ)) {
+        PyListObject *list = (PyListObject*)objQ;
+        int nItems = (int)PyList_GET_SIZE(list);
+        sq::BitSetArray qList;
+        for (int idx = 0; idx < nItems; ++idx) {
+            PyObject *item = PyList_GET_ITEM(list, idx);
+            if (!PyArray_Check(item))
+                throwError("q is not an Array object.");
+            NpBitVector q(item);
+            qList.pushBack(q);
+        }
+        pyobjToCppObj<real>(objExt)->set_q(qList);
+    }
+    else if (PyArray_Check(objQ)) {
+        NpBitVector q(objQ);
+        pyobjToCppObj<real>(objExt)->set_q(q);
+    }
+    else {
+        throwError("q is not a List nor an Array object.");
+    }
 }
 
 extern "C"
-PyObject *annealer_set_x(PyObject *module, PyObject *args) {
-    PyObject *objExt, *objX, *dtype;
-    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objX, &dtype))
+PyObject *annealer_set_q(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objQ, *dtype;
+    if (!PyArg_ParseTuple(args, "OOO", &objExt, &objQ, &dtype))
         return NULL;
 
     ASSERT_DTYPE(dtype);
     
     TRY {
         if (isFloat64(dtype))
-            internal_set_x<double>(objExt, objX);
+            internal_set_q<double>(objExt, objQ);
         else // if (isFloat32(dtype))
-            internal_set_x<float>(objExt, objX);
+            internal_set_q<float>(objExt, objQ);
     } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
@@ -486,8 +504,8 @@ PyObject *internal_get_x(PyObject *objExt) {
         const sq::BitSetPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
-        x0.vec = pair.first;
-        x1.vec = pair.second;
+        x0.vec = pair.bits0;
+        x1.vec = pair.bits1;
 
         PyObject *tuple = PyTuple_New(2);
         PyTuple_SET_ITEM(tuple, 0, x0.obj);
@@ -516,25 +534,55 @@ PyObject *annealer_get_x(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_set_x(PyObject *objExt, PyObject *objX0, PyObject *objX1) {
-    NpBitVector x0(objX0), x1(objX1);
-    pyobjToCppObj<real>(objExt)->set_x(x0, x1);
+void internal_set_q(PyObject *objExt, PyObject *objQ) {
+
+    if (PyList_Check(objQ)) {
+        PyListObject *list = (PyListObject*)objQ;
+        int nItems = (int)PyList_GET_SIZE(list);
+        /* FIXME: smarter memory management. */
+        sq::BitSetPairArray qList;
+        for (int idx = 0; idx < nItems; ++idx) {
+            PyObject *item = PyList_GET_ITEM(list, idx);
+            /* tuple or list */
+            if (PyTuple_Check(item)) {
+                if (PyTuple_GET_SIZE(item) != 2)
+                    throwError("Invalid size of tuple.");
+                NpBitVector q0(PyTuple_GET_ITEM(item, 0));
+                NpBitVector q1(PyTuple_GET_ITEM(item, 1));
+                qList.pushBack(sq::BitSetPair(q0, q1));
+            }
+            else {
+                throwError("q is not an tuple nor array.");
+            }
+        }
+        pyobjToCppObj<real>(objExt)->set_q(qList);
+    }
+    else if (PyTuple_Check(objQ)) {
+        if (PyTuple_GET_SIZE(objQ) != 2)
+            throwError("Invalid size of tuple.");
+        NpBitVector q0(PyTuple_GET_ITEM(objQ, 0));
+        NpBitVector q1(PyTuple_GET_ITEM(objQ, 1));
+        pyobjToCppObj<real>(objExt)->set_q(sq::BitSetPair(q0, q1));
+    }
+    else {
+        throwError("q is not a List nor an Array object.");
+    }
 }
 
 extern "C"
-PyObject *annealer_set_x(PyObject *module, PyObject *args) {
-    PyObject *objExt, *objX0, *objX1, *dtype;
+PyObject *annealer_set_q(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objQPair, *dtype;
     
-    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objX0, &objX1, &dtype))
+    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objQPair, &dtype))
         return NULL;
 
     ASSERT_DTYPE(dtype);
     
     TRY {
         if (isFloat64(dtype))
-            internal_set_x<double>(objExt, objX0, objX1);
+            internal_set_q<double>(objExt, objQPair);
         else // if (isFloat32(dtype))
-            internal_set_x<float>(objExt, objX0, objX1);
+            internal_set_q<float>(objExt, objQPair);
     } CATCH_ERROR_AND_RETURN;
 
     Py_INCREF(Py_None);
@@ -555,8 +603,8 @@ PyObject *internal_bg_annealer_get_q(PyObject *objExt) {
         const sq::BitSetPairArray::ValueType &pair = xPairList[idx];
 
         NpBitVector q0(N0, NPY_INT8), q1(N1, NPY_INT8);
-        q0.vec = pair.first;
-        q1.vec = pair.second;
+        q0.vec = pair.bits0;
+        q1.vec = pair.bits1;
 
         PyObject *tuple = PyTuple_New(2);
         PyTuple_SET_ITEM(tuple, 0, q0.obj);
@@ -759,9 +807,9 @@ PyMethodDef annealer_methods[] = {
 	{"get_preferences", annealer_get_preferences, METH_VARARGS},
 	{"get_E", annealer_get_E, METH_VARARGS},
 	{"get_x", annealer_get_x, METH_VARARGS},
-	{"set_x", annealer_set_x, METH_VARARGS},
 	{"get_hamiltonian", annealer_get_hamiltonian, METH_VARARGS},
 	{"get_q", annealer_get_q, METH_VARARGS},
+	{"set_q", annealer_set_q, METH_VARARGS},
 	{"randomize_spin", annealer_radomize_q, METH_VARARGS},
 	{"calculate_E", annealer_calculate_E, METH_VARARGS},
 	{"prepare", annealer_prepare, METH_VARARGS},

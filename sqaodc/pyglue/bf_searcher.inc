@@ -237,8 +237,8 @@ PyObject *internal_get_x(PyObject *objExt) {
     for (sq::IdxType idx = 0; idx < xList.size(); ++idx) {
         const sq::BitSetPairArray::ValueType &pair = xList[idx];
         NpBitVector x0(N0, NPY_INT8), x1(N1, NPY_INT8);
-        x0.vec = pair.first;
-        x1.vec = pair.second;
+        x0.vec = pair.bits0;
+        x1.vec = pair.bits1;
 
         PyObject *tuple = PyTuple_New(2);
         PyTuple_SET_ITEM(tuple, 0, x0.obj);

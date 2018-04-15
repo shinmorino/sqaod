@@ -106,7 +106,7 @@ class DenseGraphAnnealer(Annealer, DenseGraphSolver) :
         raise NotImplementedError()
 
     @abstractmethod
-    def set_x(self, x) :
+    def set_q(self, x) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -132,7 +132,7 @@ class BipartiteGraphAnnealer(Annealer, BipartiteGraphSolver) :
         raise NotImplementedError()
 
     @abstractmethod
-    def set_x(self, x0, x1) :
+    def set_q(self, x0, x1) :
         raise NotImplementedError()
 
     @abstractmethod
