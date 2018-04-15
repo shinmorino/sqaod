@@ -16,7 +16,7 @@ run: $(check_PROGRAMS)
 # test for CUDA
 if CUDA_ENABLED
 
-test_SOURCES+=CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
+test_SOURCES+=CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp CUDABipartiteGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTest.cpp
 
 LDADD+=$(top_builddir)/sqaodc/libsqaodc_cuda.la
 LDFLAGS+=-L/usr/local/cuda/lib64 -lcudart -ldl

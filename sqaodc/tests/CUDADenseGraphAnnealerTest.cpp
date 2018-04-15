@@ -33,7 +33,8 @@ void CUDADenseGraphAnnealerTest::tearDown() {
 
 void CUDADenseGraphAnnealerTest::run(std::ostream &ostm) {
     test<float>();
-    //test<double>();
+    test<double>();
+    test_setq();
 }
 
 template<class real>
@@ -183,51 +184,61 @@ void CUDADenseGraphAnnealerTest::test() {
         std::cout << sq::mapTo(q) << std::endl;
 #endif
     }
+}
+
+
+void CUDADenseGraphAnnealerTest::test_setq() {
+
+    int N = 100;
+    int m = N;
+    
+    sqcu::CUDADenseGraphAnnealer<float> annealer(device_);
+    sq::MatrixType<float> W = testMatSymmetric<float>(N);
+    annealer.setQUBO(W);
 
     testcase("set_q(), N") {
-        sqcu::CUDADenseGraphAnnealer<float> annealer;
-        sq::MatrixType<float> W = testMatSymmetric<float>(N);
-        annealer.setQUBO(W);
-        
-        sq::BitSet bset = randomizeBits<char>(N);
-        bset = sq::x_to_q<char>(bset);
-        annealer.setPreference(sq::pnNumTrotters, m);
         annealer.prepare();
-        annealer.set_q(bset);
         
-        bool ok = true;
-        sq::BitSetArray bsetarr = annealer.get_q();
-        for (int idx = 0; idx < m; ++idx)
-            ok &= bset == bsetarr[idx];
-        TEST_ASSERT(ok);
+        sq::BitSet bsetin = createRandomizedSpinSet(N);
+        annealer.set_q(bsetin);
+        sq::BitSetArray bsetout = annealer.get_q();
+        
+        TEST_ASSERT(compareSolutions(bsetin, bsetout));
+    }
+
+    testcase("set_q(), N x 2") {
+        sq::BitSet bsetin;
+        sq::BitSetArray bsetout;
+        bsetin = createRandomizedSpinSet(N);
+        annealer.set_q(bsetin);
+        bsetout = annealer.get_q();
+
+        bsetin = createRandomizedSpinSet(N);
+        annealer.set_q(bsetin);
+        bsetout = annealer.get_q();
+        
+        TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }
 
     testcase("set_q(), N x m") {
-        sqcu::CUDADenseGraphAnnealer<float> annealer;
-        sq::MatrixType<float> W = testMatSymmetric<float>(N);
-        annealer.setQUBO(W);
-        
-        sq::BitSetArray bsetin;
-        for (int idx = 0; idx < m; ++idx) {
-            sq::BitSet bset = randomizeBits<char>(N);
-            bset = sq::x_to_q<char>(bset);
-            bsetin.pushBack(bset);
-        }
+        sq::BitSetArray bsetin, bsetout;
+        bsetin = createRandomizedSpinSetArray(N, m);
         annealer.set_q(bsetin);
-        sq::BitSetArray bsetout = annealer.get_q();
+        bsetout = annealer.get_q();
 
-        bool ok = true;
-        if (bsetout.size() == m) {
-            for (int idx = 0; idx < m; ++idx) {
-                ok &= bsetin[idx] == bsetout[idx];
-            }
-        }
-        else {
-            ok = false;
-        }
-        TEST_ASSERT(ok);
+        TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }
 
-    
-    
+    testcase("set_q(), m x 2") {
+        sq::BitSetArray bsetin, bsetout;
+        bsetin = createRandomizedSpinSetArray(N, m);
+        annealer.set_q(bsetin);
+        bsetout = annealer.get_q();
+
+        bsetin = createRandomizedSpinSetArray(N, m);
+        annealer.set_q(bsetin);
+        bsetout = annealer.get_q();
+        
+        TEST_ASSERT(compareSolutions(bsetin, bsetout));
+    }
 }

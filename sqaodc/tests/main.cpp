@@ -15,6 +15,7 @@
 #include "CUDADenseGraphBFSolverTest.h"
 #include "DeviceSegmentedSumTest.h"
 #include "CUDADenseGraphAnnealerTest.h"
+#include "CUDABipartiteGraphAnnealerTest.h"
 
 #endif
 
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]) {
     runTest<DeviceRandomTest>();
     runTest<CUDADenseGraphBFSolverTest>();
     runTest<CUDADenseGraphAnnealerTest>();
+    runTest<CUDABipartiteGraphAnnealerTest>();
     cudaDeviceReset();
 #endif
     return MinimalTestSuite::summarize();

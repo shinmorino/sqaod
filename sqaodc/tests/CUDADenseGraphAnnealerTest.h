@@ -17,7 +17,8 @@ public:
 private:
     template<class real>
     void test();
-
+    void test_setq();
+    
     sqaod_cuda::Device device_;
 
 };
