@@ -384,6 +384,8 @@ sqaod::VectorType<newV> cast(const VectorType<V> &vec) {
 typedef VectorType<char> BitSet;
 typedef ArrayType<BitSet> BitSetArray;
 
+/* BitSetPair */
+
 struct BitSetPair {
     BitSetPair() { }
     BitSetPair(const BitSet &_bits0, const BitSet &_bits1)
@@ -391,6 +393,18 @@ struct BitSetPair {
     BitSet bits0;
     BitSet bits1;
 };
+
+inline
+bool operator==(const BitSetPair &lhs, const BitSetPair &rhs) {
+    return (lhs.bits0 == rhs.bits0) && (lhs.bits1 == rhs.bits1);
+}
+
+inline
+bool operator!=(const BitSetPair &lhs, const BitSetPair &rhs) {
+    return !(lhs == rhs);
+}
+
+
 typedef ArrayType<BitSetPair> BitSetPairArray;
 
 typedef MatrixType<char> BitMatrix;
