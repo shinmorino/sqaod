@@ -1,8 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <common/Matrix.h>
-#include <common/Random.h>
+#include <common/Common.h>
 
 namespace sq = sqaod;
 
@@ -116,6 +115,80 @@ sqaod::VectorType<real> randomizeBits(const sq::SizeType size) {
     }
 
     return vec;
+}
+
+inline
+sq::BitSet createRandomizedSpinSet(int N) {
+    sq::BitSet bset = randomizeBits<char>(N);
+    return sq::x_to_q<char>(bset);
+}
+
+inline
+sq::BitSetArray createRandomizedSpinSetArray(int N, int m) {
+    sq::BitSetArray ssets;
+    for (int idx = 0; idx < m; ++idx) {
+        sq::BitSet bset = createRandomizedSpinSet(N);
+        ssets.pushBack(bset);
+    }
+    return ssets;
+}
+
+inline
+sq::BitSetPair createRandomizedSpinSetPair(int N0, int N1) {
+    sq::BitSetPair pair;
+    pair.bits0 = createRandomizedSpinSet(N0);
+    pair.bits1 = createRandomizedSpinSet(N1);
+    return pair;
+}
+
+inline
+sq::BitSetPairArray createRandomizedSpinSetPairArray(int N0, int N1, int m) {
+    sq::BitSetPairArray pairs;
+    for (int idx = 0; idx < m; ++idx) {
+        sq::BitSetPair pair = createRandomizedSpinSetPair(N0, N1);
+        pairs.pushBack(pair);
+    }
+    return pairs;
+}
+
+inline
+bool compareSolutions(const sq::BitSet &bset, const sq::BitSetArray &bsetArray) {
+    for (int idx = 0; idx < bsetArray.size(); ++idx) {
+        if (bset != bsetArray[idx])
+            return false;
+    }
+    return true;
+}
+
+inline
+bool compareSolutions(const sq::BitSetArray &barr0, const sq::BitSetArray &barr1) {
+    if (barr0.size() != barr1.size())
+        return false;
+    for (int idx = 0; idx < barr0.size(); ++idx) {
+        if (barr0[idx] != barr1[idx])
+            return false;
+    }
+    return true;
+}
+
+inline
+bool compareSolutions(const sq::BitSetPairArray &barr0, const sq::BitSetPair &bpair) {
+    for (int idx = 0; idx < barr0.size(); ++idx) {
+        if (barr0[idx] != bpair)
+            return false;
+    }
+    return true;
+}
+
+inline
+bool compareSolutions(const sq::BitSetPairArray &barr0, const sq::BitSetPairArray &barr1) {
+    if (barr0.size() != barr1.size())
+        return false;
+    for (int idx = 0; idx < barr0.size(); ++idx) {
+        if (barr0[idx] != barr1[idx])
+            return false;
+    }
+    return true;
 }
 
 template<class real>
