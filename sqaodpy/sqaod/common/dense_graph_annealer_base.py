@@ -56,7 +56,7 @@ class DenseGraphAnnealerBase :
                 if qvec.dtype != np.int8 :
                     qvec = np.asarray(qvec, np.int8)
                 qlist.append(qvec)
-                self._cext.set_q(self._cobj, qlist, self.dtype)
+            self._cext.set_q(self._cobj, qlist, self.dtype)
         else :
             if q.dtype != np.int8 :
                 q = np.asarray(q, np.int8)
