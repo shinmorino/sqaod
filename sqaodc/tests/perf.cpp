@@ -87,8 +87,7 @@ void anneal(A<real> &an) {
     real Ginit = real(20.);
     real Gfin = real(0.01);
     real beta = real(1.) / real(0.02);
-    real tau = real(0.99);
-    tau = (real)0.9;
+    real tau = std::exp(std::log(Ginit / Gfin) / nSteps);
 
     auto start = std::chrono::system_clock::now();
     an.prepare();
