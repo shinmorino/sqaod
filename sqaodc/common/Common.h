@@ -44,7 +44,7 @@ MatrixType<V> x_to_q(const BitMatrix &x) {
 template<class V> inline
 VectorType<V> x_to_q(const BitSet &x) {
     VectorType<V> q(x.size);
-    x_from_q(q.data, x.data, x.size);
+    x_to_q(q.data, x.data, x.size);
     return q;
 }
 
