@@ -12,6 +12,9 @@
     <ClCompile Include="..\..\sqaodc\tests\CUDADenseGraphAnnealerTest.cpp" />
     <ClCompile Include="..\..\sqaodc\tests\utils.cpp" />
     <ClCompile Include="..\..\sqaodc\tests\BFSearcherRangeCoverageTest.cpp" />
+    <ClCompile Include="..\..\sqaodc\tests\CPUBipartiteGraphAnnealerTest.cpp" />
+    <ClCompile Include="..\..\sqaodc\tests\CPUDenseGraphAnnealerTest.cpp" />
+    <ClCompile Include="..\..\sqaodc\tests\CUDABipartiteGraphAnnealerTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sqaodc\tests\MinimalTestSuite.h" />
@@ -25,6 +28,8 @@
     <ClInclude Include="..\..\sqaodc\tests\CUDADenseGraphAnnealerTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\DeviceSegmentedSumTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\BFSearcherRangeCoverageTest.h" />
+    <ClInclude Include="..\..\sqaodc\tests\CPUBipartiteGraphAnnealerTest.h" />
+    <ClInclude Include="..\..\sqaodc\tests\CUDABipartiteGraphAnnealerTest.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\sqaodc\tests\DeviceSegmentedSumTest.cu" />
