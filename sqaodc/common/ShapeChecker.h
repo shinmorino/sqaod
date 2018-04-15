@@ -61,11 +61,30 @@ void isingModelShapeCheck(const sq::VectorType<V0> &h,
     throwErrorIf(q.cols != N, "%s, Shape does not match.", func);
 }
 
+template<class V0>
+void isingModelShapeCheck(const sq::VectorType<V0> &h,
+                          const sq::MatrixType<V0> &J, V0 c,
+                          const sq::BitSetArray &q,
+                          const char *func) {
+    isingModelShapeCheck(h, J, c, func);
+    sq::SizeType N = J.cols;
+    for (int idx = 0; idx < q.size(); ++idx)
+        throwErrorIf(q[idx].size != N, "%s, Shape does not match.", func);
+}
+
 template<class V>
 void isingModelSolutionShapeCheck(sq::SizeType N,
                                   const sq::VectorType<V> &q,
                                   const char *func) {
     throwErrorIf(q.size != N, "%s, Shape does not match.", func);
+}
+
+inline
+void isingModelSolutionShapeCheck(sq::SizeType N,
+                                  const sq::BitSetArray &q,
+                                  const char *func) {
+    for (int idx = 0; idx < q.size(); ++idx)
+        throwErrorIf(q[idx].size != N, "%s, Shape does not match.", func);
 }
 
 /* Bipartite graph */
@@ -158,6 +177,18 @@ void isingModelSolutionShapeCheck(sq::SizeType N0, sq::SizeType N1,
                                   const sq::VectorType<V> &q1,
                                   const char *func) {
     bool shapeMatched = (N0 == q0.size) && (N1 == q1.size);
+    throwErrorIf(!shapeMatched, "%s, Shape does not match.", func);
+}
+
+inline
+void isingModelSolutionShapeCheck(sq::SizeType N0, sq::SizeType N1,
+                                  const sq::BitSetPairArray &qPairs,
+                                  const char *func) {
+    bool shapeMatched = true;
+    for (int idx = 0; idx < qPairs.size(); ++idx) {
+        const sq::BitSet &q0 = qPairs[idx].bits0, &q1 = qPairs[idx].bits1;
+        shapeMatched &= (N0 == q0.size) && (N1 == q1.size);
+    }
     throwErrorIf(!shapeMatched, "%s, Shape does not match.", func);
 }
 

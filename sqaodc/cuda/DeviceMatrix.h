@@ -129,7 +129,7 @@ private:
     }
 };
 
-typedef DeviceVectorType<char> DeviceBits;
+typedef DeviceVectorType<char> DeviceBitSet;
 typedef DeviceMatrixType<char> DeviceBitMatrix;
 
 }

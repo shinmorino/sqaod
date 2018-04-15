@@ -123,14 +123,25 @@ const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_x() const {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::set_x(const sq::BitSet &x) {
-    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, x, __func__);
+void CPUDenseGraphAnnealer<real>::set_q(const sq::BitSet &q) {
+    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, q, __func__);
     throwErrorIfNotPrepared();
-    throwErrorIf(x.size != N_,
-                 "Dimension of x, %d,  should be equal to N, %d.", x.size, N_);
-    
-    EigenRowVector ex = mapToRowVector(sq::cast<real>(x));
-    matQ_ = (ex.array() * 2 - 1).matrix();
+    throwErrorIf(q.size != N_,
+                 "Dimension of q, %d, should be equal to N, %d.", q.size, N_);
+    for (int idx = 0; idx < m_; ++idx)
+        matQ_.row(idx) = mapToRowVector(sq::cast<real>(q));
+    setState(solQSet);
+}
+
+template<class real>
+void CPUDenseGraphAnnealer<real>::set_q(const sq::BitSetArray &q) {
+    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, q, __func__);
+    m_ = q.size();
+    prepare(); /* update num trotters */
+    for (int idx = 0; idx < m_; ++idx) {
+        Vector qvec = sq::cast<real>(q[idx]);
+        matQ_.row(idx) = sq::mapToRowVector(qvec);
+    }
     setState(solQSet);
 }
 

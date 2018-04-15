@@ -44,6 +44,5 @@ private:
 
 typedef DeviceArrayType<sq::PackedBitSet> DevicePackedBitSetArray;
 typedef DeviceArrayType<sq::PackedBitSetPair> DevicePackedBitSetPairArray;
-typedef DeviceArrayType<char> DeviceBitSet;
 
 }

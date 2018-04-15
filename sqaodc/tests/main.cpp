@@ -2,6 +2,8 @@
 #include <iostream>
 #include "MinimalTestSuite.h"
 #include "BFSearcherRangeCoverageTest.h"
+#include "CPUDenseGraphAnnealerTest.h"
+#include "CPUBipartiteGraphAnnealerTest.h"
 
 #ifdef SQAODC_CUDA_ENABLED
 
@@ -19,6 +21,8 @@
 int main(int argc, char* argv[]) {
     
     runTest<BFSearcherRangeCoverageTest>();
+    runTest<CPUDenseGraphAnnealerTest>();
+    runTest<CPUBipartiteGraphAnnealerTest>();
 #ifdef SQAODC_CUDA_ENABLED
     runTest<DeviceTest>();
     runTest<DeviceSegmentedSumTest>();

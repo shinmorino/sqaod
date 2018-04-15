@@ -164,22 +164,39 @@ const sq::BitSetPairArray &CUDABipartiteGraphAnnealer<real>::get_x() const {
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::set_x(const BitSet &x0, const BitSet &x1) {
-    sqint::isingModelSolutionShapeCheck(N0_, N1_, x0, x1, __func__);
+void CUDABipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
+    sqint::isingModelSolutionShapeCheck(N0_, N1_, qPair.bits0, qPair.bits1, __func__);
     throwErrorIfNotPrepared();
-    throwErrorIf(x0.size != N0_,
-                 "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
-    throwErrorIf(x1.size != N1_,
-                 "Dimension of x1, %d,  should be equal to N1, %d.", x1.size, N1_);
 
-    HostVector rx0 = sq::x_to_q<real>(x0);
-    HostVector rx1 = sq::x_to_q<real>(x1);
+    HostVector rx0 = sq::cast<real>(qPair.bits0);
+    HostVector rx1 = sq::cast<real>(qPair.bits1);
     DeviceVector *d_x0 = devStream_->tempDeviceVector<real>(rx0.size);
     DeviceVector *d_x1 = devStream_->tempDeviceVector<real>(rx1.size);
     devCopy_(d_x0, rx0);
     devCopy_(d_x1, rx1);
+    devCopy_.synchronize(); /* rx0, rx1 are on stack. */
     devFormulas_.devMath.scaleBroadcast(&d_matq0_, real(1.), *d_x0, opRowwise);
     devFormulas_.devMath.scaleBroadcast(&d_matq1_, real(1.), *d_x1, opRowwise);
+    setState(solQSet);
+}
+
+template<class real>
+void CUDABipartiteGraphAnnealer<real>::set_q(const sq::BitSetPairArray &qPairs) {
+    sqint::isingModelSolutionShapeCheck(N0_, N1_, qPairs, __func__);
+    m_ = qPairs.size();
+    prepare();
+
+    HostMatrix matq0(m_, N0_), matq1(m_, N1_);
+    for (int idx = 0; idx < m_; ++idx) {
+        HostVector rx0 = sq::cast<real>(qPairs[idx].bits0);
+        HostVector rx1 = sq::cast<real>(qPairs[idx].bits1);
+        memcpy(&matq0(idx, 0), rx0.data, sizeof(real) * N0_);
+        memcpy(&matq1(idx, 0), rx1.data, sizeof(real) * N1_);
+    }
+    
+    devCopy_(&d_matq0_, matq0);
+    devCopy_(&d_matq1_, matq1);
+    devCopy_.synchronize(); /* rx0, rx1 are on stack. */
     setState(solQSet);
 }
 

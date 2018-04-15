@@ -123,18 +123,35 @@ const sq::BitSetPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::set_x(const sq::BitSet &x0, const sq::BitSet &x1) {
+void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
     sqint::isingModelShapeCheck(sq::mapFrom(h0_), sq::mapFrom(h1_), sq::mapFrom(J_), c_,
-                                x0, x1, __func__);
+                                qPair.bits0, qPair.bits1, __func__);
     throwErrorIfNotPrepared();
-    throwErrorIf(x0.size != N0_,
-                 "Dimension of x0, %d,  should be equal to N0, %d.", x0.size, N0_);
-    throwErrorIf(x1.size != N1_,
-                 "Dimension of x1, %d,  should be equal to N1, %d.", x1.size, N1_);
-    EigenRowVector ex0 = mapToRowVector(x0).cast<real>();
-    EigenRowVector ex1 = mapToRowVector(x1).cast<real>();
-    matQ0_ = (ex0.array() * 2 - 1).matrix();
-    matQ1_ = (ex1.array() * 2 - 1).matrix();
+    throwErrorIf(qPair.bits0.size != N0_,
+                 "Dimension of q0, %d,  should be equal to N0, %d.", qPair.bits0.size, N0_);
+    throwErrorIf(qPair.bits1.size != N1_,
+                 "Dimension of q1, %d,  should be equal to N1, %d.", qPair.bits1.size, N1_);
+
+    EigenRowVector q0 = mapToRowVector(qPair.bits0).cast<real>();
+    EigenRowVector q1 = mapToRowVector(qPair.bits1).cast<real>();
+    for (int idx = 0; idx < m_; ++idx) {
+        matQ0_.row(idx) = q0;
+        matQ1_.row(idx) = q1;
+    }
+    
+    clearState(solSolutionAvailable);
+    setState(solQSet);
+}
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPairArray &qPairs) {
+    sqint::isingModelSolutionShapeCheck(N0_, N1_, qPairs, __func__);
+    m_ = qPairs.size();
+    prepare();
+    for (int idx = 0; idx < m_; ++idx) {
+        matQ0_.row(idx) = mapToRowVector(qPairs[idx].bits0).cast<real>();
+        matQ1_.row(idx) = mapToRowVector(qPairs[idx].bits1).cast<real>();
+    }
 
     clearState(solSolutionAvailable);
     setState(solQSet);

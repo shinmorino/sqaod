@@ -167,14 +167,30 @@ const sq::BitSetArray &CUDADenseGraphAnnealer<real>::get_x() const {
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::set_x(const BitSet &x) {
-    sqint::isingModelSolutionShapeCheck(N_, x, __func__);
+void CUDADenseGraphAnnealer<real>::set_q(const BitSet &q) {
+    sqint::isingModelSolutionShapeCheck(N_, q, __func__);
     throwErrorIfNotPrepared();
     
-    BitSet q = sq::x_to_q<char>(x);
-    DeviceBits *d_q = devStream_->tempDeviceVector<char>(x.size);
+    DeviceBitSet *d_q = devStream_->tempDeviceVector<char>(q.size);
     devCopy_(d_q, q);
     devCopy_.copyRowwise(&d_matq_, *d_q);
+    setState(solQSet);
+}
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::set_q(const BitSetArray &q) {
+    sqint::isingModelSolutionShapeCheck(N_, q, __func__);
+    m_ = q.size();
+    prepare();
+
+    /* FIXME: apply pinned memory */
+    sq::BitMatrix qMat(m_, N_);
+    for (int iRow = 0; iRow < m_; ++iRow)
+        memcpy(&qMat(iRow, 0), q[iRow].data, sizeof(char) * N_);
+    DeviceBitMatrix *d_q = devStream_->tempDeviceMatrix<char>(m_, N_);
+    devCopy_(&d_matq_, qMat);
+    devCopy_.synchronize();
+    
     setState(solQSet);
 }
 

@@ -56,7 +56,9 @@ public:
 
     const BitSetArray &get_x() const;
 
-    void set_x(const BitSet &x);
+    void set_q(const BitSet &q);
+
+    void set_q(const BitSetArray &q);
 
     const sq::BitSetArray &get_q() const;
 

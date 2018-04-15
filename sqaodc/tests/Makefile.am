@@ -8,11 +8,10 @@ LDFLAGS=
 
 check_PROGRAMS=perf test
 perf_SOURCES=perf.cpp
-test_SOURCES=main.cpp BFSearcherRangeCoverageTest.cpp MinimalTestSuite.cpp 
+test_SOURCES=main.cpp BFSearcherRangeCoverageTest.cpp CPUDenseGraphAnnealerTest.cpp CPUBipartiteGraphAnnealerTest.cpp MinimalTestSuite.cpp 
 
 run: $(check_PROGRAMS)
 	./test
-
 
 # test for CUDA
 if CUDA_ENABLED

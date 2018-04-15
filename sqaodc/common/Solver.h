@@ -186,7 +186,9 @@ struct DenseGraphAnnealer
 
     virtual void getHamiltonian(VectorType<real> *h, MatrixType<real> *J, real *c) const = 0;
     
-    virtual void set_x(const BitSet &x) = 0;
+    virtual void set_q(const BitSet &q) = 0;
+    
+    virtual void set_q(const BitSetArray &q) = 0;
 
     virtual const BitSetArray &get_q() const = 0;
 
@@ -231,7 +233,9 @@ struct BipartiteGraphAnnealer
     virtual void getHamiltonian(VectorType<real> *h0, VectorType<real> *h1,
                                 MatrixType<real> *J, real *c) const = 0;
 
-    virtual void set_x(const BitSet &x0, const BitSet &x1) = 0;
+    virtual void set_q(const BitSetPair &qPair) = 0;
+
+    virtual void set_q(const BitSetPairArray &qPairs) = 0;
 
     virtual const BitSetPairArray &get_q() const = 0;
 

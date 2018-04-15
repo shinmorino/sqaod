@@ -40,7 +40,9 @@ public:
 
     const sq::BitSetArray &get_x() const;
 
-    void set_x(const sq::BitSet &x);
+    void set_q(const sq::BitSet &x);
+
+    void set_q(const sq::BitSetArray &x);
 
     const sq::BitSetArray &get_q() const;
 
