@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import sqaod as sq
-from .example_problems import *
+from example_problems import *
 
 class TestCommon(unittest.TestCase):
 
