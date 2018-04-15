@@ -36,7 +36,7 @@ void log(const char *format, ...) FORMATATTR(1, 2);
 /* FIXME: undef somewhere */
 #define abort_(...) sqaod::_abort(__FILE__, __LINE__, __VA_ARGS__)
 #define abortIf(cond, ...) if (cond) sqaod::_abort(__FILE__, __LINE__, __VA_ARGS__)
-#define throwError(...) throw sqaod::_throwError(__FILE__, __LINE__, __VA_ARGS__)
+#define throwError(...) sqaod::_throwError(__FILE__, __LINE__, __VA_ARGS__)
 #define throwErrorIf(cond, ...) if (cond) sqaod::_throwError(__FILE__, __LINE__, __VA_ARGS__)
 
 
