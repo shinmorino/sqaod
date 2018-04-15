@@ -1,16 +1,10 @@
 SUFFIXES = .cu .cpp .Plo .Po
 
 noinst_LTLIBRARIES=libcuda.la
-check_PROGRAMS=test
 
 AM_CPPFLAGS=-I$(top_srcdir) -I$(top_srcdir)/sqaodc -I$(top_srcdir)/3rdparty/cub
 
 libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.cpp DeviceCopy.cpp DeviceObjectAllocator.cpp HostObjectAllocator.cpp DeviceConstScalars.cpp DeviceSegmentedSum.cpp DeviceMath.cpp DeviceKernels.cu DeviceFormulas.cpp CUDADenseGraphBFSearcher.cpp DeviceDenseGraphBatchSearch.cu DeviceRandomMTGP32.cu DeviceRandomMT19937.cpp CUDADenseGraphAnnealer.cu DeviceRandomBuffer.cu CUDABipartiteGraphBFSearcher.cpp DeviceBipartiteGraphBatchSearch.cu CUDABipartiteGraphAnnealer.cu CUDAFormulas.cpp
-
-# check
-test_SOURCES=test.cpp
-test_LDADD=libcuda.la $(top_builddir)/sqaodc/cpu/libcpu.la $(top_builddir)/sqaodc/common/libcommon.la
-LIBS=@CUDA_LDFLAGS@ -lcublas -lcudart -lcurand -ldl
 
 #include ./$(DEPDIR)/CUDADenseGraphAnnealer.Plo
 #include ./$(DEPDIR)/CUDABipartiteGraphAnnealer.Plo
