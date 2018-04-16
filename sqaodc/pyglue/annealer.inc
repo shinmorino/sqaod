@@ -663,7 +663,7 @@ void internal_bg_annealer_get_hamiltonian(PyObject *objExt,
     NpVector h0(objH0), h1(objH1);
     NpScalarRef c(objC);
     NpMatrix J(objJ);
-    ann->getHamiltonian(&h0, &h0, &J, &c);
+    ann->getHamiltonian(&h0, &h1, &J, &c);
 }
     
     
