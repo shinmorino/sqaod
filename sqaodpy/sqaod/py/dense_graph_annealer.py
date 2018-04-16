@@ -24,7 +24,7 @@ class DenseGraphAnnealer :
         return self._h, self._J, self._c, self._q
     
     def get_problem_size(self) :
-        return self.N_;
+        return self._N;
 
     def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
@@ -86,6 +86,8 @@ class DenseGraphAnnealer :
 
     def set_q(self, q) :
         if isinstance(q, list) :
+            self._m = len(q)
+            self.prepare()
             qlist = q
             for idx in range(len(qlist)) :
                 q = qlist[idx]

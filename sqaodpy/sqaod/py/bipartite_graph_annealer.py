@@ -45,7 +45,7 @@ class BipartiteGraphAnnealer :
         self._N1 = J.shape[0]
         self._m = (self._N0 + self._N1) // 4
         self._optimize = sqaod.minimize
-        self._h0, self._h1 = h0, h1, J, c
+        self._h0, self._h1, self._J, self._c = h0, h1, J, c
         
     def _select_algorithm(self, algoname) :
         if algoname == algo.naive :

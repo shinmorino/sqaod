@@ -24,7 +24,11 @@ def dense_graph_calculate_hamiltonian(W) :
 
 def dense_graph_calculate_E(W, x) :
     if len(x.shape) != 1 :
-        raise Exception('Wrong dimention of x')
+        if x.shape[0] != 1 :
+            raise Exception('Wrong dimention of x')
+        return dense_graph_calculate_E(W, x[0])
+    if len(x.shape) != 1 :
+            raise Exception('Wrong dimention of x')
     return np.dot(x, np.matmul(W, x.T))
 
 def dense_graph_batch_calculate_E(W, x) :
