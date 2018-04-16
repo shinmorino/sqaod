@@ -153,7 +153,17 @@ struct NpScalarRefType {
 
 template<class real>
 struct NpConstScalarType {
-    NpConstScalarType(PyObject *obj);
+    NpConstScalarType(PyObject *obj) {
+        err = false;
+        if (PyFloat_Check(obj)) {
+            data = (real)PyFloat_AS_DOUBLE(obj);
+        }
+        else {
+            data = (real)PyFloat_AsDouble(obj);
+            if (data == -1.)
+                err = (PyErr_Occurred() != NULL);
+        }
+    }
     
     operator real() {
         return data;
@@ -162,19 +172,8 @@ struct NpConstScalarType {
         return data;
     }
     real data;
+    bool err;
 };
-
-template<> inline
-NpConstScalarType<double>::NpConstScalarType(PyObject *obj) {
-    PyFloat64ScalarObject *fpObj = (PyFloat64ScalarObject*)obj;
-    data = fpObj->obval;
-}
-
-template<> inline
-NpConstScalarType<float>::NpConstScalarType(PyObject *obj) {
-    PyFloat32ScalarObject *fpObj = (PyFloat32ScalarObject*)obj;
-    data = fpObj->obval;
-}
 
 
 inline

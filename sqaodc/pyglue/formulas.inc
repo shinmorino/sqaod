@@ -105,7 +105,7 @@ PyObject *dense_graph_calculate_hamiltonian(PyObject *module, PyObject *args) {
 }
 
     
-template<class real> void
+template<class real> PyObject *
 internal_dense_graph_calculate_E_from_spin(PyObject *objE,
                                             PyObject *objH, PyObject *objJ, PyObject *objC,
                                             PyObject *objQ) {
@@ -118,8 +118,13 @@ internal_dense_graph_calculate_E_from_spin(PyObject *objE,
     const NpMatrix J(objJ);
     NpConstScalar c(objC);
     const NpBitVector q(objQ);
+
+    if (c.err)
+        return NULL;
     /* do the native job */
     DGFormulas<real>::calculate_E(&E, h, J, c, sq::cast<real>(q.vec));
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
     
 
@@ -134,18 +139,16 @@ PyObject *dense_graph_calculate_E_from_spin(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_dense_graph_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
+            return internal_dense_graph_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
         else // if (isFloat32(dtype))
-            internal_dense_graph_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
+            return internal_dense_graph_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
     } CATCH_ERROR_AND_RETURN;
-
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
 
 
 template<class real>
-void internal_dense_graph_batch_calculate_E_from_spin(PyObject *objE,
+PyObject *internal_dense_graph_batch_calculate_E_from_spin(PyObject *objE,
                                                        PyObject *objH, PyObject *objJ, PyObject *objC,
                                                        PyObject *objQ) {
     typedef NpMatrixType<real> NpMatrix;
@@ -156,8 +159,12 @@ void internal_dense_graph_batch_calculate_E_from_spin(PyObject *objE,
     const NpMatrix J(objJ);
     NpConstScalar c(objC);
     const NpBitMatrix q(objQ);
+    if (c.err)
+        return NULL;
     /* do the native job */
     DGFormulas<real>::calculate_E(&E, h, J, c, sq::cast<real>(q.mat));
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
 
 extern "C"
@@ -171,13 +178,11 @@ PyObject *dense_graph_batch_calculate_E_from_spin(PyObject *module, PyObject *ar
     
     TRY {
         if (isFloat64(dtype))
-            internal_dense_graph_batch_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
+            return internal_dense_graph_batch_calculate_E_from_spin<double>(objE, objH, objJ, objC, objQ);
         else // if (isFloat32(dtype))
-            internal_dense_graph_batch_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
+            return internal_dense_graph_batch_calculate_E_from_spin<float>(objE, objH, objJ, objC, objQ);
     } CATCH_ERROR_AND_RETURN;
-
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
     
 
@@ -342,10 +347,11 @@ PyObject *bipartite_graph_calculate_hamiltonian(PyObject *module, PyObject *args
 }
     
 
-template<class real> void
+template<class real> PyObject *
 internal_bipartite_graph_calculate_E_from_spin(PyObject *objE,
-                                                PyObject *objH0, PyObject *objH1, PyObject *objJ, PyObject *objC,
-                                                PyObject *objQ0, PyObject *objQ1) {
+                                               PyObject *objH0, PyObject *objH1,
+                                               PyObject *objJ, PyObject *objC,
+                                               PyObject *objQ0, PyObject *objQ1) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     typedef NpConstScalarType<real> NpConstScalar;
@@ -354,9 +360,13 @@ internal_bipartite_graph_calculate_E_from_spin(PyObject *objE,
     const NpMatrix J(objJ);
     NpConstScalar c(objC);
     const NpBitVector q0(objQ0), q1(objQ1);
+    if (c.err)
+        return NULL;
     /* do the native job */
     BGFormulas<real>::calculate_E(E.vec.data, h0, h1, J, c,
-                                    sq::cast<real>(q0.vec), sq::cast<real>(q1.vec));
+                                  sq::cast<real>(q0.vec), sq::cast<real>(q1.vec));
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
     
 extern "C"
@@ -372,19 +382,17 @@ PyObject *bipartite_graph_calculate_E_from_spin(PyObject *module, PyObject *args
     
     TRY {
         if (isFloat64(dtype))
-            internal_bipartite_graph_calculate_E_from_spin<double>
+            return internal_bipartite_graph_calculate_E_from_spin<double>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else // if (isFloat32(dtype))
-            internal_bipartite_graph_calculate_E_from_spin<float>
+            return internal_bipartite_graph_calculate_E_from_spin<float>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
     } CATCH_ERROR_AND_RETURN;
-
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
 
 
-template<class real> void
+template<class real> PyObject *
 internal_bipartite_graph_batch_calculate_E_from_spin(PyObject *objE,
                                                       PyObject *objH0, PyObject *objH1, PyObject *objJ, PyObject *objC,
                                                       PyObject *objQ0, PyObject *objQ1) {
@@ -396,9 +404,15 @@ internal_bipartite_graph_batch_calculate_E_from_spin(PyObject *objE,
     const NpMatrix J(objJ);
     NpConstScalar c(objC);
     const NpBitMatrix q0(objQ0), q1(objQ1);
+
+    if (c.err)
+        return NULL;
+    
     /* do the native job */
     BGFormulas<real>::calculate_E(&E, h0, h1, J, c,
                                   sq::cast<real>(q0.mat), sq::cast<real>(q1.mat));
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
 
 extern "C"
@@ -414,15 +428,13 @@ PyObject *bipartite_graph_batch_calculate_E_from_spin(PyObject *module, PyObject
     
     TRY {
         if (isFloat64(dtype))
-            internal_bipartite_graph_batch_calculate_E_from_spin<double>
+            return internal_bipartite_graph_batch_calculate_E_from_spin<double>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
         else // if (isFloat32(dtype))
-            internal_bipartite_graph_batch_calculate_E_from_spin<float>
+            return internal_bipartite_graph_batch_calculate_E_from_spin<float>
                     (objE, objH0, objH1, objJ, objC, objQ0, objQ1);
     } CATCH_ERROR_AND_RETURN;
-        
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
     
 }

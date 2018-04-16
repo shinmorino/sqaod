@@ -124,8 +124,8 @@ PyObject *annealer_set_qubo(PyObject *module, PyObject *args) {
 }
 
 template<class real>
-void internal_set_hamiltonian(PyObject *objExt,
-                                          PyObject *objH, PyObject *objJ, PyObject *objC) {
+PyObject *internal_set_hamiltonian(PyObject *objExt,
+                                   PyObject *objH, PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
     typedef NpConstScalarType<real> NpConstScalar;
@@ -133,7 +133,11 @@ void internal_set_hamiltonian(PyObject *objExt,
     NpVector h(objH);
     NpMatrix J(objJ);
     NpConstScalar c(objC);
+    if (c.err)
+        return NULL;
     pyobjToCppObj<real>(objExt)->setHamiltonian(h, J, c);
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
     
 extern "C"
@@ -146,13 +150,12 @@ PyObject *annealer_set_hamiltonian(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_set_hamiltonian<double>(objExt, objH, objJ, objC);
+            return internal_set_hamiltonian<double>(objExt, objH, objJ, objC);
         else // if (isFloat32(dtype))
-            internal_set_hamiltonian<float>(objExt, objH, objJ, objC);
+            return internal_set_hamiltonian<float>(objExt, objH, objJ, objC);
     } CATCH_ERROR_AND_RETURN;
 
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
 
 
@@ -214,7 +217,7 @@ PyObject *annealer_set_qubo(PyObject *module, PyObject *args) {
     
 
 template<class real>
-void internal_set_hamiltonian(PyObject *objExt, PyObject *objH0, PyObject *objH1,
+PyObject *internal_set_hamiltonian(PyObject *objExt, PyObject *objH0, PyObject *objH1,
                               PyObject *objJ, PyObject *objC) {
     typedef NpMatrixType<real> NpMatrix;
     typedef NpVectorType<real> NpVector;
@@ -224,7 +227,11 @@ void internal_set_hamiltonian(PyObject *objExt, PyObject *objH0, PyObject *objH1
     NpVector h1(objH1);
     NpMatrix J(objJ);
     NpConstScalar c(objC);
+    if (c.err)
+        return NULL;
     pyobjToCppObj<real>(objExt)->setHamiltonian(h0, h1, J, c);
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
     
 extern "C"
@@ -237,13 +244,11 @@ PyObject *annealer_set_hamiltonian(PyObject *module, PyObject *args) {
     
     TRY {
         if (isFloat64(dtype))
-            internal_set_hamiltonian<double>(objExt, objH0, objH1, objJ, objC);
+            return internal_set_hamiltonian<double>(objExt, objH0, objH1, objJ, objC);
         else // if (isFloat32(dtype))
-            internal_set_hamiltonian<float>(objExt, objH0, objH1, objJ, objC);
+            return internal_set_hamiltonian<float>(objExt, objH0, objH1, objJ, objC);
     } CATCH_ERROR_AND_RETURN;
-
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
 
 
@@ -763,10 +768,14 @@ PyObject *annealer_make_solution(PyObject *module, PyObject *args) {
 
 
 template<class real>
-void internal_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objBeta) {
+PyObject *internal_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objBeta) {
     typedef NpConstScalarType<real> NpConstScalar;
     NpConstScalar G(objG), beta(objBeta);
+    if (G.err || beta.err)
+        return NULL;
     pyobjToCppObj<real>(objExt)->annealOneStep(G, beta);
+    Py_INCREF(Py_None);
+    return Py_None;    
 }
 
 extern "C"
@@ -779,13 +788,11 @@ PyObject *annealer_anneal_one_step(PyObject *module, PyObject *args) {
 
     TRY {
         if (isFloat64(dtype))
-            internal_anneal_one_step<double>(objExt, objG, objKT);
+            return internal_anneal_one_step<double>(objExt, objG, objKT);
         else // if (isFloat32(dtype))
-            internal_anneal_one_step<float>(objExt, objG, objKT);
+            return internal_anneal_one_step<float>(objExt, objG, objKT);
     } CATCH_ERROR_AND_RETURN;
-
-    Py_INCREF(Py_None);
-    return Py_None;    
+    return NULL;
 }
 
 }
