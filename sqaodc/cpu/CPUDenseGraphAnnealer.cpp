@@ -89,11 +89,13 @@ void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om
 template<class real>
 void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &J, real c) {
     sqint::isingModelShapeCheck(h, J, c, __func__);
-    
-    throwErrorIf(!isSymmetric(J), "J is not symmetric.");
+
+    N_ = J.rows;
+    m_ = N_ / 4;
+
     om_ = sq::optMinimize;
-    sq::mapFrom(h_) = h;
-    sq::mapFrom(J_) = J;
+    h_ = sq::mapToRowVector(h);
+    J_ = sq::mapTo(J);
     c_ = c;
     setState(solProblemSet);
 }

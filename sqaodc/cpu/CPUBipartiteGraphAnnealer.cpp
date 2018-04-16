@@ -97,9 +97,11 @@ setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J, real c) {
     N0_ = (int)h0.size;
     N1_ = (int)h1.size;
     m_ = (N0_ + N1_) / 4; /* setting number of trotters. */
+
     h0_ = sq::mapToRowVector(h0);
     h1_ = sq::mapToRowVector(h1);
     J_ = sq::mapTo(J);
+    c_ = c;
     om_ = sq::optMinimize;
     setState(solProblemSet);
 }
