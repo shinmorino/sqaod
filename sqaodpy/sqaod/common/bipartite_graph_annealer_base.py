@@ -77,6 +77,14 @@ class BipartiteGraphAnnealerBase :
         c = np.ndarray((1), self.dtype)
         self._cext.get_hamiltonian(self._cobj, h0, h1, J, c, self.dtype)
         return h0, h1, J, c[0]
+    
+    def set_hamiltonian(self, h0, h1, J, c) :
+        checkers.bipartite_graph.hJc(h0, h1, J, c)
+        h0 = common.clone_as_ndarray(h0, self.dtype)
+        h1 = common.clone_as_ndarray(h1, self.dtype)
+        J = common.clone_as_ndarray(J, self.dtype)
+        self._cext.set_hamiltonian(self._cobj, h0, h1, J, c, self.dtype)
+        self._optimize = pref.minimize
             
     def get_q(self) :
         return self._cext.get_q(self._cobj, self.dtype)

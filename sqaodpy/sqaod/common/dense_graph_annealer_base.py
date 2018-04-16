@@ -70,6 +70,13 @@ class DenseGraphAnnealerBase :
         self._cext.get_hamiltonian(self._cobj, h, J, c, self.dtype)
         return h, J, c[0]
 
+    def set_hamiltonian(self, h, J, c) :
+        checkers.dense_graph.hJc(h, J, c)
+        h = common.clone_as_ndarray(h, self.dtype)
+        J = common.clone_as_ndarray(J, self.dtype)
+        self._cext.set_hamiltonian(self._cobj, h, J, c, self.dtype)
+        self._optimize = pref.minimize
+
     def get_q(self) :
         return self._cext.get_q(self._cobj, self.dtype)
 
