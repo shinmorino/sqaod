@@ -6,7 +6,7 @@ import sqaod.common as common
 from example_problems import *
 from math import log, exp
 
-class BipartiteGraphTestBase:
+class TestBipartiteGraphAnnealerBase:
 
     def __init__(self, anpkg, dtype) :
         self.anpkg = anpkg
@@ -60,7 +60,7 @@ class BipartiteGraphTestBase:
         an.set_qubo(b0, b1, W)
         h00, h01, J0, c0 = an.get_hamiltonian()
         h10, h11, J1, c1 = sq.py.formulas.bipartite_graph_calculate_hamiltonian(b0, b1, W)
-        #print(h00, h10)
+        # print(h00, h10)
         self.assertTrue(np.allclose(h00, h10, atol=self.epu))
         self.assertTrue(np.allclose(h01, h11))
         self.assertTrue(np.allclose(J0, J1))
@@ -248,9 +248,22 @@ class BipartiteGraphTestBase:
 
         
 
-class TestNativeBipartiteGraphAnnealer(BipartiteGraphTestBase) :
+class TestNativeBipartiteGraphAnnealerBase(TestBipartiteGraphAnnealerBase) :
     def __init__(self, anpkg, dtype) :
-        BipartiteGraphTestBase.__init__(self, anpkg, dtype)
+        TestBipartiteGraphAnnealerBase.__init__(self, anpkg, dtype)
+
+    def test_precision(self) :
+        an = self.new_annealer(10, 10, 1)
+        self.assertEqual(an.dtype, self.dtype)
+
+class TestCPUBipartiteGraphAnnealerBase(TestNativeBipartiteGraphAnnealerBase) :
+    def __init__(self, dtype) :
+        TestNativeBipartiteGraphAnnealerBase.__init__(self, sq.cpu, dtype)
+
+    def test_device_pref(self) :
+        an = self.new_annealer(10, 10, 1)
+        prefs = an.get_preferences()
+        self.assertEqual(prefs['device'], 'cpu')
 
     def test_set_algorithm(self) :
         ann = self.new_annealer(10, 10, 1)
@@ -266,44 +279,56 @@ class TestNativeBipartiteGraphAnnealer(BipartiteGraphTestBase) :
         pref = ann.get_preferences()
         self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
 
-    def test_static_prefs(self) :
-        an = self.new_annealer(10, 10, 1)
-        prefs = an.get_preferences()
-        precstr = 'float' if self.dtype == np.float32 else 'double'
-        self.assertEqual(prefs['precision'], precstr)
-
-        self.assertEqual(prefs['device'], 'cpu')
-
-    def test_precision(self) :
-        an = self.new_annealer(10, 10, 1)
-        self.assertEqual(an.dtype, self.dtype)
 
         
-class TestPyBipartiteGraphAnnealer(BipartiteGraphTestBase, unittest.TestCase) :
+class TestPyBipartiteGraphAnnealer(TestBipartiteGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
-        BipartiteGraphTestBase.__init__(self, sq.py, np.float64)
+        TestBipartiteGraphAnnealerBase.__init__(self, sq.py, np.float64)
         unittest.TestCase.__init__(self, testFunc)
 
-class TestCPUBipartiteGraphAnnealerFP32(TestNativeBipartiteGraphAnnealer, unittest.TestCase) :
+class TestCPUBipartiteGraphAnnealerFP32(TestCPUBipartiteGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
-        TestNativeBipartiteGraphAnnealer.__init__(self, sq.cpu, np.float32)
+        TestCPUBipartiteGraphAnnealerBase.__init__(self, np.float32)
         unittest.TestCase.__init__(self, testFunc)
 
-class TestCPUBipartiteGraphAnnealerFP64(TestNativeBipartiteGraphAnnealer, unittest.TestCase) :
+class TestCPUBipartiteGraphAnnealerFP64(TestCPUBipartiteGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
-        TestNativeBipartiteGraphAnnealer.__init__(self, sq.cpu, np.float64)
+        TestCPUBipartiteGraphAnnealerBase.__init__(self, np.float64)
         unittest.TestCase.__init__(self, testFunc)
 
 if sq.is_cuda_available() :
-    import sqaod.cuda as sqcuda
-    class TestCUDABipartiteGraphAnnealerFP32(TestNativeBipartiteGraphAnnealer, unittest.TestCase) :
+
+    class TestCUDABipartiteGraphAnnealerBase(TestNativeBipartiteGraphAnnealerBase) :
+        def __init__(self, dtype) :
+            TestNativeBipartiteGraphAnnealerBase.__init__(self, sq.cuda, dtype)
+
+        def test_device_pref(self) :
+            an = self.new_annealer(10, 10, 1)
+            prefs = an.get_preferences()
+            self.assertEqual(prefs['device'], 'cuda')
+
+        def test_set_algorithm(self) :
+            ann = self.new_annealer(10, 10, 1)
+            ann.set_preferences(algorithm = sq.algorithm.default)
+            pref = ann.get_preferences()
+            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+
+            ann.set_preferences(algorithm = sq.algorithm.naive)
+            pref = ann.get_preferences()
+            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+
+            ann.set_preferences(algorithm = sq.algorithm.coloring)
+            pref = ann.get_preferences()
+            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+
+    class TestCUDABipartiteGraphAnnealerFP32(TestCUDABipartiteGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :
-            TestNativeBipartiteGraphAnnealer.__init__(self, sqcuda, np.float32)
+            TestCUDABipartiteGraphAnnealerBase.__init__(self, np.float32)
             unittest.TestCase.__init__(self, testFunc)
 
-    class TestCUDABipartiteGraphAnnealerFP64(TestNativeBipartiteGraphAnnealer, unittest.TestCase) :
+    class TestCUDABipartiteGraphAnnealerFP64(TestCUDABipartiteGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :
-            TestNativeBipartiteGraphAnnealer.__init__(self, sqcuda, np.float64)
+            TestCUDABipartiteGraphAnnealerBase.__init__(self, np.float64)
             unittest.TestCase.__init__(self, testFunc)
 
         
