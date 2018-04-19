@@ -115,6 +115,7 @@ setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::Opt
     }
 
     devFormulas_.calculateHamiltonian(&d_h0_, &d_h1_, &d_J_, &d_c_, *d_b0, *d_b1, *d_W);
+    devStream_->synchronize();
 
     setState(solProblemSet);
 }
@@ -122,10 +123,9 @@ setQUBO(const HostVector &b0, const HostVector &b1, const HostMatrix &W, sq::Opt
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::
 setHamiltonian(const HostVector &h0, const HostVector &h1, const HostMatrix &J, real c) {
-    sqint::isingModelShapeCheck(h0, h1, J, c, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
-    if ((J.cols != N0_) || (J.rows != N1_))
-        deallocate();
+    sqint::isingModelShapeCheck(h0, h1, J, c, __func__);
+    deallocate();
 
     N0_ = J.cols;
     N1_ = J.rows;
@@ -136,6 +136,7 @@ setHamiltonian(const HostVector &h0, const HostVector &h1, const HostMatrix &J, 
     devCopy_(&d_h1_, h1);
     devCopy_(&d_J_, J);
     devCopy_(&d_c_, c);
+    devStream_->synchronize();
 
     setState(solProblemSet);
 }
@@ -149,10 +150,10 @@ sq::Preferences CUDABipartiteGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDABipartiteGraphAnnealer<real>::get_E() const {
-    if (!isEAvailable()) {
+    if (!isEAvailable())
         const_cast<This*>(this)->calculate_E();
-        devStream_->synchronize();
-    }
+    /*  FIXME: Add a flag to show kernel is not synchronized */
+    devStream_->synchronize();
     return E_;
 }
 
@@ -177,6 +178,8 @@ void CUDABipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
     devCopy_.synchronize(); /* rx0, rx1 are on stack. */
     devFormulas_.devMath.scaleBroadcast(&d_matq0_, real(1.), *d_x0, opRowwise);
     devFormulas_.devMath.scaleBroadcast(&d_matq1_, real(1.), *d_x1, opRowwise);
+    devStream_->synchronize();
+
     setState(solQSet);
 }
 

@@ -118,6 +118,7 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dW, -1., *dW);
     devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dW);
+    devStream_->synchronize();
 
     setState(solProblemSet);
 }
@@ -136,6 +137,7 @@ void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const Hos
     devCopy_(&d_h_, h);
     devCopy_(&d_J_, J);
     devCopy_(&d_c_, c);
+    devStream_->synchronize();
 
     setState(solProblemSet);
 }
@@ -149,10 +151,10 @@ sq::Preferences CUDADenseGraphAnnealer<real>::getPreferences() const {
 
 template<class real>
 const sq::VectorType<real> &CUDADenseGraphAnnealer<real>::get_E() const {
-    if (!isEAvailable()) {
+    if (!isEAvailable())
         const_cast<This*>(this)->calculate_E();
-        devStream_->synchronize();
-    }
+    /* add a flag to tell if kernel synchronized.*/
+    devStream_->synchronize();
     return E_;
 }
 
@@ -172,6 +174,7 @@ void CUDADenseGraphAnnealer<real>::set_q(const BitSet &q) {
     DeviceBitSet *d_q = devStream_->tempDeviceVector<char>(q.size);
     devCopy_(d_q, q);
     devCopy_.copyRowwise(&d_matq_, *d_q);
+    devStream_->synchronize();
     setState(solQSet);
 }
 
@@ -229,7 +232,7 @@ void CUDADenseGraphAnnealer<real>::calculate_E() {
     devFormulas_.calculate_E(d_E, d_h_, d_J_, d_c_, *d_realMatQ);
     real sign = (om_ == sq::optMaximize) ? real(-1.) : real(1.);
     devFormulas_.devMath.scale(&h_E_, sign, *d_E);
-
+    /* FIXME: due to asynchronous execution, here is not a good place to set solEAvailable. */
     setState(solEAvailable);
 }
 
@@ -271,7 +274,7 @@ void CUDADenseGraphAnnealer<real>::makeSolution() {
     syncBits();
     setState(solSolutionAvailable);
     calculate_E();
-    devStream_->synchronize();
+    // devStream_->synchronize();
 }
 
 template<class real>
