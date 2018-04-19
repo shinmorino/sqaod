@@ -2,24 +2,24 @@ import subprocess
 import shutil
 
 def generate_cpu_project(project) :
-	f = open('template_cpu.vcxproj')
-	text = f.read()
-	f.close()
-	text = text.replace("@name@", project[0])
-	text = text.replace("@GUID@", project[1])
-	f = open(project[0] + ".vcxproj", 'w')
-	f.write(text)
-	f.close
+    f = open('template_cpu.vcxproj')
+    text = f.read()
+    f.close()
+    text = text.replace("@name@", project[0])
+    text = text.replace("@GUID@", project[1])
+    f = open(project[0] + ".vcxproj", 'w')
+    f.write(text)
+    f.close()
 
 def generate_cuda_project(project) :
-	f = open('template_cuda.vcxproj')
-	text = f.read()
-	f.close()
-	text = text.replace("@name@", project[0])
-	text = text.replace("@GUID@", project[1])
-	f = open(project[0] + ".vcxproj", 'w')
-	f.write(text)
-	f.close
+    f = open('template_cuda.vcxproj')
+    text = f.read()
+    f.close()
+    text = text.replace("@name@", project[0])
+    text = text.replace("@GUID@", project[1])
+    f = open(project[0] + ".vcxproj", 'w')
+    f.write(text)
+    f.close()
 
 
 config='Release'
@@ -40,16 +40,16 @@ projects.append(("cpu_bg_annealer", "ea2132df-2463-41b0-861b-d306c97bd42f"))
 
 # generate projects
 for project in projects:
-	generate_cpu_project(project)
+    generate_cpu_project(project)
 
 for project in projects:
-	subprocess.call('msbuild ' + project[0] + '.vcxproj /property:Configuration=' + config, shell=True)  
+    subprocess.call('msbuild ' + project[0] + '.vcxproj /property:Configuration=' + config, shell=True)  
 
 #install
 for project in projects:
-	fn = project[0] + '.pyd'
-	print project[0]
-	shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cpu/' + fn)
+    fn = project[0] + '.pyd'
+    print project[0]
+    shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cpu/' + fn)
 
 projects = []
 projects.append(("cuda_device", "4002be82-f681-4b04-b569-e022c8fdce0d"))
@@ -61,13 +61,13 @@ projects.append(("cuda_bg_annealer", "c87406bb-1d4e-496b-a1e4-77208e6dfc6a"))
 
 # generate projects
 for project in projects:
-	generate_cuda_project(project)
+    generate_cuda_project(project)
 
 for project in projects:
-	subprocess.call('msbuild ' + project[0] + '.vcxproj /property:Configuration=' + config, shell=True)  
+    subprocess.call('msbuild ' + project[0] + '.vcxproj /property:Configuration=' + config, shell=True)  
 
 #install
 for project in projects:
-	fn = project[0] + '.pyd'
-	print project[0]
-	shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cuda/' + fn)
+    fn = project[0] + '.pyd'
+    print project[0]
+    shutil.copyfile('../x64/' + config + '/' + fn, '../../sqaodpy/sqaod/cuda/' + fn)
