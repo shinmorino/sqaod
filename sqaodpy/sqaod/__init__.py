@@ -8,3 +8,7 @@ from .common.preference import maximize
 from .common import *
 from . import py
 from . import cpu
+
+if is_cuda_available() :
+    import cuda
+
