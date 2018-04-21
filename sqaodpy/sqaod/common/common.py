@@ -79,6 +79,21 @@ def create_bitset_sequence(vals, nbits) :
         iseq += 1
     return x
 
+def fix_precision(obj, dtype) :
+    if hasattr(obj, 'dtype') :
+        if obj.dtype == dtype :
+            return obj
+        return np.asarray(obj, dtype)
+    try :
+        objs = []
+        for nobj in obj :
+            if nobj.dtype != dtype :
+                nobj = np.asarray(nobj, dtype)
+            objs.append(nobj)
+        return objs
+    except TypeError, te :
+        raise TypeError
+
 
 def generate_random_bits(N) :
     bits = np.empty((N), np.int8)
