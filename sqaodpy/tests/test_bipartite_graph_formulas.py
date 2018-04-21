@@ -49,7 +49,22 @@ class TestBipartiteGraphFormulasBase :
                                                                    x0, x1, self.dtype)
         E = np.empty((2 ** N))
         for i in range(0, 2 ** N) :
-            E[i] = self.pkg.formulas.bipartite_graph_calculate_E(b0, b1, W, x0[i], x1[i], self.dtype)
+            E[i] = self.pkg.formulas.bipartite_graph_calculate_E(b0, b1, W,
+                                                                 x0[i], x1[i], self.dtype)
+        self.assertTrue(np.allclose(Eref, E, atol=self.epu))
+
+    def test_engery_batch_1(self):
+        N0, N1 = 4, 8
+        N = N0 + N1
+        b0, b1, W = self.new_QUBO(N0, N1)
+        x0, x1 = self.create_sequence(N0, N1)
+        
+        Eref = self.pkg.formulas.bipartite_graph_batch_calculate_E(b0, b1, W,
+                                                                   x0, x1, self.dtype)
+        E = np.empty((2 ** N))
+        for i in range(0, 2 ** N) :
+            E[i] = self.pkg.formulas.bipartite_graph_batch_calculate_E(b0, b1, W,
+                                                            x0[i], x1[i], self.dtype)[0]
         self.assertTrue(np.allclose(Eref, E, atol=self.epu))
         
     def test_engery_with_x_batched(self):
@@ -82,6 +97,28 @@ class TestBipartiteGraphFormulasBase :
         for idx in range(0, 2 ** N) :
             Eising[idx] = self.pkg.formulas.bipartite_graph_calculate_E_from_spin(h0, h1, J, c,
                                                                     q0[idx], q1[idx], self.dtype)
+        self.assertTrue(np.allclose(Eref, Eising, atol=self.epu))
+        
+    def test_hamiltonian_energy_batch_1(self):
+        N0, N1 = 4, 8
+        N = N0 + N1
+        b0, b1, W = self.new_QUBO(N0, N1)
+        h0, h1, J, c = \
+               self.pkg.formulas.bipartite_graph_calculate_hamiltonian(b0, b1, W, self.dtype)
+
+        # identity
+        self.assertTrue(np.allclose(0., - np.sum(h0) - np.sum(h1) + np.sum(J) + c, atol=self.epu))
+
+        x0, x1 = self.create_sequence(N0, N1)
+        q0, q1 = x0 * 2 - 1, x1 * 2 - 1
+        
+        Eref = self.pkg.formulas.bipartite_graph_batch_calculate_E(b0, b1, W,
+                                                                   x0, x1, self.dtype)
+        Eising = np.empty((2 ** N))
+        for idx in range(0, 2 ** N) :
+            Eising[idx] = \
+                self.pkg.formulas.bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c,
+                                                                q0[idx], q1[idx], self.dtype)[0]
         self.assertTrue(np.allclose(Eref, Eising, atol=self.epu))
         
     def test_hamiltonian_energy_batched(self):

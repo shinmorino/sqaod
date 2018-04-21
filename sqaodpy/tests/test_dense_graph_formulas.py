@@ -30,14 +30,24 @@ class TestDenseGraphFormulasBase :
         Equbo = self.pkg.formulas.dense_graph_calculate_E(W, x, self.dtype)
         self.assertTrue(np.allclose(Equbo, np.sum(W)))
 
-    def test_engery_with_x_batched(self):
+    def test_engery(self):
+        N = 8
+        W = self.new_W(N)
+        xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
+        Ebatched = self.pkg.formulas.dense_graph_batch_calculate_E(W, xlist, self.dtype)
+        E = np.ones((2 ** N))
+        for i in range(0, 2 ** N) :
+            E[i] = self.pkg.formulas.dense_graph_calculate_E(W, xlist[i], self.dtype)
+        self.assertTrue(np.allclose(Ebatched, E, atol=self.epu))
+
+    def test_energy_batch_1(self):
         N = 8
         W = self.new_W(N)
         xlist = common.create_bitset_sequence(range(0, 2 ** N), N)
         Ebatched = self.pkg.formulas.dense_graph_batch_calculate_E(W, xlist, self.dtype)
         E = np.empty((2 ** N))
         for i in range(0, 2 ** N) :
-            E[i] = self.pkg.formulas.dense_graph_calculate_E(W, xlist[i], self.dtype)
+            E[i] = self.pkg.formulas.dense_graph_batch_calculate_E(W, xlist[i], self.dtype)[0]
         self.assertTrue(np.allclose(Ebatched, E, atol=self.epu))
 
     def test_hamiltonian_energy(self):
