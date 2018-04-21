@@ -183,6 +183,7 @@ Preferences BipartiteGraphBFSearcher<real>::getPreferences() const {
     prefs.pushBack(Preference(pnAlgorithm, algoBruteForceSearch));
     prefs.pushBack(Preference(pnTileSize0, tileSize0_));
     prefs.pushBack(Preference(pnTileSize1, tileSize1_));
+    prefs.pushBack(Preference(pnPrecision, typeString<real>()));
     return prefs;
 }
 
