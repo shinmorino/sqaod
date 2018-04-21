@@ -19,7 +19,7 @@ class BipartiteGraphBFSearcherBase :
 
     def set_qubo(self, b0, b1, W, optimize = pref.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
-        b0, b1, W = common.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
+        b0, b1, W = common.fix_type([b0, b1, W], self.dtype)
         self._dim = (b0.shape[0], b1.shape[0])
         self._cext.set_qubo(self._cobj, b0, b1, W, optimize, self.dtype)
 

@@ -22,7 +22,7 @@ class DenseGraphAnnealerBase :
         
     def set_qubo(self, W, optimize = pref.minimize) :
         checkers.dense_graph.qubo(W)
-        W = common.clone_as_ndarray(W, self.dtype)
+        W = common.fix_type(W, self.dtype)
         self._cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
@@ -53,13 +53,11 @@ class DenseGraphAnnealerBase :
         if isinstance(q, list) :
             qlist = []
             for qvec in q :
-                if qvec.dtype != np.int8 :
-                    qvec = np.asarray(qvec, np.int8)
+                qvec = common.fix_type(qvec, np.int8)
                 qlist.append(qvec)
             self._cext.set_q(self._cobj, qlist, self.dtype)
         else :
-            if q.dtype != np.int8 :
-                q = np.asarray(q, np.int8)
+            q = common.fix_type(q, np.int8)
             self._cext.set_q(self._cobj, q, self.dtype)
 
     def get_hamiltonian(self) :
@@ -72,8 +70,7 @@ class DenseGraphAnnealerBase :
 
     def set_hamiltonian(self, h, J, c) :
         checkers.dense_graph.hJc(h, J, c)
-        h = common.clone_as_ndarray(h, self.dtype)
-        J = common.clone_as_ndarray(J, self.dtype)
+        h, J = common.fix_type([h, J], self.dtype)
         self._cext.set_hamiltonian(self._cobj, h, J, c, self.dtype)
         self._optimize = pref.minimize
 

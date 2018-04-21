@@ -55,20 +55,6 @@ def clone_as_number(v, dtype) :
             return dtype.type(v[0][0])
     raise_not_a_scalar('v', v)
 
-def clone_as_ndarray(var, dtype) :
-    if type(var) is tuple or type(var) is list :
-        return np.array(var, dtype)
-    clone = np.empty(var.shape, dtype=dtype, order='C')
-    clone[...] = var[...]
-    return clone
-
-def clone_as_ndarray_from_vars(vars, dtype) :
-    cloned = []
-    for var in vars :
-        clone = clone_as_ndarray(var, dtype)
-        cloned.append(clone)
-    return tuple(cloned)
-
 def create_bitset_sequence(vals, nbits) :
     seqlen = len(vals)
     x = np.ndarray((seqlen, nbits), np.int8)
@@ -79,21 +65,27 @@ def create_bitset_sequence(vals, nbits) :
         iseq += 1
     return x
 
-def fix_precision(obj, dtype) :
-    if hasattr(obj, 'dtype') :
-        if obj.dtype == dtype :
-            return obj
-        return np.asarray(obj, dtype)
+def _fix_ndarray_type(obj, dtype) :
+    if obj.dtype == dtype and obj.flags['C_CONTIGUOUS'] :
+        return obj
+    return np.asarray(obj, dtype=dtype, order='C')
+
+def fix_type(obj, dtype) :
+    if isinstance(obj, np.ndarray) :
+        return _fix_ndarray_type(obj, dtype)
     try :
         objs = []
         for nobj in obj :
-            if nobj.dtype != dtype :
-                nobj = np.asarray(nobj, dtype)
+            if isinstance(nobj, np.ndarray) :
+                nobj = _fix_ndarray_type(nobj, dtype)
+            else :
+                # try creating ndarray from given object.
+                nobj = np.asarray(nobj, dtype=dtype, order='C')
             objs.append(nobj)
         return objs
     except TypeError, te :
         raise TypeError
-
+    
 
 def generate_random_bits(N) :
     bits = np.empty((N), np.int8)

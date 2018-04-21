@@ -23,7 +23,7 @@ class BipartiteGraphAnnealerBase :
             
     def set_qubo(self, b0, b1, W, optimize = pref.minimize) :
         checkers.bipartite_graph.qubo(b0, b1, W)
-        b0, b1, W = common.clone_as_ndarray_from_vars([b0, b1, W], self.dtype)
+        b0, b1, W = common.fix_type([b0, b1, W], self.dtype)
         self._cext.set_qubo(self._cobj, b0, b1, W, optimize, self.dtype);
         self._optimize = optimize
 
@@ -80,9 +80,7 @@ class BipartiteGraphAnnealerBase :
     
     def set_hamiltonian(self, h0, h1, J, c) :
         checkers.bipartite_graph.hJc(h0, h1, J, c)
-        h0 = common.clone_as_ndarray(h0, self.dtype)
-        h1 = common.clone_as_ndarray(h1, self.dtype)
-        J = common.clone_as_ndarray(J, self.dtype)
+        h0, h1, J = common.fix_type([h0, h1, J], self.dtype)
         self._cext.set_hamiltonian(self._cobj, h0, h1, J, c, self.dtype)
         self._optimize = pref.minimize
             

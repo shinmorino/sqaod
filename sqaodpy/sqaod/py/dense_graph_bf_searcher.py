@@ -4,6 +4,7 @@ import sys
 import sqaod
 from sqaod import algorithm as algo
 from . import formulas
+from sqaod.common import checkers
 
 class DenseGraphBFSearcher :
     
@@ -14,13 +15,12 @@ class DenseGraphBFSearcher :
         self.set_preferences(prefdict)
             
     def set_qubo(self, W, optimize = sqaod.minimize) :
-        # FIXME: check W dims, is symmetric ? */
-        self._W = W.copy()
+        checkers.dense_graph.qubo(W)
         N = W.shape[0]
+        self._W = optimize.sign(W)
         self._N = N
         self._x = []
         self._optimize = optimize
-        self._W = optimize.sign(W)
 
     def select_algorithm(self, algoname) :
         pass # always choose brute-force search.

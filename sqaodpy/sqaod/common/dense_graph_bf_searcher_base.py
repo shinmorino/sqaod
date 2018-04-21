@@ -19,7 +19,7 @@ class DenseGraphBFSearcherBase :
 
     def set_qubo(self, W, optimize = pref.minimize) :
         checkers.dense_graph.qubo(W)
-        W = common.clone_as_ndarray(W, self.dtype)
+        W = common.fix_type(W, self.dtype)
         self._N = W.shape[0]
         self._cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
