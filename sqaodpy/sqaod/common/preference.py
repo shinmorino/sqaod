@@ -13,7 +13,7 @@ algorithm.brute_force_search = 'brute_force_search'
 class Minimize :
     @staticmethod
     def sign(v) :
-        return v
+        return v.copy()
     @staticmethod
     def best(list) :
         return min(list)
