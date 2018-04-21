@@ -1,5 +1,21 @@
-sqaod (0.1.0) unstable; urgency=medium
+sqaod (0.1.1) unstable; urgency=medium
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+2018-04-21 Shinya Morino <shin.morino@gmail.com>
+
+	* Alpha2. 0.1.1
+
+	* More tests and fixes
+	Fixed: FP32 solvers did not work.
+	Tests are refined and updated.
+
+	* change in API.
+	set_x() -> set_q().
+	set_q() accepts vector and vector array.
+
+
+2018-03-03 Shinya Morino <shin.morino@gmail.com>
+
+	* Alpha1.  sqaod (0.1.0)
+	sqaod (0.1.0) unstable; urgency=medium
 
  -- Shinya Morino <shin.morino@gmail.com>  Sat, 03 Mar 2018 07:58:40 +0900

@@ -40,7 +40,7 @@ url = 'https://github.com/shinmorino/sqaod/'
 
 setup(
     name=name,
-    version='0.1.0a1',
+    version='0.1.1a1',
     url=url,
     author=author,
     author_email=email,
