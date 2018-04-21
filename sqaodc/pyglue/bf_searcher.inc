@@ -102,6 +102,32 @@ PyObject *bf_searcher_set_qubo(PyObject *module, PyObject *args) {
     return Py_None;    
 }
 
+
+template<class real>
+PyObject *internal_get_problem_size(PyObject *objExt) {
+    sq::SizeType N;
+    pyobjToCppObj<real>(objExt)->getProblemSize(&N);
+    return Py_BuildValue("i", N);
+}
+    
+extern "C"
+PyObject *bf_searcher_get_problem_size(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    ASSERT_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_get_problem_size<double>(objExt);
+        else // if (isFloat32(dtype))
+            return internal_get_problem_size<float>(objExt);
+    } CATCH_ERROR_AND_RETURN;
+    return NULL;
+}
+
+
 #endif
 
 #ifdef BIPARTITE_GRAPH
@@ -136,6 +162,31 @@ PyObject *bf_searcher_set_qubo(PyObject *module, PyObject *args) {
     
     Py_INCREF(Py_None);
     return Py_None;    
+}
+
+
+template<class real>
+PyObject *internal_get_problem_size(PyObject *objExt) {
+    sq::SizeType N0, N1;
+    pyobjToCppObj<real>(objExt)->getProblemSize(&N0, &N1);
+    return Py_BuildValue("ii", N0, N1);
+}
+    
+extern "C"
+PyObject *bf_searcher_get_problem_size(PyObject *module, PyObject *args) {
+    PyObject *objExt, *dtype;
+    if (!PyArg_ParseTuple(args, "OO", &objExt, &dtype))
+        return NULL;
+
+    ASSERT_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_get_problem_size<double>(objExt);
+        else // if (isFloat32(dtype))
+            return internal_get_problem_size<float>(objExt);
+    } CATCH_ERROR_AND_RETURN;
+    return NULL;
 }
 
 #endif
@@ -431,6 +482,7 @@ PyMethodDef bf_searcher_methods[] = {
         {"assign_device", bf_searcher_assign_device, METH_VARARGS},
 #endif
 	{"set_qubo", bf_searcher_set_qubo, METH_VARARGS},
+        {"get_problem_size", bf_searcher_get_problem_size, METH_VARARGS},
 	{"set_preferences", bf_searcher_set_preferences, METH_VARARGS},
 	{"get_preferences", bf_searcher_get_preferences, METH_VARARGS},
 	{"get_x", bf_searcher_get_x, METH_VARARGS},
