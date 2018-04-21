@@ -32,8 +32,9 @@ def dense_graph_calculate_E(W, x, dtype = None) :
     return np.dot(x, np.matmul(W, x.T))
 
 def dense_graph_batch_calculate_E(W, x, dtype = None) :
-    y = x.reshape(x.shape[0], -1)
-    return np.sum(y * np.matmul(W, x.T).T, 1)
+    if len(x.shape) == 1:
+        x = x.reshape(1, -1)
+    return np.sum(x * np.matmul(W, x.T).T, 1)
 
 def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
     if len(q.shape) != 1 :
@@ -41,6 +42,8 @@ def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
     return - c - np.dot(h, q) - np.dot(q, np.matmul(J, q.T))
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
+    if len(q.shape) == 1:
+        q = q.reshape(1, -1)
     return - c - np.matmul(h, q.T) - np.sum(q.T * np.matmul(J, q.T), 0)
 
 
@@ -74,6 +77,9 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     if nBatch0 != nBatch1 :
         raise Exception("Different batch dims between x0 and x1.")
+    if nBatch0 == 1 :
+        x0 = x0.reshape(1, -1)
+        x1 = x1.reshape(1, -1)
     return np.matmul(b0, x0.T) + np.matmul(b1, x1.T) + np.sum(x1 * np.matmul(W, x0.T).T, 1)
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype = None) :
@@ -99,4 +105,7 @@ def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = No
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     if nBatch0 != nBatch1 :
         raise Exception("Different batch dims between x0 and x1.")
+    if nBatch0 == 1 :
+        q0 = q0.reshape(1, -1)
+        q1 = q1.reshape(1, -1)
     return - np.matmul(h0, q0.T) - np.matmul(h1, q1.T) - np.sum(q1.T * np.matmul(J, q0.T), 0) - c
