@@ -1,7 +1,5 @@
 sqaod (0.1.1) unstable; urgency=medium
 
-2018-04-21 Shinya Morino <shin.morino@gmail.com>
-
 	* Alpha2. 0.1.1
 
 	* More tests and fixes
@@ -12,8 +10,10 @@ sqaod (0.1.1) unstable; urgency=medium
 	set_x() -> set_q().
 	set_q() accepts vector and vector array.
 
+ -- Shinya Morino <shin.morino@gmail.com>  Sat,21 Apr 2018 22:00:00 +0900
 
-2018-03-03 Shinya Morino <shin.morino@gmail.com>
+
+sqaod (0.1.0) unstable; urgency=medium
 
 	* Alpha1.  sqaod (0.1.0)
 	sqaod (0.1.0) unstable; urgency=medium
