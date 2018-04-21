@@ -115,5 +115,9 @@ class bipartite_graph :
         # dimension checks
         matched = (W.shape[1] == x0.shape[len(x0.shape) - 1]) and \
                   (W.shape[0] == x1.shape[len(x1.shape) - 1])
+        if len(x0.shape) != 1 or len(x1.shape) != 1 :
+            matched &= len(x0.shape) == 2 and len(x1.shape) == 2
+            matched &= x0.shape[0] == x1.shape[0]
+            
         if not matched :
             raise_dims_dont_match('x0, x1', (x0, x1))
