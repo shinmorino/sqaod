@@ -54,37 +54,27 @@ def assert_is_scalar(caption, scalar) :
     if not common.is_scalar(scalar) :
         raise_not_a_scalar(caption, scalar)
 
-def assert_precision(dtype, matlist) :
-    for mat in matlist :
-        if mat.dtype != dtype :
-            raise Exception("precision mismatch.")
-
 # dense graph    
 
 class dense_graph :
 
     @staticmethod
-    def qubo(W, dtype = None) :
+    def qubo(W) :
         if len(W.shape) != 2 or W.shape[0] != W.shape[1] :
             raise_wrong_shape('W', W)
         # W should be symmetric
         if not common.is_symmetric(W) :
             raise_not_symmetric("W", (W))
-        if not dtype is None : 
-            assert_precision(dtype, (W));
 
     # ising model dimension check    
     @staticmethod
-    def hJc(h, J, c, dtype = None) :
+    def hJc(h, J, c) :
         assert_is_vector('h', h)
         if len(J.shape) != 2 or J.shape[0] != J.shape[1] :
             raise_wrong_shape('J', J)
         if not common.is_symmetric(J) :
             raise_not_symmetric("J", (J))
         assert_is_scalar('c', (c))
-        if not dtype is None : 
-            assert_precision(dtype, (h, J, c));
-        # FIXME: check c precision
 
     @staticmethod
     def bits(W, x) :
@@ -98,7 +88,7 @@ class dense_graph :
 
 class bipartite_graph :
     @staticmethod
-    def qubo(b0, b1, W, dtype = None) :
+    def qubo(b0, b1, W) :
         assert_is_vector('b0', b0);
         assert_is_vector('b1', b1);
         if len(W.shape) != 2 :
@@ -106,11 +96,9 @@ class bipartite_graph :
         matched = (b0.shape[0] == W.shape[1]) and (b1.shape[0] == W.shape[0])
         if not matched :
             raise_dims_dont_match('b0, b1, W', (b0, b1, W))
-        if not dtype is None : 
-            assert_precision(dtype, (b0, b1, W));
 
     @staticmethod
-    def hJc(h0, h1, J, c, dtype = None) :
+    def hJc(h0, h1, J, c) :
         assert_is_vector('h0', h0);
         assert_is_vector('h1', h1);
         if len(J.shape) != 2 :
@@ -119,9 +107,6 @@ class bipartite_graph :
         matched = (h0.shape[0] == J.shape[1]) and (h1.shape[0] == J.shape[0])
         if not matched :
             raise_dims_dont_match('h0, h1, J', (h0, h1, J))
-        if not dtype is None : 
-            assert_precision(dtype, (h0, h1, J));
-        # FIXME: check c precision
 
     @staticmethod
     def bits(W, x0, x1) :
