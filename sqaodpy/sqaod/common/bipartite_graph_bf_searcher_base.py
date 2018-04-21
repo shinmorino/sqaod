@@ -49,6 +49,9 @@ class BipartiteGraphBFSearcherBase :
     def make_solution(self) :
         self._cext.make_solution(self._cobj, self.dtype);
         
+    def calculate_E(self) :
+        self._cext.calculate_E(self._cobj, self.dtype);
+        
     def search_range(self) :
         return self._cext.search_range(self._cobj, self.dtype)
         
