@@ -38,17 +38,6 @@ class TestDenseGraphBFSearcherBase:
         searcher = self.new_searcher(N)
         Nout = searcher.get_problem_size()
         self.assertEqual(N, Nout)
-
-    def test_get_hamiltonian(self) :
-        N = 100
-        searcher = self.anpkg.dense_graph_annealer(dtype=self.dtype)
-        W = dense_graph_random(N, self.dtype)
-        searcher.set_qubo(W)
-        h0, J0, c0 = searcher.get_hamiltonian()
-        h1, J1, c1 = sq.py.formulas.dense_graph_calculate_hamiltonian(W)
-        self.assertTrue(np.allclose(h0, h1, atol=self.epu))
-        self.assertTrue(np.allclose(J0, J1, atol=self.epu))
-        self.assertTrue(np.allclose(c0, c1, atol=self.epu))
         
     def _test_search(self, opt, W, Eexp, xexp):
         N = W.shape[0]
