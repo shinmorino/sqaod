@@ -37,7 +37,10 @@ class DenseGraphBFSearcher :
         v = prefdict.get('tile_size')
         if v is not None :
             self._tile_size = v;
-
+    
+    def get_problem_size(self) :
+        return self._N
+            
     def get_preferences(self) :
         prefs = {}
         prefs['tile_size'] = self._tile_size
@@ -49,7 +52,7 @@ class DenseGraphBFSearcher :
     
     def get_E(self) :
         return self._E
-    
+        
     def get_x(self) :
         return self._x
 
@@ -58,13 +61,20 @@ class DenseGraphBFSearcher :
         self._tile_size = min(1 << N, self._tile_size)
         self._xMax = 1 << N
         self._Emin = sys.float_info.max
+        self._xbegin = 0
 
     def make_solution(self) :
+        self.calculate_E()
+
+    def calculate_E(self) :
         nMinX = len(self._x)
         self._E = np.empty((nMinX))
         self._E[...] = self._optimize.sign(self._Emin)
-
-    def search_range(self, xBegin, xEnd) :
+        
+    def search_range(self) :
+        xBegin = self._xbegin
+        xEnd = self._tile_size
+        
         N = self._N
         W = self._W
         xBegin = max(0, min(self._xMax, xBegin))
@@ -80,11 +90,14 @@ class DenseGraphBFSearcher :
             else :
                 self._x.append(x[i])
 
+        self._xbegin = xEnd
+        return self._xbegin == self._xMax
+
     def search(self) :
         self.prepare()
         xStep = min(self._tile_size, self._xMax)
-        for xBegin in range(0, self._xMax, xStep) :
-            self.search_range(xBegin, xBegin + xStep)
+        while not self.search_range() :
+            pass
         self.make_solution()
         
     

@@ -3,6 +3,7 @@ import numpy as np
 import numbers
 import sqaod
 from sqaod.common import checkers
+import sqaod.common as common
 from . import cpu_formulas
 
 # dense graph    
@@ -10,6 +11,7 @@ from . import cpu_formulas
 # QUBO energy functions
 
 def dense_graph_calculate_E(W, x, dtype) :
+    W = common.fix_precision(W, dtype)
     checkers.dense_graph.qubo(W, dtype)
     checkers.dense_graph.bits(W, x)
     checkers.assert_is_vector('x', x)
@@ -19,9 +21,10 @@ def dense_graph_calculate_E(W, x, dtype) :
     return E[0]
 
 def dense_graph_batch_calculate_E(W, x, dtype) :
+    W = common.fix_precision(W, dtype)
     checkers.dense_graph.qubo(W, dtype);
     checkers.dense_graph.bits(W, x)
-    
+
     E = np.empty((x.shape[0]), dtype)
     cpu_formulas.dense_graph_batch_calculate_E(E, W, x, dtype)
     return E
@@ -30,9 +33,9 @@ def dense_graph_batch_calculate_E(W, x, dtype) :
 # QUBO -> Ising model
 
 def dense_graph_calculate_hamiltonian(W, dtype) :
-    if W.dtype != dtype :
-        W = clone_as_ndarray(W, dtype)
+    W = common.fix_precision(W, dtype)
     checkers.dense_graph.qubo(W, dtype)
+
     N = W.shape[0]
     h = np.empty((N), dtype)
     J = np.empty((N, N), dtype)
@@ -43,6 +46,7 @@ def dense_graph_calculate_hamiltonian(W, dtype) :
 # Ising model energy functions
 
 def dense_graph_calculate_E_from_spin(h, J, c, q, dtype) :
+    h, J = common.fix_precision([h, J], dtype)
     checkers.dense_graph.hJc(h, J, c, dtype);
     checkers.dense_graph.bits(J, q);
     checkers.assert_is_vector('q', q)
@@ -52,6 +56,7 @@ def dense_graph_calculate_E_from_spin(h, J, c, q, dtype) :
     return E[0]
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype) :
+    h, J = common.fix_precision([h, J], dtype)
     checkers.dense_graph.hJc(h, J, c, dtype);
     checkers.dense_graph.bits(J, q);
 
@@ -63,6 +68,7 @@ def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype) :
 # bipartite_graph
 
 def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype) :
+    b0, b1, W = common.fix_precision([b0, b1, W], dtype)
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
     checkers.bipartite_graph.bits(W, x0, x1)
     checkers.assert_is_vector('x0', x0)
@@ -73,6 +79,7 @@ def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype) :
 
 
 def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
+    b0, b1, W = common.fix_precision([b0, b1, W], dtype)
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
     checkers.bipartite_graph.bits(W, x0, x1)
     # FIXME: fix error messages.  move to checkers.py?
@@ -87,6 +94,7 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype) :
     return E
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype) :
+    b0, b1, W = common.fix_precision([b0, b1, W], dtype)
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
     checkers.bipartite_graph.bits(W, x0, x1)
     
@@ -98,6 +106,7 @@ def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype) :
 
 
 def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype) :
+    b0, b1, W = common.fix_precision([b0, b1, W], dtype)
     checkers.bipartite_graph.qubo(b0, b1, W, dtype)
 
     N0 = W.shape[1]
@@ -110,6 +119,7 @@ def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype) :
     return h0, h1, J, c[0]
 
 def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
+    h0, h1, W = common.fix_precision([h0, h1, J], dtype)
     checkers.bipartite_graph.hJc(h0, h1, J, c, dtype)
     checkers.bipartite_graph.bits(J, q0, q1)
     checkers.assert_is_vector('q0', q0)
@@ -121,6 +131,7 @@ def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
 
 
 def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype) :
+    h0, h1, J = common.fix_precision([h0, h1, J], dtype)
     checkers.bipartite_graph.hJc(h0, h1, J, c, dtype)
     checkers.bipartite_graph.bits(J, q0, q1)
     

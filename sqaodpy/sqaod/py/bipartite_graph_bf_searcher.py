@@ -66,6 +66,8 @@ class BipartiteGraphBFSearcher :
 
     def prepare(self) :
         N0, N1 = self.get_problem_size()
+        self._x0begin = 0
+        self._x1begin = 0
         self._x0max = 1 << N0
         self._x1max = 1 << N1
         self._tile_size_0 = min(self._x0max, self._tile_size_0)
@@ -74,6 +76,9 @@ class BipartiteGraphBFSearcher :
         self._xPairs = []
 
     def make_solution(self) :
+        self.calculate_E()
+
+    def calculate_E(self) :
         nXmin = len(self._xPairs)
         self._E = np.empty((nXmin))
         self._E[...] = self._optimize.sign(self._Emin)
@@ -97,13 +102,13 @@ class BipartiteGraphBFSearcher :
                 else :
                     self._xPairs.append = [(x0, x1)]
         
-    def search_range(self, x0begin, x0end, x1begin, x1end) :
+    def search_range(self) :
         N0, N1 = self.get_problem_size()
         b0, b1, W = self._vars()
-        x0begin = max(0, min(self._x0max, x0begin))
-        x0end = max(0, min(self._x0max, x0end))
-        x1begin = max(0, min(self._x1max, x1begin))
-        x1end = max(0, min(self._x1max, x1end))
+        x0begin = max(0, min(self._x0max, self._x0begin))
+        x0end = max(0, min(self._x0max, x0begin + self._tile_size_0))
+        x1begin = max(0, min(self._x1max, self._x1begin))
+        x1end = max(0, min(self._x1max, x1begin + self._tile_size_1))
 
         x0step = x0end - x0begin
         x1step = x1end - x1begin
@@ -121,15 +126,25 @@ class BipartiteGraphBFSearcher :
                     self._xPairs = [(bits0[x0], bits1[x1])]
                 else :
                     self._xPairs.append((bits0[x0], bits1[x1]))
+
+        self._x1begin = x1end
+        if self._x1begin != self._x1max :
+            self._x1begin = x1end
+            return False
+        
+        if self._x0begin == self._x0max :
+            return True
+        
+        self._x1begin = 0
+        self._x0begin = x0end
+        return False
+
                     
     def search(self) :
         self.prepare()
-        
-        x0step = min(self._tile_size_0, self._x0max)
-        x1step = min(self._tile_size_1, self._x1max)
-        for x1 in range(0, self._x1max, x1step) :
-            for x0 in range(0, self._x0max, x0step) :
-                self.search_range(x0, x0 + x0step, x1, x1 + x1step)
+
+        while not self.search_range() :
+            pass
 
         self.make_solution()
         
