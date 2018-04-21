@@ -1,11 +1,11 @@
 import numpy as np
 import sqaod
+from sqaod.common import checkers
 
 # dense graph
 
 def dense_graph_calculate_hamiltonian(W, dtype = None) :
-    if (not sqaod.is_symmetric(W)) :
-        raise Exception('W is not symmetric.')
+    checkers.dense_graph.qubo(W)
 
     N = W.shape[0]
     h = np.ndarray((N), dtype=np.float64)
@@ -63,10 +63,13 @@ def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype = None) :
     return h0, h1, J, c
 
 def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype = None) :
+    checkers.bipartite_graph.qubo(b0, b1, W)
+    checkers.bipartite_graph.bits(W, x0, x1)
     return np.dot(b0, x0) + np.dot(b1, x1) + np.dot(x1, np.matmul(W, x0))
 
 def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
-    # FIXME: fix error messages.  move to checkers.py?
+    checkers.bipartite_graph.qubo(b0, b1, W)
+    checkers.bipartite_graph.bits(W, x0, x1)
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     if nBatch0 != nBatch1 :
@@ -74,17 +77,24 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
     return np.matmul(b0, x0.T) + np.matmul(b1, x1.T) + np.sum(x1 * np.matmul(W, x0.T).T, 1)
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype = None) :
-    # FIXME: not tested
+    checkers.bipartite_graph.qubo(b0, b1, W)
+    checkers.bipartite_graph.bits(W, x0, x1)
+    
     nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
     nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
     return np.matmul(b0.T, x0.T).reshape(1, nBatch0) + np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
         + np.matmul(x1, np.matmul(W, x0.T))
 
 def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
+    checkers.bipartite_graph.hJc(h0, h1, J, c)
+    checkers.bipartite_graph.bits(J, q0, q1)
+    
     return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1, np.matmul(J, q0)) - c
 
 def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
-    # FIXME: fix error messages.  move to checkers.py?
+    checkers.bipartite_graph.hJc(h0, h1, J, c)
+    checkers.bipartite_graph.bits(J, q0, q1)
+
     nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
     nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
     if nBatch0 != nBatch1 :
