@@ -83,8 +83,8 @@ def fix_type(obj, dtype) :
                 nobj = np.asarray(nobj, dtype=dtype, order='C')
             objs.append(nobj)
         return objs
-    except TypeError, te :
-        raise TypeError
+    except TypeError as te :
+        raise RuntimeError('Fix failed.')
     
 
 def generate_random_bits(N) :

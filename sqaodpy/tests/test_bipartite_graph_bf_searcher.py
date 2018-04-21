@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import sqaod as sq
 import sqaod.common as common
-from example_problems import *
+from .example_problems import *
 from math import log
 from math import exp
 
