@@ -154,7 +154,7 @@ void BipartiteGraphSolver<real>::getProblemSize(SizeType *N0, SizeType *N1) cons
 template<class real>
 Preferences DenseGraphBFSearcher<real>::getPreferences() const {
     Preferences prefs;
-    prefs.pushBack(Preference(pnAlgorithm, this->getAlgorithm()));
+    prefs.pushBack(Preference(pnAlgorithm, algoBruteForceSearch));
     prefs.pushBack(Preference(pnTileSize, tileSize_));
     prefs.pushBack(Preference(pnPrecision, typeString<real>()));
     return prefs;
