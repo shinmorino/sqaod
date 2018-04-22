@@ -10,5 +10,5 @@ from . import py
 from . import cpu
 
 if is_cuda_available() :
-    import cuda
+    from . import cuda
 
