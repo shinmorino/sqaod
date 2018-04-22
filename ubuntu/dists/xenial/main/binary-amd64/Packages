@@ -1,6 +1,6 @@
 Package: libsqaodc
 Source: sqaod
-Version: 0.1.0
+Version: 0.1.1
 Architecture: amd64
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Installed-Size: 339
@@ -9,46 +9,46 @@ Provides: libsqaodc
 Homepage: https://github.com/shinmorino/sqaod
 Priority: optional
 Section: libs
-Filename: pool/main/s/sqaod/libsqaodc_0.1.0_amd64.deb
-Size: 94196
-SHA256: 83f068908064a7221a3a998673f52c57e0dbc55d1360a74f1377332691c06027
-SHA1: 11ccf854f9cee00a9ba1e46f1e671ffd5c691bb0
-MD5sum: 56db57565a21177502877e40c21195c8
+Filename: pool/main/s/sqaod/libsqaodc_0.1.1_amd64.deb
+Size: 94510
+SHA256: aeeda7e07712c2c5f46795a690f40ac161eef26123e0559b448717bc2a091350
+SHA1: 3f35a16d877bfbcf633e9985eb7be5a89c628e8b
+MD5sum: 84d48d542d35c9a17bf779c8853e9038
 Description: sqaodc library
 
 Package: libsqaodc-avx2
 Source: sqaod
-Version: 0.1.0
+Version: 0.1.1
 Architecture: amd64
 Maintainer: Shinya Morino <shin.morino@gmail.com>
-Installed-Size: 339
+Installed-Size: 343
 Depends: libgomp1:amd64, libblas3:amd64, libc6 (>= 2.14), libgcc1 (>= 1:3.0), libgomp1 (>= 4.9)
 Provides: libsqaodc
 Homepage: https://github.com/shinmorino/sqaod
 Priority: optional
 Section: libs
-Filename: pool/main/s/sqaod/libsqaodc-avx2_0.1.0_amd64.deb
-Size: 90486
-SHA256: 375af06a312a42805f934657d0ae7a6ee8b6742a6dda1b34aae7d86ac1c050e2
-SHA1: 937e685e87069f30c7fe3c9deee3951b992c30df
-MD5sum: abe01be558f6e6731deded43b59c6583
+Filename: pool/main/s/sqaod/libsqaodc-avx2_0.1.1_amd64.deb
+Size: 90426
+SHA256: ad7465cfe1a202ff60751bdaae6ff1bac804cb995b1f781c9272e5b314a288a2
+SHA1: 2d2115d49c8146e7b8f1ae4114f1cc46648d267e
+MD5sum: 6a9dca98d11e1c947faf0f9ba5852798
 Description: sqaodc library
 
 Package: libsqaodc-cuda-9-0
 Source: sqaod
-Version: 0.1.0
+Version: 0.1.1
 Architecture: amd64
 Maintainer: Shinya Morino <shin.morino@gmail.com>
-Installed-Size: 8538
+Installed-Size: 8998
 Depends: libsqaodc:amd64, cuda-cublas-9-0:amd64, cuda-cudart-9-0:amd64, cuda-curand-9-0:amd64, cuda-cublas-9-0, cuda-cudart-9-0, cuda-curand-9-0, libc6 (>= 2.14), libgcc1 (>= 1:3.0), libsqaodc
 Provides: libsqaodc-cuda
 Homepage: https://github.com/shinmorino/sqaod
 Priority: optional
 Section: libs
-Filename: pool/main/s/sqaod/libsqaodc-cuda-9-0_0.1.0_amd64.deb
-Size: 743168
-SHA256: ba9683f5e8e4a51669eaf1732361082dbf874eb3a83778a8c66e078c01654473
-SHA1: 8454ab158357fbe8b7eecfd4668a3ef3b9f03f16
-MD5sum: cd7370b420ec2acaf8d59e83325b3d6c
+Filename: pool/main/s/sqaod/libsqaodc-cuda-9-0_0.1.1_amd64.deb
+Size: 778024
+SHA256: 60e1382021a80f3667aa70ad9bb8b433415d3db0b57ba0bcc6aa6abfc671adfd
+SHA1: a980fb9372bf0a0092758acc2befc1ce6def2135
+MD5sum: 07e03d55c92b2adaa8f3262d2b6db354
 Description: sqaodc CUDA library
 
