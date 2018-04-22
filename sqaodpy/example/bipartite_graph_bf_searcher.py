@@ -22,7 +22,7 @@ search = sol.bipartite_graph_bf_searcher()
 
 # 4. Setting problem
 # Setting W and optimize direction (minimize or maxminize)
-# n_trotters is implicitly set to N/4 by dfault.
+# n_trotters is implicitly set to N/4 by default.
 search.set_qubo(b0, b1, W, sq.maximize)
 
 # 5. (optional) set preferences,

@@ -23,7 +23,7 @@ ann.seed(13255)
 
 # 5. Setting problem
 # Setting W and optimize direction (minimize or maxminize)
-# n_trotters is implicitly set to N/4 by dfault.
+# n_trotters is implicitly set to N/4 by default.
 ann.set_qubo(W, sq.maximize)
 
 # 6. set preferences,
