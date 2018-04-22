@@ -8,7 +8,7 @@ Alpha2 has been released on 4/22.<BR>
    - Fixed: In alpha1, CPU/CUDA annealers with FP32 did not work due to incorrect numerical type conversion in python c-extension.  In alpha2, this issue has been fixed and tested.
    - API change : set_x() is used to set initial bit vectors to annealers in alpha1.  In alpha2, set_q() is used intead.  The set_q() accepts one spin vector or an array of spin vectors.
    - Several fixes in python code and c-extensions.
-   - Current versions are 1.0.1 for debs and 1.0.1a1 for whl in pypi.
+   - Current versions are 1.0.1 for debs and 1.0.1a2 for whl in pypi.
    
 The next release is Beta1 planned in the end of this month.<BR>
 Please visit milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development plan.
