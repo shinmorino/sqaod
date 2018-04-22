@@ -2,14 +2,19 @@
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).
 
-## Project status (as of 4/7)
-Alpha1 has been released on 4/7.<BR>
-Implementation is already stable and performant.  I'm still staying at alpha just for possible minor API changes.<BR>
-
+## Project status (as of 4/22)
+Alpha2 has been released on 4/22.<BR>
+ * important fixes and updates:
+   - Fixed: In alpha1, CPU/CUDA annealers with FP32 did not work due to incorrect numerical type conversion in python c-extension.  In alpha2, this issue has been fixed and tested.
+   - API change : set_x() is used to set initial bit vectors to annealers in alpha1.  In alpha2, set_q() is used intead.  The set_q() accepts one spin vector or an array of spin vectors.
+   - Several fixes in python code and c-extensions.
+   - Current versions are 1.0.1 for debs and 1.0.1a1 for whl in pypi.
+   
+The next release is Beta1 planned in the end of this month.<BR>
 Please visit milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development plan.
 
 ## Installation  
-Here's an instruction to install alpha1 binary distribution of sqaod.  Alpha1 binary distribuion is provided only for Ubuntu 16.04.<BR>
+Here's an instruction to install alpha2 binary distribution of sqaod.  Alpha2 binary distribuion is provided only for Ubuntu 16.04.<BR>
 If you want to use other Linux distribution, currently you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).<BR>
 Or if you need a binary distribution for your linux distro, please file a request to [Issues](https://github.com/shinmorino/sqaod/issues).  Windows version and/or docker images are possible as well.
 
@@ -27,7 +32,7 @@ Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, d
 ~~~
 
 ### 2. Installing native libraries.
-Sqaod has its own C++ native libraries which is invoked via python c-extensions.
+Sqaod has its own C++ native libraries which are invoked via python c-extensions.  These libraries are released as deb packages.  Please use apt-get to install them.
 
 ~~~
  $ sudo apt-get install apt-transport-https apt-utils
@@ -55,7 +60,7 @@ It will be fixed by beta1 release.
 Sqaod is currently supporting python 2.7 and python 3.3 - 3.5.  For details, please visit the project [sqaod project page](https://pypi.python.org/pypi/sqaod/) on PyPI.<BR>
 To install sqaod python package, use pip as shown below.
 ~~~
- $ pip install sqaod
+ $ pip install -U sqaod
 ~~~
 
 
