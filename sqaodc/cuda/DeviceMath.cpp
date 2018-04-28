@@ -307,9 +307,9 @@ void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
     abortIf(Adim.cols != Bdim.rows, "shape mismatch on matrix-matrix multiplication");
 
     /* leading diimension */
-    int ldb = B.cols;
-    int lda = A.cols;
-    int ldc = Bdim.cols;
+    int ldb = B.stride;
+    int lda = A.stride;
+    int ldc = C.stride;
 
     devKernels_.gemm(copB, copA, Bdim.cols, Adim.rows, Adim.cols,
                      d_alpha.d_data, B.d_data, ldb, A.d_data, lda,
