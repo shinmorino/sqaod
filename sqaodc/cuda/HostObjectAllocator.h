@@ -101,7 +101,7 @@ void HostObjectAllocator::allocate(sq::VectorType<V> *vec, sq::SizeType size) {
 
 template<class V> inline void HostObjectAllocator::
 allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
-    allocate2d(&mat->d_data, &mat->stride, rows, cols);
+    allocate2d(&mat->d_data, &mat->stride, cols, rows);
     mat->rows = rows;
     mat->cols = cols;
 }

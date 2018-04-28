@@ -29,7 +29,7 @@ struct DeviceCopy {
     void broadcast(V *d_buf, const V &v, sq::SizeType nElms) const;
 
     template<class V>
-    void broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType rows, sq::SizeType cols) const;
+    void broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType width, sq::SizeType height) const;
 
     template<class V>
     void broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) const;
@@ -126,8 +126,8 @@ broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) 
 }
 
 template<class V> void DeviceCopy::
-broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType rows, sq::SizeType cols) const{
-    kernels_.copyBroadcast2d(dst, stride, v, rows, cols);
+broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType cols, sq::SizeType rows) const{
+    kernels_.copyBroadcast2d(dst, stride, v, cols, rows);
 }
 
 template<class V> inline void DeviceCopy::
@@ -140,7 +140,7 @@ template<class Vdst, class Vsrc> inline void DeviceCopy::
 cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    kernels_.cast2d(dst->d_data, dst->stride, src.d_data, src.stride, src.rows, src.cols);
+    kernels_.cast2d(dst->d_data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
 
 template<class Vdst, class Vsrc> inline void DeviceCopy::
@@ -159,7 +159,7 @@ template<class V> void DeviceCopy::
 operator()(DeviceMatrixType<V> *dst, const sq::MatrixType<V> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    copy2d(dst->d_data, dst->stride, src.data, src.stride, src.rows, src.cols);
+    copy2d(dst->d_data, dst->stride, src.data, src.stride, src.cols, src.rows);
 }
 
 template<class V> void DeviceCopy::
@@ -167,27 +167,20 @@ operator()(sq::MatrixType<V> *dst, const DeviceMatrixType<V> &src) const {
     if (dst->data == NULL)
         dst->resize(src.dim());
     assertSameShape(*dst, src, __func__);
-    copy2d(dst->data, dst->stride, src.d_data, src.stride, src.rows, src.cols);
+    copy2d(dst->data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
 
 template<class V> void DeviceCopy::
 operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    copy2d(dst->d_data, dst->stride, src.d_data, src.stride, src.rows, src.cols);
+    copy2d(dst->d_data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
 
 template<class V> void DeviceCopy::
 operator()(DeviceMatrixType<V> *dst, const V &src) const {
     assertValidMatrix(*dst, __func__);
-    broadcast2d(dst->d_data, dst->stride, src, dst->rows, dst->cols);
-}
-
-template<class V> void DeviceCopy::
-operator()(DeviceMatrixType<V> *dst, const V &src, sq::SizeType stride, sq::IdxType offset,
-           sq::SizeType size) const {
-    assertValidMatrix(*dst, __func__);
-    broadcastWithInterval(dst->d_data, stride, offset, src, size);
+    broadcast2d(dst->d_data, dst->stride, src, dst->cols, dst->rows);
 }
     
 template<class V> void DeviceCopy::

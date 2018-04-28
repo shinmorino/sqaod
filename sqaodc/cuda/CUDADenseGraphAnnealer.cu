@@ -218,7 +218,7 @@ void CUDADenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
     ::randomizeSpin2d(d_matq_.d_data, d_matq_.stride,
-                      d_random_, d_matq_.rows, d_matq_.cols,
+                      d_random_, d_matq_.cols, d_matq_.rows,
                     devStream_->getCudaStream());
     setState(solQSet);
 }

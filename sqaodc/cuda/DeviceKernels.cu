@@ -2,6 +2,7 @@
 #include "cub_iterator.cuh"
 #include "cudafuncs.h"
 #include "DeviceKernels.h"
+#include <algorithm>
 
 #include <cuda/DeviceSegmentedSum.cuh>
 
@@ -172,11 +173,16 @@ void DeviceMathKernelsType<real>::sum2d(real *d_sum,
     cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                            in, d_sum, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
-    cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
-                           in, d_sum, size, stream_, CUB_DEBUG);
-    DEBUG_SYNC;
-
-
+    if (addAssignFactor == 0.) {
+        MulOutDevPtr<real> outPtr(d_sum, alpha);
+        cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
+                               in, outPtr, size, stream_, CUB_DEBUG);
+    }
+    else {
+        AddAssignDevPtr<real> outPtr(d_sum, addAssignFactor, alpha);
+        cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
+                               in, outPtr, size, stream_, CUB_DEBUG);
+    }
 }
 
 template<class real> void DeviceMathKernelsType<real>::
@@ -492,10 +498,10 @@ cast(Vdst *dst, const Vsrc *src, sq::SizeType size) {
 
 template<class Vdst, class Vsrc> void DeviceCopyKernels::
 cast2d(Vdst *dst, sq::SizeType dstStride, const Vsrc *src, sq::SizeType srcStride,
-       sq::SizeType rows, sq::SizeType cols) {
+       sq::SizeType cols, sq::SizeType rows) {
     dim3 blockDim(128);
     dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
-    cast2dKernel<<<gridDim, blockDim >>> (dst, dstStride, src, srcStride, rows, cols);
+    cast2dKernel<<<gridDim, blockDim >>> (dst, dstStride, src, srcStride, cols, rows);
     DEBUG_SYNC;
 }
 
@@ -608,16 +614,16 @@ void sqaod_cuda::randomizeSpin(V *d_q, DeviceRandom &d_random, sq::SizeType size
 
 template<class V>
 void sqaod_cuda::randomizeSpin2d(V *d_q, sq::SizeType stride, DeviceRandom &d_random,
-                                 sq::SizeType rows, sq::SizeType cols,
+                                 sq::SizeType width, sq::SizeType height,
                                  cudaStream_t stream) {
     dim3 blockDim(128);
-    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
+    dim3 gridDim(divru(width, blockDim.x), divru(height, blockDim.y));
     sq::IdxType offset;
     sq::SizeType sizeToWrap;
-    const unsigned int *d_randnum = d_random.get(rows * cols, &offset, &sizeToWrap);
+    const unsigned int *d_randnum = d_random.get(width * height, &offset, &sizeToWrap);
     randomizeSpin2d_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q, stride,
                                                              d_randnum, offset, sizeToWrap,
-                                                             rows, cols);
+                                                             width, height);
     DEBUG_SYNC;
 }
 
