@@ -58,7 +58,7 @@ void x_from_q(newV *dst, const V *src, SizeType cols, SizeType rows = 1,
 }
 
 template<class newV, class V> inline
-void x_to_q(newV *dst, const V *src, SizeType cols, SizeType rows = 0,
+void x_to_q(newV *dst, const V *src, SizeType cols, SizeType rows = 1,
             SizeType dstStride = -1, SizeType srcStride = -1) {
     for (IdxType row = 0; row < rows; ++row) {
         newV *dstrow = &dst[dstStride * row];
@@ -69,7 +69,7 @@ void x_to_q(newV *dst, const V *src, SizeType cols, SizeType rows = 0,
 }
 
 /* specialization */
-double sum(const double *values, SizeType cols, SizeType rows = 0, SizeType stride = -1);
-float sum(const float *values, SizeType cols, SizeType rows = 0, SizeType stride = -1);
+double sum(const double *values, SizeType cols, SizeType rows = 1, SizeType stride = -1);
+float sum(const float *values, SizeType cols, SizeType rows = 1, SizeType stride = -1);
 
 }
