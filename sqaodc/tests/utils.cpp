@@ -59,6 +59,23 @@ sq::VectorType<real> segmentedSum(const sq::MatrixType<real> &A, sq::SizeType se
 template sq::VectorType<double> segmentedSum(const sq::MatrixType<double> &A, sq::SizeType segLen, sq::SizeType nSegments);
 template sq::VectorType<float> segmentedSum(const sq::MatrixType<float> &A, sq::SizeType segLen, sq::SizeType nSegments);
 
+template<class real>
+bool allclose(const sqaod::VectorType<real> &v0, const sqaod::VectorType<real> &v1, real epsiron) {
+    if (v0.size != v1.size)
+        return false;
+    sq::EigenRowVectorType<real> vDiff = sq::mapToRowVector(v0) - sq::mapToRowVector(v1);
+    sq::EigenRowVectorType<real> vSum = sq::mapToRowVector(v0) + sq::mapToRowVector(v1);
+    real absDiff = vDiff.array().abs().sum();
+    real absVal = vSum.array().abs().sum();
+    // fprintf(stderr, "%g %g\n", absDiff, absVal);
+    if (absDiff < epsiron)
+        return true;
+    return ((absDiff / absVal) < epsiron);
+}
+
+template bool allclose(const sq::VectorType<float> &dvec, const sqaod::VectorType<float> &hvec, float epsiron);
+template bool allclose(const sq::VectorType<double> &dvec, const sqaod::VectorType<double> &hvec, double epsiron);
+
 
 #ifdef SQAODC_CUDA_ENABLED
 
@@ -117,5 +134,23 @@ bool allclose(const sqcu::DeviceVectorType<real> &dvec, const sqaod::VectorType<
 
 template bool allclose(const sqcu::DeviceVectorType<float> &dvec, const sqaod::VectorType<float> &hvec, float epsiron);
 template bool allclose(const sqcu::DeviceVectorType<double> &dvec, const sqaod::VectorType<double> &hvec, double epsiron);
+
+template<class real>
+bool allclose(const sqcu::DeviceMatrixType<real> &dvec, const sqaod::MatrixType<real> &hvec, real epsiron) {
+    sqaod::MatrixType<real> copied;
+    sqcu::DeviceCopy devCopy;
+    devCopy(&copied, dvec);
+    devCopy.synchronize();
+    real absDiff = (sq::mapTo(copied) - sq::mapTo(hvec)).array().abs().sum();
+    real absVal = sq::mapTo(copied).array().abs().sum() + sq::mapTo(hvec).array().abs().sum();
+    // fprintf(stderr, "%g %g\n", absDiff, absVal);
+    if (absDiff < epsiron)
+        return true;
+    return ((absDiff / absVal) < epsiron);
+}
+
+template bool allclose(const sqcu::DeviceMatrixType<float> &dvec, const sqaod::MatrixType<float> &hvec, float epsiron);
+template bool allclose(const sqcu::DeviceMatrixType<double> &dvec, const sqaod::MatrixType<double> &hvec, double epsiron);
+
 
 #endif

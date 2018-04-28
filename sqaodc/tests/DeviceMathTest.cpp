@@ -322,7 +322,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, B);
         devMath.mmProduct(&dC, 0.5, dA, sqcu::opNone, dB, sqcu::opNone);
         device_.synchronize();
-        TEST_ASSERT(dC == sq::mapFrom(C));
+        TEST_ASSERT(allclose(dC, sq::mapFrom(C), epusiron<real>()));
 
         HostMatrix At(dim.transpose());
         HostMatrix Bt(dim);
@@ -335,7 +335,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, Bt);
         devMath.mmProduct(&dC, 0.5, dA, sqcu::opTranspose, dB, sqcu::opTranspose);
         device_.synchronize();
-        TEST_ASSERT(dC == sq::mapFrom(C));
+        TEST_ASSERT(allclose(dC, sq::mapFrom(C), epusiron<real>()));
     }
 
     testcase("vmvProduct") {

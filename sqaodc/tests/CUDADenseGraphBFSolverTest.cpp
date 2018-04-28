@@ -232,7 +232,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         cudaSolver.search();
         const sq::VectorType<real> &cudaE = cudaSolver.get_E();
         const sq::BitSetArray &cudaX = cudaSolver.get_x();
-        TEST_ASSERT(cpuE == cudaE);
+        TEST_ASSERT(allclose(cudaE, cpuE, epusiron<real>()));
         TEST_ASSERT(cpuX == cudaX);
 
         sq::VectorType<real> cpuVecX = sq::cast<real>(cpuX[0]);
