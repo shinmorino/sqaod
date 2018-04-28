@@ -3,6 +3,12 @@
 
 #include <stdarg.h>
 
+
+enum {
+    SQAODC_SIMD_ALIGNMENT = 32, /* FIXME: assuming AVX(2) */
+};
+
+
 #ifdef __GNUC__
 #define FORMATATTR(stringIdx, firstToCheck) __attribute__((format(printf, stringIdx, firstToCheck)))
 #else

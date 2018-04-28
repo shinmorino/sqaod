@@ -13,10 +13,12 @@ using sq::PackedBitSet;
 
 
 template<class OutType, class real>  static __global__
-void scaleKernel(OutType d_y, real alpha, const real *d_x, SizeType size) {
-    int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    if (gid < size)
-        d_y[gid] = alpha * d_x[gid];
+void scale2dKernel(OutType d_y,
+                   real alpha, const real *d_x, SizeType stride, SizeType rows, SizeType cols) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
+    if ((gidx < cols) && (gidy < rows))
+        d_y[gidx + gidy * stride] = alpha * d_x[gidx + gidy * stride];
 }
 
 template<class real>
@@ -24,11 +26,28 @@ void DeviceMathKernelsType<real>::scale(real *d_y, real alpha, const real *d_x, 
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
     if (addAssignFactor == 0.) {
-        scaleKernel <<<gridDim, blockDim, 0, stream_ >>> (d_y, alpha, d_x, size);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_>>>(d_y, alpha, d_x, 0, 1, size);
     }
     else {
         AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, 1.);
-        scaleKernel <<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, size);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, 0, 1, size);
+    }
+    DEBUG_SYNC;
+}
+
+template<class real>
+void DeviceMathKernelsType<real>::scale2d(real *d_y, sq::SizeType yStride,
+                                          real alpha, const real *d_x, sq::SizeType xStride,
+                                          sq::SizeType rows, sq::SizeType cols, real addAssignFactor) {
+    throwErrorIf(yStride != xStride, "Strides for x and y are not same.");
+    dim3 blockDim(64, 2);
+    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
+    if (addAssignFactor == 0.) {
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (d_y, alpha, d_x, xStride, rows, cols);
+    }
+    else {
+        AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, 1.);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, xStride, rows, cols);
     }
     DEBUG_SYNC;
 }
@@ -58,27 +77,33 @@ scaleBroadcast(real *d_y, real alpha, const real *d_c, SizeType size,
 }
 
 template<class real, class OutPtrType>  static __global__
-void scaleBroadcastVectorKernel(OutPtrType d_A, real alpha, const real *d_x, SizeType size) {
+void scaleBroadcastVectorKernel(OutPtrType d_A, sq::IdxType Astride,
+                                real alpha, const real *d_x, SizeType size) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
     if (gidx < size) {
-        SizeType pos = gidx + size * gidy;
+        SizeType pos = gidx + Astride * gidy;
         d_A[pos] = alpha * d_x[gidx];
     }
 }
 
 template<class real>
 void DeviceMathKernelsType<real>::
-scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
+scaleBroadcastVector(real *d_A, sq::SizeType Astride,
+                     real alpha, const real *d_x, SizeType size,
                      SizeType nBatch, real addAssignFactor) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x), divru(nBatch, blockDim.y));
     if (addAssignFactor == 0.) {
-        scaleBroadcastVectorKernel<<<gridDim, blockDim, 0, stream_>>>(d_A, alpha, d_x, size);
+        scaleBroadcastVectorKernel<<<gridDim, blockDim, 0, stream_>>>
+                (d_A, Astride, alpha, d_x, size);
+        throwOnError(cudaGetLastError());
     }
     else {
         AddAssignDevPtr<real> outPtr(d_A, addAssignFactor, real(1.));
-        scaleBroadcastVectorKernel<<<gridDim, blockDim, 0, stream_>>>(outPtr, alpha, d_x, size);
+        scaleBroadcastVectorKernel<<<gridDim, blockDim, 0, stream_>>>
+                (outPtr, Astride, alpha, d_x, size);
+        throwOnError(cudaGetLastError());
     }
     DEBUG_SYNC;
 }
@@ -86,29 +111,32 @@ scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
 
 template<class real, class OutPtrType>
 static __global__
-void scaleBroadcastScalarsKernel(OutPtrType d_A, real alpha, const real *d_x, SizeType size) {
+void scaleBroadcastScalarsKernel(OutPtrType d_A, sq::IdxType stride,
+                                 real alpha, const real *d_x, SizeType size) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
     if (gidx < size) {
-        SizeType pos = gidx + size * gidy;
+        SizeType pos = gidx + stride * gidy;
         d_A[pos] = alpha * d_x[gidy];
     }
 }
 
 template<class real>
 void DeviceMathKernelsType<real>::
-scaleBroadcastScalars(real *d_A, real alpha, const real *d_x, SizeType size,
+scaleBroadcastScalars(real *d_A, sq::SizeType Astride, real alpha, const real *d_x, SizeType size,
                      SizeType nBatch, real addAssignFactor) {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x), divru(nBatch, blockDim.y));
     if (addAssignFactor == 0.) {
         scaleBroadcastScalarsKernel
-                <<<gridDim, blockDim, 0, stream_>>>(d_A, alpha, d_x, size);
+                <<<gridDim, blockDim, 0, stream_>>>(d_A, Astride, alpha, d_x, size);
+        throwOnError(cudaGetLastError());
     }
     else {
         AddAssignDevPtr<real> outPtr(d_A, addAssignFactor, real(1.));
         scaleBroadcastScalarsKernel
-                <<<gridDim, blockDim, 0, stream_>>>(outPtr, alpha, d_x, size);
+                <<<gridDim, blockDim, 0, stream_>>>(outPtr, Astride, alpha, d_x, size);
+        throwOnError(cudaGetLastError());
     }
     DEBUG_SYNC;
 }
@@ -133,39 +161,57 @@ sum(real *d_sum, real alpha, const real *d_x, SizeType size, real addAssignFacto
 }
 
 
+template<class real>
+void DeviceMathKernelsType<real>::sum2d(real *d_sum,
+                                        real alpha, const real *d_values, sq::SizeType stride,
+                                        sq::SizeType rows, sq::SizeType cols, real addAssignFactor) {
+    sq::SizeType size = rows * cols;
+    In2dPtr<real> in(d_values, stride, cols);
+
+    size_t temp_storage_bytes;
+    cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
+                           in, d_sum, size, stream_, CUB_DEBUG);
+    void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
+    cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
+                           in, d_sum, size, stream_, CUB_DEBUG);
+    DEBUG_SYNC;
+
+
+}
 
 template<class real> void DeviceMathKernelsType<real>::
-sumGather(real *d_sum, real alpha, const real *d_x, SizeType size, SizeType stride, int offset) {
+sumWithInterval(real *d_sum, real alpha, const real *d_x, SizeType interval, int offset, SizeType size) {
     size_t temp_storage_bytes;
     cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                            d_x, d_sum, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
-    StridedInPtr<real> inPtr(d_x, stride, offset);
+    InPtrWithInterval<real> inPtr(d_x, interval, offset);
     cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes,
                            inPtr, d_sum, size, stream_, CUB_DEBUG);
 }
 
 
 template<class real> void DeviceMathKernelsType<real>::
-sumBatched(real *d_sum, real alpha, const real *d_A, SizeType size, SizeType nBatch) {
+sumBatched(real *d_sum, real alpha, const real *d_A, sq::SizeType Astride,
+           sq::SizeType size, sq::SizeType nBatch) {
     MulOutDevPtr<real> outPtr(d_sum, alpha);
 #if 0
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     d_A, outPtr, nBatch,
-                                    Linear(size, 0), Linear(size, size),
+                                    Linear(Astride, 0), Linear(Astride, size),
                                     stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
     cub::DeviceSegmentedReduce::Sum(d_temp_storage, temp_storage_bytes,
                                     d_A, outPtr, nBatch,
-                                    Linear(size, 0), Linear(size, size),
+                                    Linear(Astride, 0), Linear(Astride, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
     typedef DeviceSegmentedSumTypeImpl<real, const real*, MulOutDevPtr<real>, Linear> Sum;
     Sum &segSum = static_cast<Sum&>(*segmentedSum_);
     segSum.configure(size, nBatch, true);
-    segSum(d_A, outPtr, Linear(size, 0));
+    segSum(d_A, outPtr, Linear(Astride, 0));
 #endif
 }
 
@@ -201,34 +247,35 @@ dot(real *d_c, real alpha, const real *d_x, const real *d_y, SizeType size,
 
 
 template<class real> void DeviceMathKernelsType<real>::
-dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType size,
-           SizeType nBatch) {
+dotBatched(real *d_z, real alpha, const real *d_x, sq::SizeType xStride, const real *d_y, sq::SizeType yStride,
+           SizeType size, SizeType nBatch) {
     
     InDotPtr<real> inPtr(d_x, d_y);
     MulOutDevPtr<real> outPtr(d_z, alpha);
+    throwErrorIf(xStride != yStride, "Strides for d_x and d_y must be same."); 
 #if 0
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     inPtr, outPtr, nBatch,
-                                    Linear(size, 0), Linear(size, size),
+                                    Linear(xStride, 0), Linear(xStride, size),
                                     stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
     cub::DeviceSegmentedReduce::Sum(d_temp_storage, temp_storage_bytes,
                                     inPtr, outPtr, nBatch,
-                                    Linear(size, 0), Linear(size, size),
+                                    Linear(xStride, 0), Linear(xStride, size),
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
     typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, MulOutDevPtr<real>, Linear> Dot;
     Dot &segDot = static_cast<Dot&>(*segmentedDot_);
     segDot.configure(size, nBatch, true);
-    segDot(inPtr, outPtr, Linear(size, 0));
+    segDot(inPtr, outPtr, Linear(xStride, 0));
 #endif
 }
 
 template <class real>
 __global__ static void
-transposeKernel(real *d_At, const real *d_A, SizeType cols, SizeType rows) {
+transposeKernel(real *d_At, sq::SizeType AtStride, const real *d_A, sq::SizeType Astride, SizeType cols, SizeType rows) {
 
     int inTileLeft = blockDim.x * blockIdx.x;
     int inTileTop = blockDim.y * blockIdx.y;
@@ -236,7 +283,7 @@ transposeKernel(real *d_At, const real *d_A, SizeType cols, SizeType rows) {
     int xIn = inTileLeft + threadIdx.x;
     int yIn = inTileTop + threadIdx.y;
 
-    real vIn = (xIn < cols) && (yIn < rows) ? d_A[xIn + cols * yIn] : real();
+    real vIn = (xIn < cols) && (yIn < rows) ? d_A[xIn + Astride * yIn] : real();
 
     __shared__ real tile[32][33];
     tile[threadIdx.y][threadIdx.x] = vIn;
@@ -247,15 +294,15 @@ transposeKernel(real *d_At, const real *d_A, SizeType cols, SizeType rows) {
     real vOut = tile[threadIdx.x][threadIdx.y];
     
     if ((xOut < rows) && (yOut < cols))
-        d_At[xOut + rows * yOut] = vOut;
+        d_At[xOut + AtStride * yOut] = vOut;
 }
 
 
 template<class real> void DeviceMathKernelsType<real>::
-transpose(real *d_At, const real *d_A, SizeType rows, SizeType cols) {
+transpose2d(real *d_At, sq::SizeType AtStride, const real *d_A, sq::SizeType Astride, SizeType rows, SizeType cols) {
     dim3 blockDim(32, 32);
     dim3 gridDim(divru(cols, 32), divru(rows, 32));
-    transposeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At, d_A, cols, rows);
+    transposeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At, AtStride, d_A, Astride, cols, rows);
     DEBUG_SYNC;
 }
 
@@ -271,19 +318,34 @@ min(real *d_min, const real *d_values, SizeType size) {
     DEBUG_SYNC;
 }
 
+template<class real> void DeviceMathKernelsType<real>::
+min2d(real *d_min,
+      const real *d_values, sq::SizeType stride, sq::SizeType rows, sq::SizeType cols) {
+    sq::SizeType size = rows * cols;
+    In2dPtr<real> in(d_values, stride, cols);
+
+    size_t temp_storage_bytes;
+    cub::DeviceReduce::Min(NULL, temp_storage_bytes,
+                           in, d_min, size, stream_, CUB_DEBUG);
+    void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
+    cub::DeviceReduce::Min(d_temp_storage, temp_storage_bytes,
+                           in, d_min, size, stream_, CUB_DEBUG);
+    DEBUG_SYNC;
+}
+
 
 template<> void DeviceMathKernelsType<double>::
 gemv(cublasOperation_t op, int M, int N,
-     const double *d_alpha, const double *d_A, const double *d_x,
+     const double *d_alpha, const double *d_A, sq::SizeType Astride, const double *d_x,
      const double *d_beta, double *d_y) {
-    throwOnError(cublasDgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, M, d_x, 1, d_beta, d_y, 1));
+    throwOnError(cublasDgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, Astride, d_x, 1, d_beta, d_y, 1));
 }
 
 template<> void DeviceMathKernelsType<float>::
 gemv(cublasOperation_t op, int M, int N,
-     const float *d_alpha, const float *d_A, const float *d_x,
+     const float *d_alpha, const float *d_A, sq::SizeType Astride, const float *d_x,
      const float *d_beta, float *d_y) {
-    throwOnError(cublasSgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, M, d_x, 1, d_beta, d_y, 1));
+    throwOnError(cublasSgemv(devStream_->getCublasHandle(), op, M, N, d_alpha, d_A, Astride, d_x, 1, d_beta, d_y, 1));
 }
 
 template<> void DeviceMathKernelsType<double>::
@@ -347,7 +409,7 @@ copyBroadcast(V *d_buf, const V &v, sq::SizeType size) const {
 
 template<class V>
 __global__ static
-void copyBroadcastStridedKernel(V *d_buf, const V v, SizeType size, SizeType stride, IdxType offset) {
+void copyBroadcastWithIntervalKernel(V *d_buf, SizeType stride, IdxType offset, const V v, SizeType size) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < size) {
         IdxType pos = gid * stride + offset;
@@ -355,50 +417,77 @@ void copyBroadcastStridedKernel(V *d_buf, const V v, SizeType size, SizeType str
     }
 }
 
-
 template<class V> void DeviceCopyKernels::
-copyBroadcastStrided(V *d_buf, const V &v, SizeType size, SizeType stride, IdxType offset) const {
+copyBroadcastWithInterval(V *d_buf, SizeType stride, IdxType offset, const V &v, SizeType size) const {
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
-    copyBroadcastStridedKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, v, size, stride, offset);
+    copyBroadcastWithIntervalKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, stride, offset, v, size);
+    DEBUG_SYNC;
+}
+
+template<class V>
+__global__ static
+void copyBroadcast2dKernel(V *d_buf, sq::SizeType stride, const V v, sq::SizeType rows, sq::SizeType cols) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
+    if ((gidx < cols) && (gidy < rows))
+        d_buf[gidx + gidy * stride] = v;
+}
+
+
+template<class V> void DeviceCopyKernels::
+copyBroadcast2d(V *d_buf, sq::SizeType stride, const V &v, sq::SizeType rows, sq::SizeType cols) const {
+    dim3 blockDim(64, 2);
+    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
+    copyBroadcast2dKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, stride, v, rows, cols);
     DEBUG_SYNC;
 }
 
 
 template<class V>
 __global__ static void
-copyBroadcastVectorKernel(V *d_dst, const V *d_src, sq::SizeType size, sq::SizeType nBatch) {
+copyBroadcastVectorKernel(V *d_dst, sq::SizeType stride, const V *d_src, sq::SizeType size, sq::SizeType nBatch) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
     if ((gidx < size) && (gidy < nBatch)) {
-        d_dst[gidx + size * gidy] = d_src[gidx];
+        d_dst[gidx + stride * gidy] = d_src[gidx];
     }
 }
 
 template<class V> inline void DeviceCopyKernels::
-copyBroadcastVector(V *dst, const V *vec, sq::SizeType size, sq::SizeType nBatch) const {
+copyBroadcastVector(V *dst, sq::SizeType stride, const V *vec, sq::SizeType size, sq::SizeType nBatch) const {
     dim3 blockDim(64, 2);
     dim3 gridDim(divru(size, blockDim.x), divru(nBatch, blockDim.y));
-    copyBroadcastVectorKernel << <gridDim, blockDim >> > (dst, vec, size, nBatch);
+    copyBroadcastVectorKernel << <gridDim, blockDim >> > (dst, stride, vec, size, nBatch);
 }
 
 
 template<class D, class S>
 __global__ static void
-castKernel(D *d_dst, const S *d_src, sq::SizeType size) {
-    int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    if (gid < size)
-        d_dst[gid] = (D)d_src[gid];
+cast2dKernel(D *d_dst, sq::SizeType dstStride, const S *d_src, sq::SizeType srcStride,
+             sq::SizeType cols, sq::SizeType rows) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
+    if ((gidx < cols) && (gidy < rows)) {
+        d_dst[gidx + dstStride * gidy] = (D)d_src[gidx + srcStride * gidy];
+    }
 }
 
 
 template<class Vdst, class Vsrc> void DeviceCopyKernels::
 cast(Vdst *dst, const Vsrc *src, sq::SizeType size) {
+    cast2d(dst, 0, src, 0, 1, size);
+}
+
+template<class Vdst, class Vsrc> void DeviceCopyKernels::
+cast2d(Vdst *dst, sq::SizeType dstStride, const Vsrc *src, sq::SizeType srcStride,
+       sq::SizeType rows, sq::SizeType cols) {
     dim3 blockDim(128);
-    dim3 gridDim(divru(size, blockDim.x));
-    castKernel<<<gridDim, blockDim >>> (dst, src, size);
+    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
+    cast2dKernel<<<gridDim, blockDim >>> (dst, dstStride, src, srcStride, rows, cols);
     DEBUG_SYNC;
 }
+
 
 DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
     stream_ = NULL;
@@ -412,18 +501,19 @@ void DeviceCopyKernels::assignStream(DeviceStream *stream) {
 }
 
 
-template void DeviceCopyKernels::copyBroadcastStrided(double *, const double &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(float *, const float &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(char *, const char &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(unsigned char *, const unsigned char &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(short *, const short &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(unsigned short *, const unsigned short &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(int *, const int &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(unsigned int *, const unsigned int &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(long *, const long &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(unsigned long *, const unsigned long &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(long long *, const long long &, SizeType, SizeType, IdxType) const;
-template void DeviceCopyKernels::copyBroadcastStrided(unsigned long long *, const unsigned long long &, SizeType, SizeType, IdxType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(double *, SizeType, IdxType, const double &, SizeType) const;
+
+template void DeviceCopyKernels::copyBroadcastWithInterval(float *, SizeType, IdxType, const float &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(char *, SizeType, IdxType, const char &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned char *, SizeType, IdxType, const unsigned char &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(short *, SizeType, IdxType, const short &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned short *, SizeType, IdxType, const unsigned short &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(int *, SizeType, IdxType, const int &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned int *, SizeType, IdxType, const unsigned int &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(long *, SizeType, IdxType, const long &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned long *, SizeType, IdxType, const unsigned long &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(long long *, SizeType, IdxType, const long long &, SizeType) const;
+template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned long long *, SizeType, IdxType, const unsigned long long &, SizeType) const;
 
 template void DeviceCopyKernels::copyBroadcast(double *, const double &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(float *, const float &, SizeType) const;
@@ -438,14 +528,27 @@ template void DeviceCopyKernels::copyBroadcast(unsigned long *, const unsigned l
 template void DeviceCopyKernels::copyBroadcast(long long *, const long long &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(unsigned long long *, const unsigned long long &, SizeType) const;
 
+template void DeviceCopyKernels::copyBroadcast2d(double *, sq::SizeType, const double &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(float *, sq::SizeType, const float &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(char *, sq::SizeType, const char &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(unsigned char *, sq::SizeType, const unsigned char &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(short *, sq::SizeType, const short &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(unsigned short *, sq::SizeType, const unsigned short &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(int *, sq::SizeType, const int &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(unsigned int *, sq::SizeType, const unsigned int &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(long *, sq::SizeType, const long &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(unsigned long *, sq::SizeType, const unsigned long &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(long long *, sq::SizeType, const long long &, SizeType, SizeType) const;
+template void DeviceCopyKernels::copyBroadcast2d(unsigned long long *, sq::SizeType, const unsigned long long &, SizeType, SizeType) const;
+
 template void DeviceCopyKernels::cast(char *dst, const float *src, sq::SizeType size);
 template void DeviceCopyKernels::cast(char *dst, const double *src, sq::SizeType size);
 template void DeviceCopyKernels::cast(float *dst, const char *src, sq::SizeType size);
 template void DeviceCopyKernels::cast(double *dst, const char *src, sq::SizeType size);
 
-template void DeviceCopyKernels::copyBroadcastVector(char *dst, const char *vec, sq::SizeType size, sq::SizeType nBatch) const;
-template void DeviceCopyKernels::copyBroadcastVector(float *dst, const float *vec, sq::SizeType size, sq::SizeType nBatch) const;
-template void DeviceCopyKernels::copyBroadcastVector(double *dst, const double *vec, sq::SizeType size, sq::SizeType nBatch) const;
+template void DeviceCopyKernels::copyBroadcastVector(char *dst, sq::SizeType stride, const char *vec, sq::SizeType size, sq::SizeType nBatch) const;
+template void DeviceCopyKernels::copyBroadcastVector(float *dst, sq::SizeType stride, const float *vec, sq::SizeType size, sq::SizeType nBatch) const;
+template void DeviceCopyKernels::copyBroadcastVector(double *dst, sq::SizeType stride, const double *vec, sq::SizeType size, sq::SizeType nBatch) const;
 
 
 template<class V>
@@ -476,24 +579,35 @@ sqaod_cuda::generateBitsSequence(V *d_data, int N, PackedBitSet xBegin, PackedBi
 
 template<class V>
 __global__ static void
-randomizeSpin_Kernel(V *d_buffer, sq::SizeType size,
-                   const unsigned int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap) {
-    int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    if (gid < size)
-        d_buffer[gid] = (d_random[(gid + offset) % sizeToWrap] & 1) ? V(1) : V(-1);
+randomizeSpin2d_Kernel(V *d_buffer, sq::SizeType stride,
+                       const unsigned int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap,
+                       sq::SizeType width, sq::SizeType height) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
+    if ((gidx < width) && (gidy < height))
+        d_buffer[gidx + gidy * stride] =
+                (d_random[(gidx + gidy * width + offset) % sizeToWrap] & 1) ? V(1) : V(-1);
 }
 
 
 template<class V>
 void sqaod_cuda::randomizeSpin(V *d_q, DeviceRandom &d_random, sq::SizeType size,
                                cudaStream_t stream) {
+    randomizeSpin2d(d_q, 0, d_random, 1, size, stream);
+}
+
+template<class V>
+void sqaod_cuda::randomizeSpin2d(V *d_q, sq::SizeType stride, DeviceRandom &d_random,
+                                 sq::SizeType rows, sq::SizeType cols,
+                                 cudaStream_t stream) {
     dim3 blockDim(128);
-    dim3 gridDim(divru(size, blockDim.x));
+    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
     sq::IdxType offset;
     sq::SizeType sizeToWrap;
-    const unsigned int *d_randnum = d_random.get(size, &offset, &sizeToWrap);
-    randomizeSpin_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q, size,
-                                                         d_randnum, offset, sizeToWrap);
+    const unsigned int *d_randnum = d_random.get(rows * cols, &offset, &sizeToWrap);
+    randomizeSpin2d_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q, stride,
+                                                             d_randnum, offset, sizeToWrap,
+                                                             rows, cols);
     DEBUG_SYNC;
 }
 

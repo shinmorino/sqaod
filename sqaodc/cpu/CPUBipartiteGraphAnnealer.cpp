@@ -166,9 +166,9 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::getHamiltonian(Vector *h0, Vector *h1,
                                                      Matrix *J, real *c) const {
     throwErrorIfProblemNotSet();
-    mapToRowVector(*h0) = h0_;
-    mapToRowVector(*h1) = h1_;
-    mapTo(*J) = J_;
+    *h0 = sq::mapFrom(h0_);
+    *h1 = sq::mapFrom(h1_);
+    *J = sq::mapFrom(J_);
     *c = c_;
 }
 

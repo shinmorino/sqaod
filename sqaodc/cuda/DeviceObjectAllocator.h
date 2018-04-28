@@ -19,6 +19,9 @@ struct DeviceObjectAllocator {
     void allocate(V **v, size_t size);
 
     template<class V>
+    void allocate2d(V **v, sq::SizeType *stride, size_t width, size_t height);
+
+    template<class V>
     void allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols);
 
     template<class V>
@@ -60,6 +63,12 @@ void DeviceObjectAllocator::allocate(V **v, size_t size) {
     *v = (V*)allocate(sizeof(V) * size);
 }
 
+template<class V>
+void DeviceObjectAllocator::allocate2d(V **v, sq::SizeType *stride, size_t width, size_t height) {
+    *stride = sq::roundUp(width, 4); /* FIXME; define 4 as a constant */
+    allocate(v, *stride * height);
+}
+
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, const sq::Dim &dim) {
     return allocate(mat, dim.rows, dim.cols);
@@ -67,25 +76,25 @@ void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, const sq::Dim &di
 
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
-    mat->d_data = (V*)allocate(sizeof(V) * rows * cols);
+    allocate2d(&mat->d_data, &mat->stride, rows, cols);
     mat->rows = rows;
     mat->cols = cols;
 }
 
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceVectorType<V> *vec, sq::SizeType size) {
-    vec->d_data = (V*)allocate(sizeof(V) * size);
+    allocate(&vec->d_data, size);
     vec->size = size;
 }
 
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceScalarType<V> *sc) {
-    sc->d_data = (V*)allocate(sizeof(V));
+    allocate(&sc->d_data, 1);
 }
 
 template<class V> inline
 void DeviceObjectAllocator::allocate(DeviceArrayType<V> *arr, sq::SizeType capacity) {
-    arr->d_data = (V*)allocate(sizeof(V) * capacity);
+    allocate(&arr->d_data, capacity);
     arr->capacity = capacity;
 }
 

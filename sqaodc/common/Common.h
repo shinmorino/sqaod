@@ -11,8 +11,8 @@ namespace sqaod {
 bool isCUDAAvailable();
 
 
-template<class real>
-void createBitSetSequence(real *bits, int nBits, PackedBitSet bBegin, PackedBitSet bEnd);
+template<class V>
+void createBitSetSequence(V *bits, SizeType stride, SizeType nBits, PackedBitSet bBegin, PackedBitSet bEnd);
     
 void unpackBitSet(BitSet *unpacked, const PackedBitSet packed, int N);
     
@@ -37,7 +37,7 @@ BitSet x_from_q(const VectorType<V> &q) {
 template<class V> inline
 MatrixType<V> x_to_q(const BitMatrix &x) {
     MatrixType<V> q(x.dim());
-    x_to_q(q.data, x.data, x.rows * x.cols);
+    x_to_q(q.data, x.data, x.cols, x.rows, x.stride);
     return x;
 }
 

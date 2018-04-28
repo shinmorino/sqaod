@@ -19,13 +19,14 @@ struct DeviceMatrixType : DeviceObject {
     
     DeviceMatrixType() {
         d_data = NULL;
-        rows = cols = -1;
+        rows = cols = stride = -1;
     }
     
-    DeviceMatrixType(V *_d_data, SizeType _rows, SizeType _cols) {
+    DeviceMatrixType(V *_d_data, SizeType _rows, SizeType _cols, SizeType _stride) {
         d_data = _d_data;
         rows = _rows;
         cols = _cols;
+        stride = _stride;
     }
     
     virtual ~DeviceMatrixType() {
@@ -34,25 +35,25 @@ struct DeviceMatrixType : DeviceObject {
     sq::Dim dim() const { return sq::Dim(rows, cols); }
 
     V *row(sq::IdxType row) {
-        return &d_data[row * cols];
+        return &d_data[row * stride];
     }
     const V *row(sq::IdxType row) const {
-        return &d_data[row * cols];
+        return &d_data[row * stride];
     }
 
     V &operator()(sq::IdxType r, sq::IdxType c) {
         assert((0 <= r) && (r < (sq::IdxType)rows));
         assert((0 <= c) && (c < (sq::IdxType)cols));
-        return d_data[r * cols + c];
+        return d_data[r * stride + c];
     }
     
     const V &operator()(sq::IdxType r, sq::IdxType c) const {
         assert((0 <= r) && (r < (sq::IdxType)rows));
         assert((0 <= c) && (c < (sq::IdxType)cols));
-        return d_data[r * cols + c];
+        return d_data[r * stride + c];
     }
 
-    SizeType rows, cols;
+    SizeType rows, cols, stride;
     V *d_data;
 
 private:

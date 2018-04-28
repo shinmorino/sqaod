@@ -47,7 +47,7 @@ public:
 
     /* Device kernels, declared as public for tests */
 
-    void generateBitsSequence(real *d_data, int N,
+    void generateBitsSequence(DeviceMatrix *bitsSequences,
                               sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 
     void select(sq::PackedBitSet *d_out, sq::SizeType *d_nOut, sq::PackedBitSet xBegin, 

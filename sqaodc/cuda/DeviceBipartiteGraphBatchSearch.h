@@ -51,12 +51,12 @@ public:
     
     /* Device kernels, declared as public for tests */
 
-    void generateBitsSequence(real *d_data, int N,
+    void generateBitsSequence(DeviceMatrix *bitsSequences,
                               sq::PackedBitSet xBegin, sq::PackedBitSet xEnd);
 
     void select(sq::PackedBitSetPair *d_out, sq::SizeType *d_nOut,
                 sq::PackedBitSet xBegin0, sq::PackedBitSet xBegin1, 
-                real val, const real *d_vals, sq::SizeType nIn0, sq::SizeType nIn1);
+                real val, const real *d_vals, sq::SizeType valsStride, sq::SizeType nIn0, sq::SizeType nIn1);
 
 private:
     sq::SizeType N0_, N1_;

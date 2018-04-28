@@ -11,7 +11,7 @@ CPUDenseGraphBatchSearch<real>::CPUDenseGraphBatchSearch() {
 
 template<class real>
 void CPUDenseGraphBatchSearch<real>::setQUBO(const Matrix &W, sq::SizeType tileSize) {
-    W_.map(W.data, W.rows, W.cols);
+    W_.map(W.data, W.rows, W.cols, W.stride);
     tileSize_ = tileSize;
 }
 
@@ -29,7 +29,7 @@ void CPUDenseGraphBatchSearch<real>::searchRange(sq::PackedBitSet xBegin, sq::Pa
 
     Matrix bitsSeq(nBatchSize, N);
     Vector Ebatch;
-    sq::createBitSetSequence(bitsSeq.data, N, xBegin, xEnd);
+    sq::createBitSetSequence(bitsSeq.data, bitsSeq.stride, N, xBegin, xEnd);
     DGFuncs<real>::calculate_E(&Ebatch, W_, bitsSeq);
 
     for (int idx = 0; idx < nBatchSize; ++idx) {

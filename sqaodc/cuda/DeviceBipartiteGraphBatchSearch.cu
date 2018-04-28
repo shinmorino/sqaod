@@ -75,8 +75,8 @@ calculate_E(sq::PackedBitSet xBegin0, sq::PackedBitSet xEnd0,
     abortIf(tileSize0_ < nBatch0,
             "nBatch1 is too large, tileSize1=%d, nBatch1=%d", int(tileSize1_), int(nBatch1));
     /* FIXME: use stream if effective */
-    generateBitsSequence(d_bitsMat0_.d_data, N0_, xBegin0, xEnd0);
-    generateBitsSequence(d_bitsMat1_.d_data, N1_, xBegin1, xEnd1);
+    generateBitsSequence(&d_bitsMat0_, xBegin0, xEnd0);
+    generateBitsSequence(&d_bitsMat1_, xBegin1, xEnd1);
     devFormulas_.calculate_E_2d(&d_Ebatch_, d_b0_, d_b1_, d_W_, d_bitsMat0_, d_bitsMat1_);
     devFormulas_.devMath.min(&h_Emin_, d_Ebatch_);
 }
@@ -86,17 +86,18 @@ template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::partition_minXPairs(bool append) {
     assert(d_Ebatch_.dim() == sq::Dim(tileSize1_, tileSize0_));
     if (!append) {
-        /* overwrite */
         d_minXPairs_.size = 0;
         select(d_minXPairs_.d_data, h_nMinXPairs_.d_data,
-               xBegin0_, xBegin1_, *h_Emin_.d_data, d_Ebatch_.d_data, tileSize0_, tileSize1_);
+               xBegin0_, xBegin1_, *h_Emin_.d_data,
+               d_Ebatch_.d_data, d_Ebatch_.stride, tileSize0_, tileSize1_);
         synchronize();
         d_minXPairs_.size = *h_nMinXPairs_.d_data; /* sync field */
     }
     else if (d_minXPairs_.size < minXPairsSize_) {
         /* append */
         select(&d_minXPairs_.d_data[d_minXPairs_.size], h_nMinXPairs_.d_data,
-               xBegin0_, xBegin1_, *h_Emin_.d_data, d_Ebatch_.d_data, tileSize0_, tileSize1_);
+               xBegin0_, xBegin1_, *h_Emin_.d_data,
+               d_Ebatch_.d_data, d_Ebatch_.stride, tileSize0_, tileSize1_);
         synchronize();
         d_minXPairs_.size += *h_nMinXPairs_.d_data; /* sync field */
     }
@@ -110,27 +111,29 @@ void DeviceBipartiteGraphBatchSearch<real>::synchronize() {
 
 template<class real>
 __global__ static
-void generateBitsSequenceKernel(real *d_data, int N,
+void generateBitsSequenceKernel(real *d_data, int stride, int N,
                                 sq::SizeType nSeqs, sq::PackedBitSet xBegin) {
     sq::IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
     if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
         sq::PackedBitSet bits = xBegin + seqIdx;
         bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
-        d_data[seqIdx * N + threadIdx.x] = bitSet ? real(1) : real(0);
+        d_data[seqIdx * stride + threadIdx.x] = bitSet ? real(1) : real(0);
     }
 }
 
 
 template<class real> void DeviceBipartiteGraphBatchSearch<real>::
-generateBitsSequence(real *d_data, int N,
+generateBitsSequence(DeviceMatrix *bitsSequences,
                      sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {
+    sq::SizeType N = bitsSequences->cols;
+    sq::SizeType stride = bitsSequences->stride;
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
     sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
     gridDim.x = divru((unsigned int)(xEnd - xBegin), blockDim.y);
-    generateBitsSequenceKernel
-            <<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>(d_data, N, nSeqs, xBegin);
+    generateBitsSequenceKernel<<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>
+            (bitsSequences->d_data, stride, N, nSeqs, xBegin);
     DEBUG_SYNC;
 }
 
@@ -198,15 +201,15 @@ struct SelectOutputIterator {
 
 
 template<class real> struct SelectOp {
-    SelectOp(real _val, const real *_d_vals, int _tileSize0)
-            : val(_val), d_vals(_d_vals), tileSize0(_tileSize0) { }
+    SelectOp(real _val, const real *_d_vals, int _stride)
+            : val(_val), d_vals(_d_vals), stride(_stride) { }
     __device__ __forceinline__
     bool operator()(const sq::PackedBitSetPair &idx) const {
-        return val == d_vals[idx.bits1 * tileSize0 + idx.bits0];
+        return val == d_vals[idx.bits1 * stride + idx.bits0];
     }
     real val;
     const real *d_vals;
-    int tileSize0;
+    int stride;
 };
 
 }
@@ -225,11 +228,11 @@ struct iterator_traits<SelectOp<real> > : sqaod_cuda::base_iterator_traits<real>
 template<class real> void DeviceBipartiteGraphBatchSearch<real>::
 select(sq::PackedBitSetPair *d_out, sq::SizeType *d_nOut,
        sq::PackedBitSet xBegin0, sq::PackedBitSet xBegin1, 
-       real val, const real *d_vals, sq::SizeType nIn0, sq::SizeType nIn1) {
+       real val, const real *d_vals, sq::SizeType valsStride, sq::SizeType nIn0, sq::SizeType nIn1) {
     SelectInputIterator in(tileSize0_);
 
     SelectOutputIterator out(xBegin0, xBegin1, d_out);
-    SelectOp<real> selectOp(val, d_vals, tileSize0_);
+    SelectOp<real> selectOp(val, d_vals, valsStride);
 
     void *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
