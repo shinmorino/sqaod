@@ -32,8 +32,7 @@ struct DeviceCopy {
     void broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType rows, sq::SizeType cols) const;
 
     template<class V>
-    void broadcastWithInterval(V *d_buf, sq::SizeType interval, sq::SizeType offset,
-                               const V &v, sq::SizeType size) const;
+    void broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) const;
     
     template<class V>
     void copyRowwise(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const;
@@ -58,10 +57,6 @@ struct DeviceCopy {
     
     template<class V>
     void operator()(DeviceMatrixType<V> *dst, const V &src) const;
-    
-    template<class V>
-    void operator()(DeviceMatrixType<V> *dst, const V &src, sq::SizeType size,
-                    sq::SizeType stride, sq::IdxType offset) const;
     
     /* sq::VectorType<V> <-> DeviceVectorType<V> */
     
@@ -125,9 +120,9 @@ void DeviceCopy::broadcast(V *d_buf, const V &v, sq::SizeType size) const {
 }
 
 template<class V> void DeviceCopy::
-broadcastWithInterval(V *d_buf, sq::SizeType interval, sq::SizeType offset,
-                      const V &v, sq::SizeType size) const {
-    kernels_.copyBroadcastWithInterval(d_buf, interval, offset, v, size);
+broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) const {
+    assertValidMatrix(*dst, __func__);
+    kernels_.broadcastToDiagonal(dst->d_data, dst->stride, src, dst->cols, dst->rows, offset);
 }
 
 template<class V> void DeviceCopy::

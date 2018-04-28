@@ -409,19 +409,30 @@ copyBroadcast(V *d_buf, const V &v, sq::SizeType size) const {
 
 template<class V>
 __global__ static
-void copyBroadcastWithIntervalKernel(V *d_buf, SizeType stride, IdxType offset, const V v, SizeType size) {
+void broadcastToDiagonalKernel(V *d_buf, SizeType stride, const V v, sq::SizeType size, IdxType xOffset, IdxType yOffset) {
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
-    if (gid < size) {
-        IdxType pos = gid * stride + offset;
-        d_buf[pos] = v;
-    }
+    int row = gid + yOffset;
+    int col = gid + xOffset;
+    if (gid < size)
+        d_buf[col + row * stride] = v;
 }
 
 template<class V> void DeviceCopyKernels::
-copyBroadcastWithInterval(V *d_buf, SizeType stride, IdxType offset, const V &v, SizeType size) const {
+broadcastToDiagonal(V *d_buf, SizeType stride, const V &v, sq::SizeType width, sq::SizeType height, sq::IdxType offset) const {
+    int xOffset, yOffset;
+    if (0 <= offset) {
+        xOffset = offset;
+        yOffset = 0;
+    }
+    else {
+        offset = -offset;
+        xOffset = 0;
+        yOffset = offset;
+    }
+    int size = std::min(width - xOffset, height - yOffset);
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
-    copyBroadcastWithIntervalKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, stride, offset, v, size);
+    broadcastToDiagonalKernel<<<gridDim, blockDim, 0, stream_>>>(d_buf, stride, v, size, xOffset, yOffset);
     DEBUG_SYNC;
 }
 
@@ -501,19 +512,18 @@ void DeviceCopyKernels::assignStream(DeviceStream *stream) {
 }
 
 
-template void DeviceCopyKernels::copyBroadcastWithInterval(double *, SizeType, IdxType, const double &, SizeType) const;
-
-template void DeviceCopyKernels::copyBroadcastWithInterval(float *, SizeType, IdxType, const float &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(char *, SizeType, IdxType, const char &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned char *, SizeType, IdxType, const unsigned char &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(short *, SizeType, IdxType, const short &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned short *, SizeType, IdxType, const unsigned short &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(int *, SizeType, IdxType, const int &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned int *, SizeType, IdxType, const unsigned int &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(long *, SizeType, IdxType, const long &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned long *, SizeType, IdxType, const unsigned long &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(long long *, SizeType, IdxType, const long long &, SizeType) const;
-template void DeviceCopyKernels::copyBroadcastWithInterval(unsigned long long *, SizeType, IdxType, const unsigned long long &, SizeType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(double *, sq::SizeType, const double &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(float *, sq::SizeType, const float &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(char *, sq::SizeType, const char &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(unsigned char *, sq::SizeType, const unsigned char &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(short *, sq::SizeType, const short &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(unsigned short *, sq::SizeType, const unsigned short &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(int *, sq::SizeType, const int &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(unsigned int *, sq::SizeType, const unsigned int &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(long *, sq::SizeType, const long &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(unsigned long *, sq::SizeType, const unsigned long &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(long long *, sq::SizeType, const long long &, sq::SizeType, sq::SizeType, sq::IdxType) const;
+template void DeviceCopyKernels::broadcastToDiagonal(unsigned long long *, sq::SizeType, const unsigned long long &, sq::SizeType, sq::SizeType, sq::IdxType) const;
 
 template void DeviceCopyKernels::copyBroadcast(double *, const double &, SizeType) const;
 template void DeviceCopyKernels::copyBroadcast(float *, const float &, SizeType) const;

@@ -9,7 +9,7 @@ template<class real>
 void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
     assertValidMatrix(*A, __func__);
     SizeType size = std::min(A->rows, A->cols);
-    devCopy_(A, v, size, A->rows + 1, 0);
+    devCopy_.broadcastToDiagonal(A, v, 0);
 }
 
 template<class real>

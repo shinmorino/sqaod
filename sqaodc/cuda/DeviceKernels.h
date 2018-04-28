@@ -92,8 +92,7 @@ struct DeviceCopyKernels {
                          sq::SizeType rows, sq::SizeType cols) const;
 
     template<class V>
-    void copyBroadcastWithInterval(V *d_buf, sq::SizeType interval, sq::IdxType offset,
-                                   const V &v, sq::SizeType size) const;
+    void broadcastToDiagonal(V *d_buf, sq::SizeType stride, const V &v, sq::SizeType width, sq::SizeType height, sq::IdxType offset) const;
 
     template<class V>
     void copyBroadcastVector(V *dst, sq::SizeType dstStride,
