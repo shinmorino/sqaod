@@ -12,8 +12,7 @@ void *HostObjectAllocator::allocate(size_t size) {
 
 void *HostObjectAllocator::allocate2d(sq::SizeType *stride, size_t width, size_t height) {
     /* Host memory alignment */
-    const int alignment = 64;
-    *stride = sq::roundUp(width, alignment);
+    *stride = sq::roundUp(width, SQAODC_SIMD_ALIGNMENT);
     size_t size = *stride * height;
     
     void *pv;
