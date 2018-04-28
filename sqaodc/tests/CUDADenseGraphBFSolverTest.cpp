@@ -109,7 +109,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+        for (sq::IdxType seq = 0; seq < tileSize; ++seq) {
             sq::PackedBitSet bits = xBegin + seq;
             real *valseq = &bitsSequence(seq, 0);
             for (int idx = 0; idx < (int)N; ++idx) {
@@ -140,7 +140,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+        for (sq::IdxType seq = 0; seq < tileSize; ++seq) {
             sq::PackedBitSet bits = xBegin + seq;
             real *valseq = &bitsSequence(seq, 0);
             for (int idx = 0; idx < (int)N; ++idx) {
