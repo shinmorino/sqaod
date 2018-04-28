@@ -109,7 +109,7 @@ struct In2dPtr {
     }
     __device__ __forceinline__
     SelfType operator+(sq::IdxType v) const {
-        return SelfType(d_data, stride, offset + v);
+        return SelfType(d_data, stride, width, offset + v);
     }
 
     const real *d_data;
