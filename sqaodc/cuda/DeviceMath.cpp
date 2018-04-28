@@ -32,7 +32,7 @@ void DeviceMathType<real>::scale(DeviceMatrix *B, real alpha, const DeviceMatrix
     devAlloc_->allocateIfNull(B, A.dim());
     assertSameShape(*B, A, __func__);
     devKernels_.scale2d(B->d_data, B->stride, alpha, A.d_data, A.stride,
-                        A.rows, A.cols, real(0.));
+                        A.cols, A.rows, real(0.));
 }
 
 template<class real>

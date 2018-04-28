@@ -15,10 +15,10 @@ using sq::PackedBitSet;
 
 template<class OutType, class real>  static __global__
 void scale2dKernel(OutType d_y,
-                   real alpha, const real *d_x, SizeType stride, SizeType rows, SizeType cols) {
+                   real alpha, const real *d_x, SizeType stride, SizeType width, SizeType height) {
     int gidx = blockDim.x * blockIdx.x + threadIdx.x;
     int gidy = blockDim.y * blockIdx.y + threadIdx.y;
-    if ((gidx < cols) && (gidy < rows))
+    if ((gidx < width) && (gidy < height))
         d_y[gidx + gidy * stride] = alpha * d_x[gidx + gidy * stride];
 }
 
@@ -27,11 +27,11 @@ void DeviceMathKernelsType<real>::scale(real *d_y, real alpha, const real *d_x, 
     dim3 blockDim(128);
     dim3 gridDim(divru(size, blockDim.x));
     if (addAssignFactor == 0.) {
-        scale2dKernel<<<gridDim, blockDim, 0, stream_>>>(d_y, alpha, d_x, 0, 1, size);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_>>>(d_y, alpha, d_x, 0, size, 1);
     }
     else {
         AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, 1.);
-        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, 0, 1, size);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, 0, size, 1);
     }
     DEBUG_SYNC;
 }
@@ -39,16 +39,16 @@ void DeviceMathKernelsType<real>::scale(real *d_y, real alpha, const real *d_x, 
 template<class real>
 void DeviceMathKernelsType<real>::scale2d(real *d_y, sq::SizeType yStride,
                                           real alpha, const real *d_x, sq::SizeType xStride,
-                                          sq::SizeType rows, sq::SizeType cols, real addAssignFactor) {
+                                          sq::SizeType width, sq::SizeType height, real addAssignFactor) {
     throwErrorIf(yStride != xStride, "Strides for x and y are not same.");
     dim3 blockDim(64, 2);
-    dim3 gridDim(divru(cols, blockDim.x), divru(rows, blockDim.y));
+    dim3 gridDim(divru(width, blockDim.x), divru(height, blockDim.y));
     if (addAssignFactor == 0.) {
-        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (d_y, alpha, d_x, xStride, rows, cols);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (d_y, alpha, d_x, xStride, width, height);
     }
     else {
         AddAssignDevPtr<real> outPtr(d_y, addAssignFactor, 1.);
-        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, xStride, rows, cols);
+        scale2dKernel<<<gridDim, blockDim, 0, stream_ >>> (outPtr, alpha, d_x, xStride, width, height);
     }
     DEBUG_SYNC;
 }

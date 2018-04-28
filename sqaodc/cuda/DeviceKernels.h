@@ -15,7 +15,7 @@ struct DeviceMathKernelsType {
     
     void scale2d(real *d_y, sq::SizeType yStride,
                  real alpha, const real *d_x, sq::SizeType xStride,
-                 sq::SizeType rows, sq::SizeType cols, real addAssignFactor);
+                 sq::SizeType width, sq::SizeType height, real addAssignFactor);
     
     void scaleBroadcast(real *d_x, real alpha, const real *d_c, sq::SizeType size,
                         real addAssignFactor);

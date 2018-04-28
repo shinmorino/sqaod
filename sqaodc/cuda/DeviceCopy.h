@@ -126,8 +126,8 @@ broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) 
 }
 
 template<class V> void DeviceCopy::
-broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType cols, sq::SizeType rows) const{
-    kernels_.copyBroadcast2d(dst, stride, v, cols, rows);
+broadcast2d(V *dst, sq::SizeType stride, const V &v, sq::SizeType width, sq::SizeType height) const{
+    kernels_.copyBroadcast2d(dst, stride, v, width, height);
 }
 
 template<class V> inline void DeviceCopy::
