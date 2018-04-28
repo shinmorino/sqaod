@@ -128,14 +128,14 @@ struct MatrixType {
         assert(!mapped);
         rows = cols = -1;
         if (data != nullptr)
-            ::free(data);
+            aligned_free(data);
         data = nullptr;
     }
     
     void resize(SizeType _rows, SizeType _cols) {
         assert(!mapped); /* mapping state not allowed */
         if ((_rows != rows) || (_cols != cols)) {
-            ::free(data);
+            aligned_free(data);
             allocate(_rows, _cols);
         }
     }
@@ -323,14 +323,14 @@ struct VectorType {
         assert(!mapped);
         size = -1;
         if (data != nullptr)
-            ::free(data);
+            aligned_free(data);
         data = nullptr;
     }
     
     void resize(SizeType _size) {
         assert(!mapped);
         if (_size != size) {
-            ::free(data);
+            aligned_free(data);
             allocate(_size);
         }
     }
