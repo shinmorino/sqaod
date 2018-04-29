@@ -77,9 +77,6 @@ private:
 struct DeviceCopyKernels {
 
     template<class V>
-    void copy(V *d_dst, const V *d_src, sq::SizeType size) const;
-
-    template<class V>
     void broadcast(DeviceVectorType<V> *dst, const V &v) const;
 
     template<class V>
