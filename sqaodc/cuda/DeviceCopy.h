@@ -108,7 +108,7 @@ copy2d(V *dst, sq::SizeType dstStride, const V *src, sq::SizeType srcStride,
 
 template<class V> inline void DeviceCopy::
 broadcast(DeviceVectorType<V> *d_x, const V &v) const {
-    assertValidVector(*dst, __func__);
+    assertValidVector(*d_x, __func__);
     kernels_.broadcast(d_x, v);
 }
 
