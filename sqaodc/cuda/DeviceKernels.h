@@ -106,9 +106,9 @@ private:
 };
 
 template<class V>
-void generateBitsSequence(DeviceMatrixType<V> *d_data, 
-                          sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
-                          cudaStream_t stream);
+void generateBitSetSequence(DeviceMatrixType<V> *d_data, 
+                            sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
+                            cudaStream_t stream);
 
 template<class V>
 void randomizeSpin(DeviceVectorType<V> *d_matq, DeviceRandom &d_random, cudaStream_t stream);

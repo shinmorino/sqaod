@@ -53,7 +53,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
             sq::PackedBitSet bits = 1ull << idx;
-            search.generateBitsSequence(&d_bitsSequence, bits, bits + 1);
+            sqcu::generateBitSetSequence(&d_bitsSequence, bits, bits + 1, devStream->getCudaStream());
             devCopy(&bitsSequence, d_bitsSequence);
             devStream->synchronize();
             for (int chkIdx = 0; chkIdx < (int)N; ++chkIdx) {
@@ -78,7 +78,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
             sq::PackedBitSet bits = 1ull << idx;
-            search.generateBitsSequence(&d_bitsSequence, bits, bits + 1);
+            sqcu::generateBitSetSequence(&d_bitsSequence, bits, bits + 1, devStream->getCudaStream());
             devCopy(&bitsSequence, d_bitsSequence);
             devStream->synchronize();
             for (int chkIdx = 0; chkIdx < (int)N; ++chkIdx) {
@@ -104,7 +104,7 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         const sq::PackedBitSet xBegin = 1ull << 33;
         const sq::PackedBitSet xEnd = xBegin + tileSize;
-        search.generateBitsSequence(&d_bitsSequence, xBegin, xEnd);
+        sqcu::generateBitSetSequence(&d_bitsSequence, xBegin, xEnd, devStream->getCudaStream());
         devCopy(&bitsSequence, d_bitsSequence);
         devStream->synchronize();
 
@@ -135,7 +135,7 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         const sq::PackedBitSet xBegin = 1ull << 33;
         const sq::PackedBitSet xEnd = xBegin + tileSize;
-        search.generateBitsSequence(&d_bitsSequence, xBegin, xEnd);
+        sqcu::generateBitSetSequence(&d_bitsSequence, xBegin, xEnd, devStream->getCudaStream());
         devCopy(&bitsSequence, d_bitsSequence);
         devStream->synchronize();
 

@@ -60,7 +60,7 @@ void DeviceDenseGraphBatchSearch<real>::calculate_E(sq::PackedBitSet xBegin, sq:
     sq::SizeType nBatch = sq::SizeType(xEnd - xBegin);
     abortIf(tileSize_ < nBatch,
             "nBatch is too large, tileSize=%d, nBatch=%d", int(tileSize_), int(nBatch));
-    generateBitsSequence(&d_bitsMat_, xBegin, xEnd);
+    ::generateBitSetSequence(&d_bitsMat_, xBegin, xEnd, devStream_->getCudaStream());
     devFormulas_.calculate_E(&d_Ebatch_, d_W_, d_bitsMat_);
     devFormulas_.devMath.min(&h_Emin_, d_Ebatch_);
 }
@@ -103,24 +103,6 @@ void generateBitsSequenceKernel(real *d_data, sq::SizeType stride, int N,
         d_data[seqIdx * stride + threadIdx.x] = bitSet ? real(1) : real(0);
     }
 }
-
-/* FIXME: move to device kernels */
-template<class real> void DeviceDenseGraphBatchSearch<real>::
-generateBitsSequence(DeviceMatrix *bitsSequence,
-                     sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {
-    sq::SizeType N = bitsSequence->cols;
-    sq::SizeType stride = bitsSequence->stride;
-
-    dim3 blockDim, gridDim;
-    blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
-    blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
-    gridDim.x = divru((unsigned int)(xEnd - xBegin), blockDim.y);
-    generateBitsSequenceKernel<<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>
-            (bitsSequence->d_data, stride, N, nSeqs, xBegin);
-    DEBUG_SYNC;
-}
-
 
 namespace {
 

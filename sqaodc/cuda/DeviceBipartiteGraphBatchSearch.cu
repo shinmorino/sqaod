@@ -75,8 +75,8 @@ calculate_E(sq::PackedBitSet xBegin0, sq::PackedBitSet xEnd0,
     abortIf(tileSize0_ < nBatch0,
             "nBatch1 is too large, tileSize1=%d, nBatch1=%d", int(tileSize1_), int(nBatch1));
     /* FIXME: use stream if effective */
-    generateBitsSequence(&d_bitsMat0_, xBegin0, xEnd0);
-    generateBitsSequence(&d_bitsMat1_, xBegin1, xEnd1);
+    ::generateBitSetSequence(&d_bitsMat0_, xBegin0, xEnd0, devStream_->getCudaStream());
+    ::generateBitSetSequence(&d_bitsMat1_, xBegin1, xEnd1, devStream_->getCudaStream());
     devFormulas_.calculate_E_2d(&d_Ebatch_, d_b0_, d_b1_, d_W_, d_bitsMat0_, d_bitsMat1_);
     devFormulas_.devMath.min(&h_Emin_, d_Ebatch_);
 }
@@ -107,36 +107,6 @@ template<class real>
 void DeviceBipartiteGraphBatchSearch<real>::synchronize() {
     devStream_->synchronize();
 }
-
-
-template<class real>
-__global__ static
-void generateBitsSequenceKernel(real *d_data, int stride, int N,
-                                sq::SizeType nSeqs, sq::PackedBitSet xBegin) {
-    sq::IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
-    if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
-        sq::PackedBitSet bits = xBegin + seqIdx;
-        bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
-        d_data[seqIdx * stride + threadIdx.x] = bitSet ? real(1) : real(0);
-    }
-}
-
-
-template<class real> void DeviceBipartiteGraphBatchSearch<real>::
-generateBitsSequence(DeviceMatrix *bitsSequences,
-                     sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {
-    sq::SizeType N = bitsSequences->cols;
-    sq::SizeType stride = bitsSequences->stride;
-    dim3 blockDim, gridDim;
-    blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
-    blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    sq::SizeType nSeqs = sq::SizeType(xEnd - xBegin);
-    gridDim.x = divru((unsigned int)(xEnd - xBegin), blockDim.y);
-    generateBitsSequenceKernel<<<gridDim, blockDim, 0, devStream_->getCudaStream()>>>
-            (bitsSequences->d_data, stride, N, nSeqs, xBegin);
-    DEBUG_SYNC;
-}
-
 
 namespace {
 
