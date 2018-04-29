@@ -57,7 +57,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
     testcase("test zeros/eye") {
         sq::Dim dim1(dim.rows, dim.rows);
         alloc->allocate(&dA, dim1);
-        devCopy(&dA, (real)0.); /* create zero matrix */
+        devCopy.broadcast(&dA, (real)0.); /* create zero matrix */
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::zeros(dim1));
 

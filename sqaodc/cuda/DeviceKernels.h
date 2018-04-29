@@ -3,6 +3,7 @@
 #include <sqaodc/cuda/DeviceStream.h>
 #include <sqaodc/cuda/DeviceRandom.h>
 #include <sqaodc/cuda/DeviceSegmentedSum.h>
+#include <sqaodc/cuda/DeviceMatrix.h>
 
 namespace sqaod_cuda {
 
@@ -11,53 +12,44 @@ namespace sq = sqaod;
 template<class real>
 struct DeviceMathKernelsType {
 
-    void scale(real *d_y, real alpha, const real *d_x, sq::SizeType size, real addAssignFactor);
-    
-    void scale2d(real *d_y, sq::SizeType yStride,
-                 real alpha, const real *d_x, sq::SizeType xStride,
-                 sq::SizeType width, sq::SizeType height, real addAssignFactor);
-    
-    void scaleBroadcast(real *d_x, real alpha, const real *d_c, sq::SizeType size,
-                        real addAssignFactor);
+    typedef DeviceMatrixType<real> DeviceMatrix;
+    typedef DeviceVectorType<real> DeviceVector;
+    typedef DeviceScalarType<real> DeviceScalar;
 
-    void scaleBroadcast2d(real *d_x, sq::SizeType xStride,
-                          real alpha, const real *d_c, sq::SizeType rows, sq::SizeType cols,
-                          real addAssignFactor);
+    void scale(DeviceScalar *d_y, real alpha, const DeviceScalar &d_x, real addAssignFactor);
+
+    void scale(DeviceVector *d_y, real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void scale(DeviceMatrix *d_A, real alpha, const DeviceMatrix &d_X, real addAssignFactor);
     
-    void scaleBroadcastVector(real *d_A, sq::SizeType Astride,
-                              real alpha, const real *d_x,
-                              sq::SizeType size, sq::SizeType nBatch, real addAssignFactor);
-    void scaleBroadcastScalars(real *d_A, sq::SizeType Astride,
-                               real alpha, const real *d_x,
-                               sq::SizeType size, sq::SizeType nBatch, real addAssignFactor);
+    void scaleBroadcast(DeviceVector *d_x, real alpha, const DeviceScalar &d_c, real addAssignFactor);
 
-    void sum(real *d_dst, real alpha, const real *d_x, sq::SizeType size, real addAssignFactor);
-
-    void sum2d(real *d_dst, real alpha, const real *d_x, sq::SizeType xStride,
-               sq::SizeType rows, sq::SizeType cols, real addAssignFactor);
+    void scaleBroadcast(DeviceMatrix *d_A, real alpha, const DeviceScalar &d_c, real addAssignFactor);
     
-    void sumWithInterval(real *d_dst, real alpha, const real *d_x,
-                         sq::SizeType interval, sq::SizeType offset, sq::SizeType size);
+    void scaleBroadcastToRows(DeviceMatrix *d_A, 
+                              real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void scaleBroadcastToColumns(DeviceMatrix *d_A,
+                                 real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void sum(DeviceScalar *d_dst, real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void sum(DeviceScalar *d_dst, real alpha, const DeviceMatrix &d_A, real addAssignFactor);
     
-    void sumBatched(real *d_x, real alpha, const real *d_A, sq::SizeType stride,
-                    sq::SizeType size, sq::SizeType nBatch);
-    void dot(real *d_c, real alpha, const real *d_x, const real *d_y, sq::SizeType size,
-             real addAssignFactor);
+    void sumDiagonal(DeviceScalar *d_dst, real alpha, const DeviceMatrix &d_A, sq::SizeType offset, real addAssignFactor);
     
-    void dotBatched(real *d_z,
-                    real alpha, const real *d_x, sq::SizeType xStride,
-                    const real *d_y, sq::SizeType yStride,
-                    sq::SizeType size, sq::SizeType nBatch);
+    void sumRowwise(DeviceVector *d_x, real alpha, const DeviceMatrix &d_A);
 
-    void transpose2d(real *d_tr, sq::SizeType trStride,
-                     const real *d_mat, sq::SizeType matStride,
-                     sq::SizeType matRows, sq::SizeType matCols);
+    void dot(DeviceScalar *d_c, real alpha, const DeviceVector &d_x, const DeviceVector &d_y, real addAssignFactor);
+    
+    void dotRowwise(DeviceVector *d_z,
+                    real alpha, const DeviceMatrix &d_X, const DeviceMatrix &d_Y);
 
-    void min(real *d_min,
-             const real *d_values, sq::SizeType size);
+    void transpose(DeviceMatrix *d_tr, const DeviceMatrix &d_mat);
 
-    void min2d(real *d_min,
-               const real *d_values, sq::SizeType stride, sq::SizeType rows, sq::SizeType cols);
+    void min(DeviceScalar *d_min, const DeviceVector &d_x);
+
+    void min(DeviceScalar *d_min, const DeviceMatrix &d_A);
 
     void gemv(cublasOperation_t op, int M, int N,
               const real *d_alpha, const real *d_A, sq::SizeType Astride,
@@ -85,25 +77,25 @@ private:
 struct DeviceCopyKernels {
 
     template<class V>
-    void copyBroadcast(V *d_buf, const V &v, sq::SizeType size) const;
+    void copy(V *d_dst, const V *d_src, sq::SizeType size) const;
 
     template<class V>
-    void copyBroadcast2d(V *d_buf, sq::SizeType stride, const V &v,
-                         sq::SizeType rows, sq::SizeType cols) const;
+    void broadcast(DeviceVectorType<V> *dst, const V &v) const;
 
     template<class V>
-    void broadcastToDiagonal(V *d_buf, sq::SizeType stride, const V &v, sq::SizeType width, sq::SizeType height, sq::IdxType offset) const;
+    void broadcast(DeviceMatrixType<V> *dst, const V &v) const;
 
     template<class V>
-    void copyBroadcastVector(V *dst, sq::SizeType dstStride,
-                             const V *vec, sq::SizeType size, sq::SizeType nBatch) const;
+    void broadcastToRows(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &vec) const;
+
+    template<class V>
+    void broadcastToDiagonal(DeviceMatrixType<V> *d_A, const V &v, sq::IdxType offset) const;
 
     template<class Vdst, class Vsrc>
-    void cast(Vdst *dst, const Vsrc *src, sq::SizeType size);
+    void cast(DeviceVectorType<Vdst> *dst, const DeviceVectorType<Vsrc> &src);
 
     template<class Vdst, class Vsrc>
-    void cast2d(Vdst *dst, sq::SizeType dstStride, const Vsrc *src, sq::SizeType srcStride,
-                sq::SizeType rows, sq::SizeType cols);
+    void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
 
     DeviceCopyKernels(DeviceStream *stream = NULL);
 
@@ -113,18 +105,15 @@ private:
     cudaStream_t stream_;
 };
 
-
-
 template<class V>
-void generateBitsSequence(V *d_data, int N,
+void generateBitsSequence(DeviceMatrixType<V> *d_data, 
                           sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
                           cudaStream_t stream);
 
+template<class V>
+void randomizeSpin(DeviceVectorType<V> *d_matq, DeviceRandom &d_random, cudaStream_t stream);
 
 template<class V>
-void randomizeSpin(V *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);
-
-template<class V>
-void randomizeSpin2d(V *d_matq, sq::SizeType stride, DeviceRandom &d_random, sq::SizeType rows, sq::SizeType cols, cudaStream_t stream);
+void randomizeSpin(DeviceMatrixType<V> *d_matq, DeviceRandom &d_random, cudaStream_t stream);
 
 }  // namespace sqaod_cuda

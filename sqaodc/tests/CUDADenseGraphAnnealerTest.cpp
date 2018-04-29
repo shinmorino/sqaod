@@ -172,7 +172,7 @@ void CUDADenseGraphAnnealerTest::test() {
         sqcu::DeviceBitMatrix *d_bitQ = devStream->tempDeviceMatrix<char>(q.dim());
         devCopy.cast(d_bitQ , d_q);
 
-        devCopy(d_flippos, flippos, m);
+        devCopy.copy(d_flippos, flippos, m);
         an.calculate_Jq(&d_Jq, d_J, *d_bitQ , d_flippos);
         devStream->synchronize();
 

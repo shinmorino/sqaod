@@ -229,8 +229,8 @@ void CUDABipartiteGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
     cudaStream_t stream = devStream_->getCudaStream();
-    sqaod_cuda::randomizeSpin2d(d_matq0_.d_data, d_matq0_.stride, d_random_, N0_, m_, stream);
-    sqaod_cuda::randomizeSpin2d(d_matq1_.d_data, d_matq1_.stride, d_random_, N1_, m_, stream);
+    sqaod_cuda::randomizeSpin(&d_matq0_, d_random_, stream);
+    sqaod_cuda::randomizeSpin(&d_matq1_, d_random_, stream);
     setState(solQSet);
 }
 

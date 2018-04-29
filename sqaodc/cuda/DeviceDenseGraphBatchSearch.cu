@@ -104,7 +104,7 @@ void generateBitsSequenceKernel(real *d_data, sq::SizeType stride, int N,
     }
 }
 
-
+/* FIXME: move to device kernels */
 template<class real> void DeviceDenseGraphBatchSearch<real>::
 generateBitsSequence(DeviceMatrix *bitsSequence,
                      sq::PackedBitSet xBegin, sq::PackedBitSet xEnd) {

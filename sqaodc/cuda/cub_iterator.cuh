@@ -7,63 +7,85 @@ namespace sqaod_cuda {
 
 namespace sq = sqaod;
 
-template<class real>
-struct AddAssign {
-    __device__ AddAssign(real &_d_value, real _mulFactor, real _alpha) : d_value(_d_value), mulFactor(_mulFactor), alpha(_alpha) { }
-    __device__ __forceinline__
-    real operator=(const real &v) const {
-        return d_value = mulFactor * d_value + alpha * v;
-    }
-    real &d_value;
-    real mulFactor;
-    real alpha;
-};
-
-template<class real>
-struct AddAssignDevPtr {
+template<template<class> class OpType, class real>
+struct OpOutPtr {
     typedef real value_type;
+    typedef OpType<real> Op;
 
-    AddAssignDevPtr(real *_d_data, real _mulFactor, real _alpha) : d_data(_d_data), mulFactor(_mulFactor), alpha(_alpha) { }
-    typedef AddAssign<real> Ref;
+    explicit
+    OpOutPtr(real *_d_data, sq::SizeType _stride, Op _op) : d_data(_d_data), stride(_stride), op(_op) { }
+
+    void addYOffset(sq::IdxType yOffset) {
+        d_data = &d_data[yOffset * stride];
+    }
+
     __device__ __forceinline__
-    Ref operator*() const {
-        return Ref(*d_data, mulFactor, alpha);
+    Op operator*() const {
+        return op(*d_data);
     }
     __device__ __forceinline__
-    Ref operator[](sq::SizeType idx) const {
-        return Ref(d_data[idx], mulFactor, alpha);
+    Op operator[](sq::SizeType idx) const {
+        return op(d_data[idx]);
+    }
+    __device__ __forceinline__
+    Op operator()(sq::SizeType x, sq::SizeType y) const {
+        return op(d_data[x + y * stride]);
     }
 
     real *d_data;
-    real mulFactor;
-    real alpha;
+    sq::SizeType stride;
+    Op op;
 };
 
 
 template<class real>
-struct Mul{
-    __device__ Mul(real &_d_value, real _alpha) : d_value(_d_value), alpha(_alpha) { }
+struct NullOutOp {
+    explicit NullOutOp() { }
+    explicit __device__ __forceinline__
+    NullOutOp(real &_d_value) : d_value(&_d_value) { }
+
+    __device__ __forceinline__
+    NullOutOp operator()(real &_d_value) const {
+        return NullOutOp(_d_value);
+    }
     __device__ __forceinline__
     real operator=(const real &v) const {
-        return d_value = alpha * v;
+        return *d_value = v;
     }
-    real &d_value;
+    real *d_value;
+};
+
+template<class real>
+struct AddAssignOutOp {
+    explicit AddAssignOutOp(real _addAssignFactor, real _alpha) : addAssignFactor(_addAssignFactor), alpha(_alpha) { }
+    explicit __device__ AddAssignOutOp(real &_d_data, const AddAssignOutOp &op) : d_data(&_d_data), addAssignFactor(op.addAssignFactor), alpha(op.alpha) { }
+
+    __device__ __forceinline__
+    AddAssignOutOp operator()(real &_d_value) const {
+        return AddAssignOutOp<real>(_d_value, *this);
+    }
+    __device__ __forceinline__
+    real operator=(const real &v) const {
+        return *d_data = addAssignFactor * *d_data + alpha * v;
+    }
+
+    real *d_data;
+    real addAssignFactor;
     real alpha;
 };
 
 template<class real>
-struct MulOutDevPtr {
-    typedef real value_type;
+struct MulOutOp {
+    explicit MulOutOp(real _alpha) : alpha(_alpha) { }
+    explicit __device__ MulOutOp(real &_d_data, const MulOutOp &op) : d_data(&_d_data), alpha(op.alpha) { }
 
-    MulOutDevPtr(real *_d_data, real _alpha) : d_data(_d_data), alpha(_alpha) { }
-    typedef Mul<real> Ref;
     __device__ __forceinline__
-    Ref operator*() const {
-        return Ref(*d_data, alpha);
+    MulOutOp operator()(real &_d_data) const {
+        return MulOutOp(_d_data, *this);
     }
     __device__ __forceinline__
-    Ref operator[](sq::SizeType idx) const {
-        return Ref(d_data[idx], alpha);
+    real operator=(const real &v) const {
+        return *d_data = alpha * v;
     }
 
     real *d_data;
@@ -71,6 +93,171 @@ struct MulOutDevPtr {
 };
 
 
+template<class real>
+OpOutPtr<NullOutOp, real> NullOutPtr(real *d_data, sq::SizeType stride = 0) {
+    return OpOutPtr<NullOutOp, real>(d_data, stride, NullOutOp<real>());
+}
+
+template<class real>
+OpOutPtr<AddAssignOutOp, real> AddAssignOutPtr(real *d_data, real _mulFactor, real _alpha, sq::SizeType stride = 0) {
+    return OpOutPtr<AddAssignOutOp, real>(d_data, stride, AddAssignOutOp<real>(_mulFactor, _alpha));
+}
+
+template<class real>
+OpOutPtr<MulOutOp, real> MulOutPtr(real *d_data, real _mulFactor, sq::SizeType stride = 0) {
+    return OpOutPtr<MulOutOp, real>(d_data, stride, MulOutOp<real>(_mulFactor));
+}
+
+/* Input iterators */
+template<class real>
+struct InPtr {
+    typedef real value_type;
+
+    explicit
+    InPtr(const real *_d_data, sq::SizeType _stride = 0) : d_data(_d_data), stride(_stride) { }
+
+    void addYOffset(sq::IdxType yOffset) {
+        d_data = &d_data[yOffset * stride];
+    }
+
+    __device__ __forceinline__
+    real operator*() const {
+        return *d_data;
+    }
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        return d_data[idx];
+    }
+    __device__ __forceinline__
+    real operator()(sq::SizeType x, sq::SizeType y) const {
+        return d_data[x + y * stride];
+    }
+
+    const real *d_data;
+    sq::SizeType stride;
+};
+
+template<class real>
+struct InScalarPtr {
+    typedef real value_type;
+
+    explicit
+    InScalarPtr(const real *_d_data) : d_data(_d_data) { }
+
+    void addYOffset(sq::IdxType yOffset) {  }
+
+    __device__ __forceinline__
+    real operator*() const {
+        return *d_data;
+    }
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        return *d_data;
+    }
+    __device__ __forceinline__
+    real operator()(sq::SizeType x, sq::SizeType y) const {
+        return *d_data;
+    }
+
+    const real *d_data;
+};
+
+template<class real>
+struct InConstPtr {
+    typedef real value_type;
+
+    explicit
+    InConstPtr(const real &_v) : v(_v) { }
+
+    void addYOffset(sq::IdxType yOffset) {  }
+
+    __device__ __forceinline__
+    real operator*() const {
+        return v;
+    }
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        return v;
+    }
+    __device__ __forceinline__
+    real operator()(sq::SizeType x, sq::SizeType y) const {
+        return v;
+    }
+    real v;
+};
+
+template<class real>
+struct InRowBroadcastPtr {
+    typedef real value_type;
+
+    explicit
+    InRowBroadcastPtr(const real *_d_data) : d_data(_d_data) { }
+
+    void addYOffset(sq::IdxType yOffset) { }
+
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        return d_data[idx];
+    }
+
+    __device__ __forceinline__
+    real operator()(sq::SizeType x, sq::SizeType y) const {
+        return d_data[x];
+    }
+
+    const real *d_data;
+};
+
+template<class real>
+struct InColumnBroadcastPtr {
+    typedef real value_type;
+
+    explicit
+    InColumnBroadcastPtr(const real *_d_data) : d_data(_d_data) { }
+
+    void addYOffset(sq::IdxType yOffset) {
+        d_data += yOffset;
+    }
+
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        return d_data[idx];
+    }
+
+    __device__ __forceinline__
+    real operator()(sq::SizeType x, sq::SizeType y) const {
+        return d_data[y];
+    }
+
+    const real *d_data;
+};
+
+template<class real>
+struct InDiagonalPtr {
+    typedef real value_type;
+    typedef InDiagonalPtr<real> SelfType;
+
+    explicit __host__ __device__ __forceinline__
+    InDiagonalPtr(const real *_d_data, sq::SizeType _stride, sq::IdxType _xOffset, sq::IdxType _yOffset)
+        : d_data(_d_data), stride(_stride), xOffset(_xOffset), yOffset(_yOffset) { }
+
+    __device__ __forceinline__
+    real operator[](sq::SizeType idx) const {
+        int x = idx + xOffset;
+        int y = idx + yOffset;
+        return d_data[x + y * stride];
+    }
+
+    __device__ __forceinline__
+    SelfType operator+(sq::IdxType v) const {
+        return SelfType(d_data, stride, xOffset + v, yOffset + v);
+    }
+
+    const real *d_data;
+    int stride, xOffset, yOffset;
+};
+
+/* iterators for specific use cases*/
 
 template<class real>
 struct InPtrWithInterval {
@@ -82,10 +269,6 @@ struct InPtrWithInterval {
     const real &operator[](sq::SizeType idx) const {
         return d_data[offset + idx * stride];
     }
-    __device__ __forceinline__
-    SelfType operator+(sq::IdxType v) const {
-        return SelfType(d_data + v, stride, offset);
-    }
 
     const real *d_data;
     sq::SizeType stride;
@@ -94,13 +277,13 @@ struct InPtrWithInterval {
 
 
 template<class real>
-struct In2dPtr {
+struct InLinear2dPtr {
     typedef real value_type;
-    typedef In2dPtr SelfType;
+    typedef InLinear2dPtr SelfType;
     __host__ __device__
-    In2dPtr(const real *_d_data,
-            sq::SizeType _stride, sq::IdxType _width, sq::IdxType _offset = 0) :
-            d_data(_d_data), stride(_stride), width(_width), offset(_offset) { }
+    InLinear2dPtr(const real *_d_data,
+                  sq::SizeType _stride, sq::IdxType _width, sq::IdxType _offset = 0) :
+                  d_data(_d_data), stride(_stride), width(_width), offset(_offset) { }
     __device__ __forceinline__
     const real &operator[](sq::SizeType idx) const {
         int x = (idx + offset) % width;
@@ -192,14 +375,13 @@ struct base_iterator_traits {
 namespace std {
 
 
+template<template<class> class OpType, class real>
+struct iterator_traits<sqaod_cuda::OpOutPtr<OpType, real> > : sqaod_cuda::base_iterator_traits<real> { };
+
 template<class real>
-struct iterator_traits<sqaod_cuda::AddAssignDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
+struct iterator_traits<sqaod_cuda::InDiagonalPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
 template<class real>
-struct iterator_traits<sqaod_cuda::MulOutDevPtr<real> > : sqaod_cuda::base_iterator_traits<real> { };
-template<class real>
-struct iterator_traits<sqaod_cuda::InPtrWithInterval<real>> : sqaod_cuda::base_iterator_traits<real> { };
-template<class real>
-struct iterator_traits<sqaod_cuda::In2dPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
+struct iterator_traits<sqaod_cuda::InLinear2dPtr<real>> : sqaod_cuda::base_iterator_traits<real> { };
 
 template<class Vout, class Vin0, class Vin1>
 struct iterator_traits<sqaod_cuda::In2TypeDotPtr<Vout, Vin0, Vin1>> : sqaod_cuda::base_iterator_traits<Vout> { };
