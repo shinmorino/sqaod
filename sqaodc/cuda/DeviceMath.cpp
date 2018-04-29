@@ -76,7 +76,6 @@ void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceMatrix &
 template<class real>
 void DeviceMathType<real>::sumDiagonal(DeviceScalar *s, const DeviceMatrix &dmat) {
     devAlloc_->allocateIfNull(s);
-    int nElms = std::min(dmat.rows, dmat.cols);
     devKernels_.sumDiagonal(s, 1., dmat, 0, 0.);
 }
 
