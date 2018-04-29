@@ -61,7 +61,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::zeros(dim1));
 
-        devMath.setToDiagonals(&dA, real(1.));
+        devMath.broadcastToDiagonal(&dA, real(1.));
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::eye(dim.rows));
     }
@@ -210,7 +210,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         alloc->allocate(&da);
 
         devCopy(&dA, hmat);
-        devMath.sumDiagonals(&da, dA);
+        devMath.sumDiagonal(&da, dA);
         device_.synchronize();
         TEST_ASSERT(da == sq::mapTo(hmat).diagonal().sum());
     }

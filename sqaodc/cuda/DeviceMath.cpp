@@ -6,7 +6,7 @@ using sq::Dim;
 using sq::SizeType;
 
 template<class real>
-void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
+void DeviceMathType<real>::broadcastToDiagonal(DeviceMatrix *A, real v) {
     assertValidMatrix(*A, __func__);
     SizeType size = std::min(A->rows, A->cols);
     devCopy_.broadcastToDiagonal(A, v, 0);
@@ -74,7 +74,7 @@ void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceMatrix &
 }
 
 template<class real>
-void DeviceMathType<real>::sumDiagonals(DeviceScalar *s, const DeviceMatrix &dmat) {
+void DeviceMathType<real>::sumDiagonal(DeviceScalar *s, const DeviceMatrix &dmat) {
     devAlloc_->allocateIfNull(s);
     int nElms = std::min(dmat.rows, dmat.cols);
     devKernels_.sumDiagonal(s, 1., dmat, 0, 0.);
