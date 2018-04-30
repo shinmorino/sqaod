@@ -1,6 +1,30 @@
 /* -*- c++ -*- */
 
 namespace {
+
+#ifdef CUDA_FORMULAS
+
+namespace sqcu = sqaod::cuda;
+
+extern "C"
+PyObject *formulas_assign_device(PyObject *module, PyObject *args) {
+    PyObject *objDevice;
+    if (!PyArg_ParseTuple(args, "O", &objDevice))
+        return NULL;
+    
+    sqcu::Device *device = (sqcu::Device*)PyArrayScalar_VAL(objDevice, UInt64);
+    TRY {
+        DGFormulas<float>::assignDevice(*device);
+        DGFormulas<double>::assignDevice(*device);
+        BGFormulas<float>::assignDevice(*device);
+        BGFormulas<double>::assignDevice(*device);
+    } CATCH_ERROR_AND_RETURN;
+    
+    Py_INCREF(Py_None);
+    return Py_None;    
+}
+
+#endif
     
 template<class real>
 void internal_dense_graph_calculate_E(PyObject *objE, PyObject *objW, PyObject *objX) {
@@ -443,18 +467,21 @@ PyObject *bipartite_graph_batch_calculate_E_from_spin(PyObject *module, PyObject
 
 static
 PyMethodDef formulas_methods[] = {
-	{"dense_graph_calculate_E", dense_graph_calculate_E, METH_VARARGS},
-	{"dense_graph_batch_calculate_E", dense_graph_batch_calculate_E, METH_VARARGS},
-	{"dense_graph_calculate_hamiltonian", dense_graph_calculate_hamiltonian, METH_VARARGS},
-	{"dense_graph_calculate_E_from_spin", dense_graph_calculate_E_from_spin, METH_VARARGS},
-	{"dense_graph_batch_calculate_E_from_spin", dense_graph_batch_calculate_E_from_spin, METH_VARARGS},
-	{"bipartite_graph_calculate_E", bipartite_graph_calculate_E, METH_VARARGS},
-	{"bipartite_graph_batch_calculate_E", bipartite_graph_batch_calculate_E, METH_VARARGS},
-	{"bipartite_graph_batch_calculate_E_2d", bipartite_graph_batch_calculate_E_2d, METH_VARARGS},
-	{"bipartite_graph_calculate_hamiltonian", bipartite_graph_calculate_hamiltonian, METH_VARARGS},
-	{"bipartite_graph_calculate_E_from_spin", bipartite_graph_calculate_E_from_spin, METH_VARARGS},
-	{"bipartite_graph_batch_calculate_E_from_spin", bipartite_graph_batch_calculate_E_from_spin, METH_VARARGS},
-	{NULL},
+#ifdef CUDA_FORMULAS
+    {"assign_device", formulas_assign_device, METH_VARARGS},
+#endif
+    {"dense_graph_calculate_E", dense_graph_calculate_E, METH_VARARGS},
+    {"dense_graph_batch_calculate_E", dense_graph_batch_calculate_E, METH_VARARGS},
+    {"dense_graph_calculate_hamiltonian", dense_graph_calculate_hamiltonian, METH_VARARGS},
+    {"dense_graph_calculate_E_from_spin", dense_graph_calculate_E_from_spin, METH_VARARGS},
+    {"dense_graph_batch_calculate_E_from_spin", dense_graph_batch_calculate_E_from_spin, METH_VARARGS},
+    {"bipartite_graph_calculate_E", bipartite_graph_calculate_E, METH_VARARGS},
+    {"bipartite_graph_batch_calculate_E", bipartite_graph_batch_calculate_E, METH_VARARGS},
+    {"bipartite_graph_batch_calculate_E_2d", bipartite_graph_batch_calculate_E_2d, METH_VARARGS},
+    {"bipartite_graph_calculate_hamiltonian", bipartite_graph_calculate_hamiltonian, METH_VARARGS},
+    {"bipartite_graph_calculate_E_from_spin", bipartite_graph_calculate_E_from_spin, METH_VARARGS},
+    {"bipartite_graph_batch_calculate_E_from_spin", bipartite_graph_batch_calculate_E_from_spin, METH_VARARGS},
+    {NULL},
 };
 
 

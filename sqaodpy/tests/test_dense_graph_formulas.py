@@ -170,8 +170,7 @@ class TestCPUDenseGraphFormulasFP64(TestDenseGraphFormulasBase, unittest.TestCas
         unittest.TestCase.__init__(self, testFunc)
 
 
-if False: #sq.is_cuda_available() :
-
+if sq.is_cuda_available() :
     class TestCUDADenseGraphFormulasFP32(TestDenseGraphFormulasBase, unittest.TestCase) :
         def __init__(self, testFunc) :
             TestDenseGraphFormulasBase.__init__(self, sq.cuda, np.float32)

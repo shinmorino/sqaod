@@ -239,7 +239,7 @@ class TestCPUBipartiteGraphFormulasFP64(TestBipartiteGraphFormulasBase, unittest
         unittest.TestCase.__init__(self, testFunc)
 
 
-if False: #sq.is_cuda_available() :
+if sq.is_cuda_available() :
 
     class TestCUDABipartiteGraphFormulasFP32(TestBipartiteGraphFormulasBase, unittest.TestCase) :
         def __init__(self, testFunc) :

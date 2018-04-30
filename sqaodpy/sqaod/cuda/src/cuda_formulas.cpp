@@ -13,4 +13,5 @@ using BGFormulas = sq::cuda::BipartiteGraphFormulas<real>;
 #define modname "cuda_formulas"
 #define INIT_MODULE INITFUNCNAME(cuda_formulas)
 
+#define CUDA_FORMULAS
 #include <sqaodc/pyglue/formulas.inc>

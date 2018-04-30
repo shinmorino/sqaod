@@ -1,6 +1,10 @@
 from __future__ import print_function
 from sqaod.common import formulas_base as base
 from . import cuda_formulas as cext
+from . import device
+
+# initialization
+cext.assign_device(device.active_device._cobj)
 
 # dense graph
 
