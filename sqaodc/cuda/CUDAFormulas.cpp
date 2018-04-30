@@ -66,6 +66,10 @@ calculate_E(real *E,
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(J.dim());
     DeviceScalar *d_c = devStream->tempDeviceScalar<real>();
     DeviceVector *d_q = devStream->tempDeviceVector<real>(q.size);
+    devCopy(d_h, h);
+    devCopy(d_J, J);
+    devCopy(d_c, c);
+    devCopy(d_q, q);
     formulas.calculate_E(d_E, *d_h, *d_J, *d_c, *d_q);
     devCopy(E, *d_E);
     devStream->synchronize();
@@ -83,6 +87,10 @@ calculate_E(HostVector *E,
     DeviceMatrix *d_J = devStream->tempDeviceMatrix<real>(J.dim());
     DeviceScalar *d_c = devStream->tempDeviceScalar<real>();
     DeviceMatrix *d_q = devStream->tempDeviceMatrix<real>(q.dim());
+    devCopy(d_h, h);
+    devCopy(d_J, J);
+    devCopy(d_c, c);
+    devCopy(d_q, q);
     formulas.calculate_E(d_E, *d_h, *d_J, *d_c, *d_q);
     devCopy(E, *d_E);
     devStream->synchronize();
@@ -92,7 +100,9 @@ calculate_E(HostVector *E,
 template<class real>
 void CUDADenseGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
     throwErrorIf(devStream != NULL, "Device already assigned.");
-    stream = stream;
+    if (stream == NULL)
+        stream = device.defaultStream();
+    devStream = stream;
     devCopy.assignDevice(device, stream);
     formulas.assignDevice(device, stream);
 }
@@ -270,6 +280,8 @@ CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas() {
 template<class real>
 void CUDABipartiteGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
     throwErrorIf(devStream != NULL, "Device already assigned.");
+    if (stream == NULL)
+        stream = device.defaultStream();
     devStream = stream;
     devCopy.assignDevice(device, stream);
     formulas.assignDevice(device, stream);
