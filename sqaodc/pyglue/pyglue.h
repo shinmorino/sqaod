@@ -156,10 +156,20 @@ template<class real>
 struct NpConstScalarType {
     NpConstScalarType(PyObject *obj) {
         err = false;
-        if (PyFloat_Check(obj)) {
+        if (PyObject_TypeCheck(obj, &PyFloatArrType_Type)) {
+            /* np.float32 type */
+            data = (real)PyArrayScalar_VAL(obj, Float);
+        }            
+        else if (PyObject_TypeCheck(obj, &PyDoubleArrType_Type)) {
+            /* np.float64 type */
+            data = (real)PyArrayScalar_VAL(obj, Double);
+        }            
+        else if (PyFloat_Check(obj)) {
+            /* PyFloat type is double. */
             data = (real)PyFloat_AS_DOUBLE(obj);
         }
         else {
+            /* type cast */
             data = (real)PyFloat_AsDouble(obj);
             if (data == -1.)
                 err = (PyErr_Occurred() != NULL);

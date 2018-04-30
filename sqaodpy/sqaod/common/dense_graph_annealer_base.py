@@ -71,6 +71,7 @@ class DenseGraphAnnealerBase :
     def set_hamiltonian(self, h, J, c) :
         checkers.dense_graph.hJc(h, J, c)
         h, J = common.fix_type([h, J], self.dtype)
+        c = self.dtype(c)
         self._cext.set_hamiltonian(self._cobj, h, J, c, self.dtype)
         self._optimize = pref.minimize
 
@@ -87,4 +88,5 @@ class DenseGraphAnnealerBase :
         self._cext.make_solution(self._cobj, self.dtype)
 
     def anneal_one_step(self, G, beta) :
+        G, beta = self.dtype(G), self.dtype(beta)
         self._cext.anneal_one_step(self._cobj, G, beta, self.dtype)
