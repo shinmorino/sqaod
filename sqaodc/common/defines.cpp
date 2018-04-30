@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS  /* disable warning on Windows since the usage of getenv() is safe here. */
+#include <stdlib.h>
 #include "defines.h"
 #include "undef.h"
 
@@ -40,11 +42,23 @@ void sqaod::__throwError(const char *file, unsigned long line, const char *forma
     throw std::runtime_error(buffer);
 }
 
+
 void sqaod::log(const char *format, ...) {
-    va_list va;
-    va_start(va, format);
-    vfprintf(stderr, format, va);
-    va_end(va);
-    fprintf(stderr, "\n");
+    static int verbose = -1;
+    if (verbose == -1) {
+        const char *env = getenv("SQAOD_VERBOSE");
+        if ((env != NULL) && (*env != '0'))
+            verbose = 1;
+        else
+            verbose = 0;
+    }
+
+    if (verbose) {
+        va_list va;
+        va_start(va, format);
+        vfprintf(stderr, format, va);
+        va_end(va);
+        fprintf(stderr, "\n");
+    }
 }
 
