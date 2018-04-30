@@ -90,18 +90,18 @@ class BipartiteGraphAnnealer :
         return self._x_pairs
 
     def set_q(self, qpair) :
-        if isinstance(qpair, list) :
-            qpairs = qpair
-            self._m = len(qpairs);
-            self.prepare()
-            for idx in range(0, self._m) :
-                self._q0[idx] = qpairs[idx][0]
-                self._q1[idx] = qpairs[idx][1]
-        else :
-            self.prepare()
-            for idx in range(0, self._m) :
-                self._q0[idx] = qpair[0]
-                self._q1[idx] = qpair[1]
+        self.prepare()
+        for idx in range(0, self._m) :
+            self._q0[idx] = qpair[0]
+            self._q1[idx] = qpair[1]
+
+    def set_qset(self, qpair) :
+        qpairs = qpair
+        self._m = len(qpairs);
+        self.prepare()
+        for idx in range(0, self._m) :
+            self._q0[idx] = qpairs[idx][0]
+            self._q1[idx] = qpairs[idx][1]
 
     # Ising model / spin
     

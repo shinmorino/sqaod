@@ -133,21 +133,21 @@ class TestDenseGraphAnnealerBase:
         for q in qout :
             res &= np.allclose(qin, q)
         self.assertTrue(res)
-            
-    def test_set_q_m(self):
+
+    def test_set_qset(self):
         N = 5
         m = 2
         an = self.new_annealer(N, m)
-        qin = []
+        qsetin = []
         for loop in range(0, m) :
             q = 2 * np.random.randint(0, 2, N) - 1
-            qin.append(q.astype(np.int8))
-        an.set_q(qin)
+            qsetin.append(q.astype(np.int8))
+        an.set_qset(qsetin)
         qout = an.get_q()
 
-        res= len(qin) == len(qout)
+        res= len(qsetin) == len(qout)
         if res :
-            for q0, q1 in zip(qin, qout) :
+            for q0, q1 in zip(qsetin, qout) :
                 res &= np.allclose(q0, q1)
         self.assertTrue(res)
 

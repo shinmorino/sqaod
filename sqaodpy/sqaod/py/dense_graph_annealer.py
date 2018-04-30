@@ -85,19 +85,19 @@ class DenseGraphAnnealer :
         return self._x
 
     def set_q(self, q) :
-        if isinstance(q, list) :
-            self._m = len(q)
-            self.prepare()
-            qlist = q
-            for idx in range(len(qlist)) :
-                q = qlist[idx]
-                if q.dtype != np.int8 :
-                    q = np.asarray(q, np.int8)
-                self._q[idx] = q
-        else :
+        if q.dtype != np.int8 :
+            q = np.asarray(q, np.int8)
+        self._q[:] = q
+
+    def set_qset(self, q) :
+        self._m = len(q)
+        self.prepare()
+        qlist = q
+        for idx in range(len(qlist)) :
+            q = qlist[idx]
             if q.dtype != np.int8 :
                 q = np.asarray(q, np.int8)
-            self._q[:] = q
+            self._q[idx] = q
     
     # Ising model
 

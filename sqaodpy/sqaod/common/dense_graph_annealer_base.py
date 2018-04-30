@@ -50,15 +50,15 @@ class DenseGraphAnnealerBase :
         return self._cext.get_x(self._cobj, self.dtype)
 
     def set_q(self, q) :
-        if isinstance(q, list) :
-            qlist = []
-            for qvec in q :
-                qvec = common.fix_type(qvec, np.int8)
-                qlist.append(qvec)
-            self._cext.set_q(self._cobj, qlist, self.dtype)
-        else :
-            q = common.fix_type(q, np.int8)
-            self._cext.set_q(self._cobj, q, self.dtype)
+        q = common.fix_type(q, np.int8)
+        self._cext.set_q(self._cobj, q, self.dtype)
+
+    def set_qset(self, qset) :
+        qlist = []
+        for qvec in qset :
+            qvec = common.fix_type(qvec, np.int8)
+            qlist.append(qvec)
+        self._cext.set_qset(self._cobj, qlist, self.dtype)
 
     def get_hamiltonian(self) :
         N = self.get_problem_size()

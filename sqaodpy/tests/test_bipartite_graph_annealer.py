@@ -145,24 +145,24 @@ class TestBipartiteGraphAnnealerBase:
             res &= np.allclose(q0in, qpair[0]) and np.allclose(q1in, qpair[1])
         self.assertTrue(res)
             
-    def test_set_q_m(self):
+    def test_set_qset(self):
         N0, N1 = 100, 50
         m = 150
         an = self.new_annealer(N0, N1, m)
         an.prepare()
         an.set_preferences(n_trotters = m)
 
-        qin = []
+        qsetin = []
         for loop in range(0, m) :
             q0 = 2 * np.random.randint(0, 2, N0) - 1
             q1 = 2 * np.random.randint(0, 2, N1) - 1
-            qin.append((q0.astype(np.int8), q1.astype(np.int8)))
-        an.set_q(qin)
+            qsetin.append((q0.astype(np.int8), q1.astype(np.int8)))
+        an.set_qset(qsetin)
         qout = an.get_q()
 
-        self.assertTrue(len(qin) == len(qout))
+        self.assertTrue(len(qsetin) == len(qout))
         res = True
-        for qinpair, qoutpair in zip(qin, qout) :
+        for qinpair, qoutpair in zip(qsetin, qout) :
             res &= np.allclose(qinpair[0], qoutpair[0]) and np.allclose(qinpair[1], qoutpair[1])
         self.assertTrue(res)
 

@@ -48,24 +48,23 @@ class BipartiteGraphAnnealerBase :
         return self._cext.get_x(self._cobj, self.dtype)
 
     def set_q(self, qpair) :
-        if isinstance(qpair, list) :
-            qpairlist = qpair
-            qin = []
-            for qpair in qpairlist :
-                q0, q1 = qpair[0], qpair[1]
-                if q0.dtype != np.int8 :
-                    q0 = np.asarray(q0, np.int8)
-                if q1.dtype != np.int8 :
-                    q1 = np.asarray(q1, np.int8)
-                qin.append((q0, q1))
-            self._cext.set_q(self._cobj, qin, self.dtype)
-        else :
+        q0, q1 = qpair[0], qpair[1]
+        if q0.dtype != np.int8 :
+            q0 = np.asarray(q0, np.int8)
+        if q1.dtype != np.int8 :
+            q1 = np.asarray(q1, np.int8)
+        self._cext.set_q(self._cobj, (q0, q1), self.dtype)
+
+    def set_qset(self, qpairset) :
+        qin = []
+        for qpair in qpairset :
             q0, q1 = qpair[0], qpair[1]
             if q0.dtype != np.int8 :
                 q0 = np.asarray(q0, np.int8)
             if q1.dtype != np.int8 :
                 q1 = np.asarray(q1, np.int8)
-            self._cext.set_q(self._cobj, (q0, q1), self.dtype)
+            qin.append((q0, q1))
+        self._cext.set_qset(self._cobj, qin, self.dtype)
 
     # Ising model / spins
     
