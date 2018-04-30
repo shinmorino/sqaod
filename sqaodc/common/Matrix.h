@@ -92,7 +92,6 @@ struct MatrixType {
         }
         if (data == nullptr)
             allocate(src.rows, src.cols);
-        assert(stride == src.stride);
         for (IdxType row = 0; row < rows; ++row) {
             IdxType srcOffset = src.stride * row; 
             IdxType selfOffset = stride * row; 
