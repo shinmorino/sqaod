@@ -31,6 +31,7 @@
 
 namespace sq = sqaod;
 
+namespace {
 
 template<class T> inline
 void throwErrorForInvalidArray(PyObject *obj) {
@@ -379,6 +380,7 @@ PyObject *createPreferences(const sqaod::Preferences &prefs) {
     return dictObj;
 }
 
+} /* anonymous namespace */
 
 /* exception handling macro */
 
