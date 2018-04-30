@@ -133,7 +133,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         devAlloc->allocate(&d_bitsSequence, tileSize, N);
         Matrix bitsSequence;
 
-        const sq::PackedBitSet xBegin = 1ull << 33;
+        const sq::PackedBitSet xBegin = 1ull << 12;
         const sq::PackedBitSet xEnd = xBegin + tileSize;
         sqcu::generateBitSetSequence(&d_bitsSequence, xBegin, xEnd, devStream->getCudaStream());
         devCopy(&bitsSequence, d_bitsSequence);
