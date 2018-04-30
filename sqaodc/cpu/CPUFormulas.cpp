@@ -23,7 +23,7 @@ void DGFuncs<real>::calculate_E(real *E,
     
     const EigenMappedMatrix eW(mapTo(W));
     EigenMappedColumnVector ex(mapToColumnVector(x)); 
-    EigenMappedMatrix eE(E, 1, 1);
+    EigenMappedMatrix eE(E, 1, 1, 1);
     eE = ex.transpose() * (eW * ex);
 }
 

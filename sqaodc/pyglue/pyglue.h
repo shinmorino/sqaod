@@ -38,7 +38,8 @@ struct NpMatrixType {
         PyArrayObject *arr = (PyArrayObject*)pyObj;
         real *data = (real*)PyArray_DATA(arr);
         assert(PyArray_NDIM(arr) == 2);
-        mat.map(data, (sq::SizeType)PyArray_SHAPE(arr)[0], (sq::SizeType)PyArray_SHAPE(arr)[1]);
+        sq::SizeType stride = (sq::SizeType)PyArray_STRIDE(arr, 0) / sizeof(real);
+        mat.map(data, (sq::SizeType)PyArray_SHAPE(arr)[0], (sq::SizeType)PyArray_SHAPE(arr)[1], stride);
     }
 
     void allocate(int nRows, int nCols) {

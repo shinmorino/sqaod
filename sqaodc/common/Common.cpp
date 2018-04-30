@@ -61,12 +61,13 @@ bool sqaod::isCUDAAvailable() {
 
 #endif
 
-template<class real>
-void sqaod::createBitSetSequence(real *bits, int nBits, PackedBitSet bBegin, PackedBitSet bEnd) {
+template<class V>
+void sqaod::createBitSetSequence(V *bits, SizeType stride,
+                                 SizeType nBits, PackedBitSet bBegin, PackedBitSet bEnd) {
     for (PackedBitSet b = bBegin; b < bEnd; ++b) {
         for (int pos = 0; pos < nBits; ++pos)
-            bits[pos] = real((b >> (nBits - 1 - pos)) & 1);
-        bits += nBits;
+            bits[pos] = V((b >> (nBits - 1 - pos)) & 1);
+        bits += stride;
     }
 }
 
@@ -98,11 +99,11 @@ bool sqaod::isSymmetric(const MatrixType<real> &W) {
 
 
 template
-void ::sqaod::createBitSetSequence<double>(double *bits, int nBits, PackedBitSet bBegin, PackedBitSet bEnd);
+void ::sqaod::createBitSetSequence<double>(double *bits, sqaod::SizeType, sqaod::SizeType, PackedBitSet, PackedBitSet);
 template
-void ::sqaod::createBitSetSequence<float>(float *bits, int nBits, PackedBitSet bBegin, PackedBitSet bEnd);
+void ::sqaod::createBitSetSequence<float>(float *bits, sqaod::SizeType, sqaod::SizeType, PackedBitSet, PackedBitSet);
 template
-void ::sqaod::createBitSetSequence<char>(char *bits, int nBits, PackedBitSet bBegin, PackedBitSet bEnd);
+void ::sqaod::createBitSetSequence<char>(char *bits, sqaod::SizeType, sqaod::SizeType, PackedBitSet, PackedBitSet);
 
 template
 bool ::sqaod::isSymmetric<float>(const sqaod::MatrixType<float> &W);

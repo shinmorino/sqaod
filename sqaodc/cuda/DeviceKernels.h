@@ -3,6 +3,7 @@
 #include <sqaodc/cuda/DeviceStream.h>
 #include <sqaodc/cuda/DeviceRandom.h>
 #include <sqaodc/cuda/DeviceSegmentedSum.h>
+#include <sqaodc/cuda/DeviceMatrix.h>
 
 namespace sqaod_cuda {
 
@@ -10,39 +11,60 @@ namespace sq = sqaod;
 
 template<class real>
 struct DeviceMathKernelsType {
-    typedef sq::SizeType SizeType;
 
-    void scale(real *d_y, real alpha, const real *d_x, SizeType size, real addAssignFactor);
-    void scaleBroadcast(real *d_x, real alpha, const real *d_c, SizeType size, real addAssignFactor);
-    void scaleBroadcastVector(real *d_A, real alpha, const real *d_x, SizeType size,
-                              SizeType nBatch, real addAssignFactor);
-    void scaleBroadcastScalars(real *d_A, real alpha, const real *d_x, SizeType size,
-                               SizeType nBatch, real addAssignFactor);
+    typedef DeviceMatrixType<real> DeviceMatrix;
+    typedef DeviceVectorType<real> DeviceVector;
+    typedef DeviceScalarType<real> DeviceScalar;
 
-    void sum(real *d_dst, real alpha, const real *d_x, SizeType size, real addAssignFactor);
-    void sumGather(real *d_dst, real alpha, const real *d_x, SizeType size, SizeType stride, int offset);
-    void sumBatched(real *d_x, real alpha, const real *d_A, SizeType size, SizeType nBatch);
-    void dot(real *d_c, real alpha, const real *d_x, const real *d_y, SizeType size,
-             real addAssignFactor);
-    void dotBatched(real *d_z, real alpha, const real *d_x, const real *d_y, SizeType size,
-                    SizeType nBatch);
+    void scale(DeviceScalar *d_y, real alpha, const DeviceScalar &d_x, real addAssignFactor);
 
-    void transpose(real *d_tr, const real *d_mat, SizeType rows, SizeType cols);
+    void scale(DeviceVector *d_y, real alpha, const DeviceVector &d_x, real addAssignFactor);
 
-    void min(real *d_min, const real *d_values, SizeType size);
+    void scale(DeviceMatrix *d_A, real alpha, const DeviceMatrix &d_X, real addAssignFactor);
+    
+    void scaleBroadcast(DeviceVector *d_x, real alpha, const DeviceScalar &d_c, real addAssignFactor);
+
+    void scaleBroadcast(DeviceMatrix *d_A, real alpha, const DeviceScalar &d_c, real addAssignFactor);
+    
+    void scaleBroadcastToRows(DeviceMatrix *d_A, 
+                              real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void scaleBroadcastToColumns(DeviceMatrix *d_A,
+                                 real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void sum(DeviceScalar *d_dst, real alpha, const DeviceVector &d_x, real addAssignFactor);
+
+    void sum(DeviceScalar *d_dst, real alpha, const DeviceMatrix &d_A, real addAssignFactor);
+    
+    void sumDiagonal(DeviceScalar *d_dst, real alpha, const DeviceMatrix &d_A, sq::SizeType offset, real addAssignFactor);
+    
+    void sumRowwise(DeviceVector *d_x, real alpha, const DeviceMatrix &d_A);
+
+    void dot(DeviceScalar *d_c, real alpha, const DeviceVector &d_x, const DeviceVector &d_y, real addAssignFactor);
+    
+    void dotRowwise(DeviceVector *d_z,
+                    real alpha, const DeviceMatrix &d_X, const DeviceMatrix &d_Y);
+
+    void transpose(DeviceMatrix *d_tr, const DeviceMatrix &d_mat);
+
+    void min(DeviceScalar *d_min, const DeviceVector &d_x);
+
+    void min(DeviceScalar *d_min, const DeviceMatrix &d_A);
 
     void gemv(cublasOperation_t op, int M, int N,
-        const real *d_alpha, const real *d_A, const real *d_x,
-        const real *d_beta, real *d_y);
+              const real *d_alpha, const real *d_A, sq::SizeType Astride,
+              const real *d_x, const real *d_beta, real *d_y);
  
     void gemm(cublasOperation_t opA, cublasOperation_t opB, int M, int N, int K,
-              const real *d_alpha, const real *d_A, int lda, const real *d_B, int ldb,
+              const real *d_alpha,
+              const real *d_A, int lda,
+              const real *d_B, int ldb,
               const real *d_beta, real *d_C, int ldc);
 
     DeviceMathKernelsType(DeviceStream *devStream = NULL);
-
+    
     void assignStream(DeviceStream *devStream);
-
+    
 private:
     cudaStream_t stream_;
     DeviceStream *devStream_;
@@ -55,17 +77,22 @@ private:
 struct DeviceCopyKernels {
 
     template<class V>
-    void copyBroadcast(V *d_buf, const V &v, sq::SizeType nElms) const;
+    void broadcast(DeviceVectorType<V> *dst, const V &v) const;
 
     template<class V>
-    void copyBroadcastStrided(V *d_buf, const V &v, sq::SizeType size,
-                              sq::SizeType stride, sq::IdxType offset) const;
+    void broadcast(DeviceMatrixType<V> *dst, const V &v) const;
 
     template<class V>
-    void copyBroadcastVector(V *dst, const V *vec, sq::SizeType size, sq::SizeType nBatch) const;
+    void broadcastToRows(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &vec) const;
+
+    template<class V>
+    void broadcastToDiagonal(DeviceMatrixType<V> *d_A, const V &v, sq::IdxType offset) const;
 
     template<class Vdst, class Vsrc>
-    void cast(Vdst *dst, const Vsrc *src, sq::SizeType size);
+    void cast(DeviceVectorType<Vdst> *dst, const DeviceVectorType<Vsrc> &src);
+
+    template<class Vdst, class Vsrc>
+    void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
 
     DeviceCopyKernels(DeviceStream *stream = NULL);
 
@@ -75,15 +102,15 @@ private:
     cudaStream_t stream_;
 };
 
-
+template<class V>
+void generateBitSetSequence(DeviceMatrixType<V> *d_data, 
+                            sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
+                            cudaStream_t stream);
 
 template<class V>
-void generateBitsSequence(V *d_data, int N,
-                          sq::PackedBitSet xBegin, sq::PackedBitSet xEnd,
-                          cudaStream_t stream);
-
+void randomizeSpin(DeviceVectorType<V> *d_matq, DeviceRandom &d_random, cudaStream_t stream);
 
 template<class V>
-void randomizeSpin(V *d_matq, DeviceRandom &d_random, sq::SizeType size, cudaStream_t stream);
+void randomizeSpin(DeviceMatrixType<V> *d_matq, DeviceRandom &d_random, cudaStream_t stream);
 
 }  // namespace sqaod_cuda

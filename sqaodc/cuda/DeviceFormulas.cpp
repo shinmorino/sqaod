@@ -25,9 +25,9 @@ calculateHamiltonian(DeviceVector *h, DeviceMatrix *J, DeviceScalar *c, const De
     devMath.sumBatched(h, -0.5, W, opColwise);
     devMath.scale(J, -0.25, W);
 
-    devMath.sumDiagonals(c, *J);
+    devMath.sumDiagonal(c, *J);
     devMath.sum(c, 1., *J, 1.);
-    devMath.setToDiagonals(J, 0.);
+    devMath.broadcastToDiagonal(J, 0.);
 }
 
 template<class real> void DeviceDenseGraphFormulas<real>::

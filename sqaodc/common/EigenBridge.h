@@ -31,12 +31,14 @@ template<class real>
 using EigenRowVectorType = Eigen::Matrix<real, 1, Eigen::Dynamic>;
 template<class real>
 using EigenColumnVectorType = Eigen::Matrix<real, Eigen::Dynamic, 1>;
+
+
 template<class real>
-using EigenMappedMatrixType = Eigen::Map<EigenMatrixType<real>>;
+using EigenMappedMatrixType = Eigen::Map<EigenMatrixType<real>, Eigen::Unaligned, Eigen::OuterStride<>>;
 template<class real>
-using EigenMappedRowVectorType = Eigen::Map<EigenRowVectorType<real>>;
+using EigenMappedRowVectorType = Eigen::Map<EigenRowVectorType<real>, Eigen::Unaligned>;
 template<class real>
-using EigenMappedColumnVectorType = Eigen::Map<EigenColumnVectorType<real>>;
+using EigenMappedColumnVectorType = Eigen::Map<EigenColumnVectorType<real>, Eigen::Unaligned>;
 
 typedef EigenMatrixType<char> EigenBitMatrix;
 
@@ -45,17 +47,22 @@ typedef EigenMatrixType<char> EigenBitMatrix;
 
 template<class V>
 MatrixType<V> mapFrom(EigenMatrixType<V> &matrix) {
-    return MatrixType<V>(matrix.data(), matrix.rows(), matrix.cols());
+    return MatrixType<V>(matrix.data(), matrix.rows(), matrix.cols(), matrix.outerStride());
+}
+
+template<class V>
+const MatrixType<V> mapFrom(const EigenMatrixType<V> &matrix) {
+    return MatrixType<V>((V*)matrix.data(), matrix.rows(), matrix.cols(), matrix.outerStride());
 }
 
 template<class V>
 EigenMappedMatrixType<V> mapTo(MatrixType<V> &mat) {
-    return EigenMappedMatrixType<V>(mat.data, mat.rows, mat.cols);
+    return EigenMappedMatrixType<V>(mat.data, mat.rows, mat.cols, mat.stride);
 }
 
 template<class V>
 const EigenMappedMatrixType<V> mapTo(const MatrixType<V> &mat) {
-    return EigenMappedMatrixType<V>(mat.data, mat.rows, mat.cols);
+    return EigenMappedMatrixType<V>(mat.data, mat.rows, mat.cols, mat.stride);
 }
 
 
@@ -77,6 +84,18 @@ template<class V>
 VectorType<V> mapFrom(EigenColumnVectorType<V> &vec) {
     assert(vec.cols() == 1);
     return VectorType<V>(vec.data(), vec.rows());
+}
+
+template<class V>
+const VectorType<V> mapFrom(const EigenRowVectorType<V> &vec) {
+    assert(vec.rows() == 1);
+    return VectorType<V>((V*)vec.data(), vec.cols());
+}
+
+template<class V>
+const VectorType<V> mapFrom(const EigenColumnVectorType<V> &vec) {
+    assert(vec.cols() == 1);
+    return VectorType<V>((V*)vec.data(), vec.rows());
 }
 
 template<class V>

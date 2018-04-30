@@ -14,7 +14,7 @@ setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
         sq::SizeType tileSize0, sq::SizeType tileSize1) {
     b0_.map(b0.data, b0.size);
     b1_.map(b1.data, b1.size);
-    W_.map(W.data, W.rows, W.cols);
+    W_.map(W.data, W.rows, W.cols, W.stride);
     tileSize0_ = tileSize0;
     tileSize1_ = tileSize1;
 }
@@ -38,8 +38,8 @@ searchRange(sq::PackedBitSet x0begin, sq::PackedBitSet x0end,
     Matrix bitsSeq0(nBatchSize0, N0);
     Matrix bitsSeq1(nBatchSize1, N1);
 
-    sq::createBitSetSequence(bitsSeq0.data, N0, x0begin, x0end);
-    sq::createBitSetSequence(bitsSeq1.data, N1, x1begin, x1end);
+    sq::createBitSetSequence(bitsSeq0.data, bitsSeq0.stride, N0, x0begin, x0end);
+    sq::createBitSetSequence(bitsSeq1.data, bitsSeq1.stride, N1, x1begin, x1end);
 
     int maxNSolutions = W_.rows + W_.cols;
     Matrix EBatch;

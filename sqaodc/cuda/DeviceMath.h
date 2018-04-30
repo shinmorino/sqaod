@@ -39,7 +39,7 @@ struct DeviceMathType {
     typedef DeviceMathKernelsType<real> DeviceMathKernels;
     typedef DeviceConstScalarsType<real> DeviceConstScalars;
     
-    void setToDiagonals(DeviceMatrix *V, real v);
+    void broadcastToDiagonal(DeviceMatrix *V, real v);
     
     void scale(DeviceScalar *y, real alpha, const DeviceScalar &x, real addAssignFactor = 0.);
     void scale(DeviceVector *y, real alpha, const DeviceVector &x, real addAssignFactor = 0.);
@@ -51,7 +51,7 @@ struct DeviceMathType {
     
     void sum(DeviceScalar *s, real alpha, const DeviceVector &x, real addAssignFactor = 0.);
     void sum(DeviceScalar *s, real alpha, const DeviceMatrix &dmat, real addAssignFactor = 0.);
-    void sumDiagonals(DeviceScalar *s, const DeviceMatrix &dmat);
+    void sumDiagonal(DeviceScalar *s, const DeviceMatrix &dmat);
 
     void sumBatched(DeviceVector *vec, real alpha, const DeviceMatrix &dmat, BatchOp op);
     

@@ -57,11 +57,11 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
     testcase("test zeros/eye") {
         sq::Dim dim1(dim.rows, dim.rows);
         alloc->allocate(&dA, dim1);
-        devCopy(&dA, (real)0.); /* create zero matrix */
+        devCopy.broadcast(&dA, (real)0.); /* create zero matrix */
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::zeros(dim1));
 
-        devMath.setToDiagonals(&dA, real(1.));
+        devMath.broadcastToDiagonal(&dA, real(1.));
         device_.synchronize();
         TEST_ASSERT(dA == HostMatrix::eye(dim.rows));
     }
@@ -210,7 +210,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         alloc->allocate(&da);
 
         devCopy(&dA, hmat);
-        devMath.sumDiagonals(&da, dA);
+        devMath.sumDiagonal(&da, dA);
         device_.synchronize();
         TEST_ASSERT(da == sq::mapTo(hmat).diagonal().sum());
     }
@@ -322,7 +322,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, B);
         devMath.mmProduct(&dC, 0.5, dA, sqcu::opNone, dB, sqcu::opNone);
         device_.synchronize();
-        TEST_ASSERT(dC == sq::mapFrom(C));
+        TEST_ASSERT(allclose(dC, sq::mapFrom(C), epusiron<real>()));
 
         HostMatrix At(dim.transpose());
         HostMatrix Bt(dim);
@@ -335,7 +335,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         devCopy(&dB, Bt);
         devMath.mmProduct(&dC, 0.5, dA, sqcu::opTranspose, dB, sqcu::opTranspose);
         device_.synchronize();
-        TEST_ASSERT(dC == sq::mapFrom(C));
+        TEST_ASSERT(allclose(dC, sq::mapFrom(C), epusiron<real>()));
     }
 
     testcase("vmvProduct") {

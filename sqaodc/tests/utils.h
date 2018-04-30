@@ -283,5 +283,10 @@ bool operator==(const sqcu::DeviceArrayType<real> &dsc, const sq::ArrayType<real
 template<class real>
 bool allclose(const sqcu::DeviceVectorType<real> &dvec, const sqaod::VectorType<real> &hvec, real epsiron);
 
+template<class real>
+bool allclose(const sqcu::DeviceMatrixType<real> &dvec, const sqaod::MatrixType<real> &hvec, real epsiron);
+
+template<class real>
+bool allclose(const sq::VectorType<real> &dvec, const sq::VectorType<real> &hvec, real epsiron);
 
 #endif

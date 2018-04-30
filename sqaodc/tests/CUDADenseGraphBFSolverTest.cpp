@@ -1,6 +1,7 @@
 #include "CUDADenseGraphBFSolverTest.h"
 #include <cpu/CPUFormulas.h>
 #include <cpu/CPUDenseGraphBFSearcher.h>
+#include <cpu/CPUDenseGraphBatchSearch.h>
 #include <cuda_runtime.h>
 #include "utils.h"
 
@@ -33,7 +34,8 @@ void CUDADenseGraphBFSolverTest::run(std::ostream &ostm) {
 
 template<class real>
 void CUDADenseGraphBFSolverTest::tests() {
-    typedef sq::MatrixType<real> MatrixType;
+    typedef sq::MatrixType<real> Matrix;
+    typedef sqcu::DeviceMatrixType<real> DeviceMatrix;
 
     sqcu::DeviceStream *devStream = device_.defaultStream();
     sqcu::DeviceObjectAllocator *devAlloc = device_.objectAllocator();
@@ -44,48 +46,50 @@ void CUDADenseGraphBFSolverTest::tests() {
         search.assignDevice(device_);
 
         const sq::SizeType N = 63;
-        real *d_data = (real*)devAlloc->allocate(sizeof(real) * N);
-        real data[N];
+        DeviceMatrix d_bitsSequence;
+        devAlloc->allocate(&d_bitsSequence, 1, N);
+        Matrix bitsSequence;
 
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
             sq::PackedBitSet bits = 1ull << idx;
-            search.generateBitsSequence(d_data, N, bits, bits + 1);
-            devCopy.copy(data, d_data, N);
+            sqcu::generateBitSetSequence(&d_bitsSequence, bits, bits + 1, devStream->getCudaStream());
+            devCopy(&bitsSequence, d_bitsSequence);
             devStream->synchronize();
             for (int chkIdx = 0; chkIdx < (int)N; ++chkIdx) {
                 if (idx == int(N - 1 - chkIdx))
-                    ok &= (data[chkIdx] == real(1.));
+                    ok &= (bitsSequence.data[chkIdx] == real(1.));
                 else
-                    ok &= (data[chkIdx] == real(0.));
+                    ok &= (bitsSequence.data[chkIdx] == real(0.));
             }
         }
         TEST_ASSERT(ok);
-        devAlloc->deallocate(d_data);
+        devAlloc->deallocate(d_bitsSequence);
     }
     testcase("test bit set 32") {
         sqcu::DeviceDenseGraphBatchSearch<real> search;
         search.assignDevice(device_);
 
         const sq::SizeType N = 32;
-        real *d_data = (real*)devAlloc->allocate(sizeof(real) * N);
-        real data[N];
+        DeviceMatrix d_bitsSequence;
+        devAlloc->allocate(&d_bitsSequence, 1, N);
+        Matrix bitsSequence;
 
         bool ok = true;
         for (int idx = 0; idx < (int)N; ++idx) {
             sq::PackedBitSet bits = 1ull << idx;
-            search.generateBitsSequence(d_data, N, bits, bits + 1);
-            devCopy.copy(data, d_data, N);
+            sqcu::generateBitSetSequence(&d_bitsSequence, bits, bits + 1, devStream->getCudaStream());
+            devCopy(&bitsSequence, d_bitsSequence);
             devStream->synchronize();
             for (int chkIdx = 0; chkIdx < (int)N; ++chkIdx) {
                 if (idx == int(N - 1 - chkIdx))
-                    ok &= (data[chkIdx] == real(1.));
+                    ok &= (bitsSequence.data[chkIdx] == real(1.));
                 else
-                    ok &= (data[chkIdx] == real(0.));
+                    ok &= (bitsSequence.data[chkIdx] == real(0.));
             }
         }
         TEST_ASSERT(ok);
-        devAlloc->deallocate(d_data);
+        devAlloc->deallocate(d_bitsSequence);
     }
 
     testcase("test generate sequence 63") {
@@ -94,19 +98,20 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         const sq::SizeType N = 63;
         const sq::SizeType tileSize = 1 << 12;
-        real *d_data = (real*)devAlloc->allocate(sizeof(real) * N * tileSize);
-        real *data = new real[N * tileSize];
+        DeviceMatrix d_bitsSequence;
+        devAlloc->allocate(&d_bitsSequence, tileSize, N);
+        Matrix bitsSequence;
 
         const sq::PackedBitSet xBegin = 1ull << 33;
         const sq::PackedBitSet xEnd = xBegin + tileSize;
-        search.generateBitsSequence(d_data, N, xBegin, xEnd);
-        devCopy(data, d_data, N * tileSize);
+        sqcu::generateBitSetSequence(&d_bitsSequence, xBegin, xEnd, devStream->getCudaStream());
+        devCopy(&bitsSequence, d_bitsSequence);
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+        for (sq::IdxType seq = 0; seq < tileSize; ++seq) {
             sq::PackedBitSet bits = xBegin + seq;
-            real *valseq = &data[seq * N];
+            real *valseq = &bitsSequence(seq, 0);
             for (int idx = 0; idx < (int)N; ++idx) {
                 bool bitSet = (bits & (1ull << (N - 1 - idx))) != 0;
                 real expected = bitSet ? real(1.) : real(0.);
@@ -115,8 +120,7 @@ void CUDADenseGraphBFSolverTest::tests() {
             }
         }
         TEST_ASSERT(ok);
-        devAlloc->deallocate(d_data);
-        delete[] data;
+        devAlloc->deallocate(d_bitsSequence);
     }
 
     testcase("test generate sequence 24") {
@@ -125,19 +129,20 @@ void CUDADenseGraphBFSolverTest::tests() {
 
         const sq::SizeType N = 24;
         const sq::SizeType tileSize = 1 << 12;
-        real *d_data = (real*)devAlloc->allocate(sizeof(real) * N * tileSize);
-        real *data = new real[N * tileSize];
+        DeviceMatrix d_bitsSequence;
+        devAlloc->allocate(&d_bitsSequence, tileSize, N);
+        Matrix bitsSequence;
 
-        const sq::PackedBitSet xBegin = 1ull << 20;
+        const sq::PackedBitSet xBegin = 1ull << 12;
         const sq::PackedBitSet xEnd = xBegin + tileSize;
-        search.generateBitsSequence(d_data, N, xBegin, xEnd);
-        devCopy(data, d_data, N * tileSize);
+        sqcu::generateBitSetSequence(&d_bitsSequence, xBegin, xEnd, devStream->getCudaStream());
+        devCopy(&bitsSequence, d_bitsSequence);
         devStream->synchronize();
 
         bool ok = true;
-        for (sq::PackedBitSet seq = 0; seq < tileSize; ++seq) {
+        for (sq::IdxType seq = 0; seq < tileSize; ++seq) {
             sq::PackedBitSet bits = xBegin + seq;
-            real *valseq = &data[seq * N];
+            real *valseq = &bitsSequence(seq, 0);
             for (int idx = 0; idx < (int)N; ++idx) {
                 bool bitSet = (bits & (1ull << (N - 1 - idx))) != 0;
                 real expected = bitSet ? real(1.) : real(0.);
@@ -146,8 +151,7 @@ void CUDADenseGraphBFSolverTest::tests() {
             }
         }
         TEST_ASSERT(ok);
-        devAlloc->deallocate(d_data);
-        delete [] data;
+        devAlloc->deallocate(d_bitsSequence);
     }
 
     testcase("partition") {
@@ -180,37 +184,40 @@ void CUDADenseGraphBFSolverTest::tests() {
         TEST_ASSERT(nPart == *d_nPart);
     }
 
-    // testcase("DenseGraphBatchSearch") {
-    //     SizeType N = 20;
-    //     int tileSize = 4096;
-    //     MatrixType W = testMatSymmetric<real>(N);
-    //     real E = std::numeric_limits<real>::max();
-    //     sq::PackedBitSetArray xList;
-    //     sq::DGFuncs<real>::batchSearch(&E, &xList, W, 0, tileSize);
+    testcase("DenseGraphBatchSearch") {
+        sq::SizeType N = 20;
+        int tileSize = 4096;
+        Matrix W = testMatSymmetric<real>(N);
+        sqcpu::CPUDenseGraphBatchSearch<real> batchSearch;
+        batchSearch.setQUBO(W, tileSize);
+        batchSearch.initSearch();
+        batchSearch.searchRange(0, tileSize);
+        real E = batchSearch.Emin_;
+        sq::PackedBitSetArray xList = batchSearch.packedXList_;
 
-    //     DeviceDenseGraphBatchSearch<real> batchSearch;
-    //     batchSearch.assignDevice(device_);
-    //     batchSearch.setProblem(W, tileSize);
-    //     batchSearch.calculate_E(0, tileSize);
-    //     batchSearch.synchronize();
-    //     TEST_ASSERT(E == batchSearch.get_Emin());
+        sqcu::DeviceDenseGraphBatchSearch<real> devBatchSearch;
+        devBatchSearch.assignDevice(device_);
+        devBatchSearch.setQUBO(W, tileSize);
+        devBatchSearch.calculate_E(0, tileSize);
+        devBatchSearch.synchronize();
+        TEST_ASSERT(E == devBatchSearch.get_Emin());
 
-    //     batchSearch.partition_xMins(false);
-    //     batchSearch.synchronize();
+        devBatchSearch.partition_xMins(false);
+        devBatchSearch.synchronize();
 
-    //     TEST_ASSERT(batchSearch.get_xMins() == xList);
+        TEST_ASSERT(devBatchSearch.get_xMins() == xList);
 
-    //     batchSearch.partition_xMins(true);
-    //     batchSearch.synchronize(); // FIXME: add hook ??
-    //     sq::PackedBitSetArray xList2;
-    //     xList2.insert(xList.begin(), xList.end());
-    //     xList2.insert(xList.begin(), xList.end());
-    //     TEST_ASSERT(batchSearch.get_xMins() == xList2)
-    // }
+        devBatchSearch.partition_xMins(true);
+        devBatchSearch.synchronize(); // FIXME: add hook ??
+        sq::PackedBitSetArray xList2;
+        xList2.insert(xList.begin(), xList.end());
+        xList2.insert(xList.begin(), xList.end());
+        TEST_ASSERT(devBatchSearch.get_xMins() == xList2)
+    }
 
     testcase("minimum run") {
         int N = 16;
-        MatrixType W = testMatSymmetric<real>(N);
+        Matrix W = testMatSymmetric<real>(N);
         TEST_ASSERT(sqaod::isSymmetric(W));
 
         sqcpu::CPUDenseGraphBFSearcher<real> cpuSolver;
@@ -225,7 +232,7 @@ void CUDADenseGraphBFSolverTest::tests() {
         cudaSolver.search();
         const sq::VectorType<real> &cudaE = cudaSolver.get_E();
         const sq::BitSetArray &cudaX = cudaSolver.get_x();
-        TEST_ASSERT(cpuE == cudaE);
+        TEST_ASSERT(allclose(cudaE, cpuE, epusiron<real>()));
         TEST_ASSERT(cpuX == cudaX);
 
         sq::VectorType<real> cpuVecX = sq::cast<real>(cpuX[0]);

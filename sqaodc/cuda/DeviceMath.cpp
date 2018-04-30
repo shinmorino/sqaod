@@ -6,17 +6,17 @@ using sq::Dim;
 using sq::SizeType;
 
 template<class real>
-void DeviceMathType<real>::setToDiagonals(DeviceMatrix *A, real v) {
+void DeviceMathType<real>::broadcastToDiagonal(DeviceMatrix *A, real v) {
     assertValidMatrix(*A, __func__);
     SizeType size = std::min(A->rows, A->cols);
-    devCopy_(A, v, size, A->rows + 1, 0);
+    devCopy_.broadcastToDiagonal(A, v, 0);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceScalar *y, real alpha, const DeviceScalar &x,
                                  real addAssignFactor) {
     devAlloc_->allocateIfNull(y);
-    devKernels_.scale(y->d_data, alpha, x.d_data, 1, addAssignFactor);
+    devKernels_.scale(y, alpha, x, addAssignFactor);
 }
 
 template<class real>
@@ -24,14 +24,14 @@ void DeviceMathType<real>::scale(DeviceVector *y, real alpha, const DeviceVector
                                  real addAssignFactor) {
     devAlloc_->allocateIfNull(y, x.size);
     assertSameShape(*y, x, __func__);
-    devKernels_.scale(y->d_data, alpha, x.d_data, x.size, addAssignFactor);
+    devKernels_.scale(y, alpha, x, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::scale(DeviceMatrix *B, real alpha, const DeviceMatrix &A) {
     devAlloc_->allocateIfNull(B, A.dim());
     assertSameShape(*B, A, __func__);
-    devKernels_.scale(B->d_data, alpha, A.d_data, A.rows * A.cols, real(0.));
+    devKernels_.scale(B, alpha, A, real(0.));
 }
 
 template<class real>
@@ -39,7 +39,7 @@ void DeviceMathType<real>::scaleBroadcast(DeviceVector *y, real alpha, const Dev
                                           real addAssignFactor) {
     assertValidScalar(x, __func__);
     assertValidVector(*y, __func__);
-    devKernels_.scaleBroadcast(y->d_data, alpha, x.d_data, y->size, addAssignFactor);
+    devKernels_.scaleBroadcast(y, alpha, x, addAssignFactor);
 }
 
 template<class real>
@@ -48,13 +48,11 @@ void DeviceMathType<real>::scaleBroadcast(DeviceMatrix *A, real alpha, const Dev
     assertValidMatrix(*A, __func__);
     if (op == opRowwise) {
         abortIf(A->cols != x.size, "Cols of matrix does not match vector length.");
-        devKernels_.scaleBroadcastVector(A->d_data, alpha, x.d_data, x.size, A->rows,
-                                         addAssignFactor);
+        devKernels_.scaleBroadcastToRows(A, alpha, x, addAssignFactor);
     }
     else if (op == opColwise) {
         throwErrorIf(A->rows != x.size, "Rows of matrix does not match vector length.");
-        devKernels_.scaleBroadcastScalars(A->d_data, alpha, x.d_data, A->cols, x.size,
-                                          addAssignFactor);
+        devKernels_.scaleBroadcastToColumns(A, alpha, x, addAssignFactor);
     }
     else {
         abort_("Unknown matrix op.");
@@ -65,21 +63,20 @@ template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceVector &x,
                                real addAssignFactor) {
     devAlloc_->allocateIfNull(s);
-    devKernels_.sum(s->d_data, alpha, x.d_data, x.size, addAssignFactor);
+    devKernels_.sum(s, alpha, x, addAssignFactor);
 }
 
 template<class real>
 void DeviceMathType<real>::sum(DeviceScalar *s, real alpha, const DeviceMatrix &dmat,
                                real addAssignFactor) {
     devAlloc_->allocateIfNull(s);
-    devKernels_.sum(s->d_data, alpha, dmat.d_data, dmat.rows * dmat.cols, addAssignFactor);
+    devKernels_.sum(s, alpha, dmat, addAssignFactor);
 }
 
 template<class real>
-void DeviceMathType<real>::sumDiagonals(DeviceScalar *s, const DeviceMatrix &dmat) {
+void DeviceMathType<real>::sumDiagonal(DeviceScalar *s, const DeviceMatrix &dmat) {
     devAlloc_->allocateIfNull(s);
-    int nElms = std::min(dmat.rows, dmat.cols);
-    devKernels_.sumGather(s->d_data, 1., dmat.d_data, nElms, dmat.cols + 1, 0);
+    devKernels_.sumDiagonal(s, 1., dmat, 0, 0.);
 }
 
 template<class real>
@@ -101,7 +98,7 @@ void DeviceMathType<real>::sumBatched(DeviceVector *vec,
     }
     devAlloc_->allocateIfNull(vec, dmat->rows);
     assertValidVector(*vec, dmat->rows, __func__);
-    devKernels_.sumBatched(vec->d_data, alpha, dmat->d_data, dmat->cols, dmat->rows);
+    devKernels_.sumRowwise(vec, alpha, *dmat);
 }
 
 template<class real>
@@ -110,12 +107,12 @@ void DeviceMathType<real>::dot(DeviceScalar *z,
                                real addAssignFactor) {
     devAlloc_->allocateIfNull(z);
     assertSameShape(x, y, __func__);
-    devKernels_.dot(z->d_data, alpha, x.d_data, y.d_data, x.size, addAssignFactor);
+    devKernels_.dot(z, alpha, x, y, addAssignFactor);
 }
 
 template<class real>
-void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
-                                      const DeviceMatrix &A, MatrixOp opA,
+void DeviceMathType<real>::dotBatched(DeviceVector *z,
+                                      real alpha, const DeviceMatrix &A, MatrixOp opA,
                                       const DeviceMatrix &B, MatrixOp opB) {
     const DeviceMatrix *dMat0, *dMat1;
     if (opA == opTranspose) {
@@ -141,7 +138,7 @@ void DeviceMathType<real>::dotBatched(DeviceVector *z, real alpha,
     assertSameShape(*dMat0, *dMat1, __func__);
     devAlloc_->allocateIfNull(z, dMat0->rows);
     assertValidVector(*z, dMat0->rows, __func__);
-    devKernels_.dotBatched(z->d_data, alpha, dMat0->d_data, dMat1->d_data, dMat0->cols, dMat0->rows);
+    devKernels_.dotRowwise(z, alpha, *dMat0, *dMat1);
 }
 
 template<class real>
@@ -225,13 +222,13 @@ void DeviceMathType<real>::mmmProduct(DeviceMatrix *z, real alpha,
 template<class real>
 void DeviceMathType<real>::min(DeviceScalar *s, const DeviceMatrix &A) {
     devAlloc_->allocateIfNull(s);
-    devKernels_.min(s->d_data, A.d_data, A.rows * A.cols);
+    devKernels_.min(s, A);
 }
 
 template<class real>
 void DeviceMathType<real>::min(DeviceScalar *s, const DeviceVector &x) {
     devAlloc_->allocateIfNull(s);
-    devKernels_.min(s->d_data, x.d_data, x.size);
+    devKernels_.min(s, x);
 }
 
 template<class real>
@@ -239,7 +236,7 @@ void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
     Dim dim = getMatrixShape(A, opTranspose);
     devAlloc_->allocateIfNull(dAt, dim);
     assertValidMatrix(*dAt, dim, __func__);
-    devKernels_.transpose(dAt->d_data, A.d_data, A.rows, A.cols);
+    devKernels_.transpose(dAt, A);
 }
 
 
@@ -286,8 +283,8 @@ void DeviceMathType<real>::gemv(MatrixOp op, const DeviceScalar &d_alpha,
     /* transpose since A is in row-major format, though cublas accepts column-major format. */
     cublasOperation_t cop = (op == opNone) ? CUBLAS_OP_T : CUBLAS_OP_N;
     devKernels_.gemv(cop, A.cols, A.rows,
-                     d_alpha.d_data, A.d_data, x.d_data,
-                     d_beta.d_data, y.d_data);
+                     d_alpha.d_data, A.d_data, A.stride,
+                     x.d_data, d_beta.d_data, y.d_data);
 }
 
 template<class real>
@@ -303,9 +300,9 @@ void DeviceMathType<real>::gemm(MatrixOp opA, MatrixOp opB,
     abortIf(Adim.cols != Bdim.rows, "shape mismatch on matrix-matrix multiplication");
 
     /* leading diimension */
-    int ldb = B.cols;
-    int lda = A.cols;
-    int ldc = Bdim.cols;
+    int ldb = B.stride;
+    int lda = A.stride;
+    int ldc = C.stride;
 
     devKernels_.gemm(copB, copA, Bdim.cols, Adim.rows, Adim.cols,
                      d_alpha.d_data, B.d_data, ldb, A.d_data, lda,

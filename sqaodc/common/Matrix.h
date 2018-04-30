@@ -38,10 +38,11 @@ struct MatrixType {
         moveFrom(static_cast<MatrixType<V>&>(mat));
     }
 
-    explicit MatrixType(V *_data, SizeType _rows, SizeType _cols) {
+    explicit MatrixType(V *_data, SizeType _rows, SizeType _cols, SizeType _stride) {
         data = _data;
         rows = _rows;
         cols = _cols;
+        stride = _stride;
         mapped = true;
     }
     
@@ -56,7 +57,7 @@ struct MatrixType {
     }
 
     void operator=(const V &v) {
-        sqaod::fill(data, v, rows * cols);
+        sqaod::fill(data, v, cols, rows, stride);
     }
 
     const MatrixType<V> &operator=(MatrixType<V> &&rhs) noexcept {
@@ -72,13 +73,14 @@ struct MatrixType {
         mapped = false;
     }
     
-    void map(V *_data, SizeType _rows, SizeType _cols) {
+    void map(V *_data, SizeType _rows, SizeType _cols, SizeType _stride) {
         if (!mapped)
             free();
         mapped = true;
         data = _data;
         rows = _rows;
         cols = _cols;
+        stride = _stride;
     }
     
     void copyFrom(const MatrixType<V> &src) {
@@ -90,7 +92,11 @@ struct MatrixType {
         }
         if (data == nullptr)
             allocate(src.rows, src.cols);
-        memcpy(data, src.data, sizeof(V) * rows * cols);
+        for (IdxType row = 0; row < rows; ++row) {
+            IdxType srcOffset = src.stride * row; 
+            IdxType selfOffset = stride * row; 
+            memcpy(&data[selfOffset], &src.data[srcOffset], sizeof(V) * cols);
+        }
     }
 
     void moveFrom(MatrixType<V> &src) {
@@ -101,6 +107,7 @@ struct MatrixType {
         /* updating this */
         rows = src.rows;
         cols = src.cols;
+        stride = src.stride;
         data = src.data;
         mapped = src.mapped;
         /* clean up src */
@@ -111,21 +118,23 @@ struct MatrixType {
         assert(!mapped);
         rows = _rows;
         cols = _cols;
-        data = (V*)malloc(rows * cols * sizeof(V));
+        const int SIMD_WORDS = SQAODC_SIMD_ALIGNMENT / sizeof(V);
+        stride = roundUp(cols, SIMD_WORDS);
+        data = (V*)aligned_alloc(SQAODC_SIMD_ALIGNMENT, rows * stride * sizeof(V));
     }
     
     void free() {
         assert(!mapped);
         rows = cols = -1;
         if (data != nullptr)
-            ::free(data);
+            aligned_free(data);
         data = nullptr;
     }
     
     void resize(SizeType _rows, SizeType _cols) {
         assert(!mapped); /* mapping state not allowed */
         if ((_rows != rows) || (_cols != cols)) {
-            ::free(data);
+            aligned_free(data);
             allocate(_rows, _cols);
         }
     }
@@ -137,24 +146,24 @@ struct MatrixType {
     V &operator()(IdxType r, IdxType c) {
         assert((0 <= r) && (r < (IdxType)rows));
         assert((0 <= c) && (c < (IdxType)cols));
-        return data[r * cols + c];
+        return data[r * stride + c];
     }
     
     const V &operator()(IdxType r, IdxType c) const {
         assert((0 <= r) && (r < (IdxType)rows));
         assert((0 <= c) && (c < (IdxType)cols));
-        return data[r * cols + c];
+        return data[r * stride + c];
     }
 
     V sum() const {
-        return sqaod::sum(data, rows * cols);
+        return sqaod::sum(data, cols, rows, stride);
     }
 
     V min() const {
-        return sqaod::min(data, rows * cols);
+        return sqaod::min(data, cols, rows, stride);
     }
     
-    SizeType rows, cols;
+    SizeType rows, cols, stride;
     V *data;
     bool mapped;
 
@@ -184,7 +193,12 @@ template<class V>
 bool operator==(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
     if (lhs.dim() != rhs.dim())
         return false;
-    return memcmp(lhs.data, rhs.data, sizeof(V) * lhs.rows * lhs.cols) == 0;
+    for (IdxType row = 0; row < lhs.rows; ++row) {
+        IdxType offset = lhs.stride * row;
+        if (memcmp(&lhs.data[offset], &rhs.data[offset], sizeof(V) * lhs.cols) != 0)
+            return false;
+    }
+    return true;
 }
 
 template<class V>
@@ -194,14 +208,14 @@ bool operator!=(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
 
 template<class V>
 MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v) {
-    multiply(mat.data, v, mat.rows * mat.cols);
+    multiply(mat.data, v, mat.cols, mat.rows, mat.stride);
     return mat;
 }
 
 template<class newV, class V>
 sqaod::MatrixType<newV> cast(const MatrixType<V> &mat) {
     MatrixType<newV> newMat(mat.dim());
-    cast(newMat.data, mat.data, mat.rows * mat.cols);
+    cast(newMat.data, mat.data, mat.cols, mat.rows, newMat.stride, mat.stride);
     return newMat;
 }
 
@@ -299,23 +313,23 @@ struct VectorType {
     
     void allocate(SizeType _size) {
         assert(!mapped);
-        /* FIXME: alligned mem allocator */
         size = _size;
-        data = (V*)malloc(size * sizeof(V));
+        SizeType alignedSize = roundUp(size * sizeof(V), SQAODC_SIMD_ALIGNMENT);
+        data = (V*)aligned_alloc(SQAODC_SIMD_ALIGNMENT, alignedSize);
     }
     
     void free() {
         assert(!mapped);
         size = -1;
         if (data != nullptr)
-            ::free(data);
+            aligned_free(data);
         data = nullptr;
     }
     
     void resize(SizeType _size) {
         assert(!mapped);
         if (_size != size) {
-            ::free(data);
+            aligned_free(data);
             allocate(_size);
         }
     }

@@ -36,16 +36,8 @@ void _throwError(curandStatus_t status, const char *file, unsigned long line, co
 
 #define throwOnError(expr) { auto status = (expr); if (!sqaod_cuda::_valid(status)) { sqaod_cuda::_throwError(status, __FILE__, __LINE__, #expr); } }
 
-
-
-inline unsigned int divru(unsigned int v, unsigned int base) {
-    return (v + base - 1) / base;
-}
-
-inline unsigned int roundUp(unsigned int v, unsigned int base) {
-    return ((v + base - 1) / base) * base;
-}
-
+using sq::divru;
+using sq::roundUp;
 
 }
 

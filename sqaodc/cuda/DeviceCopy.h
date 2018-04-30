@@ -17,29 +17,33 @@ namespace sq = sqaod;
 class Device;
 
 struct DeviceCopy {
- 
-    template<class V>
-    void copy(V *d_buf, const V *v, sq::SizeType nElms) const;
-
-    template<class V>
-    void broadcast(V *d_buf, const V &v, sq::SizeType nElms) const;
-
-    template<class V>
-    void broadcastStrided(V *d_buf, const V &v, sq::SizeType size,
-                          sq::SizeType stride, sq::IdxType offset) const;
     
     template<class V>
-    void copyRowwise(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const;
+    void copy(V *dst, const V *src, sq::SizeType nElms) const;
 
-    template<class Vdst, class Vsrc>
-    void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
+    template<class V> 
+    void copy2d(V *dst, sq::SizeType dstStride, const V *src, sq::SizeType srcStride,
+                sq::SizeType width, sq::SizeType height) const;
+    
+    template<class V>
+    void broadcast(DeviceVectorType<V> *dst, const V &src) const;
+
+    template<class V>
+    void broadcast(DeviceMatrixType<V> *dst, const V &src) const;
+
+    template<class V>
+    void broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) const;
+    
+    template<class V>
+    void broadcastToRows(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const;
+
     template<class Vdst, class Vsrc>
     void cast(DeviceVectorType<Vdst> *dst, const DeviceVectorType<Vsrc> &src);
 
+    template<class Vdst, class Vsrc>
+    void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
+
     /* sq::MatrixType<V> <-> DeviceMatrixType<V> */
-    template<class V>
-    void operator()(V *dst, const V *src, sq::SizeType nElms) const;
-    
     template<class V>
     void operator()(DeviceMatrixType<V> *dst, const sq::MatrixType<V> &src);
     
@@ -48,13 +52,6 @@ struct DeviceCopy {
     
     template<class V>
     void operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> &src);
-    
-    template<class V>
-    void operator()(DeviceMatrixType<V> *dst, const V &src) const;
-    
-    template<class V>
-    void operator()(DeviceMatrixType<V> *dst, const V &src, sq::SizeType size,
-                    sq::SizeType stride, sq::IdxType offset) const;
     
     /* sq::VectorType<V> <-> DeviceVectorType<V> */
     
@@ -66,9 +63,6 @@ struct DeviceCopy {
     
     template<class V>
     void operator()(DeviceVectorType<V> *dst, const DeviceVectorType<V> &src);
-    
-    template<class V>
-    void operator()(DeviceVectorType<V> *dst, const V &src) const;
 
     /* Host scalar variables <-> DeviceScalar */
     
@@ -98,34 +92,51 @@ private:
 
 
 template<class V> inline void DeviceCopy::
-copy(V *d_buf, const V *v, sq::SizeType nElms) const {
-    throwOnError(cudaMemcpyAsync(d_buf, v, sizeof(V) * nElms, cudaMemcpyDefault, stream_));
+copy(V *d_buf, const V *v, sq::SizeType size) const {
+    throwOnError(cudaMemcpyAsync(d_buf, v, sizeof(V) * size, cudaMemcpyDefault, stream_));
     DEBUG_SYNC;
 }
 
-template<class V> inline
-void DeviceCopy::broadcast(V *d_buf, const V &v, sq::SizeType size) const {
-    kernels_.copyBroadcast(d_buf, v, size);
+template<class V> inline void DeviceCopy::
+copy2d(V *dst, sq::SizeType dstStride, const V *src, sq::SizeType srcStride,
+       sq::SizeType width, sq::SizeType height) const {
+    
+    throwOnError(cudaMemcpy2DAsync(dst, sizeof(V) * dstStride, src, sizeof(V) * srcStride,
+                                   sizeof(V) * width, height, cudaMemcpyDefault, stream_));
+    DEBUG_SYNC;
+}
+
+template<class V> inline void DeviceCopy::
+broadcast(DeviceVectorType<V> *d_x, const V &v) const {
+    assertValidVector(*d_x, __func__);
+    kernels_.broadcast(d_x, v);
 }
 
 template<class V> void DeviceCopy::
-broadcastStrided(V *d_buf, const V &v, sq::SizeType size,
-                 sq::SizeType stride, sq::IdxType offset) const {
-    kernels_.copyBroadcastStrided(d_buf, v, size, stride, offset);
+broadcast(DeviceMatrixType<V> *dst, const V &src) const {
+    assertValidMatrix(*dst, __func__);
+    kernels_.broadcast(dst, src);
+}
+
+template<class V> void DeviceCopy::
+broadcastToDiagonal(DeviceMatrixType<V> *dst, const V &src, sq::IdxType offset) const {
+    assertValidMatrix(*dst, __func__);
+    kernels_.broadcastToDiagonal(dst, src, offset);
 }
 
 
+
 template<class V> inline void DeviceCopy::
-copyRowwise(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const {
+broadcastToRows(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &src) const {
     throwErrorIf(dst->cols != src.size, "matrix rows and vector size does not match.");
-    kernels_.copyBroadcastVector(dst->d_data, src.d_data, src.size, dst->rows);
+    kernels_.broadcastToRows(dst, src);
 }
 
 template<class Vdst, class Vsrc> inline void DeviceCopy::
 cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    kernels_.cast(dst->d_data, src.d_data, src.rows * src.cols);
+    kernels_.cast(dst, src);
 }
 
 template<class Vdst, class Vsrc> inline void DeviceCopy::
@@ -135,16 +146,11 @@ cast(DeviceVectorType<Vdst> *dst, const DeviceVectorType<Vsrc> &src) {
     kernels_.cast(dst->d_data, src.d_data, src.size);
 }
 
-template<class V> inline void DeviceCopy::
-operator()(V *dst, const V *v, sq::SizeType nElms) const {
-    copy(dst, v, nElms);
-}
-
 template<class V> void DeviceCopy::
 operator()(DeviceMatrixType<V> *dst, const sq::MatrixType<V> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    copy(dst->d_data, src.data, src.rows * src.cols);
+    copy2d(dst->d_data, dst->stride, src.data, src.stride, src.cols, src.rows);
 }
 
 template<class V> void DeviceCopy::
@@ -152,29 +158,16 @@ operator()(sq::MatrixType<V> *dst, const DeviceMatrixType<V> &src) const {
     if (dst->data == NULL)
         dst->resize(src.dim());
     assertSameShape(*dst, src, __func__);
-    copy(dst->data, src.d_data, src.rows * src.cols);
+    copy2d(dst->data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
 
 template<class V> void DeviceCopy::
 operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> &src) {
     devAlloc_->allocateIfNull(dst, src.dim());
     assertSameShape(*dst, src, __func__);
-    copy(dst->d_data, src.d_data, src.rows * src.cols);
+    copy2d(dst->d_data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
 
-template<class V> void DeviceCopy::
-operator()(DeviceMatrixType<V> *dst, const V &src) const {
-    assertValidMatrix(*dst, __func__);
-    broadcast(dst->d_data, src, dst->rows * dst->cols);
-}
-
-template<class V> void DeviceCopy::
-operator()(DeviceMatrixType<V> *dst, const V &src, sq::SizeType size,
-           sq::SizeType stride, sq::IdxType offset) const {
-    assertValidMatrix(*dst, __func__);
-    broadcastStrided(dst->d_data, src, size, stride, offset);
-}
-    
 template<class V> void DeviceCopy::
 operator()(DeviceVectorType<V> *dst, const sq::VectorType<V> &src) {
     devAlloc_->allocateIfNull(dst, src.size);
@@ -197,11 +190,6 @@ operator()(DeviceVectorType<V> *dst, const DeviceVectorType<V> &src) {
     copy(dst->d_data, src.d_data, src.size);
 }
 
-template<class V> void DeviceCopy::
-operator()(DeviceVectorType<V> *dst, const V &src) const {
-    assertValidVector(*dst, __func__);
-    copyBroadcast(dst->d_data, src, 1);
-}
 
 /* Host scalar variables <-> DeviceScalar */
     

@@ -14,7 +14,15 @@ struct HostObjectAllocator {
 
     void *allocate(size_t size);
 
+    void *allocate2d(sq::SizeType *stride, size_t width, size_t height);
+
     void deallocate(void *pv);
+
+    template<class V>
+    void allocate(V **v, size_t size);
+
+    template<class V>
+    void allocate2d(V **v, sq::SizeType *stride, size_t width, size_t height);
 
     /* pinned memory allocator for CPU objects */
 
@@ -62,6 +70,16 @@ struct HostObjectAllocator {
     void deallocate(T &obj);
 };
 
+template<class V>
+void HostObjectAllocator::allocate(V **v, size_t size) {
+    *v = (V*)allocate(size);
+}
+
+template<class V>
+void HostObjectAllocator::allocate2d(V **v, sq::SizeType *stride, size_t width, size_t height) {
+    *v = (V*)allocate2d(stride, width * sizeof(V), height);
+}
+
 
 template<class V> inline
 void HostObjectAllocator::allocate(sq::MatrixType<V> *mat, const sq::Dim &dim) {
@@ -70,20 +88,20 @@ void HostObjectAllocator::allocate(sq::MatrixType<V> *mat, const sq::Dim &dim) {
 
 template<class V> inline
 void HostObjectAllocator::allocate(sq::MatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
-    mat->data = allocate(sizeof(V) * rows * cols);
+    allocate(&mat->data, &mat->stride, rows, cols);
     mat->rows = rows;
     mat->cols = cols;
 }
 
 template<class V> inline
 void HostObjectAllocator::allocate(sq::VectorType<V> *vec, sq::SizeType size) {
-    vec->data = (V*)allocate(sizeof(V) * size);
+    allocate(&vec->data, size);
     vec->size = size;
 }
 
 template<class V> inline void HostObjectAllocator::
 allocate(DeviceMatrixType<V> *mat, sq::SizeType rows, sq::SizeType cols) {
-    mat->d_data = (V*)allocate(sizeof(V) * rows * cols);
+    allocate2d(&mat->d_data, &mat->stride, cols, rows);
     mat->rows = rows;
     mat->cols = cols;
 }

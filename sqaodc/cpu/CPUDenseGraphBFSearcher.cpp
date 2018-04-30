@@ -170,8 +170,7 @@ bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
 
     if (batchBegin < batchEnd)
         searchers_[0].searchRange(batchBegin, batchEnd);
-    
-    searchers_[0].searchRange(batchBegin, batchEnd);
+
     x_ = batchEnd;
 #endif
     if (curXEnd != NULL)
