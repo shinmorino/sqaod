@@ -60,7 +60,7 @@ void CUDABipartiteGraphAnnealerTest::run(std::ostream &ostm) {
     testcase("set_q() m x N") {
         sq::BitSetPairArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }
@@ -68,10 +68,10 @@ void CUDABipartiteGraphAnnealerTest::run(std::ostream &ostm) {
     testcase("set_q() m x N x 2") {
         sq::BitSetPairArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }

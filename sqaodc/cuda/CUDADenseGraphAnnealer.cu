@@ -179,7 +179,7 @@ void CUDADenseGraphAnnealer<real>::set_q(const BitSet &q) {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::set_q(const BitSetArray &q) {
+void CUDADenseGraphAnnealer<real>::set_qset(const BitSetArray &q) {
     sqint::isingModelSolutionShapeCheck(N_, q, __func__);
     m_ = q.size();
     prepare();

@@ -55,7 +55,7 @@ void CPUDenseGraphAnnealerTest::run(std::ostream &ostm) {
     testcase("set_q(), N x m") {
         sq::BitSetArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetArray(N, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
 
         TEST_ASSERT(compareSolutions(bsetin, bsetout));
@@ -64,11 +64,11 @@ void CPUDenseGraphAnnealerTest::run(std::ostream &ostm) {
     testcase("set_q(), m x 2") {
         sq::BitSetArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetArray(N, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
 
         bsetin = createRandomizedSpinSetArray(N, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         
         TEST_ASSERT(compareSolutions(bsetin, bsetout));

@@ -61,7 +61,7 @@ public:
 
     void set_q(const sq::BitSetPair &qPair);
 
-    void set_q(const sq::BitSetPairArray &qPairs);
+    void set_qset(const sq::BitSetPairArray &qPairs);
 
     /* Ising machine / spins */
 

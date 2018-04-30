@@ -184,7 +184,7 @@ void CUDABipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
 }
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::set_q(const sq::BitSetPairArray &qPairs) {
+void CUDABipartiteGraphAnnealer<real>::set_qset(const sq::BitSetPairArray &qPairs) {
     sqint::isingModelSolutionShapeCheck(N0_, N1_, qPairs, __func__);
     m_ = qPairs.size();
     prepare();

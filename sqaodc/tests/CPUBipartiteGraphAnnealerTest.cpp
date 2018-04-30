@@ -68,7 +68,7 @@ void CPUBipartiteGraphAnnealerTest::run(std::ostream &ostm) {
 
         sq::BitSetPairArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }
@@ -82,10 +82,10 @@ void CPUBipartiteGraphAnnealerTest::run(std::ostream &ostm) {
 
         sq::BitSetPairArray bsetin, bsetout;
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         bsetin = createRandomizedSpinSetPairArray(N0, N1, m);
-        annealer.set_q(bsetin);
+        annealer.set_qset(bsetin);
         bsetout = annealer.get_q();
         TEST_ASSERT(compareSolutions(bsetin, bsetout));
     }

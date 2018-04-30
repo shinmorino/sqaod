@@ -134,7 +134,7 @@ void CPUDenseGraphAnnealer<real>::set_q(const sq::BitSet &q) {
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::set_q(const sq::BitSetArray &q) {
+void CPUDenseGraphAnnealer<real>::set_qset(const sq::BitSetArray &q) {
     sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, q, __func__);
     m_ = q.size();
     prepare(); /* update num trotters */
