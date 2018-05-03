@@ -2,7 +2,6 @@
 
 #include <sqaodc/common/defines.h>
 #include <sqaodc/common/types.h>
-#include <sqaodc/common/UniformOp.h>
 #include <sqaodc/common/Array.h>
 
 namespace sqaod {
@@ -56,9 +55,7 @@ struct MatrixType {
         return rhs;
     }
 
-    void operator=(const V &v) {
-        sqaod::fill(data, v, cols, rows, stride);
-    }
+    const MatrixType<V> &operator=(const V &v);
 
     const MatrixType<V> &operator=(MatrixType<V> &&rhs) noexcept {
         moveFrom(static_cast<MatrixType<V>&>(rhs));
@@ -92,11 +89,7 @@ struct MatrixType {
         }
         if (data == nullptr)
             allocate(src.rows, src.cols);
-        for (IdxType row = 0; row < rows; ++row) {
-            IdxType srcOffset = src.stride * row; 
-            IdxType selfOffset = stride * row; 
-            memcpy(&data[selfOffset], &src.data[srcOffset], sizeof(V) * cols);
-        }
+        copy_data(this, src);
     }
 
     void moveFrom(MatrixType<V> &src) {
@@ -155,13 +148,9 @@ struct MatrixType {
         return data[r * stride + c];
     }
 
-    V sum() const {
-        return sqaod::sum(data, cols, rows, stride);
-    }
+    V sum() const;
 
-    V min() const {
-        return sqaod::min(data, cols, rows, stride);
-    }
+    V min() const;
     
     SizeType rows, cols, stride;
     V *data;
@@ -186,38 +175,25 @@ struct MatrixType {
     MatrixType<V> ones(const Dim &dim) {
         return ones(dim.rows, dim.cols);
     }
+
+private:
+    static
+    void copy_data(MatrixType<V> *dst, const MatrixType<V> &src);
+
 };
 
 /* Matrix operator */
 template<class V>
-bool operator==(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
-    if (lhs.dim() != rhs.dim())
-        return false;
-    for (IdxType row = 0; row < lhs.rows; ++row) {
-        IdxType offset = lhs.stride * row;
-        if (memcmp(&lhs.data[offset], &rhs.data[offset], sizeof(V) * lhs.cols) != 0)
-            return false;
-    }
-    return true;
-}
+bool operator==(const MatrixType<V> &lhs, const MatrixType<V> &rhs);
 
 template<class V>
-bool operator!=(const MatrixType<V> &lhs, const MatrixType<V> &rhs) {
-    return !(lhs == rhs);
-}
+bool operator!=(const MatrixType<V> &lhs, const MatrixType<V> &rhs);
 
 template<class V>
-MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v) {
-    multiply(mat.data, v, mat.cols, mat.rows, mat.stride);
-    return mat;
-}
+const MatrixType<V> &operator*=(MatrixType<V> &mat, const V &v);
 
 template<class newV, class V>
-sqaod::MatrixType<newV> cast(const MatrixType<V> &mat) {
-    MatrixType<newV> newMat(mat.dim());
-    cast(newMat.data, mat.data, mat.cols, mat.rows, newMat.stride, mat.stride);
-    return newMat;
-}
+sqaod::MatrixType<newV> cast(const MatrixType<V> &mat);
 
 
 
@@ -274,9 +250,7 @@ struct VectorType {
         return rhs;
     }
 
-    void operator=(const V &v) {
-        sqaod::fill(data, v, size);
-    }
+    const VectorType<V> &operator=(const V &v);
 
     const VectorType<V> &operator=(VectorType<V> &&rhs) noexcept {
         moveFrom(static_cast<VectorType<V>&>(rhs));
@@ -342,13 +316,9 @@ struct VectorType {
         return data[idx];
     }
 
-    V sum() const {
-        return sqaod::sum(data, size);
-    }
+    V sum() const;
 
-    V min() const {
-        return sqaod::min(data, size);
-    }
+    V min() const;
     
     SizeType size;
     V *data;
@@ -368,30 +338,17 @@ struct VectorType {
 /* Vector operator */
 
 template<class V>
-bool operator==(const VectorType<V> &lhs, const VectorType<V> &rhs) {
-    if (lhs.size != rhs.size)
-        return false;
-    return memcmp(lhs.data, rhs.data, sizeof(V) * lhs.size) == 0;
-}
+bool operator==(const VectorType<V> &lhs, const VectorType<V> &rhs);
 
 template<class V>
-bool operator!=(const VectorType<V> &lhs, const VectorType<V> &rhs) {
-    return !(lhs == rhs);
-}
+bool operator!=(const VectorType<V> &lhs, const VectorType<V> &rhs);
 
 template<class V>
-VectorType<V> &operator*=(VectorType<V> &vec, const V &v) {
-    multiply(vec.data, v, vec.size);
-    return vec;
-}
+const VectorType<V> &operator*=(VectorType<V> &vec, const V &v);
 
 /* cast */
 template<class newV, class V>
-sqaod::VectorType<newV> cast(const VectorType<V> &vec) {
-    VectorType<newV> newVec(vec.size);
-    cast(newVec.data, vec.data, vec.size);
-    return newVec;
-}
+sqaod::VectorType<newV> cast(const VectorType<V> &vec);
 
 
 

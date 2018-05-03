@@ -110,7 +110,53 @@ bool ::sqaod::isSymmetric<float>(const sqaod::MatrixType<float> &W);
 template
 bool ::sqaod::isSymmetric<double>(const sqaod::MatrixType<double> &W);
 
-// template
-// sqaod::MatrixType<double> sqaod::bitsToMat<double>(const BitMatrix &bits);
-// template
-// sqaod::MatrixType<float> sqaod::bitsToMat<float>(const BitMatrix &bits);
+#include "EigenBridge.h"
+
+
+namespace sq = sqaod;
+
+
+template<class V> inline
+sq::BitMatrix sq::x_from_q(const sq::MatrixType<V> &q) {
+    BitMatrix x(q.dim());
+    mapTo(x) = (mapTo(q).cast<char>().array() + 1) / 2;
+    return x;
+}
+
+template<class V> inline
+sq::BitSet sq::x_from_q(const sq::VectorType<V> &q) {
+    BitSet x(q.size);
+    mapToRowVector(x) = (mapToRowVector(q).cast<char>().array() + 1) / 2;
+    return x;
+}
+
+template<class V> inline
+sq::MatrixType<V> sqaod::x_to_q(const BitMatrix &x) {
+    sq::MatrixType<V> q(x.dim());
+    mapTo(q) = (mapTo(x).array() * 2 - 1).cast<V>();
+    return q;
+}
+
+template<class V> inline
+sq::VectorType<V> sqaod::x_to_q(const BitSet &x) {
+    sq::VectorType<V> q(x.size);
+    mapToRowVector(q) = (mapToRowVector(x).array() * 2 - 1).cast<V>();
+    return q;
+}
+
+
+
+
+template sq::BitMatrix sq::x_from_q(const sq::MatrixType<double> &);
+template sq::BitMatrix sq::x_from_q(const sq::MatrixType<float> &);
+template sq::BitMatrix sq::x_from_q(const sq::MatrixType<char> &);
+template sq::BitSet sq::x_from_q(const sq::VectorType<double> &);
+template sq::BitSet sq::x_from_q(const sq::VectorType<float> &);
+template sq::BitSet sq::x_from_q(const sq::VectorType<char> &);
+
+template sq::MatrixType<double> sq::x_to_q(const sq::BitMatrix &);
+template sq::MatrixType<float> sq::x_to_q(const sq::BitMatrix &);
+template sq::MatrixType<char> sq::x_to_q(const sq::BitMatrix &);
+template sq::VectorType<double> sq::x_to_q(const sq::BitSet &);
+template sq::VectorType<float> sq::x_to_q(const sq::BitSet &);
+template sq::VectorType<char> sq::x_to_q(const sq::BitSet &);

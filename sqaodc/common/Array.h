@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utility>
+#include <new>
 #include <sqaodc/common/defines.h>
 #include <sqaodc/common/types.h>
 
