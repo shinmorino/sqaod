@@ -1,7 +1,21 @@
 sqaod (0.2.0-0~xenial) xenial; urgency=medium
 
-  * Beta1. 0.2.0
+  * Beta 1. Version 0.2.0
+    Interfaces for the python package and c++ solver interfaces have been fixed.
 
+  * Operators for MatrixType<> and VectorType<> are delegated to Eigen.
+    Eigen usage is wrapped in libsqaodc-<simd> packages.
+
+  * SQAOD_VERBOSE env var is introduced to control log output.
+    Setting SQAOD_VERBOSE as non '0' value to enable log output, otherwise logs are suppressed.
+
+  * set_qset() is introduced to set an array of bit vectors to annealers.
+    In alpha2, set_q() was previously able to accepat a bit vector and an array of bit vectors.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
+
+  * sqaod.cuda.formulas has been enabled.
+
+  * Stride is introduced to MatrixType<> and DeviceMatrixType<> to enable further optimizataion.
+  
  -- Shinya Morino <shin.morino@gmail.com>  Sat,5 May 2018 12:00:00 +0900
 
 sqaod (0.1.1) unstable; urgency=medium
