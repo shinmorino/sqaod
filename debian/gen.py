@@ -32,10 +32,10 @@ Package: libsqaodc
 Provides: libsqaodc.so.0
 Section: libs
 Architecture: any
-Depends: libsqaodc-sse2:amd64 (>= {pkgver}), libsqaodc-avx2:amd64(>= {pkgver})
+Depends: libsqaodc-sse2:amd64 (>= {pkgver}), libsqaodc-avx2:amd64 (>= {pkgver})
 Description: sqaodc library
 
-'''[1:]
+'''[1:].format(pkgver=pkgver)
 
 # libsqaodc-simd
 
@@ -56,7 +56,7 @@ Package: libsqaodc-cuda-{cudaver}
 Provides: libsqaodc-cuda.so.0
 Section: libs
 Architecture: amd64
-Depends: cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}
+Depends: libsqaodc (>= {pkgver}), cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}
 Description: sqaodc CUDA library
 
 '''[1:].format(pkgver=pkgver, cudaver=cudaver)
