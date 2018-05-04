@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 # See debhelper(7) (uncomment to enable)
 # output every command that modifies files on the build system.
-#export DH_VERBOSE = 1
+export DH_VERBOSE = 1
 
 
 # see FEATURE AREAS in dpkg-buildflags(1)
@@ -15,7 +15,7 @@
 
 
 %:
-	dh $@  --with autotools_dev
+	dh $@  --with autotools_dev --parallel
 
 
 # dh_make generated override targets
@@ -26,4 +26,5 @@
 override_dh_auto_install:
 	dh_auto_install --destdir=debian/tmp
 
-
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info --dpkg-shlibdeps-params=-ldebian/libsqaodc-sse2/usr/lib/libsqaodc-sse2/

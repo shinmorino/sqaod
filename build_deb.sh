@@ -10,6 +10,6 @@ cd ..
 
 pushd .
 cd ..
-tar -czf sqaod_0.1.0.orig.tar.gz sqaod-0.1.0
+tar -czf sqaod_0.2.0.orig.tar.gz sqaod-0.2.0
 popd
-dpkg-buildpackage -us -uc
+DEB_BUILD_OPTIONS='parallel=4' dpkg-buildpackage -us -uc

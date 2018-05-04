@@ -1,21 +1,27 @@
+sqaod (0.2.0-0~xenial) xenial; urgency=medium
+
+  * Beta1. 0.2.0
+
+ -- Shinya Morino <shin.morino@gmail.com>  Sat,5 May 2018 12:00:00 +0900
+
 sqaod (0.1.1) unstable; urgency=medium
 
-	* Alpha2. 0.1.1
+  * Alpha2. 0.1.1
 
-	* More tests and fixes
-	Fixed: FP32 solvers did not work.
-	Tests are refined and updated.
+  * More tests and fixes
+    Fixed: FP32 solvers did not work.
+    Tests are refined and updated.
 
-	* change in API.
-	set_x() -> set_q().
-	set_q() accepts vector and vector array.
+  * change in API.
+    set_x() -> set_q().
+    set_q() accepts vector and vector array.
 
  -- Shinya Morino <shin.morino@gmail.com>  Sat,21 Apr 2018 22:00:00 +0900
 
 
 sqaod (0.1.0) unstable; urgency=medium
 
-	* Alpha1.  sqaod (0.1.0)
-	sqaod (0.1.0) unstable; urgency=medium
+  * Alpha1.  sqaod (0.1.0)
+    sqaod (0.1.0) unstable; urgency=medium
 
  -- Shinya Morino <shin.morino@gmail.com>  Sat, 03 Mar 2018 07:58:40 +0900
