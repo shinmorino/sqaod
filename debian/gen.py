@@ -114,7 +114,7 @@ with open(pkg_name + '.install', 'w') as file:
 # *.postinst
 with open(pkg_name + '.postinst', 'w') as file:
     priority = 50 if simd == 'sse2' else 20
-    postinst=postinst_tmpl.format(package=pkg_name, lib=lib, priority=50)
+    postinst=postinst_tmpl.format(package=pkg_name, lib=lib, priority=priority)
     file.write(postinst)
 # *.prerm
 with open(pkg_name + '.prerm', 'w') as file:
