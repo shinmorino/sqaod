@@ -20,8 +20,8 @@ Build-Depends: debhelper (>=9),autotools-dev
 Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/shinmorino/sqaod
-#Vcs-Git: git://anonscm.debian.org/collab-maint/sqaod.git
-#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/sqaod.git
+Vcs-Git: https://github.com/shinmorino/sqaod.git
+Vcs-Browser: https://github.com/shinmorino/sqaod.git
 
 '''[1:]
 
@@ -32,6 +32,7 @@ Package: libsqaodc
 Provides: libsqaodc.so.0
 Section: libs
 Architecture: any
+Depends: libsqaodc-sse2:amd64 (>= {pkgver}), libsqaodc-avx2:amd64(>= {pkgver})
 Description: sqaodc library
 
 '''[1:]
@@ -43,7 +44,7 @@ Package: libsqaodc-{simd}
 Provides: libsqaodc.so.0
 Section: libs
 Architecture: amd64
-Depends:  libsqaodc:amd64 (>= {pkgver}), libgomp1:amd64, libblas3:amd64, libstdc++6:amd64, ${{shlibs:Depends}}
+Depends:  libgomp1:amd64, libblas3:amd64, libstdc++6:amd64, ${{shlibs:Depends}}
 Description: sqaodc library (simd opt = {simd} ).
 
 '''[1:].format(pkgver=pkgver, simd=simd)
@@ -55,7 +56,7 @@ Package: libsqaodc-cuda-{cudaver}
 Provides: libsqaodc-cuda.so.0
 Section: libs
 Architecture: amd64
-Depends: libsqaodc (>= {pkgver}), cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}
+Depends: cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}
 Description: sqaodc CUDA library
 
 '''[1:].format(pkgver=pkgver, cudaver=cudaver)
@@ -112,7 +113,7 @@ with open(pkg_name + '.install', 'w') as file:
     file.write(install)
 # *.postinst
 with open(pkg_name + '.postinst', 'w') as file:
-    priority = 50 if simd == 'avx2' else 30
+    priority = 50 if simd == 'sse2' else 20
     postinst=postinst_tmpl.format(package=pkg_name, lib=lib, priority=50)
     file.write(postinst)
 # *.prerm
@@ -132,8 +133,7 @@ if simd == 'sse2' :
 
     # *.postinst
     with open(pkg_name + '.postinst', 'w') as file:
-        priority = 50 if simd == 'avx2' else 30
-        postinst=postinst_tmpl.format(package=pkg_name, lib=lib, priority=50)
+        postinst=postinst_tmpl.format(package=pkg_name, lib=lib, priority=30)
         file.write(postinst)
         
     # *.prerm
