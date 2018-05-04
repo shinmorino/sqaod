@@ -1,17 +1,22 @@
 # Sqaod
 
-Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).
+Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
+Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
-## Project status (as of 4/22)
-Alpha2 has been released on 4/22.<BR>
- * important fixes and updates:
-   - Fixed: In alpha1, CPU/CUDA annealers with FP32 did not work due to incorrect numerical type conversion in python c-extension.  In alpha2, this issue has been fixed and tested.
-   - API change : set_x() is used to set initial bit vectors to annealers in alpha1.  In alpha2, set_q() is used intead.  The set_q() accepts one spin vector or an array of spin vectors.
-   - Several fixes in python code and c-extensions.
-   - Current versions are 1.0.1 for debs and 1.0.1a2 for whl in pypi.
+
+
+## Project status (as of 5/5)
+### **Beta1 is in the staging phase.**<BR>
+ * important updates in Beta1
+   - Python interface is fixed.<BR>
+   API change : In alpha2, set_q() was previously used to set a bit vector and an array of bit vectors to annealers.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
+   - SQAOD_VERBOSE env var is introduced to control log output.<BR>
+   Setting SQAOD_VERBOSE as non '0' value to enable log output, otherwise logs are suppressed.
+   - Stride is introduced to MatrixType<> and DeviceMatrixType<> to enable further optimizataion, which is the final library-wide modification.
+   - For more details, please see [Beta1](https://github.com/shinmorino/sqaod/milestone/3) milestone.
    
-The next release is Beta1 planned in the end of this month.<BR>
-Please visit milestones [here](https://github.com/shinmorino/sqaod/milestones?direction=asc&sort=due_date&state=open) for further development plan.
+The next release is [Beta2](https://github.com/shinmorino/sqaod/milestone/2) planned in the end of July.<BR>
+Since project-wide modifications have been completed, remaining works are for optimization and documentation.<BR>
 
 ## Installation  
 Here's an instruction to install alpha2 binary distribution of sqaod.  Alpha2 binary distribuion is provided only for Ubuntu 16.04.<BR>
@@ -35,24 +40,56 @@ Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, d
 Sqaod has its own C++ native libraries which are invoked via python c-extensions.  These libraries are released as deb packages.  Please use apt-get to install them.
 
 ~~~
+ # if you already installed previous versions (alpha1, alpha2) of libsqaod, uninstall them first.
+ $ sudo apt-get remove libsqaod libsqaod-avx2 libsqaod-cuda-9-0
+
  $ sudo apt-get install apt-transport-https apt-utils
  # adding sqaod repository
- $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial main' | \
+ # Note: apt repository path is updated.  Please run the following command to fetch packages <BR>
+ # from the new repository.
+ $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial multiverse' | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
  $ sudo apt-get update
 
  # install sqaodc native library.
- # if your CPU has avx2 feature, installl libsqaodc-avx2, otherwise install libsqaodc.
- $ sudo apt-get install libsqaodc-avx2   # AVX2 enabled.
- $ sudo apt-get install libsqaodc        # otherwise (SSE2 enabled).
+ $ sudo apt-get install libsqaodc  # This will install sse2 and avx version of native library.
  
  # install CUDA native library if you need CUDA-based solvers.
  $ sudo apt-get install libsqaodc-cuda-9-0
 ~~~
 
-**Note:** You may see some warnings during installation.  Ex.: "W: The repository 'https://shinmorino.github.io/sqaod/ubuntu xenial Release' does not have a Release file."<BR>
-If you get a confirmation like "Install these packages without verification? [y/N]", answer y to proceed installation.<BR>
-It will be fixed by beta1 release.
+The default version of libsqaodc is enabled with sse2.  To choose avx2 or sse2 version of libsqaodc, use update-alternative as shown below.
+
+~~~
+ $ sudo update-alternatives --config libsqaodc.so.0
+ There are 2 choices for the alternative libsqaodc.so.0 (providing /usr/lib/libsqaodc.so.0).
+
+   Selection    Path                                    Priority   Status
+ ------------------------------------------------------------
+ * 0            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        auto mode
+   1            /usr/lib/libsqaodc-avx2/libsqaodc.so.0   20        manual mode
+   2            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        manual mode
+ 
+ Press <enter> to keep the current choice[*], or type selection number: 1
+~~~
+
+You can have BLAS library of your choice.<BR>
+The libsqaodc only installs libblas3 as a dependency.  You can isntall openblas and/or atlas as alternatives of BLAS library.  By using update-alternative, you can choose which BLAS library to use.
+
+~~~
+ $ sudo apt-get install libopenblas-base libatlas3-base
+ $ sudo update-alternatives --config libblas.so.3
+ There are 3 choices for the alternative libblas.so.3 (providing /usr/lib/libblas.so.3).
+
+   Selection    Path                                    Priority   Status
+ ------------------------------------------------------------
+ * 0            /usr/lib/openblas-base/libblas.so.3      40        auto mode
+   1            /usr/lib/atlas-base/atlas/libblas.so.3   35        manual mode
+   2            /usr/lib/libblas/libblas.so.3            10        manual mode
+   3            /usr/lib/openblas-base/libblas.so.3      40        manual mode
+ 
+ Press <enter> to keep the current choice[*], or type selection number: 
+~~~
 
 
 ### 3. installing python package
@@ -77,10 +114,12 @@ $ python dense_graph_annealer.py
 I welcome your feedback and requests.<BR>
 Please file your feedback and/or requests to [Issues](https://github.com/shinmorino/sqaod/issues).<BR>
 
-### Opensource libraries used in sqaod.
+### Opensource software used in sqaod.
 
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) ([MPL2](https://www.mozilla.org/en-US/MPL/2.0/))
 - [CUB](http://nvlabs.github.io/cub/) ([BSD 3-Clause "New" or "Revised" License](https://github.com/NVlabs/cub/blob/1.8.0/LICENSE.TXT))
 - [libblas](https://packages.ubuntu.com/xenial/libblas3) ([Modified BSD License](http://www.netlib.org/lapack/LICENSE.txt))
+- From Beta1, [aptly](https://www.aptly.info/) is used to manage sqaod repository.
+
 
 ### Enjoy !!!
