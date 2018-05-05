@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# creating repo
+aptly -config=aptly.conf repo create -distribution=xenial -component=multiverse -comment='sqaod ubuntu apt repository (xenial)' sqaod
+#  -architectures=x86_64
+
+# add deb packages
+aptly -config=aptly.conf repo -architectures=x86_64 add sqaod ../archive/*/*.deb
+
+# publish
+aptly -config=aptly.conf publish repo sqaod filesystem:root:ubuntu
+
+
+# drop
+aptly -config=aptly.conf publish drop xenial filesystem:root:ubuntu
+
+
+
+# apt-ftparchive (not used)
+
+dpkg-scanpackages -a amd64 . > Packages
+apt-ftparchive release . > Release
+gpg -a --yes --clearsign --digest-algo SHA512 --output InRelease --detach-sign Release
+
+# gpgkey
+# https://wiki.debian.org/DebianRepository/SetupWithReprepro
+# gpg --armor --output gpgkey --export 60E51A52!

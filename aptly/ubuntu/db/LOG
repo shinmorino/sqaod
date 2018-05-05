@@ -1,0 +1,32 @@
+=============== May 5, 2018 (JST) ===============
+16:08:37.956472 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:08:37.958901 db@open opening
+16:08:37.959443 version@stat F·[] S·0B[] Sc·[]
+16:08:37.971160 db@janitor F·2 G·0
+16:08:37.971275 db@open done T·12.352787ms
+16:08:37.972412 db@close closing
+16:08:37.972698 db@close done T·284.677µs
+=============== May 5, 2018 (JST) ===============
+16:08:54.171251 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:08:54.171423 version@stat F·[] S·0B[] Sc·[]
+16:08:54.171430 db@open opening
+16:08:54.171460 journal@recovery F·1
+16:08:54.172668 journal@recovery recovering @1
+16:08:54.176103 memdb@flush created L0@2 N·1 S·344B "Lab..1d6,v1":"Lab..1d6,v1"
+16:08:54.177062 version@stat F·[1] S·344B[344B] Sc·[0.25]
+16:08:54.186040 db@janitor F·3 G·0
+16:08:54.186091 db@open done T·14.654539ms
+16:08:54.200333 db@close closing
+16:08:54.200547 db@close done T·231.655µs
+=============== May 5, 2018 (JST) ===============
+16:09:05.297409 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:09:05.297745 version@stat F·[1] S·344B[344B] Sc·[0.25]
+16:09:05.297754 db@open opening
+16:09:05.297869 journal@recovery F·1
+16:09:05.299504 journal@recovery recovering @3
+16:09:05.301208 memdb@flush created L0@5 N·21 S·4KiB "C6f..deb,v3":"xFP..25b,v15"
+16:09:05.301493 version@stat F·[2] S·4KiB[4KiB] Sc·[0.50]
+16:09:05.315164 db@janitor F·4 G·0
+16:09:05.315237 db@open done T·17.474229ms
+16:09:05.545149 db@close closing
+16:09:05.545252 db@close done T·98.642µs
