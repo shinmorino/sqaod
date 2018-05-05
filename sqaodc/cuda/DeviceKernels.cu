@@ -533,8 +533,8 @@ sqaod_cuda::generateBitSetSequence(DeviceMatrixType<V> *d_q, PackedBitSet xBegin
     dim3 blockDim, gridDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
-    SizeType nSeqs = xEnd - xBegin;
-    gridDim.x = divru(xEnd - xBegin, blockDim.y);
+    SizeType nSeqs = sq::SizeType(xEnd - xBegin);
+    gridDim.x = divru(int(xEnd - xBegin), blockDim.y);
     generateBitsSequenceKernel
             <<<gridDim, blockDim, 0, stream>>>(d_q->d_data, d_q->stride, d_q->cols, nSeqs, xBegin);
     DEBUG_SYNC;

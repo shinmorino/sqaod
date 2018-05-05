@@ -1,5 +1,6 @@
 #include "DeviceMath.h"
 #include "Assertion.h"
+#include <algorithm>
 
 using namespace sqaod_cuda;
 using sq::Dim;
