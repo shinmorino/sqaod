@@ -1,4 +1,5 @@
 # Sqaod
+#### Latest version : Beta1 0.2.0 (deb), 0.2.0b1 (python). 
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
