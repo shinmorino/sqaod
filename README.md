@@ -14,7 +14,7 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
    - Stride is introduced to MatrixType<> and DeviceMatrixType<> to enable further optimizataion, which is the final library-wide modification.
    - For more details, please see [Beta1](https://github.com/shinmorino/sqaod/milestone/3) milestone.
    
-The next release is [Beta2](https://github.com/shinmorino/sqaod/milestone/2) planned in the end of July.<BR>
+The next release is [Beta2](https://github.com/shinmorino/sqaod/milestone/2) planned in the end of June.<BR>
 Since project-wide modifications have been completed, remaining works are for optimization and documentation.<BR>
 
 ## Installation  
@@ -40,61 +40,29 @@ Sqaod has its own C++ native libraries which are invoked via python c-extensions
 
  **Note:** If you installed previous versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
 ~~~
- # removing previously installed packages.
+ # removing older packages if you instsalled.
  $ sudo apt-get remove libsqaod-cuda-9-0
  $ sudo apt-get remove libsqaod-avx2
  $ sudo apt-get remove libsqaod
+
  # remove apt-repository setting.
  $ sudo rm -f /etc/sources.list.d/sqaod.list
 ~~~
 
  For installation, please run the following.<BR>
 ~~~
- # adding/updating apt repository setting.
+ # adding apt repository setting.
  $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial multiverse' | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
 
  $ sudo apt-get update
  $ sudo apt-get install apt-transport-https apt-utils
 
- # install sqaodc native library.  This will install sse2 and avx version of native library.
+ # install sqaodc native library.
  $ sudo apt-get install libsqaodc
  
  # install CUDA native library if you need CUDA-based solvers.
  $ sudo apt-get install libsqaodc-cuda-9-0
-~~~
-
-The sse2 and avx2 versions of libsqaodc are installed, and the sse2 version is enabled by default.  To choose which version to enable, use update-alternative as shown below.
-
-~~~
- $ sudo update-alternatives --config libsqaodc.so.0
- There are 2 choices for the alternative libsqaodc.so.0 (providing /usr/lib/libsqaodc.so.0).
-
-   Selection    Path                                    Priority   Status
- ------------------------------------------------------------
- * 0            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        auto mode
-   1            /usr/lib/libsqaodc-avx2/libsqaodc.so.0   20        manual mode
-   2            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        manual mode
- 
- Press <enter> to keep the current choice[*], or type selection number: 1
-~~~
-
-You can have BLAS library of your choice.<BR>
-Though libsqaodc only installs libblas3 as a dependency, you can install openblas and/or atlas as alternatives of BLAS library as well.  By using update-alternative, you can choose which BLAS library to use.
-
-~~~
- $ sudo apt-get install libopenblas-base libatlas3-base
- $ sudo update-alternatives --config libblas.so.3
- There are 3 choices for the alternative libblas.so.3 (providing /usr/lib/libblas.so.3).
-
-   Selection    Path                                    Priority   Status
- ------------------------------------------------------------
- * 0            /usr/lib/openblas-base/libblas.so.3      40        auto mode
-   1            /usr/lib/atlas-base/atlas/libblas.so.3   35        manual mode
-   2            /usr/lib/libblas/libblas.so.3            10        manual mode
-   3            /usr/lib/openblas-base/libblas.so.3      40        manual mode
- 
- Press <enter> to keep the current choice[*], or type selection number: 
 ~~~
 
 
@@ -116,9 +84,46 @@ $ wget https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example
 $ python dense_graph_annealer.py
 ~~~
 
+### 5. Choosing libraries of your choice.
+
+ When installing libsqaodc package, sse2 and avx2 versions of native libraries are installed.  The default is the sse2 version.  To choose which version to enable, use update-alternative as shown below.
+
+~~~
+ $ sudo update-alternatives --config libsqaodc.so.0
+ There are 2 choices for the alternative libsqaodc.so.0 (providing /usr/lib/libsqaodc.so.0).
+
+   Selection    Path                                    Priority   Status
+ ------------------------------------------------------------
+ * 0            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        auto mode
+   1            /usr/lib/libsqaodc-avx2/libsqaodc.so.0   20        manual mode
+   2            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        manual mode
+ 
+ Press <enter> to keep the current choice[*], or type selection number: 1
+~~~
+
+You can have BLAS library of your choice as well.<BR>
+Though libsqaodc only installs libblas3 as a dependency, you can also have openblas and/or atlas as alternatives.  By using update-alternative, you can choose which BLAS library to use.
+
+~~~
+ $ sudo apt-get install libopenblas-base libatlas3-base
+ $ sudo update-alternatives --config libblas.so.3
+ There are 3 choices for the alternative libblas.so.3 (providing /usr/lib/libblas.so.3).
+
+   Selection    Path                                    Priority   Status
+ ------------------------------------------------------------
+ * 0            /usr/lib/openblas-base/libblas.so.3      40        auto mode
+   1            /usr/lib/atlas-base/atlas/libblas.so.3   35        manual mode
+   2            /usr/lib/libblas/libblas.so.3            10        manual mode
+   3            /usr/lib/openblas-base/libblas.so.3      40        manual mode
+ 
+ Press <enter> to keep the current choice[*], or type selection number: 
+~~~
+
+
 ### Feedback and requests
 I welcome your feedback and requests.<BR>
 Please file your feedback and/or requests to [Issues](https://github.com/shinmorino/sqaod/issues).<BR>
+
 
 ### Opensource software used in sqaod.
 
