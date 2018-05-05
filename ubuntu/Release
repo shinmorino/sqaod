@@ -1,0 +1,37 @@
+Date: Sat, 05 May 2018 07:23:37 UTC
+MD5Sum:
+ a994fc04a73a2cde8a0bc689e2a387a7               36 Release
+ 16f5d58702545639dc9bd09a8c0ea1f2              198 dists/xenial/Contents-amd64.gz
+ c71d6730e57f86c30b19a39b560bd7f8             2803 dists/xenial/Release
+ 16f5d58702545639dc9bd09a8c0ea1f2              198 dists/xenial/multiverse/Contents-amd64.gz
+ 37e7066f9eebad7add91a0cb12eb0052             3239 dists/xenial/multiverse/binary-amd64/Packages
+ dd1189ac0e038d807bcb7c072106de44             1336 dists/xenial/multiverse/binary-amd64/Packages.bz2
+ ce0ff3cf43b71edb2279d5c0811e835c             1189 dists/xenial/multiverse/binary-amd64/Packages.gz
+ c23042d3f1604063e7b0b447cb8d03e5              101 dists/xenial/multiverse/binary-amd64/Release
+SHA1:
+ 0ac391acf58bf366fb51399ad24779ca5232694b               36 Release
+ ae9181bd77c4980d15f9a5e382366dd21e4ab2dd              198 dists/xenial/Contents-amd64.gz
+ f92d4dc003f9deb3fb3fd5453c21cceba953ae9e             2803 dists/xenial/Release
+ ae9181bd77c4980d15f9a5e382366dd21e4ab2dd              198 dists/xenial/multiverse/Contents-amd64.gz
+ 25eea1273735fe2a4724047bed99328a1bffc100             3239 dists/xenial/multiverse/binary-amd64/Packages
+ 7e67e44e37ab8356901093f0ad4ad74932fd5574             1336 dists/xenial/multiverse/binary-amd64/Packages.bz2
+ 7930bf37f8029a7389cb95998e6db332a74a0915             1189 dists/xenial/multiverse/binary-amd64/Packages.gz
+ c9312db666ee5e38d177f293e0d7c796bcc6c82c              101 dists/xenial/multiverse/binary-amd64/Release
+SHA256:
+ 93c14ad92ec6d8dbfb977dd5334f9b44d153739533df531cad70e966d30986ee               36 Release
+ 833f5511dd330cd055aeaf6049665a1e7fa4635e0c6d53d736af0d1e591eb2af              198 dists/xenial/Contents-amd64.gz
+ 7bff494ca65d752ff215eed87f2343ec3ce31eb3ddbece39c0b6d60d2fd4f1a3             2803 dists/xenial/Release
+ 833f5511dd330cd055aeaf6049665a1e7fa4635e0c6d53d736af0d1e591eb2af              198 dists/xenial/multiverse/Contents-amd64.gz
+ bcc14cace471be5eac0a5aa8f27d0ae78a4e6d33a509c27f796cdfd00710e57a             3239 dists/xenial/multiverse/binary-amd64/Packages
+ 7d8963583b64559e1ca21c2f7dadde40802a15befff76159938911f4ce3a4715             1336 dists/xenial/multiverse/binary-amd64/Packages.bz2
+ 7464f8f59bc8a6c9b6b26b038884b770f2e1323f3b1ada7d93493115e9e43368             1189 dists/xenial/multiverse/binary-amd64/Packages.gz
+ fcec13b69d0ee4abfa2bc9cbc467789efcbc914fbe48af0060965f7c9817e5ff              101 dists/xenial/multiverse/binary-amd64/Release
+SHA512:
+ 6bc376deb585f1e18afa18188677234bcf126b79b0a8ee518336ea524075ec5de15e7d763c27d4bb8be2a7350b6fbee27a49108f80bdfca1072a86f7bfe66fb4               36 Release
+ 60b45006a32761e54441d8cfd379e3fc09f7c4b6322a4c9ae35b71fe64c9ee38e552923bb390c2c93862d46406076a54d317e6c19deb600be0c7b356c63c7628              198 dists/xenial/Contents-amd64.gz
+ d5d5f1328bd46a916ab1d42950d3c1ecd9d3c5661a8cfaac0586135e55109f0c239eec6f2cb5112cad856228c49e1257be919eee44f2054e77c4afd463aab904             2803 dists/xenial/Release
+ 60b45006a32761e54441d8cfd379e3fc09f7c4b6322a4c9ae35b71fe64c9ee38e552923bb390c2c93862d46406076a54d317e6c19deb600be0c7b356c63c7628              198 dists/xenial/multiverse/Contents-amd64.gz
+ efd6020eefe8d022693c2d2e68f190970c8e229f7046ee3434c2c1e0c128c73966c04f5e8f511d5af5c516ee04cf9c103c3cc42c85658d44129d9d56d829f84c             3239 dists/xenial/multiverse/binary-amd64/Packages
+ 68208400ce33fe6bf486437dbbc30a09618c34c2e4a200547d035d788459adb84ba53e46778f9704e96c43382e3753941f2f24d6bb5e32f1ad374cb823794a46             1336 dists/xenial/multiverse/binary-amd64/Packages.bz2
+ de2d57b01fec372b5b22e33435268692636a5572b8e9abb35fc9ac39e7c615d51cf470b60d0b888e41f7904bbd34b0bc5f8118b6ef0f18db5bfd496f125e4cc5             1189 dists/xenial/multiverse/binary-amd64/Packages.gz
+ 539b6c45a00f2390792eea71b42bafe3d58a00fe566dea1c5a3cf53b0d3051618808360bbc7eaa71066ea7ae4394ec5328adb025183edc8552af45c174bc19f6              101 dists/xenial/multiverse/binary-amd64/Release
