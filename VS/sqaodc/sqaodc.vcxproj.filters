@@ -87,9 +87,6 @@
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandom.cuh">
       <Filter>cuda</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sqaodc\common\UniformOp.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sqaodc\common\EigenBridge.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -203,9 +200,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\cuda\HostObjectAllocator.cpp">
       <Filter>cuda</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sqaodc\common\UniformOp.cpp">
-      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\common\Random.cpp">
       <Filter>common</Filter>
