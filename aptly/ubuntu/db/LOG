@@ -30,3 +30,48 @@
 16:09:05.315237 db@open done T·17.474229ms
 16:09:05.545149 db@close closing
 16:09:05.545252 db@close done T·98.642µs
+=============== May 5, 2018 (JST) ===============
+16:36:47.215962 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:36:47.216109 version@stat F·[2] S·4KiB[4KiB] Sc·[0.50]
+16:36:47.216116 db@open opening
+16:36:47.216148 journal@recovery F·1
+16:36:47.220116 journal@recovery recovering @6
+16:36:47.221477 memdb@flush created L0@8 N·6 S·912B "Ece..rse,v30":"xCP..25b,v28"
+16:36:47.222131 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+16:36:47.234355 db@janitor F·5 G·0
+16:36:47.234382 db@open done T·18.258806ms
+16:36:47.234853 db@close closing
+16:36:47.234921 db@close done T·67.424µs
+=============== May 5, 2018 (JST) ===============
+16:56:22.236032 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:56:22.236785 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+16:56:22.236793 db@open opening
+16:56:22.236858 journal@recovery F·1
+16:56:22.238951 journal@recovery recovering @9
+16:56:22.240365 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+16:56:22.247762 db@janitor F·5 G·0
+16:56:22.247798 db@open done T·10.998138ms
+16:56:22.248609 db@close closing
+16:56:22.248664 db@close done T·54.154µs
+=============== May 5, 2018 (JST) ===============
+17:02:41.143744 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+17:02:41.143903 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+17:02:41.143911 db@open opening
+17:02:41.143957 journal@recovery F·1
+17:02:41.144333 journal@recovery recovering @11
+17:02:41.147578 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+17:02:41.151751 db@janitor F·5 G·0
+17:02:41.151781 db@open done T·7.862953ms
+17:02:41.153035 db@close closing
+17:02:41.153499 db@close done T·458.621µs
+=============== May 5, 2018 (JST) ===============
+17:07:58.597688 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+17:07:58.597806 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+17:07:58.597812 db@open opening
+17:07:58.597843 journal@recovery F·1
+17:07:58.599376 journal@recovery recovering @13
+17:07:58.602267 version@stat F·[3] S·5KiB[5KiB] Sc·[0.75]
+17:07:58.607657 db@janitor F·5 G·0
+17:07:58.607710 db@open done T·9.889447ms
+17:07:58.608410 db@close closing
+17:07:58.608473 db@close done T·61.466µs

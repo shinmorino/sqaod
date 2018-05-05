@@ -1,0 +1,5 @@
+Origin: ubuntu xenial
+Label: ubuntu xenial
+Archive: xenial
+Architecture: amd64
+Component: multiverse
