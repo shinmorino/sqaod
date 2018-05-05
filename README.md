@@ -5,7 +5,7 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
 
 
 ## Project status (as of 5/5)
-### **Beta1 is going to be released.**<BR>
+### **Beta1 has been released on 5/5.**<BR>
  * important updates in Beta1
    - Python interface is fixed.<BR>
    API change : In alpha2, set_q() was previously used to set a bit vector and an array of bit vectors to annealers.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
@@ -51,14 +51,18 @@ Sqaod has its own C++ native libraries which are invoked via python c-extensions
 
  For installation, please run the following.<BR>
 ~~~
+ $ sudo apt-get update
+ $ sudo apt-get install apt-transport-https apt-utils
+
  # adding apt repository setting.
  $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial multiverse' | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
 
- $ sudo apt-get update
- $ sudo apt-get install apt-transport-https apt-utils
+ # install repositry key.
+ $ curl -s -L https://shinmorino.github.io/sqaod/gpgkey | sudo apt-key add -
 
- # install sqaodc native library.
+ # update and install sqaodc native library.
+ $ sudo apt-get update
  $ sudo apt-get install libsqaodc
  
  # install CUDA native library if you need CUDA-based solvers.
@@ -84,7 +88,7 @@ $ wget https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example
 $ python dense_graph_annealer.py
 ~~~
 
-### 5. Choosing libraries of your choice.
+### 5. Using libraries of your choice.
 
  When installing libsqaodc package, sse2 and avx2 versions of native libraries are installed.  The default is the sse2 version.  To choose which version to enable, use update-alternative as shown below.
 
