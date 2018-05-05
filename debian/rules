@@ -28,6 +28,6 @@ override_dh_auto_install:
 
 override_dh_shlibdeps:
 	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info --dpkg-shlibdeps-params=-ldebian/libsqaodc-sse2/usr/lib/libsqaodc-sse2
-	if [ -f debian/libsqaodc-cuda-9-0.substvars ] ; then cat debian/libsqaodc-cuda-9-0.substvars | sed s/libsqaodc-sse2/libsqaodc/g > debian/_libsqaodc-cuda-9-0.substvars ; fi
-	mv -f debian/_libsqaodc-cuda-9-0.substvars debian/libsqaodc-cuda-9-0.substvars
+	if [ -f debian/libsqaodc-cuda-9-0.substvars ] ; then cat debian/libsqaodc-cuda-9-0.substvars | sed s/libsqaodc-sse2/libsqaodc/g > debian/_libsqaodc-cuda-9-0.substvars ; mv -f debian/_libsqaodc-cuda-9-0.substvars debian/libsqaodc-cuda-9-0.substvars; fi
+
 
