@@ -80,6 +80,7 @@ class BipartiteGraphAnnealerBase :
     def set_hamiltonian(self, h0, h1, J, c) :
         checkers.bipartite_graph.hJc(h0, h1, J, c)
         h0, h1, J = common.fix_type([h0, h1, J], self.dtype)
+        c = self.dtype(c)
         self._cext.set_hamiltonian(self._cobj, h0, h1, J, c, self.dtype)
         self._optimize = pref.minimize
             
@@ -99,4 +100,5 @@ class BipartiteGraphAnnealerBase :
         self._cext.make_solution(self._cobj, self.dtype)
         
     def anneal_one_step(self, G, beta) :
+        G, beta = self.dtype(G), self.dtype(beta)
         self._cext.anneal_one_step(self._cobj, G, beta, self.dtype)
