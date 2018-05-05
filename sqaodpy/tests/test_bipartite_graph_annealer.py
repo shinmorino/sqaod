@@ -11,7 +11,7 @@ class TestBipartiteGraphAnnealerBase:
     def __init__(self, anpkg, dtype) :
         self.anpkg = anpkg
         self.dtype = dtype
-        self.epu = 5.e-5 if dtype == np.float32 else 1.e-8
+        self.epu = 1.e-6 if dtype == np.float32 else 1.e-12
 
     def new_annealer(self, N0, N1, m) :
         an = self.anpkg.bipartite_graph_annealer(dtype=self.dtype)

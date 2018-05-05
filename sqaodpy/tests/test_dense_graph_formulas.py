@@ -11,7 +11,7 @@ class TestDenseGraphFormulasBase :
     def __init__(self, pkg, dtype) :
         self.pkg = pkg
         self.dtype = dtype
-        self.epu = 4.e-5 if dtype == np.float32 else 1.e-8
+        self.epu = 1.e-6 if dtype == np.float32 else 1.e-12
 
     def new_W(self, N) :
         return common.generate_random_symmetric_W((N), dtype=np.float64)

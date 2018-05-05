@@ -11,7 +11,7 @@ class TestBipartiteGraphFormulasBase :
     def __init__(self, pkg, dtype) :
         self.pkg = pkg
         self.dtype = dtype
-        self.epu = 1.e-5 if dtype == np.float32 else 1.e-12
+        self.epu = 1.e-6 if dtype == np.float32 else 1.e-12
 
     def new_QUBO(self, N0, N1) :
         return bipartite_graph_random(N0, N1, dtype=np.float64)
