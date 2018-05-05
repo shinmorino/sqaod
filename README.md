@@ -4,9 +4,8 @@ Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 
-
 ## Project status (as of 5/5)
-### **Beta1 is in the staging phase.**<BR>
+### **Beta1 is going to be released.**<BR>
  * important updates in Beta1
    - Python interface is fixed.<BR>
    API change : In alpha2, set_q() was previously used to set a bit vector and an array of bit vectors to annealers.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
@@ -19,7 +18,7 @@ The next release is [Beta2](https://github.com/shinmorino/sqaod/milestone/2) pla
 Since project-wide modifications have been completed, remaining works are for optimization and documentation.<BR>
 
 ## Installation  
-Here's an instruction to install alpha2 binary distribution of sqaod.  Alpha2 binary distribuion is provided only for Ubuntu 16.04.<BR>
+Here's an instruction to install beta1 binary distribution of sqaod.  Beta1 binary distribuion is provided only for Ubuntu 16.04.<BR>
 If you want to use other Linux distribution, currently you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).<BR>
 Or if you need a binary distribution for your linux distro, please file a request to [Issues](https://github.com/shinmorino/sqaod/issues).  Windows version and/or docker images are possible as well.
 
@@ -39,26 +38,33 @@ Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, d
 ### 2. Installing native libraries.
 Sqaod has its own C++ native libraries which are invoked via python c-extensions.  These libraries are released as deb packages.  Please use apt-get to install them.
 
+ **Note:** If you installed previous versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
 ~~~
- # if you already installed previous versions (alpha1, alpha2) of libsqaod, uninstall them first.
- $ sudo apt-get remove libsqaod libsqaod-avx2 libsqaod-cuda-9-0
+ # removing previously installed packages.
+ $ sudo apt-get remove libsqaod-cuda-9-0
+ $ sudo apt-get remove libsqaod-avx2
+ $ sudo apt-get remove libsqaod
+ # remove apt-repository setting.
+ $ sudo rm -f /etc/sources.list.d/sqaod.list
+~~~
 
- $ sudo apt-get install apt-transport-https apt-utils
- # adding sqaod repository
- # Note: apt repository path is updated.  Please run the following command to fetch packages <BR>
- # from the new repository.
+ For installation, please run the following.<BR>
+~~~
+ # adding/updating apt repository setting.
  $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial multiverse' | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
- $ sudo apt-get update
 
- # install sqaodc native library.
- $ sudo apt-get install libsqaodc  # This will install sse2 and avx version of native library.
+ $ sudo apt-get update
+ $ sudo apt-get install apt-transport-https apt-utils
+
+ # install sqaodc native library.  This will install sse2 and avx version of native library.
+ $ sudo apt-get install libsqaodc
  
  # install CUDA native library if you need CUDA-based solvers.
  $ sudo apt-get install libsqaodc-cuda-9-0
 ~~~
 
-The default version of libsqaodc is enabled with sse2.  To choose avx2 or sse2 version of libsqaodc, use update-alternative as shown below.
+The sse2 and avx2 versions of libsqaodc are installed, and the sse2 version is enabled by default.  To choose which version to enable, use update-alternative as shown below.
 
 ~~~
  $ sudo update-alternatives --config libsqaodc.so.0
@@ -74,7 +80,7 @@ The default version of libsqaodc is enabled with sse2.  To choose avx2 or sse2 v
 ~~~
 
 You can have BLAS library of your choice.<BR>
-The libsqaodc only installs libblas3 as a dependency.  You can isntall openblas and/or atlas as alternatives of BLAS library.  By using update-alternative, you can choose which BLAS library to use.
+Though libsqaodc only installs libblas3 as a dependency, you can install openblas and/or atlas as alternatives of BLAS library as well.  By using update-alternative, you can choose which BLAS library to use.
 
 ~~~
  $ sudo apt-get install libopenblas-base libatlas3-base
