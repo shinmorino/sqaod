@@ -1,63 +1,65 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
-#include <sqaodc/cpu/cpu_export.h>
-
-#if defined(SQAODC_CUDA_ENABLED) && !defined(SQAODC_IGNORE_CUDA_HEADERS)
-#include <sqaodc/cuda/cuda_export.h>
-#endif
 
 namespace sqaod {
 
 namespace cpu {
 
 template<class real>
-using DenseGraphBFSearcher = sqaod_cpu::CPUDenseGraphBFSearcher<real>;
+sqaod::DenseGraphBFSearcher<real> *newDenseGraphBFSearcher();
 
 template<class real>
-using DenseGraphAnnealer = sqaod_cpu::CPUDenseGraphAnnealer<real>;
+sqaod::DenseGraphAnnealer<real> *newDenseGraphAnnealer();
 
 template<class real>
-using DenseGraphFormulas = sqaod_cpu::DGFuncs<real>;
+sqaod::DenseGraphFormulas<real> *newDenseGraphFormulas();
 
 template<class real>
-using BipartiteGraphBFSearcher = sqaod_cpu::CPUBipartiteGraphBFSearcher<real>;
+sqaod::BipartiteGraphBFSearcher<real> *newBipartiteGraphBFSearcher();
 
 template<class real>
-using BipartiteGraphAnnealer = sqaod_cpu::CPUBipartiteGraphAnnealer<real>;
+sqaod::BipartiteGraphAnnealer<real> *newBipartiteGraphAnnealer();
 
 template<class real>
-using BipartiteGraphFormulas = sqaod_cpu::BGFuncs<real>;
+sqaod::BipartiteGraphFormulas<real> *newBipartiteGraphFormulas();
+
+}
+
+void deleteInstance(NullBase *);
 
 }
 
 #if defined(SQAODC_CUDA_ENABLED) && !defined(SQAODC_IGNORE_CUDA_HEADERS)
 
+#include <sqaodc/cuda/api.h>
+
+namespace sqaod {
+
 namespace cuda {
 
 template<class real>
-using DenseGraphBFSearcher = sqaod_cuda::CUDADenseGraphBFSearcher<real>;
+DenseGraphBFSearcher<real> *newDenseGraphBFSearcher();
 
 template<class real>
-using DenseGraphAnnealer = sqaod_cuda::CUDADenseGraphAnnealer<real>;
+DenseGraphAnnealer<real> *newDenseGraphAnnealer();
 
 template<class real>
-using DenseGraphFormulas = sqaod_cuda::CUDADenseGraphFormulas<real>;
-
-
-template<class real>
-using BipartiteGraphBFSearcher = sqaod_cuda::CUDABipartiteGraphBFSearcher<real>;
+DenseGraphFormulas<real> *newDenseGraphFormulas();
 
 template<class real>
-using BipartiteGraphAnnealer = sqaod_cuda::CUDABipartiteGraphAnnealer<real>;
+BipartiteGraphBFSearcher<real> *newBipartiteGraphBFSearcher();
 
 template<class real>
-using BipartiteGraphFormulas = sqaod_cuda::CUDABipartiteGraphFormulas<real>;
+BipartiteGraphAnnealer<real> *newBipartiteGraphAnnealer();
 
-typedef sqaod_cuda::Device Device;
+template<class real>
+BipartiteGraphFormulas<real> *newBipartiteGraphFormulas();
+
+Device *newDevice(int devNo = -1);
+
+}
 
 }
 
 #endif
-
-};
