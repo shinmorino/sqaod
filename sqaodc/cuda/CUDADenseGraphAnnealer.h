@@ -14,7 +14,7 @@ namespace sqaod_cuda {
 namespace sq = sqaod;
 
 template<class real>
-class CUDADenseGraphAnnealer : public sq::DenseGraphAnnealer<real> {
+class CUDADenseGraphAnnealer : public sqaod::cuda::DenseGraphAnnealer<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
     typedef sq::BitSet BitSet;
@@ -33,6 +33,8 @@ public:
     ~CUDADenseGraphAnnealer();
 
     void deallocate();
+
+    void assignDevice(sqaod::cuda::Device &device);
 
     void assignDevice(Device &device);
 

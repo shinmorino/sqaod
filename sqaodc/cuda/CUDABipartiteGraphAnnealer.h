@@ -15,7 +15,7 @@ namespace sqaod_cuda {
 namespace sq = sqaod;
 
 template<class real>
-class CUDABipartiteGraphAnnealer : public sq::BipartiteGraphAnnealer<real> {
+class CUDABipartiteGraphAnnealer : public sqaod::cuda::BipartiteGraphAnnealer<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
     typedef sq::BitSetPairArray BitSetPairArray;
@@ -34,6 +34,8 @@ public:
     ~CUDABipartiteGraphAnnealer();
 
     void deallocate();
+    
+    void assignDevice(sqaod::cuda::Device &device);
     
     void assignDevice(Device &device);
 

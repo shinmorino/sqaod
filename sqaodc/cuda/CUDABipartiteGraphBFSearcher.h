@@ -15,7 +15,7 @@ namespace sqaod_cuda {
 namespace sq = sqaod;
 
 template<class real>
-class CUDABipartiteGraphBFSearcher : public sq::BipartiteGraphBFSearcher<real> {
+class CUDABipartiteGraphBFSearcher : public sqaod::cuda::BipartiteGraphBFSearcher<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
     typedef DeviceMatrixType<real> DeviceMatrix;
@@ -36,6 +36,8 @@ public:
     ~CUDABipartiteGraphBFSearcher();
 
     void deallocate();
+    
+    void assignDevice(sqaod::cuda::Device &device);
     
     void assignDevice(Device &device);
     

@@ -3,9 +3,9 @@
 
 
 namespace sqint = sqaod_internal;
-using namespace sqaod_cuda;
+namespace sqcu = sqaod_cuda;;
 
-template<class real> void CUDADenseGraphFormulas<real>::
+template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
     sqint::validateScalar(E, __func__);
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
@@ -19,7 +19,7 @@ calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
 }
 
 
-template<class real> void CUDADenseGraphFormulas<real>::
+template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
     sqint::quboShapeCheck(W, x, __func__);
     sqint::validateScalar(E, __func__);
@@ -35,7 +35,7 @@ calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
 }
 
 
-template<class real> void CUDADenseGraphFormulas<real>::
+template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W) {
     sqint::quboShapeCheck(W, __func__);
     sqint::prepVector(h, W.rows, __func__);
@@ -54,9 +54,9 @@ calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W)
     devStream->synchronize();
 }
 
-template<class real> void CUDADenseGraphFormulas<real>::
+template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(real *E,
-            const HostVector &h, const HostMatrix &J, const real &c,
+            const HostVector &h, const HostMatrix &J, real c,
             const HostVector &q) {
     sqint::isingModelShapeCheck(h, J, c, q, __func__);
     sqint::validateScalar(E, __func__);
@@ -75,9 +75,9 @@ calculate_E(real *E,
     devStream->synchronize();
 }
 
-template<class real> void CUDADenseGraphFormulas<real>::
+template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(HostVector *E,
-            const HostVector &h, const HostMatrix &J, const real &c,
+            const HostVector &h, const HostMatrix &J, real c,
             const HostMatrix &q) {
     sqint::isingModelShapeCheck(h, J, c, q,  __func__);
     sqint::prepVector(E, q.rows, __func__);
@@ -98,27 +98,24 @@ calculate_E(HostVector *E,
 
 
 template<class real>
-void CUDADenseGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
-    throwErrorIf(devStream != NULL, "Device already assigned.");
-    if (stream == NULL)
-        stream = device.defaultStream();
-    devStream = stream;
-    devCopy.assignDevice(device, stream);
-    formulas.assignDevice(device, stream);
+sqcu::CUDADenseGraphFormulas<real>::CUDADenseGraphFormulas() {
+    devStream = NULL;
 }
 
-template<class real>
-DeviceStream *CUDADenseGraphFormulas<real>::devStream;
-template<class real>
-DeviceCopy CUDADenseGraphFormulas<real>::devCopy;
-template<class real>
-DeviceDenseGraphFormulas<real> CUDADenseGraphFormulas<real>::formulas;
 
+template<class real>
+void sqcu::CUDADenseGraphFormulas<real>::assignDevice(sqaod::cuda::Device &device) {
+    throwErrorIf(devStream != NULL, "Device already assigned.");
+    sqcu::Device &dev = static_cast<sqcu::Device&>(device);
+    devStream = dev.defaultStream();
+    devCopy.assignDevice(dev, devStream);
+    formulas.assignDevice(dev, devStream);
+}
 
 
 /* Bipartite graph */
 
-template<class real> void CUDABipartiteGraphFormulas<real>::
+template<class real> void sqcu::CUDABipartiteGraphFormulas<real>::
 calculate_E(real *E,
             const HostVector &b0, const HostVector &b1, const HostMatrix &W,
             const HostVector &x0, const HostVector &x1) {
@@ -141,7 +138,7 @@ calculate_E(real *E,
     devStream->synchronize();
 }
 
-template<class real> void CUDABipartiteGraphFormulas<real>::
+template<class real> void sqcu::CUDABipartiteGraphFormulas<real>::
 calculate_E(HostVector *E,
             const HostVector &b0, const HostVector &b1, const HostMatrix &W,
             const HostMatrix &x0, const HostMatrix &x1) {
@@ -165,7 +162,7 @@ calculate_E(HostVector *E,
 }
 
 template<class real>
-void CUDABipartiteGraphFormulas<real>::
+void sqcu::CUDABipartiteGraphFormulas<real>::
 calculate_E_2d(HostMatrix *E,
                const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                const HostMatrix &x0, const HostMatrix &x1) {
@@ -189,7 +186,7 @@ calculate_E_2d(HostMatrix *E,
 }
 
 
-template<class real> void CUDABipartiteGraphFormulas<real>::
+template<class real> void sqcu::CUDABipartiteGraphFormulas<real>::
 calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
                      const HostVector &b0, const HostVector &b1, const HostMatrix &W) {
     sqint::quboShapeCheck(b0, b1, W, __func__);
@@ -219,9 +216,9 @@ calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
 
 
 template<class real>
-void CUDABipartiteGraphFormulas<real>::
+void sqcu::CUDABipartiteGraphFormulas<real>::
 calculate_E(real *E,
-            const HostVector &h0, const HostVector &h1, const HostMatrix &J, const real &c,
+            const HostVector &h0, const HostVector &h1, const HostMatrix &J, real c,
             const HostVector &q0, const HostVector &q1) {
     sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
     sqint::validateScalar(E, __func__);
@@ -245,9 +242,9 @@ calculate_E(real *E,
     devStream->synchronize();
 }
 
-template<class real> void CUDABipartiteGraphFormulas<real>::
+template<class real> void sqcu::CUDABipartiteGraphFormulas<real>::
 calculate_E(HostVector *E,
-            const HostVector &h0, const HostVector &h1, const HostMatrix &J, const real &c,
+            const HostVector &h0, const HostVector &h1, const HostMatrix &J, real c,
             const HostMatrix &q0, const HostMatrix &q1) {
     sqint::isingModelShapeCheck(h0, h1, J, c, q0, q1, __func__);
     sqint::prepVector(E, q0.rows, __func__);
@@ -273,30 +270,21 @@ calculate_E(HostVector *E,
 
 
 template<class real>
-CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas() {
+sqcu::CUDABipartiteGraphFormulas<real>::CUDABipartiteGraphFormulas() {
     devStream = NULL;
 }
 
 template<class real>
-void CUDABipartiteGraphFormulas<real>::assignDevice(Device &device, DeviceStream *stream) {
+void sqcu::CUDABipartiteGraphFormulas<real>::assignDevice(sqaod::cuda::Device &device) {
     throwErrorIf(devStream != NULL, "Device already assigned.");
-    if (stream == NULL)
-        stream = device.defaultStream();
-    devStream = stream;
-    devCopy.assignDevice(device, stream);
-    formulas.assignDevice(device, stream);
+    sqcu::Device &dev = static_cast<sqcu::Device&>(device);
+    devStream = dev.defaultStream();
+    devCopy.assignDevice(dev, devStream);
+    formulas.assignDevice(dev, devStream);
 }
 
-template<class real>
-DeviceStream *CUDABipartiteGraphFormulas<real>::devStream;
-template<class real>
-DeviceCopy CUDABipartiteGraphFormulas<real>::devCopy;
-template<class real>
-DeviceBipartiteGraphFormulas<real> CUDABipartiteGraphFormulas<real>::formulas;
 
-
-
-template struct CUDADenseGraphFormulas<double>;
-template struct CUDADenseGraphFormulas<float>;
-template struct CUDABipartiteGraphFormulas<double>;
-template struct CUDABipartiteGraphFormulas<float>;
+template struct sqcu::CUDADenseGraphFormulas<double>;
+template struct sqcu::CUDADenseGraphFormulas<float>;
+template struct sqcu::CUDABipartiteGraphFormulas<double>;
+template struct sqcu::CUDABipartiteGraphFormulas<float>;

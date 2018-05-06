@@ -68,6 +68,11 @@ void CUDADenseGraphAnnealer<real>::deallocateInternalObjects() {
 }
 
 template<class real>
+void CUDADenseGraphAnnealer<real>::assignDevice(sqaod_api::cuda::Device &device) {
+    assignDevice(static_cast<Device&>(device));
+}
+
+template<class real>
 void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     throwErrorIf(devStream_ != NULL, "Device assigned more than once.");
     devStream_ = device.defaultStream();

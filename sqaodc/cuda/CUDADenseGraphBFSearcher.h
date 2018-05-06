@@ -15,7 +15,7 @@ namespace sqaod_cuda {
 namespace sq = sqaod;
 
 template<class real>
-class CUDADenseGraphBFSearcher : public sq::DenseGraphBFSearcher<real> {
+class CUDADenseGraphBFSearcher : public sqaod::cuda::DenseGraphBFSearcher<real> {
     typedef DeviceMatrixType<real> DeviceMatrix;
     typedef DeviceVectorType<real> DeviceVector;
     typedef DeviceScalarType<real> DeviceScalar;
@@ -32,6 +32,8 @@ public:
     ~CUDADenseGraphBFSearcher();
 
     void deallocate();
+    
+    void assignDevice(sqaod::cuda::Device &device);
     
     void assignDevice(Device &device);
     

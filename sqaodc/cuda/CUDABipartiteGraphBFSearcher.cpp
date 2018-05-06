@@ -36,6 +36,11 @@ void CUDABipartiteGraphBFSearcher<real>::deallocate() {
 }
 
 template<class real>
+void CUDABipartiteGraphBFSearcher<real>::assignDevice(sqaod::cuda::Device &device) {
+    assignDevice(static_cast<Device&>(device));
+}
+
+template<class real>
 void CUDABipartiteGraphBFSearcher<real>::assignDevice(Device &device) {
     throwErrorIf(deviceAssigned_, "Device already assigned.");
     batchSearch_.assignDevice(device, device.defaultStream());

@@ -35,6 +35,11 @@ void CUDADenseGraphBFSearcher<real>::deallocate() {
 
 
 template<class real>
+void CUDADenseGraphBFSearcher<real>::assignDevice(sqaod::cuda::Device &device) {
+    assignDevice(static_cast<Device&>(device));
+}
+
+template<class real>
 void CUDADenseGraphBFSearcher<real>::assignDevice(Device &device) {
     throwErrorIf(deviceAssigned_, "Device already assigned.");
     batchSearch_.assignDevice(device);

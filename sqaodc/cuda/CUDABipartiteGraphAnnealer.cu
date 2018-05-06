@@ -63,6 +63,11 @@ void CUDABipartiteGraphAnnealer<real>::deallocate() {
 
 
 template<class real>
+void CUDABipartiteGraphAnnealer<real>::assignDevice(sqaod_api::cuda::Device &device) {
+    assignDevice(static_cast<Device&>(device));
+}
+
+template<class real>
 void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
     devStream_ = device.defaultStream();
     devAlloc_ = device.objectAllocator();

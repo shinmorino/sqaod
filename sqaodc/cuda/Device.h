@@ -4,6 +4,7 @@
 #include <sqaodc/cuda/DeviceMemoryStore.h>
 #include <sqaodc/cuda/DeviceObjectAllocator.h>
 #include <sqaodc/cuda/DeviceConstScalars.h>
+#include <sqaodc/cuda/api.h>
 
 namespace sqaod_cuda {
 
@@ -11,10 +12,10 @@ namespace sq = sqaod;
 
 class DeviceStream;
 
-class Device {
+class Device : public sqaod::cuda::Device {
 public:
     Device(int devNo = -1);
-    ~Device();
+    virtual ~Device();
 
     typedef DeviceObjectAllocator ObjectAllocator;
 

@@ -1,0 +1,81 @@
+#pragma once
+
+#include <sqaodc/common/Solver.h>
+#include <sqaodc/common/Formulas.h>
+
+namespace sqaod {
+
+namespace cuda {
+
+class Device : public NullBase {
+public:
+    Device() { }
+
+    virtual ~Device() { }
+
+    virtual void initialize(int devNo = 0) = 0;
+
+    virtual void finalize() = 0;
+
+private:
+    Device(const Device &);
+};
+
+
+struct DeviceAssigner {
+
+    virtual ~DeviceAssigner() { }
+    
+    virtual void assignDevice(Device &device) = 0;
+    
+};
+
+
+template<class real>
+struct DenseGraphAnnealer : DeviceAssigner, sqaod::DenseGraphAnnealer<real> {
+
+    virtual ~DenseGraphAnnealer() { }
+
+};
+
+template<class real>
+struct BipartiteGraphAnnealer : DeviceAssigner, sqaod::BipartiteGraphAnnealer<real> {
+
+    virtual ~BipartiteGraphAnnealer()  { }
+
+};
+
+template<class real>
+struct DenseGraphBFSearcher : DeviceAssigner, sqaod::DenseGraphBFSearcher<real> {
+
+    virtual ~DenseGraphBFSearcher()  { }
+
+};
+
+template<class real>
+struct BipartiteGraphBFSearcher :
+            DeviceAssigner, sqaod::BipartiteGraphBFSearcher<real> {
+
+    virtual ~BipartiteGraphBFSearcher()  { }
+
+};
+
+
+template<class real>
+struct DenseGraphFormulas : DeviceAssigner, sqaod::DenseGraphFormulas<real> {
+
+    virtual ~DenseGraphFormulas()  { }
+
+};
+
+
+template<class real>
+struct BipartiteGraphFormulas : DeviceAssigner, sqaod::BipartiteGraphFormulas<real> {
+
+    virtual ~BipartiteGraphFormulas()  { }
+
+};
+
+}
+
+}

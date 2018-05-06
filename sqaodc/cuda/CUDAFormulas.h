@@ -1,109 +1,96 @@
 #pragma once
 
+#include <sqaodc/common/Common.h>
 #include <sqaodc/cuda/DeviceFormulas.h>
 
 namespace sqaod_cuda {
 
-namespace sq = sqaod;
-
 template<class real>
-struct CUDADenseGraphFormulas {
-    typedef sq::MatrixType<real> HostMatrix;
-    typedef sq::VectorType<real> HostVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
-    typedef DeviceDenseGraphFormulas<real> DeviceFormulas;
+struct CUDADenseGraphFormulas : sqaod::cuda::DenseGraphFormulas<real> {
+    typedef sqaod::MatrixType<real> HostMatrix;
+    typedef sqaod::VectorType<real> HostVector;
+    typedef sqaod_cuda::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqaod_cuda::DeviceVectorType<real> DeviceVector;
+    typedef sqaod_cuda::DeviceScalarType<real> DeviceScalar;
+    typedef sqaod_cuda::DeviceDenseGraphFormulas<real> DeviceFormulas;
     
-    static
     void calculate_E(real *E, const HostMatrix &W, const HostVector &x);
     
-    static
     void calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x);
     
-    static
     void calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W);
     
-    static
     void calculate_E(real *E,
-                     const HostVector &h, const HostMatrix &J, const real &c,
+                     const HostVector &h, const HostMatrix &J, real c,
                      const HostVector &q);
 
-    static
     void calculate_E(HostVector *E,
-                     const HostVector &h, const HostMatrix &J, const real &c,
+                     const HostVector &h, const HostMatrix &J, real c,
                      const HostMatrix &q);
 
 
-    static
-    void assignDevice(Device &device, DeviceStream *stream = NULL);
+    void assignDevice(sqaod::cuda::Device &device);
 
-    static
-    DeviceStream *devStream;
-    static
-    DeviceCopy devCopy;
-    static
+    sqaod_cuda::DeviceStream *devStream;
+    sqaod_cuda::DeviceCopy devCopy;
     DeviceFormulas formulas;
 
-private:
-    
     CUDADenseGraphFormulas();
+    virtual ~CUDADenseGraphFormulas() { }
+    
+private:
+    CUDADenseGraphFormulas(const CUDADenseGraphFormulas &);
 };
 
 
     
 template<class real>
-struct CUDABipartiteGraphFormulas {
-    typedef sq::MatrixType<real> HostMatrix;
-    typedef sq::VectorType<real> HostVector;
-    typedef DeviceMatrixType<real> DeviceMatrix;
-    typedef DeviceVectorType<real> DeviceVector;
-    typedef DeviceScalarType<real> DeviceScalar;
-    typedef DeviceBipartiteGraphFormulas<real> DeviceFormulas;
-    
-    static
+struct CUDABipartiteGraphFormulas : sqaod::cuda::BipartiteGraphFormulas<real> {
+    typedef sqaod::MatrixType<real> HostMatrix;
+    typedef sqaod::VectorType<real> HostVector;
+    typedef sqaod_cuda::DeviceMatrixType<real> DeviceMatrix;
+    typedef sqaod_cuda::DeviceVectorType<real> DeviceVector;
+    typedef sqaod_cuda::DeviceScalarType<real> DeviceScalar;
+    typedef sqaod_cuda::DeviceBipartiteGraphFormulas<real> DeviceFormulas;
+
     void calculate_E(real *E,
                      const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                      const HostVector &x0, const HostVector &x1);
     
-    static
     void calculate_E(HostVector *E,
                      const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                      const HostMatrix &x0, const HostMatrix &x1);
 
-    static
     void calculate_E_2d(HostMatrix *E,
                         const HostVector &b0, const HostVector &b1, const HostMatrix &W,
                         const HostMatrix &x0, const HostMatrix &x1);
     
-    static
     void calculateHamiltonian(HostVector *h0, HostVector *h1, HostMatrix *J, real *c,
                               const HostVector &b0, const HostVector &b1, const HostMatrix &W);
 
-    static
     void calculate_E(real *E,
                      const HostVector &h0, const HostVector &h1, const HostMatrix &J,
-                     const real &c,
+                     real c,
                      const HostVector &q0, const HostVector &q1);
 
-    static
     void calculate_E(HostVector *E,
                      const HostVector &h0, const HostVector &h1, const HostMatrix &J,
-                     const real &c,
+                     real c,
                      const HostMatrix &q0, const HostMatrix &q1);
 
-    static
-    void assignDevice(Device &device, DeviceStream *stream = NULL);
+    void assignDevice(sqaod::cuda::Device &device);
 
-    static
-    DeviceStream *devStream;
-    static
-    DeviceCopy devCopy;
-    static
+    sqaod_cuda::DeviceStream *devStream;
+
+    sqaod_cuda::DeviceCopy devCopy;
+
     DeviceFormulas formulas;
 
-private:
     CUDABipartiteGraphFormulas();
+    virtual ~CUDABipartiteGraphFormulas() { }
+    
+private:
+    CUDABipartiteGraphFormulas(const CUDABipartiteGraphFormulas &);
 };
 
 }
