@@ -3,7 +3,12 @@
 namespace {
 
 template<class real>
-using BFSearcher = sq::cpu::DenseGraphBFSearcher<real>;
+using BFSearcher = sq::DenseGraphBFSearcher<real>;
+
+template<class real>
+BFSearcher<real> *newBFSearcher() {
+    return sqaod::cpu::newDenseGraphBFSearcher<real>();
+}
 
 }
 

@@ -3,7 +3,12 @@
 namespace {
 
 template<class real>
-using Annealer = sq::cpu::BipartiteGraphAnnealer<real>;
+using Annealer = sq::BipartiteGraphAnnealer<real>;
+
+template<class real>
+Annealer<real> *newAnnealer() {
+    return sqaod::cpu::newBipartiteGraphAnnealer<real>();
+}
 
 }
 

@@ -3,7 +3,12 @@
 namespace {
 
 template<class real>
-using Annealer = sq::cuda::DenseGraphAnnealer<real>;
+using Annealer = sqaod::cuda::DenseGraphAnnealer<real>;
+
+template<class real>
+Annealer<real> *newAnnealer() {
+    return sqaod::cuda::newDenseGraphAnnealer<real>();
+}
 
 }
 

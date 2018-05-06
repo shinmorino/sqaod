@@ -6,6 +6,11 @@ namespace {
 template<class real>
 using BFSearcher = sq::cuda::DenseGraphBFSearcher<real>;
 
+template<class real>
+BFSearcher<real> *newBFSearcher() {
+    return sqaod::cuda::newDenseGraphBFSearcher<real>();
+}
+
 }
 
 #define modname "cuda_dg_bf_searcher"

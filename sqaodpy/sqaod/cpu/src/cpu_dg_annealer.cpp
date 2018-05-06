@@ -3,7 +3,12 @@
 namespace {
 
 template<class real>
-using Annealer = sq::cpu::DenseGraphAnnealer<real>;
+using Annealer = sqaod::DenseGraphAnnealer<real>;
+
+template<class real>
+Annealer<real> *newAnnealer() {
+    return sqaod::cpu::newDenseGraphAnnealer<real>();
+}
 
 }
 

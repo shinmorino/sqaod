@@ -6,7 +6,7 @@ extern "C"
 PyObject *cuda_device_new(PyObject *module, PyObject *args) {
     sq::cuda::Device *device;
     TRY {
-        device = new sq::cuda::Device();
+        device = sq::cuda::newDevice();
     } CATCH_ERROR_AND_RETURN;
 
     PyObject *obj = PyArrayScalar_New(UInt64);
@@ -21,7 +21,7 @@ PyObject *cuda_device_delete(PyObject *module, PyObject *args) {
     if (!PyArg_ParseTuple(args, "O", &objExt))
         return NULL;
     sq::cuda::Device *device = (sq::cuda::Device*)PyArrayScalar_VAL(objExt, UInt64);
-    delete device;
+    deleteInstance(device);
     Py_INCREF(Py_None);
     return Py_None;
 }

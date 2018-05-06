@@ -20,9 +20,9 @@ PyObject *annealer_new(PyObject *module, PyObject *args) {
     ASSERT_DTYPE(dtype);
 
     if (isFloat64(dtype))
-        ext = (void*)new Annealer<double>();
+        ext = (void*)newAnnealer<double>();
     else
-        ext = (void*)new Annealer<float>();
+        ext = (void*)newAnnealer<float>();
     
     PyObject *obj = PyArrayScalar_New(UInt64);
     PyArrayScalar_ASSIGN(obj, UInt64, (npy_uint64)ext);
@@ -38,9 +38,9 @@ PyObject *annealer_delete(PyObject *module, PyObject *args) {
     ASSERT_DTYPE(dtype);
 
     if (isFloat64(dtype))
-        delete pyobjToCppObj<double>(objExt);
+        deleteInstance(pyobjToCppObj<double>(objExt));
     else if (isFloat32(dtype))
-        delete pyobjToCppObj<float>(objExt);
+        deleteInstance(pyobjToCppObj<float>(objExt));
     
     Py_INCREF(Py_None);
     return Py_None;    

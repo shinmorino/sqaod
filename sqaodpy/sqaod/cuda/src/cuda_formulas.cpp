@@ -2,11 +2,18 @@
 
 namespace {
 
-template<class real>
-using DGFormulas = sq::cuda::DenseGraphFormulas<real>;
+template<class real> using DGFormulas = sq::cuda::DenseGraphFormulas<real>;
+template<class real> using BGFormulas = sq::cuda::BipartiteGraphFormulas<real>;
 
 template<class real>
-using BGFormulas = sq::cuda::BipartiteGraphFormulas<real>;
+DGFormulas<real> *newDGFormulas() {
+    return sqaod::cuda::newDenseGraphFormulas<real>();
+}
+
+template<class real>
+BGFormulas<real> *newBGFormulas() {
+    return sqaod::cuda::newBipartiteGraphFormulas<real>();
+}
 
 }
 

@@ -5,6 +5,11 @@ namespace {
 template<class real>
 using BFSearcher = sq::cuda::BipartiteGraphBFSearcher<real>;
 
+template<class real>
+BFSearcher<real> *newBFSearcher() {
+    return sqaod::cuda::newBipartiteGraphBFSearcher<real>();
+}
+
 }
 
 #define modname "cuda_bg_bf_searcher"

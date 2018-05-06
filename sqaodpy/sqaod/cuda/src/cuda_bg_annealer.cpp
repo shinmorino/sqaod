@@ -5,6 +5,11 @@ namespace {
 template<class real>
 using Annealer = sq::cuda::BipartiteGraphAnnealer<real>;
 
+template<class real>
+Annealer<real> *newAnnealer() {
+    return sqaod::cuda::newBipartiteGraphAnnealer<real>();
+}
+
 }
 
 #define modname "cuda_bg_annealer"

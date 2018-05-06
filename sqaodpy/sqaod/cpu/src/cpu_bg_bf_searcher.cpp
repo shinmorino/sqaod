@@ -3,7 +3,12 @@
 namespace {
 
 template<class real>
-using BFSearcher = sq::cpu::BipartiteGraphBFSearcher<real>;
+using BFSearcher = sq::BipartiteGraphBFSearcher<real>;
+
+template<class real>
+BFSearcher<real> *newBFSearcher() {
+    return sqaod::cpu::newBipartiteGraphBFSearcher<real>();
+}
 
 }
 
