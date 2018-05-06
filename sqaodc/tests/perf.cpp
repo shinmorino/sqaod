@@ -1,7 +1,8 @@
-#include <sqaodc/sqaodc.h>
+#include <sqaodc/sqaodc_native.h>
 #include <iostream>
 #include <chrono>
 
+namespace sqn = sqaod::native;
 namespace sq = sqaod;
 
 bool runFloatSolvers = true;
@@ -20,7 +21,7 @@ const int nSteps = 200;
 const int SEED = 1133557;
 
 #ifdef SQAODC_CUDA_ENABLED
-sq::cuda::Device device;
+sqaod_cuda::Device device;
 #endif
 
 template<class T>
@@ -120,7 +121,7 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CPU, %s\n", precisionStr);
             fprintf(stderr, "N = %d\n", N);
-            sq::cpu::DenseGraphBFSearcher<real> searcher;
+            sqn::cpu::DenseGraphBFSearcher<real> searcher;
             searcher.setQUBO(W);
             runSearch(searcher);
         }
@@ -128,7 +129,7 @@ void run(const char *precisionStr) {
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph brute-force searcher, CUDA, %s\n", precisionStr);
             fprintf(stderr, "N = %d\n", N);
-            sq::cuda::DenseGraphBFSearcher<real> searcher(device);
+            sqn::cuda::DenseGraphBFSearcher<real> searcher(device);
             searcher.setQUBO(W);
             runSearch(searcher);
         }
@@ -144,7 +145,7 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Dense graph annealer, CPU, %s\n", precisionStr);
             fprintf(stderr, "N = %d, m = %d\n", N, m);
-            sq::cpu::DenseGraphAnnealer<real> annealer;
+            sqn::cpu::DenseGraphAnnealer<real> annealer;
             annealer.seed(SEED);
             annealer.setQUBO(W);
             annealer.setPreference(sq::pnNumTrotters, N / 2);
@@ -154,7 +155,7 @@ void run(const char *precisionStr) {
         if (runCUDASolvers) {
             fprintf(stderr, "Dense graph annealer, CUDA, %s\n", precisionStr);
             fprintf(stderr, "N = %d, m = %d\n", N, m);
-            sq::cuda::DenseGraphAnnealer<real> annealer(device);
+            sqn::cuda::DenseGraphAnnealer<real> annealer(device);
             annealer.seed(SEED);
             annealer.setQUBO(W);
             annealer.setPreference(sq::pnNumTrotters, N / 2);
@@ -173,7 +174,7 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CPU, %s\n", precisionStr);
             fprintf(stderr, "(N0, N1) = (%d, %d)\n", N0, N1);
-            sq::cpu::BipartiteGraphBFSearcher<real> searcher;
+            sqn::cpu::BipartiteGraphBFSearcher<real> searcher;
             searcher.setQUBO(b0, b1, W);
             runSearch(searcher);
         }
@@ -181,7 +182,7 @@ void run(const char *precisionStr) {
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph brute-force searcher, CUDA, %s\n", precisionStr);
             fprintf(stderr, "(N0, N1) = (%d, %d)\n", N0, N1);
-            sq::cuda::BipartiteGraphBFSearcher<real> searcher(device);
+            sqn::cuda::BipartiteGraphBFSearcher<real> searcher(device);
             searcher.setQUBO(b0, b1, W);
             runSearch(searcher);
         }
@@ -199,7 +200,7 @@ void run(const char *precisionStr) {
         if (runCPUSolvers) {
             fprintf(stderr, "Bipartite graph annealer, CPU, %s\n", precisionStr);
             fprintf(stderr, "(N0, N1) = (%d, %d), m = %d\n", N0, N1, m);
-            sq::cpu::BipartiteGraphAnnealer<real> annealer;
+            sqn::cpu::BipartiteGraphAnnealer<real> annealer;
             annealer.seed(SEED);
             annealer.setQUBO(b0, b1, W);
             annealer.setPreference(sq::pnNumTrotters, sq::SizeType((N0 + N1) / 2));
@@ -209,7 +210,7 @@ void run(const char *precisionStr) {
         if (runCUDASolvers) {
             fprintf(stderr, "Bipartite graph annealer, CUDA, %s\n", precisionStr);
             fprintf(stderr, "(N0, N1) = (%d, %d), m = %d\n", N0, N1, m);
-            sq::cuda::BipartiteGraphAnnealer<real> annealer(device);
+            sqn::cuda::BipartiteGraphAnnealer<real> annealer(device);
             annealer.seed(SEED);
             annealer.setQUBO(b0, b1, W);
             annealer.setPreference(sq::pnNumTrotters, (N0 + N1) / 2);
