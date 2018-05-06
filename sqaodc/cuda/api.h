@@ -24,7 +24,7 @@ private:
 
 struct DeviceAssigner {
 
-    virtual ~DeviceAssigner() { }
+    virtual ~DeviceAssigner() WAR_VC_NOTHROW { }
     
     virtual void assignDevice(Device &device) = 0;
     
@@ -34,21 +34,21 @@ struct DeviceAssigner {
 template<class real>
 struct DenseGraphAnnealer : DeviceAssigner, sqaod::DenseGraphAnnealer<real> {
 
-    virtual ~DenseGraphAnnealer() { }
+    virtual ~DenseGraphAnnealer() WAR_VC_NOTHROW { }
 
 };
 
 template<class real>
 struct BipartiteGraphAnnealer : DeviceAssigner, sqaod::BipartiteGraphAnnealer<real> {
 
-    virtual ~BipartiteGraphAnnealer()  { }
+    virtual ~BipartiteGraphAnnealer() WAR_VC_NOTHROW { }
 
 };
 
 template<class real>
 struct DenseGraphBFSearcher : DeviceAssigner, sqaod::DenseGraphBFSearcher<real> {
 
-    virtual ~DenseGraphBFSearcher()  { }
+    virtual ~DenseGraphBFSearcher() WAR_VC_NOTHROW { }
 
 };
 

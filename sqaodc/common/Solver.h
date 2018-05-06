@@ -16,7 +16,7 @@ enum OptimizeMethod {
 
 template<class real>
 struct Solver : NullBase {
-    virtual ~Solver() { }
+    virtual ~Solver() WAR_VC_NOTHROW { }
 
     virtual Algorithm selectAlgorithm(Algorithm algo) = 0;
     
@@ -77,7 +77,7 @@ protected:
 
 template<class real>
 struct BFSearcher : Solver<real> {
-    virtual ~BFSearcher() { }
+    virtual ~BFSearcher() WAR_VC_NOTHROW { }
 
     virtual Algorithm selectAlgorithm(Algorithm algo);
     
@@ -93,7 +93,7 @@ protected:
 
 template<class real>
 struct Annealer : Solver<real> {
-    virtual ~Annealer() { }
+    virtual ~Annealer() WAR_VC_NOTHROW { }
 
     virtual Preferences getPreferences() const;
 
@@ -155,7 +155,7 @@ protected:
 template<class real>
 struct DenseGraphBFSearcher
         : BFSearcher<real>, DenseGraphSolver<real> {
-    virtual ~DenseGraphBFSearcher() { }
+    virtual ~DenseGraphBFSearcher() WAR_VC_NOTHROW { }
 
     virtual Preferences getPreferences() const;
 
@@ -179,7 +179,7 @@ protected:
 template<class real>
 struct DenseGraphAnnealer
         : Annealer<real>, DenseGraphSolver<real> {
-    virtual ~DenseGraphAnnealer() { }
+    virtual ~DenseGraphAnnealer() WAR_VC_NOTHROW { }
 
     virtual void setHamiltonian(const VectorType<real> &h, const MatrixType<real> &J,
                                 real c = real(0.)) = 0;
@@ -200,7 +200,7 @@ protected:
 template<class real>
 struct BipartiteGraphBFSearcher
         : BFSearcher<real>, BipartiteGraphSolver<real> {
-    virtual ~BipartiteGraphBFSearcher() { }
+    virtual ~BipartiteGraphBFSearcher() WAR_VC_NOTHROW { }
 
     virtual Preferences getPreferences() const;
 
@@ -225,7 +225,7 @@ protected:
 template<class real>
 struct BipartiteGraphAnnealer
         : Annealer<real>, BipartiteGraphSolver<real> {
-    virtual ~BipartiteGraphAnnealer() { }
+    virtual ~BipartiteGraphAnnealer() WAR_VC_NOTHROW { }
 
     virtual void setHamiltonian(const VectorType<real> &h0, const VectorType<real> &h1,
                                 const MatrixType<real> &J, real c = real(0.)) = 0;

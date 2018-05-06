@@ -64,6 +64,8 @@ inline void aligned_free(void *pv) {
     ::free(pv);
 }
 
+#define WAR_VC_NOTHROW
+
 #endif
 
 #ifdef _WIN32
@@ -79,6 +81,11 @@ inline void *aligned_alloc(int alignment, size_t size) {
 inline void aligned_free(void *pv) {
     ::_aligned_free(pv);
 }
+
+/* FIXME: to suppress warnings : 
+ * warning : exception specification for virtual function is
+ * incompatible with that of overridden function. */
+#define WAR_VC_NOTHROW throw()
 
 #endif
 

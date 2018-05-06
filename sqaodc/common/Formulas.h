@@ -10,7 +10,7 @@ struct DenseGraphFormulas : NullBase {
     typedef sqaod::MatrixType<real> Matrix;
     typedef sqaod::VectorType<real> Vector;
 
-    virtual ~DenseGraphFormulas() { }
+    virtual ~DenseGraphFormulas() WAR_VC_NOTHROW { }
     
     virtual
     void calculate_E(real *E, const Matrix &W, const Vector &x) = 0;
@@ -36,7 +36,7 @@ struct BipartiteGraphFormulas : NullBase {
     typedef sqaod::MatrixType<real> Matrix;
     typedef sqaod::VectorType<real> Vector;
 
-    virtual ~BipartiteGraphFormulas() { }
+    virtual ~BipartiteGraphFormulas() WAR_VC_NOTHROW { }
 
     virtual
     void calculate_E(real *E,
