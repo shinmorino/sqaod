@@ -56,7 +56,7 @@ if __name__ != "__main__" :
     this_module._dgobj = cext.dg_formulas_new()
     this_module._bgobj = cext.bg_formulas_new()
     # initialization
-    cext.assign_device(this_module._dgobj, device.active_device._cobj)
-    cext.assign_device(this_module._bgobj, device.active_device._cobj)
+    cext.dg_formulas_assign_device(this_module._dgobj, device.active_device._cobj)
+    cext.bg_formulas_assign_device(this_module._bgobj, device.active_device._cobj)
     import atexit
     atexit.register(unload)
