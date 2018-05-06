@@ -1,6 +1,7 @@
 from __future__ import print_function
 import sys
 from sqaod.common import formulas_base as base
+from . import device
 from . import cuda_formulas as cext
 
 # dense graph
