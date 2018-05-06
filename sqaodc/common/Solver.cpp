@@ -4,6 +4,12 @@
 
 namespace sqaod {
 
+
+void deleteInstance(NullBase *instance) {
+    delete instance;
+}
+
+
 /* name string for float/double */
 template<class real> const char *typeString();
 

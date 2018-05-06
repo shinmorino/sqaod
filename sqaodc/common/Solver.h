@@ -15,7 +15,7 @@ enum OptimizeMethod {
 
 
 template<class real>
-struct Solver {
+struct Solver : NullBase {
     virtual ~Solver() { }
 
     virtual Algorithm selectAlgorithm(Algorithm algo) = 0;
