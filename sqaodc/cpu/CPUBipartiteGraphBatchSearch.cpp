@@ -1,6 +1,6 @@
 #include "CPUBipartiteGraphBatchSearch.h"
 #include <common/EigenBridge.h>
-#include <cpu/CPUFormulas.h>
+#include "SharedFormulas.h"
 #include <float.h>
 
 using namespace sqaod_cpu;

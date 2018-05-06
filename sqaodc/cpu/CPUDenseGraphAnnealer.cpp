@@ -1,5 +1,5 @@
 #include "CPUDenseGraphAnnealer.h"
-#include "CPUFormulas.h"
+#include "SharedFormulas.h"
 #include <sqaodc/common/ShapeChecker.h>
 #include <common/Common.h>
 #include <time.h>

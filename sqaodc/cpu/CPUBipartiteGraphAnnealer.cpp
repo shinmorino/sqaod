@@ -4,7 +4,7 @@
 #include <float.h>
 #include <algorithm>
 #include <exception>
-#include "CPUFormulas.h"
+#include "SharedFormulas.h"
 #include <time.h>
 
 namespace sqint = sqaod_internal;

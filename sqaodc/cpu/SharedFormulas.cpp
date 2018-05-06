@@ -1,4 +1,4 @@
-#include "CPUFormulas.h"
+#include "SharedFormulas.h"
 #include <sqaodc/common/ShapeChecker.h>
 #include <iostream>
 

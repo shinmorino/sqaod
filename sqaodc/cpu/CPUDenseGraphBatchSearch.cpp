@@ -1,5 +1,5 @@
 #include "CPUDenseGraphBatchSearch.h"
-#include "CPUFormulas.h"
+#include "SharedFormulas.h"
 #include <float.h>
 
 using namespace sqaod_cpu;
