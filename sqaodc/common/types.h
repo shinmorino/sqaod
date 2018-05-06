@@ -52,6 +52,12 @@ struct Dim {
     
 };
 
+/* Base class of public classes */
+struct NullBase {
+    virtual ~NullBase() { }
+};
+
+
 inline
 int divru(int v, int base) {
     return (v + base - 1) / base;
