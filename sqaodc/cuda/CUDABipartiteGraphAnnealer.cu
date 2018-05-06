@@ -63,7 +63,7 @@ void CUDABipartiteGraphAnnealer<real>::deallocate() {
 
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::assignDevice(sqaod_api::cuda::Device &device) {
+void CUDABipartiteGraphAnnealer<real>::assignDevice(sqaod::cuda::Device &device) {
     assignDevice(static_cast<Device&>(device));
 }
 

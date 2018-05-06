@@ -68,7 +68,7 @@ void CUDADenseGraphAnnealer<real>::deallocateInternalObjects() {
 }
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::assignDevice(sqaod_api::cuda::Device &device) {
+void CUDADenseGraphAnnealer<real>::assignDevice(sqaod::cuda::Device &device) {
     assignDevice(static_cast<Device&>(device));
 }
 
