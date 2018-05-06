@@ -5,6 +5,7 @@
 #include <sqaodc/common/Random.h>
 #include <sqaodc/common/Preference.h>
 #include <sqaodc/common/Solver.h>
+#include <sqaodc/common/Formulas.h>
 
 namespace sqaod {
 
