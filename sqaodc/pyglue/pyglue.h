@@ -26,7 +26,6 @@
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
 #include <sqaodc/sqaodc.h>
-#include <sqaodc/common/Common.h>
 #include <algorithm>
 
 namespace sq = sqaod;
