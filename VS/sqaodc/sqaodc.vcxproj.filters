@@ -151,6 +151,16 @@
     <ClInclude Include="..\..\sqaodc\common\types.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\Formulas.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\sqaodc_native.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\SharedFormulas.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\cuda\api.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\cuda\Device.cpp">
@@ -235,6 +245,15 @@
       <Filter>cpu</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\cuda\DeviceRandomMT19937.cpp">
+      <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqaodc\cpu\api_cpu.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqaodc\cpu\SharedFormulas.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqaodc\cuda\api_cuda.cpp">
       <Filter>cuda</Filter>
     </ClCompile>
   </ItemGroup>

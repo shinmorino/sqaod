@@ -15,6 +15,7 @@
     <ClInclude Include="..\..\sqaodc\common\Common.h" />
     <ClInclude Include="..\..\sqaodc\common\defines.h" />
     <ClInclude Include="..\..\sqaodc\common\EigenBridge.h" />
+    <ClInclude Include="..\..\sqaodc\common\Formulas.h" />
     <ClInclude Include="..\..\sqaodc\common\Matrix.h" />
     <ClInclude Include="..\..\sqaodc\common\Preference.h" />
     <ClInclude Include="..\..\sqaodc\common\Random.h" />
@@ -28,6 +29,8 @@
     <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.h" />
     <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.h" />
     <ClInclude Include="..\..\sqaodc\cpu\CPUFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\SharedFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\api.h" />
     <ClInclude Include="..\..\sqaodc\cuda\cub_iterator.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.h" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.h" />
@@ -58,6 +61,7 @@
     <ClInclude Include="..\..\sqaodc\cuda\DeviceStream.h" />
     <ClInclude Include="..\..\sqaodc\cuda\HostObjectAllocator.h" />
     <ClInclude Include="..\..\sqaodc\sqaodc.h" />
+    <ClInclude Include="..\..\sqaodc\sqaodc_native.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\common\Common.cpp" />
@@ -66,6 +70,7 @@
     <ClCompile Include="..\..\sqaodc\common\Preference.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Random.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Solver.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\api_cpu.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphAnnealer.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphBFSearcher.cpp" />
@@ -73,6 +78,8 @@
     <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\SharedFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cuda\api_cuda.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\CUDADenseGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\CUDAFormulas.cpp" />
