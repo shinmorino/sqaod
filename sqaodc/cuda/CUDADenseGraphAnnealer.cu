@@ -1,5 +1,5 @@
 #include "CUDADenseGraphAnnealer.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
@@ -110,7 +110,7 @@ void CUDADenseGraphAnnealer<real>::seed(unsigned long long seed) {
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMethod om) {
-    sqint::quboShapeCheck(W, __func__);
+    sqint::matrixCheckIfSymmetric(W, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
 
@@ -132,6 +132,7 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const HostMatrix &J,
                                                   real c) {
     sqint::isingModelShapeCheck(h, J, c, __func__);
+    sqint::matrixCheckIfSymmetric(J, __func__);
     throwErrorIf(devStream_ == NULL, "Device not set.");
     deallocate();
 

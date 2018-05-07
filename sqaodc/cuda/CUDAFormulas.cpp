@@ -7,6 +7,7 @@ namespace sqcu = sqaod_cuda;;
 
 template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
+    sqint::matrixCheckIfSymmetric(W, __func__);
     sqint::validateScalar(E, __func__);
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
     DeviceMatrix *d_W = devStream->tempDeviceMatrix<real>(W.dim());
@@ -22,6 +23,7 @@ calculate_E(real *E, const HostMatrix &W, const HostVector &x) {
 template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
     sqint::quboShapeCheck(W, x, __func__);
+    sqint::matrixCheckIfSymmetric(W, __func__);
     sqint::validateScalar(E, __func__);
 
     DeviceVector *d_E = devStream->tempDeviceVector<real>(x.rows);
@@ -37,7 +39,7 @@ calculate_E(HostVector *E, const HostMatrix &W, const HostMatrix &x) {
 
 template<class real> void sqcu::CUDADenseGraphFormulas<real>::
 calculateHamiltonian(HostVector *h, HostMatrix *J, real *c, const HostMatrix &W) {
-    sqint::quboShapeCheck(W, __func__);
+    sqint::matrixCheckIfSymmetric(W, __func__);
     sqint::prepVector(h, W.rows, __func__);
     sqint::prepMatrix(J, W.dim(), __func__);
     sqint::validateScalar(c, __func__);
@@ -59,6 +61,7 @@ calculate_E(real *E,
             const HostVector &h, const HostMatrix &J, real c,
             const HostVector &q) {
     sqint::isingModelShapeCheck(h, J, c, q, __func__);
+    sqint::matrixCheckIfSymmetric(J, __func__);
     sqint::validateScalar(E, __func__);
     
     DeviceScalar *d_E = devStream->tempDeviceScalar<real>();
@@ -80,6 +83,7 @@ calculate_E(HostVector *E,
             const HostVector &h, const HostMatrix &J, real c,
             const HostMatrix &q) {
     sqint::isingModelShapeCheck(h, J, c, q,  __func__);
+    sqint::matrixCheckIfSymmetric(J, __func__);
     sqint::prepVector(E, q.rows, __func__);
 
     DeviceVector *d_E = devStream->tempDeviceVector<real>(q.rows);

@@ -11,9 +11,14 @@ namespace sq = sqaod;
 /* Dense graph */
 
 template<class real>
+void matrixCheckIfSymmetric(const sq::MatrixType<real> &W, const char *func) {
+    throwErrorIf(!sq::isSymmetric(W), "%s, Matrix is not symmetric.", func);
+}
+
+template<class real>
 void quboShapeCheck(const sq::MatrixType<real> &W,
                     const char *func) {
-    throwErrorIf(!sq::isSymmetric(W), "%s, W is not symmetric.", func);
+    throwErrorIf(W.rows != W.cols, "%s, W is not a sqare matrix.", func);
 }
 
 template<class real>
@@ -28,7 +33,7 @@ template<class real>
 void quboShapeCheck(const sq::MatrixType<real> &W,
                     const sq::MatrixType<real> &x,
                     const char *func) {
-    throwErrorIf(!sq::isSymmetric(W), "%s, W is not symmetric.", func);
+    throwErrorIf(W.rows != W.cols, "%s, W is not a sqare matrix.", func);
     throwErrorIf(W.cols != x.cols, "%s, Shape does not match.", func);
 }
 
@@ -36,7 +41,7 @@ template<class real>
 void isingModelShapeCheck(const sq::VectorType<real> &h,
                           const sq::MatrixType<real> &J, real c,
                           const char *func) {
-    throwErrorIf(!sq::isSymmetric(J), "%s, J is not symmetric.", func);
+    throwErrorIf(J.rows != J.cols, "%s, J is not a sqare matrix.", func);
     sq::SizeType N = J.cols;
     throwErrorIf(h.size != N, "%s, Shape does not match.", func);
 }

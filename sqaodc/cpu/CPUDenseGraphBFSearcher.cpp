@@ -29,8 +29,8 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 
 template<class real>
 void CPUDenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    sqint::quboShapeCheck(W, __func__);
-    throwErrorIf(63 < N_, "N must be smaller than 64, N=%d.", N_);
+    sqint::matrixCheckIfSymmetric(W, __func__);
+    throwErrorIf(63 < W.rows, "N must be smaller than 64, N=%d.", N_);
     clearState(solProblemSet);
 
     N_ = W.rows;

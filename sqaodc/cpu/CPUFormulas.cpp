@@ -1,30 +1,36 @@
 #include "CPUFormulas.h"
+#include <sqaodc/common/internal/ShapeChecker.h>
 
 namespace sqcpu = sqaod_cpu;
-
+namespace sqint = sqaod_internal;
 
 template<class real>
 void sqcpu::CPUDenseGraphFormulas<real>::calculate_E(real *E, const Matrix &W, const Vector &x) {
+    sqint::matrixCheckIfSymmetric(W, __func__);
     Formulas::calculate_E(E, W, x);
 }
 
 template<class real>
 void sqcpu::CPUDenseGraphFormulas<real>::calculate_E(Vector *E, const Matrix &W, const Matrix &x) {
+    sqint::matrixCheckIfSymmetric(W, __func__);
     Formulas::calculate_E(E, W, x);
 }
 
 template<class real> void sqcpu::CPUDenseGraphFormulas<real>::
 calculateHamiltonian(Vector *h, Matrix *J, real *c, const Matrix &W) {
+    sqint::matrixCheckIfSymmetric(W, __func__);
     Formulas::calculateHamiltonian(h, J, c, W);
 }
 
 template<class real> void sqcpu::CPUDenseGraphFormulas<real>::
 calculate_E(real *E, const Vector &h, const Matrix &J, real c, const Vector &q) {
+    sqint::matrixCheckIfSymmetric(J, __func__);
     Formulas::calculate_E(E, h, J, c, q);
 }
 
 template<class real> void sqcpu::CPUDenseGraphFormulas<real>::
 calculate_E(Vector *E, const Vector &h, const Matrix &J, real c, const Matrix &q) {
+    sqint::matrixCheckIfSymmetric(J, __func__);
     Formulas::calculate_E(E, h, J, c, q);
 }
 
