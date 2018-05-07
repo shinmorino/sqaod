@@ -1,6 +1,6 @@
 #include "CPUDenseGraphBFSearcher.h"
 #include "CPUDenseGraphBatchSearch.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include <cmath>
 
 #include <float.h>

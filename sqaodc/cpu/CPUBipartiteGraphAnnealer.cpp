@@ -1,5 +1,5 @@
 #include "CPUBipartiteGraphAnnealer.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
 #include <algorithm>

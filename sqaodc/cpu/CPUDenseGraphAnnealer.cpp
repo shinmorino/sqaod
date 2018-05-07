@@ -1,6 +1,6 @@
 #include "CPUDenseGraphAnnealer.h"
 #include "SharedFormulas.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include <common/Common.h>
 #include <time.h>
 

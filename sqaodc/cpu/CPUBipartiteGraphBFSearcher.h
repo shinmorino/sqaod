@@ -4,7 +4,7 @@
 #include <sqaodc/common/Common.h>
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-#include <sqaodc/common/RangeMap.h>
+#include <sqaodc/common/internal/RangeMap.h>
 #endif
 
 namespace sqaod_cpu {

@@ -1,5 +1,5 @@
 #include "CUDAFormulas.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 
 
 namespace sqint = sqaod_internal;

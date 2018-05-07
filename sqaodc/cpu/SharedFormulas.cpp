@@ -1,5 +1,5 @@
 #include "SharedFormulas.h"
-#include <sqaodc/common/ShapeChecker.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include <iostream>
 
 
