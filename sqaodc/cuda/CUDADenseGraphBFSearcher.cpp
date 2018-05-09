@@ -51,7 +51,7 @@ template<class real>
 void CUDADenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
     throwErrorIf(!deviceAssigned_, "Device not set.");
     sqint::matrixCheckIfSymmetric(W, __func__);
-    throwErrorIf(63 < W.rows, "N must be smaller than 64, N=%d.", N_);
+    throwErrorIf(63 < W.rows, "N must be smaller than 64, N=%d.", W.rows);
 
     N_ = W.rows;
     W_ = W;

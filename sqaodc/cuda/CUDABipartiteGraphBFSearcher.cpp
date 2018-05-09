@@ -58,6 +58,7 @@ void CUDABipartiteGraphBFSearcher<real>::setQUBO(const HostVector &b0, const Hos
     N1_ = b1.size;
     throwErrorIf(63 < N0_, "N0 must be smaller than 64, N0=%d.", N0_);
     throwErrorIf(63 < N1_, "N1 must be smaller than 64, N1=%d.", N1_);
+    
     b0_ = b0;
     b1_ = b1;
     W_ = W;
