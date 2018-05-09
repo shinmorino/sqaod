@@ -6,6 +6,7 @@ from sqaod.common import checkers
 
 def dense_graph_calculate_hamiltonian(W, dtype = None) :
     checkers.dense_graph.qubo(W)
+    checkers.symmetric_matrix(W, 'W');
 
     N = W.shape[0]
     h = np.ndarray((N), dtype=np.float64)
@@ -23,25 +24,37 @@ def dense_graph_calculate_hamiltonian(W, dtype = None) :
 
 
 def dense_graph_calculate_E(W, x, dtype = None) :
+    checkers.dense_graph.qubo(W)
+    checkers.dense_graph.x(W, x)
+    checkers.symmetric_matrix(W, 'W');
+
     if len(x.shape) != 1 :
         if x.shape[0] != 1 :
             raise Exception('Wrong dimention of x')
-        return dense_graph_calculate_E(W, x[0])
-    if len(x.shape) != 1 :
-            raise Exception('Wrong dimention of x')
+        x = x.reshape(-1)
     return np.dot(x, np.matmul(W, x.T))
 
 def dense_graph_batch_calculate_E(W, x, dtype = None) :
+    checkers.dense_graph.qubo(W)
+    checkers.dense_graph.xbatch(W, x)
+    
+    checkers.symmetric_matrix(W, 'W');
     if len(x.shape) == 1:
         x = x.reshape(1, -1)
     return np.sum(x * np.matmul(W, x.T).T, 1)
 
 def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
-    if len(q.shape) != 1 :
-        raise Exception('Wrong dimention of q')
+    checkers.dense_graph.hJc(h, J, c)
+    checkers.dense_graph.q(J, q)
+    checkers.symmetric_matrix(J, 'J');
+    
     return - c - np.dot(h, q) - np.dot(q, np.matmul(J, q.T))
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
+    checkers.dense_graph.hJc(h, J, c)
+    checkers.dense_graph.qbatch(J, q)
+    checkers.symmetric_matrix(J, 'J');
+    
     if len(q.shape) == 1:
         q = q.reshape(1, -1)
     return - c - np.matmul(h, q.T) - np.sum(q.T * np.matmul(J, q.T), 0)
@@ -51,6 +64,7 @@ def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
 # bibartite graph
 
 def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype = None) :
+    checkers.bipartite_graph.qubo(b0, b1, W);
     N0 = W.shape[1]
     N1 = W.shape[0]
     
@@ -67,45 +81,48 @@ def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype = None) :
 
 def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype = None) :
     checkers.bipartite_graph.qubo(b0, b1, W)
-    checkers.bipartite_graph.bits(W, x0, x1)
+    checkers.bipartite_graph.x(W, x0, x1)
     return np.dot(b0, x0) + np.dot(b1, x1) + np.dot(x1, np.matmul(W, x0))
 
 def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
+    if len(x0.shape) == 1 :
+        x0 = x0.reshape(1, -1)
+    if len(x1.shape) == 1 :
+        x1 = x1.reshape(1, -1)
     checkers.bipartite_graph.qubo(b0, b1, W)
-    checkers.bipartite_graph.bits(W, x0, x1)
-    nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
-    nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
+    checkers.bipartite_graph.xbatch(W, x0, x1)
+    
+    nBatch0, nBatch1 = x0.shape[0], x1.shape[0]
     if nBatch0 != nBatch1 :
         raise Exception("Different batch dims between x0 and x1.")
-    if nBatch0 == 1 :
-        x0 = x0.reshape(1, -1)
-        x1 = x1.reshape(1, -1)
     return np.matmul(b0, x0.T) + np.matmul(b1, x1.T) + np.sum(x1 * np.matmul(W, x0.T).T, 1)
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype = None) :
+    if len(x0.shape) == 1 :
+        x0 = x0.reshape(1, -1)
+    if len(x1.shape) == 1 :
+        x1 = x1.reshape(1, -1)
     checkers.bipartite_graph.qubo(b0, b1, W)
-    checkers.bipartite_graph.bits(W, x0, x1)
+    checkers.bipartite_graph.xbatch(W, x0, x1)
     
-    nBatch0 = 1 if len(x0.shape) == 1 else x0.shape[0]
-    nBatch1 = 1 if len(x1.shape) == 1 else x1.shape[0]
-    return np.matmul(b0.T, x0.T).reshape(1, nBatch0) + np.matmul(b1.T, x1.T).reshape(nBatch1, 1) \
+    return np.matmul(b0.T, x0.T).reshape(1, -1) + np.matmul(b1.T, x1.T).reshape(-1, 1) \
         + np.matmul(x1, np.matmul(W, x0.T))
 
 def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
     checkers.bipartite_graph.hJc(h0, h1, J, c)
-    checkers.bipartite_graph.bits(J, q0, q1)
+    checkers.bipartite_graph.q(J, q0, q1)
     
     return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1, np.matmul(J, q0)) - c
 
 def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
+    if len(q0.shape) == 1 :
+        q0 = q0.reshape(1, -1)
+    if len(q1.shape) == 1 :
+        q1 = q1.reshape(1, -1)
     checkers.bipartite_graph.hJc(h0, h1, J, c)
-    checkers.bipartite_graph.bits(J, q0, q1)
-
-    nBatch0 = 1 if len(q0.shape) == 1 else q0.shape[0]
-    nBatch1 = 1 if len(q1.shape) == 1 else q1.shape[0]
+    checkers.bipartite_graph.qbatch(J, q0, q1)
+    
+    nBatch0, nBatch1 = q0.shape[0], q1.shape[0]
     if nBatch0 != nBatch1 :
         raise Exception("Different batch dims between x0 and x1.")
-    if nBatch0 == 1 :
-        q0 = q0.reshape(1, -1)
-        q1 = q1.reshape(1, -1)
     return - np.matmul(h0, q0.T) - np.matmul(h1, q1.T) - np.sum(q1.T * np.matmul(J, q0.T), 0) - c

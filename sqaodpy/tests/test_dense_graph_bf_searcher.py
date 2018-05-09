@@ -34,7 +34,7 @@ class TestDenseGraphBFSearcherBase:
         x = searcher.get_x()
 
     def test_problem_size(self) :
-        N = 100
+        N = 63
         searcher = self.new_searcher(N)
         Nout = searcher.get_problem_size()
         self.assertEqual(N, Nout)
@@ -78,6 +78,11 @@ class TestDenseGraphBFSearcherBase:
 class TestNativeDenseGraphBFSearcherBase(TestDenseGraphBFSearcherBase) :
     def __init__(self, anpkg, dtype) :
         TestDenseGraphBFSearcherBase.__init__(self, anpkg, dtype)
+
+    def test_wrong_problem_size(self) :
+        N = 100
+        with self.assertRaises(RuntimeError):
+            searcher = self.new_searcher(N)
 
     def test_set_algorithm(self) :
         ann = self.new_searcher(10)

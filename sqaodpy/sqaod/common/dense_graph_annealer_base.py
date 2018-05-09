@@ -21,8 +21,10 @@ class DenseGraphAnnealerBase :
         self._cext.seed(self._cobj, seed, self.dtype)
         
     def set_qubo(self, W, optimize = pref.minimize) :
-        checkers.dense_graph.qubo(W)
         W = common.fix_type(W, self.dtype)
+        checkers.dense_graph.qubo(W)
+        checkers.symmetric_matrix(W, 'W')
+        
         self._cext.set_qubo(self._cobj, W, optimize, self.dtype)
         self._optimize = optimize
 
@@ -70,6 +72,8 @@ class DenseGraphAnnealerBase :
 
     def set_hamiltonian(self, h, J, c) :
         checkers.dense_graph.hJc(h, J, c)
+        checkers.symmetric_matrix(J, 'J')
+        
         h, J = common.fix_type([h, J], self.dtype)
         c = self.dtype(c)
         self._cext.set_hamiltonian(self._cobj, h, J, c, self.dtype)
