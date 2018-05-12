@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <atomic>
+#include <xmmintrin.h>
+
 
 namespace sqaod_internal {
 
@@ -84,6 +86,7 @@ private:
                         break;
                     }
                 }
+                _mm_pause();
             }
             if (!run_)
                 break;
