@@ -257,18 +257,21 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int step
     
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
 
-    auto flipWorker = [this, m2, twoDivM, coef, beta](int threadIdx) {
+    auto flipWorker0 = [this, m2, twoDivM, coef, beta](int threadIdx) {
         sq::Random &random = random_[threadIdx];
-        for (int yOffset = 0; yOffset < 2; ++yOffset) {
-            for (int y = yOffset + threadIdx * 2; y < m2; y += 2 * nWorkers_) {
-                tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-            }
-            if ((yOffset == 0) && (threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
-                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
-            }
-        }
+        for (int y = threadIdx * 2; y < m2; y += 2 * nWorkers_)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
+        if ((threadIdx == 0) && ((m_ % 2) != 0)) /* m is odd. */
+            tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
     };
-    parallel_.run(flipWorker);
+    parallel_.run(flipWorker0);
+    
+    auto flipWorker1 = [this, m2, twoDivM, coef, beta](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        for (int y = 1 + threadIdx * 2; y < m2; y += 2 * nWorkers_)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
+    };
+    parallel_.run(flipWorker1);
 }
 
 template<class real>
