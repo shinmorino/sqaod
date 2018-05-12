@@ -260,7 +260,7 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int step
     auto flipWorker = [this, m2, twoDivM, coef, beta](int threadIdx) {
         sq::Random &random = random_[threadIdx];
         for (int yOffset = 0; yOffset < 2; ++yOffset) {
-            for (int y = yOffset; y < m2; y += 2) {
+            for (int y = yOffset + threadIdx * 2; y < m2; y += 2 * nWorkers_) {
                 tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
             }
             if ((threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
