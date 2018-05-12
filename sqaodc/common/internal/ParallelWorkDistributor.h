@@ -25,7 +25,7 @@ public:
         
             for (int idx = 0; idx < nThreads_; ++idx) {
                 new (&threads_[idx]) std::thread([this, idx]{
-                            ParallelWorkDistributor::threadEntry(this, idx + 1); });
+                            ParallelWorkDistributor::threadEntry(this); });
             }
         }
     }
@@ -43,12 +43,13 @@ public:
     }
     
     template<class F>
-    void run(F &f) {
+    void run(F &f, int nWorkers = -1) {
         functor_ = std::move(f);
-        if (nThreads_ != 0) {
-            completionCounter_ = 0;
-            nThreadsToRun_ = nThreads_;
+        if (nWorkers == -1)
+            nWorkers = nThreads_ + 1;
+        if (1 < nWorkers) {
             std::atomic_thread_fence(std::memory_order_release);
+            nThreadsToRun_ = nWorkers - 1;
             
             /* run the 0-th worker in main thread. */
             functor_(0);
@@ -57,6 +58,8 @@ public:
                 if (completionCounter_ == nThreads_)
                     break;
             }
+            completionCounter_ = 0;
+            std::atomic_thread_fence(std::memory_order_release); /* memory barrier */
         }
         else {
             functor_(0);
@@ -66,27 +69,26 @@ public:
 private:
 
     static
-    void threadEntry(ParallelWorkDistributor *_this, int threadIdx) {
-        _this->mainloop(threadIdx);
+    void threadEntry(ParallelWorkDistributor *_this) {
+        _this->mainloop();
     }
     
-    void mainloop(int threadIdx) {
+    void mainloop() {
 
         while (true) {
+            int threadIdx;
             while (run_) {
-                int cur = nThreadsToRun_;
-                if (0 < cur) {
-                    if (nThreadsToRun_.compare_exchange_weak(cur, cur - 1))
+                threadIdx = nThreadsToRun_;
+                if (0 < threadIdx) {
+                    if (nThreadsToRun_.compare_exchange_strong(threadIdx, threadIdx - 1)) {
                         break;
+                    }
                 }
             }
             if (!run_)
                 break;
             
             functor_(threadIdx);
-            
-            std::atomic_thread_fence(std::memory_order_release); /* memory barrier
-                                                                  * FIXME: is it required ? */
             ++completionCounter_;
         }
         
