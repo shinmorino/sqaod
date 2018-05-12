@@ -11,20 +11,14 @@ template<class real>
 CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-#ifdef _OPENMP
-    /* FIXME: needing to apply prefetch with fixes for matrix memory alignment. */
-    sq::log("Currently limiting the number of threads to 2 for better performance.");
-    omp_set_num_threads(2);
-    nMaxThreads_ = omp_get_max_threads();
+    nMaxThreads_ = std::thread::hardware_concurrency();
     sq::log("# max threads: %d", nMaxThreads_);
-#else
-    nMaxThreads_ = 1;
-#endif
     random_ = new sq::Random[nMaxThreads_];
 }
 
 template<class real>
 CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
+    parallel_.joinThreads();
     delete [] random_;
 }
 
@@ -181,6 +175,8 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     matQ_.resize(m_, N_);;
     E_.resize(m_);
     setState(solPrepared);
+
+    parallel_.runThreads(nMaxThreads_);
 }
 
 template<class real>
@@ -246,36 +242,25 @@ void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     clearState(solSolutionAvailable);
 }
 
-
 template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int stepOffset) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
-#ifndef _OPENMP
-    /* single thread */
-    sq::Random &random = random_[0];
-    for (int yOffset = 0; yOffset < 2; ++yOffset) {
-        for (int y = yOffset; y < m_; y += 2)
-            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-    }
-#else
+    
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
-#  pragma omp parallel
-    {
-        sq::Random &random = random_[omp_get_thread_num()];
+
+    auto flipWorker = [this, m2, twoDivM, coef, beta](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
         for (int yOffset = 0; yOffset < 2; ++yOffset) {
-#  pragma omp for
             for (int y = yOffset; y < m2; y += 2) {
                 tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
             }
-#  pragma omp single
-            if ((m_ % 2) != 0) { /* m is odd. */
-                sq::Random &random = random_[0];
+            if ((threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
                 tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
             }
         }
-    }
-#endif
+    };
+    parallel_.run(flipWorker);
 }
 
 template<class real>
