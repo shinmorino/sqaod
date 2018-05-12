@@ -74,7 +74,7 @@ private:
     void syncBits();
     
     sq::Random *random_;
-    int nMaxThreads_;
+    int nWorkers_;
     Vector E_;
     sq::BitSetArray bitsX_;
     sq::BitSetArray bitsQ_;

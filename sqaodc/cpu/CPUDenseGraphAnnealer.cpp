@@ -4,6 +4,9 @@
 #include <common/Common.h>
 #include <time.h>
 
+#include <sched.h>
+
+
 namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
@@ -11,9 +14,14 @@ template<class real>
 CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-    nMaxThreads_ = std::thread::hardware_concurrency();
-    sq::log("# max threads: %d", nMaxThreads_);
-    random_ = new sq::Random[nMaxThreads_];
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    sched_getaffinity(0, sizeof(cpuset), &cpuset);
+    nWorkers_ = CPU_COUNT(&cpuset);
+
+    sq::log("# default # workers: %d", nWorkers_);
+    random_ = new sq::Random[nWorkers_];
 }
 
 template<class real>
@@ -24,7 +32,7 @@ CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::seed(unsigned long long seed) {
-    for (int idx = 0; idx < nMaxThreads_; ++idx)
+    for (int idx = 0; idx < nWorkers_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
 }
@@ -176,7 +184,7 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     E_.resize(m_);
     setState(solPrepared);
 
-    parallel_.runThreads(nMaxThreads_);
+    parallel_.runThreads(nWorkers_);
 }
 
 template<class real>
