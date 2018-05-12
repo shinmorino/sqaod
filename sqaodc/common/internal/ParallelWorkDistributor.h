@@ -85,16 +85,19 @@ private:
             
             functor_(threadIdx);
             
+            std::atomic_thread_fence(std::memory_order_release); /* memory barrier
+                                                                  * FIXME: is it required ? */
             ++completionCounter_;
         }
+        
     }
 
     std::thread *threads_;
     int nThreads_;
-    volatile bool run_;
+    std::atomic_bool run_;
     std::function<void(int)> functor_;
-    std::atomic<int> nThreadsToRun_;
-    std::atomic<int> completionCounter_;
+    std::atomic_int nThreadsToRun_;
+    std::atomic_int completionCounter_;
 };
 
 }
