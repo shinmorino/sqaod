@@ -263,7 +263,7 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int step
             for (int y = yOffset + threadIdx * 2; y < m2; y += 2 * nWorkers_) {
                 tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
             }
-            if ((threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
+            if ((yOffset == 0) && (threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
                 tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
             }
         }
