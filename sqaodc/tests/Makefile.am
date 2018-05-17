@@ -6,8 +6,9 @@ LDADD=
 LIBS=
 LDFLAGS=
 
-check_PROGRAMS=perf test
+check_PROGRAMS=perf test dotval
 perf_SOURCES=perf.cpp
+dotval_SOURCES=dotval.cpp
 test_SOURCES=main.cpp BFSearcherRangeCoverageTest.cpp CPUDenseGraphAnnealerTest.cpp CPUBipartiteGraphAnnealerTest.cpp MinimalTestSuite.cpp 
 
 run: $(check_PROGRAMS)
