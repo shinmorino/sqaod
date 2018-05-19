@@ -68,12 +68,18 @@ public:
         if (mainThreadId_ == std::this_thread::get_id()) {
             std::unique_lock<std::mutex> lock(mutex_);
             compCond_.wait(lock, [this]{ return completionCounter_ == nThreads_; });
+            completionCounter_ = 0;
         }
         else {
             std::unique_lock<std::mutex> lock(mutex_);
             ++completionCounter_;
-            if (completionCounter_ == nThreads_)
+            if (completionCounter_ == nThreads_) {
                 compCond_.notify_all();
+            }
+            else {
+                std::unique_lock<std::mutex> lock(mutex_);
+                compCond_.wait(lock, [this]{ return completionCounter_ == nThreads_; });
+            }
         }
     }
     
