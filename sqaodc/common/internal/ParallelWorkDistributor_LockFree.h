@@ -18,7 +18,7 @@ public:
     
     void initialize(int nWorkers) {
         nThreads_ = nWorkers - 1;
-        mainThreadId_ = pthread_self();
+        mainThreadId_ = std::this_thread::get_id();
         if (0 < nThreads_) {
             threads_ = (std::thread*)malloc(sizeof(std::thread) * nThreads_);
             memset((void*)triggered_, 0, sizeof(int64_t) * (nThreads_ + 1));
@@ -64,6 +64,7 @@ public:
                     break;
             }
             completionCounter_ = 0;
+            std::atomic_thread_fence(std::memory_order_release);
         }
         else {
             functor_(0);
@@ -71,22 +72,20 @@ public:
     }
 
     void barrier() {
-        // std::atomic_thread_fence(std::memory_order_release);
-                
-        if (mainThreadId_ == pthread_self()) {
+        if (mainThreadId_ == std::this_thread::get_id()) {
             while (true) {
                 if (completionCounter_ == nThreads_)
                     break;
+                _mm_pause();
             }
             completionCounter_ = 0;
+            std::atomic_thread_fence(std::memory_order_release);
         }
         else {
             __sync_fetch_and_add(&completionCounter_, 1);
-            std::atomic_thread_fence(std::memory_order_release);
             /* wait for main thread to clear completionCounter. */
-            while (true) {
-                if (completionCounter_ == 0)
-                    break;
+            while (completionCounter_ != 0) {
+                _mm_pause();
             }
         }
     }
@@ -118,7 +117,7 @@ private:
 
     std::thread *threads_;
     int nThreads_;
-    pthread_t mainThreadId_;
+    std::thread::id mainThreadId_;
     volatile bool run_;
     std::function<void(int)> functor_;
     volatile int64_t triggered_[32];
