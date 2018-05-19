@@ -13,17 +13,14 @@ template<class real>
 CPUBipartiteGraphBFSearcher<real>::CPUBipartiteGraphBFSearcher() {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
-#ifdef _OPENMP
-    nMaxThreads_ = omp_get_max_threads();
+    nMaxThreads_ = sq::getNumActiveCores();
     sq::log("# max threads: %d", nMaxThreads_);
-#else
-    nMaxThreads_ = 1;
-#endif
     searchers_ = new BatchSearcher[nMaxThreads_];
 }
 
 template<class real>
 CPUBipartiteGraphBFSearcher<real>::~CPUBipartiteGraphBFSearcher() {
+    parallel_.finalize();
     delete [] searchers_;
     searchers_ = NULL;
 }
@@ -94,6 +91,8 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
     }
     setState(solPrepared);
 
+    parallel_.initialize(nMaxThreads_);
+    
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
     sq::SizeType nX0Spans = sq::SizeType((x0max_ + tileSize0_ - 1) / tileSize0_);
     rangeMapArray_.setSize(nX0Spans);
@@ -162,8 +161,6 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curX0, sq:
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
     
-#ifdef _OPENMP
-
     sq::PackedBitSetArray batch0begin(nMaxThreads_), batch0end(nMaxThreads_);
     sq::PackedBitSetArray batch1begin(nMaxThreads_), batch1end(nMaxThreads_);
 
@@ -194,40 +191,20 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curX0, sq:
         rangeMapArray_[batchIdx].insert(batch1begin[idx], batch1end[idx]);
     }
 #endif
-
     
-#pragma omp parallel
-    {
-        sq::SizeType threadNum = omp_get_thread_num();
-        sq::PackedBitSet b0b = batch0begin[threadNum];
-        sq::PackedBitSet b0e = batch0end[threadNum];
-        sq::PackedBitSet b1b = batch1begin[threadNum];
-        sq::PackedBitSet b1e = batch1end[threadNum];
+    auto searchWorker = [=, &batch0begin, &batch0end, &batch1begin, &batch1end](int threadIdx) {
+        sq::PackedBitSet b0b = batch0begin[threadIdx];
+        sq::PackedBitSet b0e = batch0end[threadIdx];
+        sq::PackedBitSet b1b = batch1begin[threadIdx];
+        sq::PackedBitSet b1e = batch1end[threadIdx];
         if ((b0b < b0e) && (b1b < b1e))
-            searchers_[threadNum].searchRange(b0b, b0e, b1b, b1e);
-    }
+            searchers_[threadIdx].searchRange(b0b, b0e, b1b, b1e);
+    };
+    parallel_.run(searchWorker);
 
     /* move to next batch */
     x0_ = batch0begin[nMaxThreads_ - 1];
     x1_ = batch1end[nMaxThreads_ - 1];
-
-#else
-    sq::PackedBitSet batch0begin = x0_;
-    sq::PackedBitSet batch0end = std::min(x0_ + tileSize0_, x0max_);
-    sq::PackedBitSet batch1begin = x1_;
-    sq::PackedBitSet batch1end = std::min(x1_ + tileSize1_, x1max_);
-#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-    if ((batch0begin < batch0end) && (batch1begin < batch1end)) {
-        sq::SizeType batchIdx = sq::SizeType(batch0begin / tileSize0_);
-        rangeMapArray_[batchIdx].insert(batch1begin, batch1end);
-    }
-#endif
-
-    if ((batch0begin < batch0end) && (batch1begin < batch1end))
-        searchers_[0].searchRange(batch0begin, batch0end, batch1begin, batch1end);
-
-    x1_ = batch1end;
-#endif
 
     if (x1_ == x1max_) {
         x1_ = 0;

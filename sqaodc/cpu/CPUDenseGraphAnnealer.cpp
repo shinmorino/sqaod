@@ -4,8 +4,6 @@
 #include <common/Common.h>
 #include <time.h>
 
-#include <sched.h>
-
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
@@ -18,7 +16,7 @@ CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     sched_getaffinity(0, sizeof(cpuset), &cpuset);
-    nWorkers_ = CPU_COUNT(&cpuset);
+    nWorkers_ = sq::getNumActiveCores();
 
     sq::log("# default # workers: %d", nWorkers_);
     random_ = new sq::Random[nWorkers_];
@@ -26,7 +24,7 @@ CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
 
 template<class real>
 CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
-    parallel_.joinThreads();
+    parallel_.finalize();
     delete [] random_;
 }
 
@@ -182,9 +180,10 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     bitsQ_.reserve(m_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
-    setState(solPrepared);
 
-    parallel_.runThreads(nWorkers_);
+    parallel_.initialize(nWorkers_);
+
+    setState(solPrepared);
 }
 
 template<class real>

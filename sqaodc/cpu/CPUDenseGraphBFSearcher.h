@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
 #include <sqaodc/common/internal/RangeMap.h>
@@ -55,8 +56,11 @@ private:
 
     int nMaxThreads_;
     BatchSearcher *searchers_;
+    sqaod_internal::ParallelWorkDistributor parallel_;
 
+    
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    std::mutex mutex_;
     sqaod_internal::RangeMap rangeMap_;
 #endif
     

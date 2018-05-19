@@ -3,6 +3,7 @@
 
 #include <sqaodc/common/Common.h>
 #include <sqaodc/common/EigenBridge.h>
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 
 namespace sqaod_cpu {
@@ -88,7 +89,9 @@ private:
     EigenMatrix matQ0_, matQ1_;
     sq::BitSetPairArray bitsPairX_;
     sq::BitSetPairArray bitsPairQ_;
-
+    sqaod_internal::ParallelWorkDistributor parallel_;
+    
+    
     typedef CPUBipartiteGraphAnnealer<real> This;
     typedef sq::BipartiteGraphAnnealer<real> Base;
     using Base::om_;
