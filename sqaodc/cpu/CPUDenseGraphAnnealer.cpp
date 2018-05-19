@@ -3,6 +3,7 @@
 #include <sqaodc/common/internal/ShapeChecker.h>
 #include <common/Common.h>
 #include <time.h>
+#include "Dot_SIMD.h"
 
 
 namespace sqint = sqaod_internal;
@@ -224,7 +225,13 @@ void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorTyp
     int m = matQ.rows();
     int x = random.randInt(N);
     real qyx = matQ(y, x);
+#if defined(__AVX2__)
+    real sum = dot_avx2(J.row(x).data(), matQ.row(y).data(), N);
+#elif defined(__SSE2__)
+    real sum = dot_sse2(J.row(x).data(), matQ.row(y).data(), N);
+#else
     real sum = J.row(x).dot(matQ.row(y));
+#endif
     real dE = twoDivM * qyx * (h(x) + sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;

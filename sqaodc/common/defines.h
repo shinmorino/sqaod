@@ -5,7 +5,7 @@
 
 
 enum {
-    SQAODC_SIMD_ALIGNMENT = 32, /* FIXME: assuming AVX(2) */
+    SQAODC_SIMD_ALIGNMENT = 64, /* L1 cache line size for CPUs supporting SSE */
 };
 
 
