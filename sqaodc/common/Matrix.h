@@ -3,6 +3,7 @@
 #include <sqaodc/common/defines.h>
 #include <sqaodc/common/types.h>
 #include <sqaodc/common/Array.h>
+#include <sqaodc/common/os_dependent.h>
 
 namespace sqaod {
 
