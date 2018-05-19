@@ -83,7 +83,7 @@ private:
     EigenMatrix J_;
     real c_;
 
-    sqaod_internal::ParallelWorkDistributor parallel_;
+    sqaod_internal::ParallelWorkDistributor_LockFree parallel_;
     
     typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
