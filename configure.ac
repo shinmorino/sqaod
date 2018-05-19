@@ -112,7 +112,7 @@ case z${SIMD_OPT} in
 esac
 AC_SUBST([SIMD_POSTFIX], "-${SIMD_OPT}")
 
-CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -fopenmp"
+CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -pthread"
 AC_SUBST([CFLAGS], $CFLAGS)
 
 CXXFLAGS="-std=c++11 $CFLAGS -I\${abs_top_srcdir}/3rdparty/eigen"

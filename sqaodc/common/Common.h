@@ -6,6 +6,7 @@
 #include <sqaodc/common/Preference.h>
 #include <sqaodc/common/Solver.h>
 #include <sqaodc/common/Formulas.h>
+#include <sqaodc/common/os_dependent.h>
 
 namespace sqaod {
 

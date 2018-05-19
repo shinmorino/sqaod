@@ -12,17 +12,14 @@ using namespace sqaod_cpu;
 template<class real>
 CPUDenseGraphBFSearcher<real>::CPUDenseGraphBFSearcher() {
     tileSize_ = 1024;
-#ifdef _OPENMP
-    nMaxThreads_ = omp_get_max_threads();
+    nMaxThreads_ = sq::getNumActiveCores();
     sq::log("# max threads: %d", nMaxThreads_);
-#else
-    nMaxThreads_ = 1;
-#endif
     searchers_ = new BatchSearcher[nMaxThreads_];
 }
 
 template<class real>
 CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
+    parallel_.finalize();
     delete [] searchers_;
     searchers_ = NULL;
 }
@@ -77,6 +74,9 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
         searchers_[idx].setQUBO(W_, tileSize_);
         searchers_[idx].initSearch();
     }
+
+    parallel_.initialize(nMaxThreads_);
+
     setState(solPrepared);
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
@@ -139,40 +139,25 @@ template<class real>
 bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
-#ifdef _OPENMP
-#pragma omp parallel
-    {
-        sq::SizeType threadNum = omp_get_thread_num();
-        sq::PackedBitSet batchBegin = x_ + tileSize_ * threadNum;
-        sq::PackedBitSet batchEnd = x_ + tileSize_ * (threadNum + 1);
+
+    auto searchWorker = [=](int threadIdx) {
+        sq::PackedBitSet batchBegin = x_ + tileSize_ * threadIdx;
+        sq::PackedBitSet batchEnd = x_ + tileSize_ * (threadIdx + 1);
         batchBegin = std::min(std::max(0ULL, batchBegin), xMax_);
         batchEnd = std::min(std::max(0ULL, batchEnd), xMax_);
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-#pragma omp critical
         {
+            std::unique_lock<std::mutex> lock(mutex_);
             rangeMap_.insert(batchBegin, batchEnd);
         }
 #endif
-
         if (batchBegin < batchEnd)
-            searchers_[threadNum].searchRange(batchBegin, batchEnd);
-    }
+            searchers_[threadIdx].searchRange(batchBegin, batchEnd);
+    };
+    parallel_.run(searchWorker);
+    
     x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nMaxThreads_), xMax_);
-#else
-    sq::PackedBitSet batchBegin = x_;
-    sq::PackedBitSet batchEnd = std::min(x_ + tileSize_, xMax_); ;
-
-#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-    if (batchBegin < batchEnd)
-        rangeMap_.insert(batchBegin, batchEnd);
-#endif
-
-    if (batchBegin < batchEnd)
-        searchers_[0].searchRange(batchBegin, batchEnd);
-
-    x_ = batchEnd;
-#endif
     if (curXEnd != NULL)
         *curXEnd = x_;
     return (xMax_ == x_);

@@ -3,6 +3,7 @@
 
 #include <sqaodc/common/Common.h>
 #include <sqaodc/common/EigenBridge.h>
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 namespace sqaod_cpu {
 
@@ -73,7 +74,7 @@ private:
     void syncBits();
     
     sq::Random *random_;
-    int nMaxThreads_;
+    int nWorkers_;
     Vector E_;
     sq::BitSetArray bitsX_;
     sq::BitSetArray bitsQ_;
@@ -82,6 +83,8 @@ private:
     EigenMatrix J_;
     real c_;
 
+    sqaod_internal::ParallelWorkDistributor_LockFree parallel_;
+    
     typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
     using Base::om_;

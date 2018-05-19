@@ -5,6 +5,7 @@
 #include <time.h>
 #include "Dot_SIMD.h"
 
+
 namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
@@ -12,26 +13,25 @@ template<class real>
 CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-#ifdef _OPENMP
-    /* FIXME: needing to apply prefetch with fixes for matrix memory alignment. */
-    sq::log("Currently limiting the number of threads to 2 for better performance.");
-    omp_set_num_threads(2);
-    nMaxThreads_ = omp_get_max_threads();
-    sq::log("# max threads: %d", nMaxThreads_);
-#else
-    nMaxThreads_ = 1;
-#endif
-    random_ = new sq::Random[nMaxThreads_];
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    sched_getaffinity(0, sizeof(cpuset), &cpuset);
+    nWorkers_ = sq::getNumActiveCores();
+
+    sq::log("# default # workers: %d", nWorkers_);
+    random_ = new sq::Random[nWorkers_];
 }
 
 template<class real>
 CPUDenseGraphAnnealer<real>::~CPUDenseGraphAnnealer() {
+    parallel_.finalize();
     delete [] random_;
 }
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::seed(unsigned long long seed) {
-    for (int idx = 0; idx < nMaxThreads_; ++idx)
+    for (int idx = 0; idx < nWorkers_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
 }
@@ -181,6 +181,9 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     bitsQ_.reserve(m_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
+
+    parallel_.initialize(nWorkers_);
+
     setState(solPrepared);
 }
 
@@ -253,36 +256,28 @@ void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     clearState(solSolutionAvailable);
 }
 
-
 template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int stepOffset) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
-#ifndef _OPENMP
-    /* single thread */
-    sq::Random &random = random_[0];
-    for (int yOffset = 0; yOffset < 2; ++yOffset) {
-        for (int y = yOffset; y < m_; y += 2)
-            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-    }
-#else
+    
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
-#  pragma omp parallel
-    {
-        sq::Random &random = random_[omp_get_thread_num()];
-        for (int yOffset = 0; yOffset < 2; ++yOffset) {
-#  pragma omp for
-            for (int y = yOffset; y < m2; y += 2) {
-                tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-            }
-#  pragma omp single
-            if ((m_ % 2) != 0) { /* m is odd. */
-                sq::Random &random = random_[0];
-                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
-            }
-        }
-    }
-#endif
+
+    auto flipWorker0 = [this, m2, twoDivM, coef, beta](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        for (int y = threadIdx * 2; y < m2; y += 2 * nWorkers_)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
+        if ((threadIdx == 0) && ((m_ % 2) != 0)) /* m is odd. */
+            tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
+    };
+    parallel_.run(flipWorker0);
+    
+    auto flipWorker1 = [this, m2, twoDivM, coef, beta](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        for (int y = 1 + threadIdx * 2; y < m2; y += 2 * nWorkers_)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
+    };
+    parallel_.run(flipWorker1);
 }
 
 template<class real>
