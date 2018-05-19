@@ -3,7 +3,7 @@
 
 namespace sqaod_internal {
 
-// typedef ParallelWorkDistributor_cpp ParallelWorkDistributor;
-typedef ParallelWorkDistributor_LockFree ParallelWorkDistributor;
+typedef ParallelWorkDistributor_cpp ParallelWorkDistributor;
+//typedef ParallelWorkDistributor_LockFree ParallelWorkDistributor;
     
 }
