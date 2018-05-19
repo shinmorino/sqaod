@@ -106,13 +106,11 @@ if test x$prefix = xNONE ; then
   prefix=${ac_default_prefix}
 fi
 
-if test z${SIMD_OPT} != z
-then
-  CFLAGS="$CFLAGS -m${SIMD_OPT}"
-  AC_SUBST([SIMD_POSTFIX], "-${SIMD_OPT}")
-else
-  CFLAGS="$CFLAGS -msse2"
-fi  
+case z${SIMD_OPT} in
+     zavx2) CFLAGS="$CFLAGS -mavx2 -mfma" ;;
+     *)    CFLAGS="$CFLAGS -m${SIMD_OPT}" ;;
+esac
+AC_SUBST([SIMD_POSTFIX], "-${SIMD_OPT}")
 
 CFLAGS="$CFLAGS -Wall -ggdb -Wno-format-security -I\${abs_top_srcdir} -fopenmp"
 AC_SUBST([CFLAGS], $CFLAGS)
