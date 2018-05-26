@@ -13,9 +13,6 @@ CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
-    /* FIXME: needing to apply prefetch with fixes for matrix memory alignment. */
-    sq::log("Currently limiting the number of threads to 2 for better performance.");
-    omp_set_num_threads(2);
     nMaxThreads_ = omp_get_max_threads();
     sq::log("# max threads: %d", nMaxThreads_);
 #else
