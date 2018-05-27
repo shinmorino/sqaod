@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.h" />
     <ClInclude Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.h" />
     <ClInclude Include="..\..\sqaodc\cpu\CPUFormulas.h" />
+    <ClInclude Include="..\..\sqaodc\cpu\Dot_SIMD.h" />
     <ClInclude Include="..\..\sqaodc\cpu\SharedFormulas.h" />
     <ClInclude Include="..\..\sqaodc\cuda\api.h" />
     <ClInclude Include="..\..\sqaodc\cuda\cub_iterator.cuh" />
@@ -67,6 +68,7 @@
     <ClCompile Include="..\..\sqaodc\common\Common.cpp" />
     <ClCompile Include="..\..\sqaodc\common\defines.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Matrix.cpp" />
+    <ClCompile Include="..\..\sqaodc\common\os_dependent_windows.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Preference.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Random.cpp" />
     <ClCompile Include="..\..\sqaodc\common\Solver.cpp" />
@@ -78,6 +80,7 @@
     <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBatchSearch.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUDenseGraphBFSearcher.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\CPUFormulas.cpp" />
+    <ClCompile Include="..\..\sqaodc\cpu\Dot_SIMD.cpp" />
     <ClCompile Include="..\..\sqaodc\cpu\SharedFormulas.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\api_cuda.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.cpp" />
