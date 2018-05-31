@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include <cuda/DeviceSegmentedSum.cuh>
+#include <cuda/DeviceBatchedDot.cuh>
 
 using namespace sqaod_cuda;
 
@@ -258,10 +259,10 @@ sumRowwise(DeviceVector *d_x, real alpha, const DeviceMatrix &d_A) {
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
-    typedef DeviceSegmentedSumTypeImpl<real, const real*, OpOutPtr<MulOutOp, real>, Linear> Sum;
+    typedef DeviceBatchedSum<real, OpOutPtr<MulOutOp, real>> Sum;
     Sum &segSum = static_cast<Sum&>(*segmentedSum_);
     segSum.configure(d_A.cols, d_A.rows, true);
-    segSum(d_A.d_data, outPtr, Linear(d_A.stride, 0));
+    segSum(d_A, outPtr);
 #endif
 }
 
@@ -296,9 +297,9 @@ template<class real> void DeviceMathKernelsType<real>::
 dotRowwise(DeviceVector *d_z, real alpha, const DeviceMatrix &d_X, const DeviceMatrix &d_Y) {
     throwErrorIf(d_X.stride != d_Y.stride, "Strides for d_x and d_y must be same."); 
 
+#if 0
     InDotPtr<real> inPtr(d_X.d_data, d_Y.d_data);
     auto outPtr = MulOutPtr<real>(d_z->d_data, alpha);
-#if 0
     InDotPtr<real> inPtr(d_X.d_data, d_y.d_data);
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
@@ -312,10 +313,12 @@ dotRowwise(DeviceVector *d_z, real alpha, const DeviceMatrix &d_X, const DeviceM
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, OpOutPtr<MulOutOp, real>, Linear> Dot;
-    Dot &segDot = static_cast<Dot&>(*segmentedDot_);
-    segDot.configure(d_X.cols, d_X.rows, true);
-    segDot(inPtr, outPtr, Linear(d_X.stride, 0));
+    typedef DeviceBatchedDot<real, OpOutPtr<MulOutOp, real>> Dot;
+    Dot &batchedDot = static_cast<Dot&>(*segmentedDot_);
+    batchedDot.configure(d_X.cols, d_X.rows, true);
+
+    auto outPtr = MulOutPtr<real>(d_z->d_data, alpha);
+    batchedDot(d_X, d_Y, outPtr);
 #endif
 }
 
@@ -422,8 +425,8 @@ assignStream(DeviceStream *devStream) {
     if (devStream_ != NULL)
         stream_ = devStream_->getCudaStream();
 
-    typedef DeviceSegmentedSumTypeImpl<real, const real *, OpOutPtr<MulOutOp, real>, Linear> Sum;
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, OpOutPtr<MulOutOp, real>, Linear> Dot;
+    typedef DeviceBatchedSum<real, OpOutPtr<MulOutOp, real>> Sum;
+    typedef DeviceBatchedDot<real, OpOutPtr<MulOutOp, real>> Dot;
     segmentedSum_ = new Sum(devStream_);
     segmentedDot_ = new Dot(devStream_);
 }

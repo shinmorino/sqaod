@@ -4,12 +4,73 @@
 #include <cub/cub.cuh>
 #include <cuda/cub_iterator.cuh>
 #include <cuda/cudafuncs.h>
-#include <cuda/DeviceSegmentedSum.h>
 #include <map>
 
 namespace sqaod_cuda {
 
 namespace sq = sqaod;
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen>
+struct DeviceSegmentedSumType : sq::NullBase {
+    typedef DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen> SelfType;
+
+    DeviceSegmentedSumType(Device &device, DeviceStream *devStream);
+
+    DeviceSegmentedSumType(DeviceStream *devStream);
+
+    virtual ~DeviceSegmentedSumType();
+
+    void configure(sq::SizeType segLen, sq::SizeType nSegments, bool useTempStorage);
+
+    void operator()(InIt in, OutIt out, OffIt segOffset);
+    
+    /* 
+     * private members
+     */
+    
+    typedef void (SelfType::*SumMethod)(InIt in, OutIt out, OffIt segOffset);
+    
+    template<int ITEMS_PER_THREAD> void
+    segmentedSum_32(InIt in, OutIt out, OffIt segOffset);
+
+    template<int ITEMS_PER_THREAD> void
+    segmentedSum_64(InIt in, OutIt out, OffIt segOffset);
+
+    template<int BLOCK_DIM, int ITEMS_PER_THREAD> void
+    segmentedSum_Block(InIt in, OutIt out, OffIt segOffset);
+
+    template<int N_REDUCE_THREADS, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG> void
+    segmentedSum_2step(InIt in, OutIt out, OffIt segOffset);
+
+    void reg(int base, int nItems, SumMethod method) {
+        methodMap_[base * nItems] = method;
+    }
+
+    void registerMethods();
+    
+    sq::SizeType segLen_;
+    sq::SizeType nSegments_;
+
+    V *d_tempStorage_;
+    V *d_tempStoragePreAlloc_;
+    sq::SizeType tempStorageSize_;
+    DeviceStream *devStream_;
+    DeviceObjectAllocator *devAlloc_;
+
+    typedef std::map<sq::SizeType, SumMethod> MethodMap;
+    MethodMap methodMap_;
+    SumMethod sumMethod_;
+    cudaStream_t stream_;
+};
+
+
+
+/*
+ * Kernels
+ */
+
+        
+enum { WARP_SIZE = 32 };
 
 
 template<int ITEMS, class V>
@@ -39,17 +100,14 @@ V sumArray(const V *v) {
     return V();
 }
 
-        
-enum { WARP_SIZE = 32 };
-
 /* size <= 32 */
-template<int BLOCK_DIM, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG, class InputIterator, class OutputIterator, class OffsetIterator>
+template<int BLOCK_DIM, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG, class InIt, class OutIt, class OffIt>
 __global__ static void
-segmentedSumKernel_32(InputIterator in, OutputIterator out,
-                      OffsetIterator segOffset, sq::SizeType segLen, sq::SizeType nSegments) {
+segmentedSumKernel_32(InIt in, OutIt out,
+                      OffIt segOffset, sq::SizeType segLen, sq::SizeType nSegments) {
 
-    typedef typename std::iterator_traits<OutputIterator>::value_type V;
-    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+    typedef typename std::iterator_traits<OutIt>::value_type V;
+    typedef typename std::iterator_traits<OffIt>::value_type OffsetT;
 
     int iSubSegment = BLOCK_DIM / WARP_SIZE * blockIdx.x + threadIdx.x / WARP_SIZE;
     int iSegment = iSubSegment / OUTPUT_PER_SEG;
@@ -81,20 +139,20 @@ segmentedSumKernel_32(InputIterator in, OutputIterator out,
 }
 
 
-template<int BLOCK_DIM, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG, class InputIterator, class OutputIterator, class OffsetIterator>
+template<int BLOCK_DIM, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG,
+         class InIt, class OutIt, class OffIt>
 __global__ static void
-segmentedSumKernel_64(InputIterator in, OutputIterator out, OffsetIterator segOffset, sq::SizeType segLen,
+segmentedSumKernel_64(InIt in, OutIt out, OffIt segOffset, sq::SizeType segLen,
                       sq::SizeType nSegments) {
 
     enum {
         N_REDUCE_THREADS = 64,
         WARPS_IN_BLOCK = BLOCK_DIM / WARP_SIZE,
         INPUT_STRIDE = N_REDUCE_THREADS * OUTPUT_PER_SEG,
-
     };
 
-    typedef typename std::iterator_traits<OutputIterator>::value_type V;
-    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+    typedef typename std::iterator_traits<OutIt>::value_type V;
+    typedef typename std::iterator_traits<OffIt>::value_type OffsetT;
 
     int iSubSegment = (BLOCK_DIM / N_REDUCE_THREADS) * blockIdx.x + (threadIdx.x / N_REDUCE_THREADS);
     int iSegment = iSubSegment / OUTPUT_PER_SEG;
@@ -133,12 +191,12 @@ segmentedSumKernel_64(InputIterator in, OutputIterator out, OffsetIterator segOf
 }
 
 
-template<int BLOCK_DIM, int ITEMS_PER_THREAD, class InputIterator, class OutputIterator, class OffsetIterator>
+template<int BLOCK_DIM, int ITEMS_PER_THREAD, class InIt, class OutIt, class OffIt>
 __global__ static void
-segmentedSumKernel_Block(InputIterator in, OutputIterator out,
-                         OffsetIterator segOffset, int segLen, sq::SizeType nSegments) {
-    typedef typename std::iterator_traits<OutputIterator>::value_type V;
-    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+segmentedSumKernel_Block(InIt in, OutIt out,
+                         OffIt segOffset, int segLen, sq::SizeType nSegments) {
+    typedef typename std::iterator_traits<OutIt>::value_type V;
+    typedef typename std::iterator_traits<OffIt>::value_type OffsetT;
 
     int iSegment = blockIdx.x;
     int iSegIdx = threadIdx.x;
@@ -166,12 +224,12 @@ segmentedSumKernel_Block(InputIterator in, OutputIterator out,
 
 
 template<int BLOCK_DIM, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG, 
-         class InputIterator, class OutputIterator, class OffsetIterator>
+         class InIt, class OutIt, class OffIt>
 __global__ static void
-segmentedSumKernel_Striped(InputIterator in, OutputIterator out,
-                           OffsetIterator segOffset, int segLen, sq::SizeType nSegments) {
-    typedef typename std::iterator_traits<OutputIterator>::value_type V;
-    typedef typename std::iterator_traits<OffsetIterator>::value_type OffsetT;
+segmentedSumKernel_Striped(InIt in, OutIt out,
+                           OffIt segOffset, int segLen, sq::SizeType nSegments) {
+    typedef typename std::iterator_traits<OutIt>::value_type V;
+    typedef typename std::iterator_traits<OffIt>::value_type OffsetT;
 
     int iSegment = blockIdx.x / OUTPUT_PER_SEG;
     int iSegBlock = blockIdx.x % OUTPUT_PER_SEG;
@@ -203,131 +261,189 @@ segmentedSumKernel_Striped(InputIterator in, OutputIterator out,
 }
 
 
-template<class V, class InputIterator, class OutputIterator, class OffsetIterator>
-struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
+/*
+ * host kernel callers
+ */
 
-    typedef DeviceSegmentedSumTypeImpl<V, InputIterator, OutputIterator, OffsetIterator> SelfType;
-    typedef DeviceSegmentedSumType<V> Base;
+template<class V, class InIt, class OutIt, class OffIt, int vecLen>
+template<int ITEMS_PER_THREAD> inline void
+DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+segmentedSum_32(InIt in, OutIt out, OffIt segOffset) {
 
-    using Base::d_tempStoragePreAlloc_;
-    using Base::tempStorageSize_;
-    using Base::d_tempStorage_;
-    using Base::devAlloc_;
-    using Base::devStream_;
-    using Base::segLen_;
-    using Base::nSegments_;
-
-    DeviceSegmentedSumTypeImpl(Device &device, DeviceStream *devStream = NULL) : Base(device, devStream) {
-        registerMethods();
-        stream_ = devStream_->getCudaStream();
-    }
-
-    DeviceSegmentedSumTypeImpl(DeviceStream *devStream) : Base(devStream) {
-        registerMethods();
-        stream_ = devStream_->getCudaStream();
-    }
-
-    typedef void (SelfType::*SumMethod)(InputIterator in, OutputIterator out, OffsetIterator segOffset);
-
-    void operator()(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
-        if (d_tempStoragePreAlloc_ != NULL)
-            d_tempStorage_ = d_tempStoragePreAlloc_;
-        else if (tempStorageSize_ != 0)
-            devStream_->allocate(&d_tempStorage_, tempStorageSize_);
-        (this->*sumMethod_)(in, out, segOffset);
-    }
+    enum { BLOCK_DIM = 128 };
+    
+    dim3 blockDim(BLOCK_DIM);
+    dim3 gridDim(divru(nSegments_, 4));
+#if 0
+    segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1>
+            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+    void *func = (void*)segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1, InIt, OutIt, OffIt>;
+    void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+    cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
+    DEBUG_SYNC;
+}
 
 
-    template<int ITEMS_PER_THREAD> void
-    segmentedSum_32(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
+template<class V, class InIt, class OutIt, class OffIt, int vecLen>
+template<int ITEMS_PER_THREAD> inline
+void DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+segmentedSum_64(InIt in, OutIt out, OffIt segOffset) {
+    enum { BLOCK_DIM = 128 };
+    
+    dim3 blockDim(BLOCK_DIM);
+    dim3 gridDim(divru(nSegments_, 2));
+#if 0
+    segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1>
+            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+    void *func = (void*)segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1, InIt, OutIt, OffIt>;
+    void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+    cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
+    DEBUG_SYNC;
+}
 
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen>
+template<int BLOCK_DIM, int ITEMS_PER_THREAD> inline
+void DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+segmentedSum_Block(InIt in, OutIt out, OffIt segOffset) {
+    dim3 blockDim(BLOCK_DIM);
+    dim3 gridDim(nSegments_);
+#if 0
+    segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD>
+            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
+#else
+    void *func = (void*)segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD, InIt, OutIt, OffIt>;
+    void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
+    cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
+#endif
+    DEBUG_SYNC;
+}
+
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen>
+template<int N_REDUCE_THREADS, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG> inline
+void DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+segmentedSum_2step(InIt in, OutIt out, OffIt segOffset) {
+    if (N_REDUCE_THREADS == 32) {
         enum { BLOCK_DIM = 128 };
-
         dim3 blockDim(BLOCK_DIM);
-        dim3 gridDim(divru(nSegments_, 4));
-#if 0
-        segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1>
-            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
-#else
-        void *func = (void*)segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, 1, InputIterator, OutputIterator, OffsetIterator>;
-        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
-        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
-#endif
+        dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 4));
+        segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
+                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
         DEBUG_SYNC;
     }
-
-    template<int ITEMS_PER_THREAD> void
-    segmentedSum_64(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
+    else if (N_REDUCE_THREADS == 64) {
         enum { BLOCK_DIM = 128 };
-
         dim3 blockDim(BLOCK_DIM);
-        dim3 gridDim(divru(nSegments_, 2));
-#if 0
-        segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1>
-            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
-#else
-        void *func = (void*)segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, 1, InputIterator, OutputIterator, OffsetIterator>;
-        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
-        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
-#endif
+        dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 2));
+        segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
+                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
         DEBUG_SYNC;
     }
-
-    template<int BLOCK_DIM, int ITEMS_PER_THREAD> void
-    segmentedSum_Block(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
+    else {
+        enum { BLOCK_DIM = N_REDUCE_THREADS };
         dim3 blockDim(BLOCK_DIM);
-        dim3 gridDim(nSegments_);
-#if 0
-        segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD>
-            <<<gridDim, blockDim, 0, stream_>>>(in, out, segOffset, segLen_, nSegments_);
-#else
-        void *func = (void*)segmentedSumKernel_Block<BLOCK_DIM, ITEMS_PER_THREAD, InputIterator, OutputIterator, OffsetIterator>;
-        void *args[] = {(void*)&in, (void*)&out, (void*)&segOffset, (void*)&segLen_, (void*)&nSegments_, NULL};
-        cudaLaunchKernel(func, gridDim, blockDim, args, 0, stream_);
-#endif
+        dim3 gridDim(nSegments_ * OUTPUT_PER_SEG);
+        segmentedSumKernel_Striped<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
+                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
         DEBUG_SYNC;
     }
+    
+    enum { BLOCK_DIM_32 = 128 };
+    dim3 blockDim(BLOCK_DIM_32);
+    dim3 gridDim(divru(nSegments_, BLOCK_DIM_32 / WARP_SIZE));
+    segmentedSumKernel_32<BLOCK_DIM_32, 1, 1>
+            <<<gridDim, blockDim, 0, stream_>>>(d_tempStorage_, out, Linear(OUTPUT_PER_SEG), OUTPUT_PER_SEG, nSegments_);
+    DEBUG_SYNC;
+}
 
-    template<int N_REDUCE_THREADS, int ITEMS_PER_THREAD, int OUTPUT_PER_SEG> void
-    segmentedSum_2step(InputIterator in, OutputIterator out, OffsetIterator segOffset) {
-        if (N_REDUCE_THREADS == 32) {
-            enum { BLOCK_DIM = 128 };
-            dim3 blockDim(BLOCK_DIM);
-            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 4));
-            segmentedSumKernel_32<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
-                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
-            DEBUG_SYNC;
-        }
-        else if (N_REDUCE_THREADS == 64) {
-            enum { BLOCK_DIM = 128 };
-            dim3 blockDim(BLOCK_DIM);
-            dim3 gridDim(divru(nSegments_ * OUTPUT_PER_SEG, 2));
-            segmentedSumKernel_64<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
-                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
-            DEBUG_SYNC;
-        }
-        else {
-            enum { BLOCK_DIM = N_REDUCE_THREADS };
-            dim3 blockDim(BLOCK_DIM);
-            dim3 gridDim(nSegments_ * OUTPUT_PER_SEG);
-            segmentedSumKernel_Striped<BLOCK_DIM, ITEMS_PER_THREAD, OUTPUT_PER_SEG>
-                <<<gridDim, blockDim, 0, stream_>>>(in, d_tempStorage_, segOffset, segLen_, nSegments_);
-            DEBUG_SYNC;
-        }
 
-        enum { BLOCK_DIM_32 = 128 };
-        dim3 blockDim(BLOCK_DIM_32);
-        dim3 gridDim(divru(nSegments_, BLOCK_DIM_32 / WARP_SIZE));
-        segmentedSumKernel_32<BLOCK_DIM_32, 1, 1>
-            <<<gridDim, blockDim, 0, stream_>>>(d_tempStorage_, out, Linear(OUTPUT_PER_SEG, 0), OUTPUT_PER_SEG, nSegments_);
-        DEBUG_SYNC;
+/* 
+ * host methods
+ */
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
+DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+DeviceSegmentedSumType(Device &device, DeviceStream *devStream) {
+    d_tempStoragePreAlloc_ = NULL;
+    segLen_ = 0;
+    nSegments_ = 0;
+    if (devStream == NULL)
+        devStream = device.defaultStream();
+    devStream_ = devStream;
+    devAlloc_ = device.objectAllocator();
+
+    registerMethods();
+    stream_ = devStream_->getCudaStream();
+}
+
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
+DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+DeviceSegmentedSumType(DeviceStream *devStream){
+    d_tempStoragePreAlloc_ = NULL;
+    d_tempStorage_ = NULL;
+    devStream_ = NULL;
+    devAlloc_ = NULL;
+    segLen_ = 0;
+    nSegments_ = 0;
+
+    registerMethods();
+    stream_ = devStream_->getCudaStream();
+}
+
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
+DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+~DeviceSegmentedSumType() {
+    if (d_tempStoragePreAlloc_ != NULL)
+        devAlloc_->deallocate(d_tempStoragePreAlloc_);
+}
+
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
+void DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+operator()(InIt in, OutIt out, OffIt segOffset) {
+    if (d_tempStoragePreAlloc_ != NULL)
+        d_tempStorage_ = d_tempStoragePreAlloc_;
+    else if (tempStorageSize_ != 0)
+        devStream_->allocate(&d_tempStorage_, tempStorageSize_);
+    (this->*sumMethod_)(in, out, segOffset);
+}
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline void
+DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::configure(sq::SizeType segLen, sq::SizeType nSegments, bool useTempStorage) {
+    segLen_ = sq::divru(segLen, vecLen);
+    nSegments_ = nSegments;
+
+    /* choose kernel */
+    typename MethodMap::iterator it = methodMap_.lower_bound(segLen_);
+    throwErrorIf(it == methodMap_.end(), "Segment length (%d) not supported.", segLen_);
+    sumMethod_ = it->second;
+
+    
+    d_tempStorage_ = NULL;
+    tempStorageSize_ = 0;
+    if (4096 < segLen) {
+        tempStorageSize_ = 32 * nSegments_;
+        if (!useTempStorage)
+            devAlloc_->allocate(&d_tempStoragePreAlloc_, tempStorageSize_);
     }
+}
 
-    void reg(int base, int nItems, SumMethod method) {
-        methodMap_[base * nItems] = method;
-    }
 
-    void registerMethods() {
+
+/*
+ * Method registration
+ */
+
+template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
+void DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
+registerMethods() {
         reg(32, 1, &SelfType::segmentedSum_32<1>);
         reg(32, 2, &SelfType::segmentedSum_32<2>);
         reg(32, 3, &SelfType::segmentedSum_32<3>);
@@ -394,17 +510,21 @@ struct DeviceSegmentedSumTypeImpl : DeviceSegmentedSumType<V> {
         reg(8192, 7, &SelfType::segmentedSum_2step<256, 7, 32>);
         reg(8192, 8, &SelfType::segmentedSum_2step<256, 8, 32>);
 #endif    
-    }
+}
 
-    virtual void chooseKernel() {
-        typename MethodMap::iterator it = methodMap_.lower_bound(segLen_);
-        throwErrorIf(it == methodMap_.end(), "Segment length (%d) not supported.", segLen_);
-        sumMethod_ = it->second;
+
+/* Segmented sum. */
+
+template<class V, class OutIt>
+struct DeviceBatchedSum : public DeviceSegmentedSumType<V, V*, OutIt, Linear, 1> {
+    typedef DeviceSegmentedSumType<V, V*, OutIt, Linear, 1> Base;
+    using Base::sumMethod_;
+    
+    DeviceBatchedSum(DeviceStream *devStream) : Base(devStream) { }
+
+    void operator()(const DeviceMatrixType<V> &d_x, OutIt out) {
+        (this->*sumMethod_)(d_x.d_data, out, Linear(d_x.stride));
     }
-    typedef std::map<sq::SizeType, SumMethod> MethodMap;
-    MethodMap methodMap_;
-    SumMethod sumMethod_;
-    cudaStream_t stream_;
 };
 
 }

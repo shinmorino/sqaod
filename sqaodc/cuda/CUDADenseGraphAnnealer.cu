@@ -3,10 +3,12 @@
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
-#include "DeviceSegmentedSum.cuh"
+#include "DeviceBatchedDot.cuh"
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
+
+// #define VECTORIZE_DOT
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
@@ -86,8 +88,11 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     d_reachCount_ = (uint2*)devAlloc_->allocate(sizeof(uint2));
 
     /* initialize sumJq */
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    dotJq_ = new DotJq(device, devStream_);
+#ifdef VECTORIZE_DOT
+    dotJq_ = new DotJq<real, real*>(device, devStream_);
+#else
+    dotJq_ = new DotJqVec4<real, real*>(device, devStream_);
+#endif
 }
 
 template<class real>
@@ -266,9 +271,13 @@ void CUDADenseGraphAnnealer<real>::prepare() {
     d_random_.setRequiredSize(requiredSize);
     throwOnError(cudaMemsetAsync(d_reachCount_, 0, sizeof(uint2), devStream_->getCudaStream()));
 
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
+#ifdef VECTORIZE_DOT
+    DotJqVec4<real, real*> &dotJq = static_cast<DotJqVec4<real, real*>&>(*dotJq_);
     dotJq.configure(N_, m_, false);
+#else
+    DotJq<real, real*> &dotJq = static_cast<DotJq<real, real*>&>(*dotJq_);
+    dotJq.configure(N_, m_, false);
+#endif
 
     setState(solPrepared);
 }
@@ -343,11 +352,16 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
                                                 const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                                                 const int *d_flipPos) {
-    cudaStream_t stream = devStream_->getCudaStream();
-    In2TypeDotPtr<real, char, real> inPtr(d_matq.d_data, d_J.d_data);
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
-    dotJq(inPtr, d_Jq->d_data, Offset2way(d_flipPos, d_matq.stride, d_J.stride));
+
+#ifdef VECTORIZE_DOT
+    DotJqVec4<real, real*> &dotJq = static_cast<DotJqVec4<real, real*>&>(*dotJq_);
+    dotJq(d_J, d_matq, d_flipPos, d_Jq->d_data);
+#else
+    DotJq<real, real*> &dotJq = static_cast<DotJq<real, real*>&>(*dotJq_);
+    dotJq(d_J, d_matq, d_flipPos, d_Jq->d_data);
+#endif
+
+
 }
 
 template<bool mIsOdd, class real>
