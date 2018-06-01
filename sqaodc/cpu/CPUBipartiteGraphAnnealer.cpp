@@ -328,20 +328,33 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
         qRowSpan = qRowEnd - qRowBegin;
         if (0 < qRowSpan)
             dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) = qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
-#  pragma omp barrier
+    }
+
+#pragma omp parallel
+    {
+        int threadNum = omp_get_thread_num();
         sq::Random &random = random_[threadNum];
-        for (int offset = 0; offset < 2; ++offset) {
 #  pragma omp for
-            for (int im = offset; im < m2; im += 2) {
-                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
-            }
-#  pragma omp single
-            if ((offset == 0) && ((m_ % 2) != 0)) { /* m is odd. */
-                int im = m_ - 1;
-                tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random_[0]);
-            }
+        for (int im = 0; im < m2; im += 2) {
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
         }
     }
+    if ((m_ % 2) != 0) { /* m is odd. */
+        int im = m_ - 1;
+        tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random_[0]);
+    }
+
+#pragma omp parallel
+    {    
+        int threadNum = omp_get_thread_num();
+        sq::Random &random = random_[threadNum];
+#  pragma omp for
+        for (int im = 1; im < m2; im += 2) {
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+        }
+    }
+    
+
 #endif
     clearState(solSolutionAvailable);
 }

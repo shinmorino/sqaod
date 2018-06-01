@@ -1,5 +1,12 @@
 #include "Dot_SIMD.h"
+
+#ifdef __linux__
 #include <x86intrin.h>
+#endif
+
+#ifdef _WIN32
+#include <intrin.h>
+#endif
 
 namespace sqaod_cpu {
 

@@ -13,9 +13,6 @@ CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
 #ifdef _OPENMP
-    /* FIXME: needing to apply prefetch with fixes for matrix memory alignment. */
-    sq::log("Currently limiting the number of threads to 2 for better performance.");
-    omp_set_num_threads(2);
     nMaxThreads_ = omp_get_max_threads();
     sq::log("# max threads: %d", nMaxThreads_);
 #else
@@ -270,17 +267,20 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int step
 #  pragma omp parallel
     {
         sq::Random &random = random_[omp_get_thread_num()];
-        for (int yOffset = 0; yOffset < 2; ++yOffset) {
 #  pragma omp for
-            for (int y = yOffset; y < m2; y += 2) {
-                tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-            }
-#  pragma omp single
-            if ((m_ % 2) != 0) { /* m is odd. */
-                sq::Random &random = random_[0];
-                tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
-            }
-        }
+        for (int y = 0; y < m2; y += 2)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
+    }
+
+    if ((m_ % 2) != 0) /* m is odd. */
+        tryFlip(matQ_, m_ - 1, h_, J_, random_[0], twoDivM, coef, beta);
+
+#  pragma omp parallel
+    {
+        sq::Random &random = random_[omp_get_thread_num()];
+#  pragma omp for
+        for (int y = 1; y < m2; y += 2)
+            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
     }
 #endif
 }

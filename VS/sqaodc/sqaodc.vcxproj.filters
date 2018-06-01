@@ -161,6 +161,9 @@
     <ClInclude Include="..\..\sqaodc\cuda\api.h">
       <Filter>cuda</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqaodc\cpu\Dot_SIMD.h">
+      <Filter>cpu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\cuda\Device.cpp">
@@ -255,6 +258,12 @@
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\cuda\api_cuda.cpp">
       <Filter>cuda</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqaodc\cpu\Dot_SIMD.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqaodc\common\os_dependent_windows.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
