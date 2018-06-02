@@ -8,7 +8,7 @@
 namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
 
-// #define SQAODC_VECTORIZE_JQ
+#define SQAODC_VECTORIZE_JQ
 
 #ifdef SQAODC_VECTORIZE_JQ
 template<class real>
