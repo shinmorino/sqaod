@@ -57,7 +57,6 @@ struct DeviceMatrixType : DeviceObject {
     V *d_data;
 
 private:
-    DeviceMatrixType(const DeviceMatrixType<V>&);
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = NULL;
@@ -96,7 +95,6 @@ struct DeviceVectorType : DeviceObject {
     V *d_data;
 
 private:
-    DeviceVectorType(const DeviceVectorType<V>&);
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = NULL;
@@ -123,7 +121,6 @@ struct DeviceScalarType : DeviceObject {
     
     V *d_data;
 private:
-    DeviceScalarType(const DeviceScalarType<V>&);
     virtual void get_data(void **ppv) { 
         *ppv = d_data;
         d_data = NULL;

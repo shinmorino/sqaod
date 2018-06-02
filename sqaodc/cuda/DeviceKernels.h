@@ -93,6 +93,9 @@ struct DeviceCopyKernels {
     template<class Vdst, class Vsrc>
     void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
 
+    template<class V>
+    void clearPadding(DeviceMatrixType<V> *mat);
+
     DeviceCopyKernels(DeviceStream *stream = NULL);
 
     void assignStream(DeviceStream *stream);

@@ -130,6 +130,7 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
 
     DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
+    devCopy_.clearPadding(dW);
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dW, -1., *dW);
     devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dW);
@@ -190,6 +191,7 @@ void CUDADenseGraphAnnealer<real>::set_q(const BitSet &q) {
     DeviceBitSet *d_q = devStream_->tempDeviceVector<char>(q.size);
     devCopy_(d_q, q);
     devCopy_.broadcastToRows(&d_matq_, *d_q);
+    devCopy_.clearPadding(&d_matq_);
     devStream_->synchronize();
     setState(solQSet);
 }
@@ -206,6 +208,7 @@ void CUDADenseGraphAnnealer<real>::set_qset(const BitSetArray &q) {
         memcpy(&qMat(iRow, 0), q[iRow].data, sizeof(char) * N_);
     DeviceBitMatrix *d_q = devStream_->tempDeviceMatrix<char>(m_, N_);
     devCopy_(&d_matq_, qMat);
+    devCopy_.clearPadding(&d_matq_);
     devCopy_.synchronize();
     
     setState(solQSet);
@@ -234,6 +237,7 @@ void CUDADenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
     ::randomizeSpin(&d_matq_, d_random_, devStream_->getCudaStream());
+    devCopy_.clearPadding(&d_matq_);
     setState(solQSet);
 }
 

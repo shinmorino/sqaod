@@ -49,6 +49,27 @@ static void scale2d(OutType d_out, InType d_in, sq::SizeType width, sq::SizeType
     }
 }
 
+
+template<class Op>  static __global__
+void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxType offset) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y + offset;
+    if ((gidx < width) && (gidy < height))
+        op(gidx, gidy);
+}
+
+template<class Op>
+static void transform2d(const Op &op, sq::SizeType width, sq::SizeType height, cudaStream_t stream) {
+    dim3 blockDim(128, 1);
+    for (sq::IdxType idx = 0; idx < height; idx += 65535) {
+        int hSpan = std::min(height - idx, 65535);
+        dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
+        transform2dKernel <<<gridDim, blockDim, 0, stream>>>(op, width, height, idx);
+        DEBUG_SYNC;
+    }
+}
+
+
 template<class OutType, class InType>
 __global__ static
 void scaleDiagonalKernel(OutType out, InType in, sq::SizeType size, sq::IdxType xOffset, sq::IdxType yOffset) {
@@ -479,6 +500,13 @@ cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
     scale2d(outPtr, inPtr, src.cols, src.rows, stream_);
 }
 
+template<class V> void DeviceCopyKernels::
+clearPadding(DeviceMatrixType<V> *mat) {
+    DeviceMatrixType<V> dmat = *mat;
+    transform2d([=]__device__(int gidx, int gidy) mutable {
+        dmat(gidx + mat->cols, gidy) = V();
+    }, mat->stride - mat->cols, mat->rows, stream_);
+}
 
 DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
     stream_ = NULL;
@@ -515,6 +543,10 @@ template void DeviceCopyKernels::cast(DeviceMatrixType<char> *, const DeviceMatr
 template void DeviceCopyKernels::cast(DeviceMatrixType<float> *, const DeviceMatrixType<char> &);
 template void DeviceCopyKernels::cast(DeviceMatrixType<char> *, const DeviceMatrixType<double> &);
 template void DeviceCopyKernels::cast(DeviceMatrixType<double> *, const DeviceMatrixType<char> &);
+
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<char> *);
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<float> *);
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<double> *);
 
 
 template<class V>
