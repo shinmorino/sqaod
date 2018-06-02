@@ -102,17 +102,17 @@ struct DeviceBatchedDot : DeviceSegmentedSumType<V, InDotPtr<V>, OutIt, Linear, 
 
 
 template<class V, class OutIt>
-struct DotJq : DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 1> {
+struct DeviceDotJq : DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 1> {
     typedef DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 1> Base;
     using Base::sumMethod_;
 public:
     
-    DotJq(Device &device, DeviceStream *devStream)
+    DeviceDotJq(Device &device, DeviceStream *devStream)
             : Base(device, devStream) {
     }
 
-    DotJq(DeviceStream *devStream) : Base(devStream) { }
-
+    DeviceDotJq(DeviceStream *devStream) : Base(devStream) { }
+    
     void operator()(const DeviceMatrixType<V> &d_J, const DeviceBitMatrix &d_q,
                     const int *d_yOffset, OutIt outIt) {
         In2TypeDotPtr<V, char, V> in(d_q.d_data, d_J.d_data);
@@ -168,15 +168,16 @@ struct In2TypeDotPtrVec4 {
 
 
 template<class V, class OutIt>
-struct DotJqVec4 : DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, OutIt, Offset2way, 4> {
+struct DeviceDotJqVec4 :
+            DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, OutIt, Offset2way, 4> {
     typedef DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 4> Base;
     using Base::sumMethod_;
     
-    DotJqVec4(Device &device, DeviceStream *devStream)
+    DeviceDotJqVec4(Device &device, DeviceStream *devStream)
             : Base(device, devStream) { }
 
-    DotJqVec4(DeviceStream *devStream) : Base(devStream) { }
-
+    DeviceDotJqVec4(DeviceStream *devStream) : Base(devStream) { }
+    
     void operator()(const DeviceMatrixType<V> &d_J, const DeviceBitMatrix &d_q,
                     const int *d_yOffset, OutIt out) {
         In2TypeDotPtr<V, char, V> in(d_q.d_data, d_J.d_data);
