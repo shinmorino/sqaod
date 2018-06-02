@@ -2,7 +2,6 @@
 
 #include <sqaodc/cuda/DeviceStream.h>
 #include <sqaodc/cuda/DeviceRandom.h>
-#include <sqaodc/cuda/DeviceSegmentedSum.h>
 #include <sqaodc/cuda/DeviceMatrix.h>
 
 namespace sqaod_cuda {
@@ -69,8 +68,8 @@ private:
     cudaStream_t stream_;
     DeviceStream *devStream_;
 
-    DeviceSegmentedSumType<real> *segmentedSum_;
-    DeviceSegmentedSumType<real> *segmentedDot_;
+    sq::NullBase *segmentedSum_;
+    sq::NullBase *segmentedDot_;
 };
 
 
@@ -93,6 +92,9 @@ struct DeviceCopyKernels {
 
     template<class Vdst, class Vsrc>
     void cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src);
+
+    template<class V>
+    void clearPadding(DeviceMatrixType<V> *mat);
 
     DeviceCopyKernels(DeviceStream *stream = NULL);
 

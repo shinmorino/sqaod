@@ -3,10 +3,21 @@
 #include "DeviceKernels.h"
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
-#include "DeviceSegmentedSum.cuh"
+#include "DeviceBatchedDot.cuh"
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
+
+#define SQAODC_VECTORIZE_JQ
+
+#ifdef SQAODC_VECTORIZE_JQ
+template<class real>
+using DotJq = DeviceDotJqVec4<real, real*>;
+#else
+template<class real>
+using DotJq = DeviceDotJq<real, real*>;
+#endif
+
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
@@ -86,8 +97,7 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
     d_reachCount_ = (uint2*)devAlloc_->allocate(sizeof(uint2));
 
     /* initialize sumJq */
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    dotJq_ = new DotJq(device, devStream_);
+    dotJq_ = new DotJq<real>(device, devStream_);
 }
 
 template<class real>
@@ -120,6 +130,7 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
 
     DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
+    devCopy_.clearPadding(dW);
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dW, -1., *dW);
     devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dW);
@@ -180,6 +191,7 @@ void CUDADenseGraphAnnealer<real>::set_q(const BitSet &q) {
     DeviceBitSet *d_q = devStream_->tempDeviceVector<char>(q.size);
     devCopy_(d_q, q);
     devCopy_.broadcastToRows(&d_matq_, *d_q);
+    devCopy_.clearPadding(&d_matq_);
     devStream_->synchronize();
     setState(solQSet);
 }
@@ -196,6 +208,7 @@ void CUDADenseGraphAnnealer<real>::set_qset(const BitSetArray &q) {
         memcpy(&qMat(iRow, 0), q[iRow].data, sizeof(char) * N_);
     DeviceBitMatrix *d_q = devStream_->tempDeviceMatrix<char>(m_, N_);
     devCopy_(&d_matq_, qMat);
+    devCopy_.clearPadding(&d_matq_);
     devCopy_.synchronize();
     
     setState(solQSet);
@@ -224,6 +237,7 @@ void CUDADenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
 
     ::randomizeSpin(&d_matq_, d_random_, devStream_->getCudaStream());
+    devCopy_.clearPadding(&d_matq_);
     setState(solQSet);
 }
 
@@ -266,8 +280,7 @@ void CUDADenseGraphAnnealer<real>::prepare() {
     d_random_.setRequiredSize(requiredSize);
     throwOnError(cudaMemsetAsync(d_reachCount_, 0, sizeof(uint2), devStream_->getCudaStream()));
 
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
+    DotJq<real> &dotJq = static_cast<DotJq<real>&>(*dotJq_);
     dotJq.configure(N_, m_, false);
 
     setState(solPrepared);
@@ -343,11 +356,10 @@ template<class real>
 void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
                                                 const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                                                 const int *d_flipPos) {
-    cudaStream_t stream = devStream_->getCudaStream();
-    In2TypeDotPtr<real, char, real> inPtr(d_matq.d_data, d_J.d_data);
-    typedef DeviceSegmentedSumTypeImpl<real, In2TypeDotPtr<real, char, real>, real*, Offset2way> DotJq;
-    DotJq &dotJq = static_cast<DotJq&>(*dotJq_);
-    dotJq(inPtr, d_Jq->d_data, Offset2way(d_flipPos, d_matq.stride, d_J.stride));
+
+    DotJq<real> &dotJq = static_cast<DotJq<real>&>(*dotJq_);
+    dotJq(d_J, d_matq, d_flipPos, d_Jq->d_data);
+
 }
 
 template<bool mIsOdd, class real>

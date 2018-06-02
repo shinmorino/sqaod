@@ -110,7 +110,7 @@ private:
     sq::BitSetArray xlist_;
     sq::BitSetArray qlist_;
 
-    DeviceSegmentedSumType<real> *dotJq_;
+    sq::NullBase *dotJq_;
 
     DeviceStream *devStream_;
     DeviceFormulas devFormulas_;
