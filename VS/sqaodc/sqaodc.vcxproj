@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\sqaodc\cuda\cudafuncs.h" />
     <ClInclude Include="..\..\sqaodc\cuda\Device.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceArray.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceBatchedDot.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceBipartiteGraphBatchSearch.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceConstScalars.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceCopy.h" />
@@ -58,7 +59,6 @@
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMT19937.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceRandomMTGP32.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cuh" />
-    <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceStream.h" />
     <ClInclude Include="..\..\sqaodc\cuda\HostObjectAllocator.h" />
     <ClInclude Include="..\..\sqaodc\sqaodc.h" />
@@ -95,7 +95,6 @@
     <ClCompile Include="..\..\sqaodc\cuda\DeviceMemoryStore.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceObjectAllocator.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceRandomMT19937.cpp" />
-    <ClCompile Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\DeviceStream.cpp" />
     <ClCompile Include="..\..\sqaodc\cuda\HostObjectAllocator.cpp" />
   </ItemGroup>
@@ -168,6 +167,7 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
+      <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,6 +193,7 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
+      <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

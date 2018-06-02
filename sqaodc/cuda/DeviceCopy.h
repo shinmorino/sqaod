@@ -52,6 +52,9 @@ struct DeviceCopy {
     
     template<class V>
     void operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> &src);
+
+    template<class V>
+    void clearPadding(DeviceMatrixType<V> *mat);
     
     /* sq::VectorType<V> <-> DeviceVectorType<V> */
     
@@ -167,6 +170,12 @@ operator()(DeviceMatrixType<V> *dst, const DeviceMatrixType<V> &src) {
     assertSameShape(*dst, src, __func__);
     copy2d(dst->d_data, dst->stride, src.d_data, src.stride, src.cols, src.rows);
 }
+
+template<class V> void
+DeviceCopy::clearPadding(DeviceMatrixType<V> *mat) {
+    kernels_.clearPadding(mat);
+}
+
 
 template<class V> void DeviceCopy::
 operator()(DeviceVectorType<V> *dst, const sq::VectorType<V> &src) {

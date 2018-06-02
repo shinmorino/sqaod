@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include <cuda/DeviceSegmentedSum.cuh>
+#include <cuda/DeviceBatchedDot.cuh>
 
 using namespace sqaod_cuda;
 
@@ -47,6 +48,29 @@ static void scale2d(OutType d_out, InType d_in, sq::SizeType width, sq::SizeType
         DEBUG_SYNC;
     }
 }
+
+
+template<class Op>  static __global__
+void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxType offset) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y + offset;
+    if ((gidx < width) && (gidy < height))
+        op(gidx, gidy);
+}
+
+template<class Op>
+static void transform2d(const Op &op, sq::SizeType width, sq::SizeType height, cudaStream_t stream) {
+    dim3 blockDim;
+    blockDim.x = std::min(roundUp(width, WARP_SIZE), 128);
+    blockDim.y = 128 / blockDim.x;
+    for (sq::IdxType idx = 0; idx < height; idx += 65535) {
+        int hSpan = std::min(height - idx, 65535);
+        dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
+        transform2dKernel <<<gridDim, blockDim, 0, stream>>>(op, width, height, idx);
+        DEBUG_SYNC;
+    }
+}
+
 
 template<class OutType, class InType>
 __global__ static
@@ -258,10 +282,10 @@ sumRowwise(DeviceVector *d_x, real alpha, const DeviceMatrix &d_A) {
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
-    typedef DeviceSegmentedSumTypeImpl<real, const real*, OpOutPtr<MulOutOp, real>, Linear> Sum;
+    typedef DeviceBatchedSum<real, OpOutPtr<MulOutOp, real>> Sum;
     Sum &segSum = static_cast<Sum&>(*segmentedSum_);
     segSum.configure(d_A.cols, d_A.rows, true);
-    segSum(d_A.d_data, outPtr, Linear(d_A.stride, 0));
+    segSum(d_A, outPtr);
 #endif
 }
 
@@ -296,9 +320,9 @@ template<class real> void DeviceMathKernelsType<real>::
 dotRowwise(DeviceVector *d_z, real alpha, const DeviceMatrix &d_X, const DeviceMatrix &d_Y) {
     throwErrorIf(d_X.stride != d_Y.stride, "Strides for d_x and d_y must be same."); 
 
+#if 0
     InDotPtr<real> inPtr(d_X.d_data, d_Y.d_data);
     auto outPtr = MulOutPtr<real>(d_z->d_data, alpha);
-#if 0
     InDotPtr<real> inPtr(d_X.d_data, d_y.d_data);
     size_t temp_storage_bytes;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
@@ -312,10 +336,12 @@ dotRowwise(DeviceVector *d_z, real alpha, const DeviceMatrix &d_X, const DeviceM
                                     stream_, CUB_DEBUG);
     DEBUG_SYNC;
 #else
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, OpOutPtr<MulOutOp, real>, Linear> Dot;
-    Dot &segDot = static_cast<Dot&>(*segmentedDot_);
-    segDot.configure(d_X.cols, d_X.rows, true);
-    segDot(inPtr, outPtr, Linear(d_X.stride, 0));
+    typedef DeviceBatchedDot<real, OpOutPtr<MulOutOp, real>> Dot;
+    Dot &batchedDot = static_cast<Dot&>(*segmentedDot_);
+    batchedDot.configure(d_X.cols, d_X.rows, true);
+
+    auto outPtr = MulOutPtr<real>(d_z->d_data, alpha);
+    batchedDot(d_X, d_Y, outPtr);
 #endif
 }
 
@@ -422,8 +448,8 @@ assignStream(DeviceStream *devStream) {
     if (devStream_ != NULL)
         stream_ = devStream_->getCudaStream();
 
-    typedef DeviceSegmentedSumTypeImpl<real, const real *, OpOutPtr<MulOutOp, real>, Linear> Sum;
-    typedef DeviceSegmentedSumTypeImpl<real, InDotPtr<real>, OpOutPtr<MulOutOp, real>, Linear> Dot;
+    typedef DeviceBatchedSum<real, OpOutPtr<MulOutOp, real>> Sum;
+    typedef DeviceBatchedDot<real, OpOutPtr<MulOutOp, real>> Dot;
     segmentedSum_ = new Sum(devStream_);
     segmentedDot_ = new Dot(devStream_);
 }
@@ -476,6 +502,18 @@ cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
     scale2d(outPtr, inPtr, src.cols, src.rows, stream_);
 }
 
+template<class V> void DeviceCopyKernels::
+clearPadding(DeviceMatrixType<V> *mat) {
+    int toPad = mat->stride - mat->cols;
+    if (toPad != 0) {
+        V *d_data = mat->d_data;
+        sq::SizeType stride = mat->stride;
+        sq::SizeType cols = mat->cols;
+        transform2d([=]__device__(int gidx, int gidy) mutable {
+            d_data[gidx + cols + gidy * stride] = V();
+        }, toPad, mat->rows, stream_);
+    }
+}
 
 DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
     stream_ = NULL;
@@ -512,6 +550,10 @@ template void DeviceCopyKernels::cast(DeviceMatrixType<char> *, const DeviceMatr
 template void DeviceCopyKernels::cast(DeviceMatrixType<float> *, const DeviceMatrixType<char> &);
 template void DeviceCopyKernels::cast(DeviceMatrixType<char> *, const DeviceMatrixType<double> &);
 template void DeviceCopyKernels::cast(DeviceMatrixType<double> *, const DeviceMatrixType<char> &);
+
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<char> *);
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<float> *);
+template void DeviceCopyKernels::clearPadding(DeviceMatrixType<double> *);
 
 
 template<class V>
