@@ -75,7 +75,8 @@ void DeviceStream::allocate(V **pv, sq::SizeType size, const char *signature) {
 
 template<class V> inline
 DeviceMatrixType<V> *DeviceStream::tempDeviceMatrix(sq::SizeType rows, sq::SizeType cols, const char *signature) {
-    sq::SizeType stride = sq::roundUp(cols, 4);
+    const int align = 128 / sizeof(V);
+    sq::SizeType stride = sq::roundUp(cols, align);
     V *d_pv = (V*)memStore_->allocate(sizeof(V) * stride * rows);
     DeviceMatrixType<V> *mat = new DeviceMatrixType<V>(d_pv, rows, cols, stride);
     tempObjects_.pushBack(mat);
