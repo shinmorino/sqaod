@@ -3,6 +3,16 @@
 
 using namespace sqaod;
 
+
+template<class V>
+void MatrixType<V>::clearPadding() {
+    for (int row = 0; row < rows; ++row) {
+        V *rowBuf = rowPtr(row);
+        for (int col = cols; col < stride; ++col)
+            rowBuf[col] = V();
+    }
+}
+
 template<class V>
 MatrixType<V> MatrixType<V>::eye(SizeType dim) {
     Matrix mat = zeros(dim, dim);

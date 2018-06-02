@@ -137,6 +137,8 @@ struct MatrixType {
         resize(dim.rows, dim.cols);
     }
 
+    void clearPadding();
+    
     V &operator()(IdxType r, IdxType c) {
         assert((0 <= r) && (r < (IdxType)rows));
         assert((0 <= c) && (c < (IdxType)cols));
