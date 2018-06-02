@@ -149,6 +149,17 @@ struct MatrixType {
         return data[r * stride + c];
     }
 
+    V *rowPtr(IdxType r) {
+        assert((0 <= r) && (r < (IdxType)rows));
+        return &data[r * stride];
+    }
+
+    const V *rowPtr(IdxType r) const {
+        assert((0 <= r) && (r < (IdxType)rows));
+        return &data[r * stride];
+    }
+
+    
     V sum() const;
 
     V min() const;
