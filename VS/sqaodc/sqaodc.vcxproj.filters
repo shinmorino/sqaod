@@ -105,9 +105,6 @@
     <ClInclude Include="..\..\sqaodc\common\Random.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sqaodc\cuda\DeviceSegmentedSum.h">
-      <Filter>cuda</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.h">
       <Filter>cuda</Filter>
     </ClInclude>
@@ -164,6 +161,9 @@
     <ClInclude Include="..\..\sqaodc\cpu\Dot_SIMD.h">
       <Filter>cpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqaodc\cuda\DeviceBatchedDot.cuh">
+      <Filter>cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\sqaodc\cuda\Device.cpp">
@@ -216,9 +216,6 @@
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\common\Random.cpp">
       <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\sqaodc\cuda\DeviceSegmentedSum.cpp">
-      <Filter>cuda</Filter>
     </ClCompile>
     <ClCompile Include="..\..\sqaodc\cpu\CPUBipartiteGraphBFSearcher.cpp">
       <Filter>cpu</Filter>
