@@ -86,7 +86,6 @@ namespace sqaod_cuda {
 template<class V, class OutIt>
 struct DeviceBatchedDot : DeviceSegmentedSumType<V, InDotPtr<V>, OutIt, Linear, 1> {
     typedef DeviceSegmentedSumType<V, InDotPtr<V>, OutIt, Linear, 1> Base;
-    using Base::sumMethod_;
     DeviceBatchedDot(Device &device, DeviceStream *devStream)
             : Base(device, devStream) { }
 
@@ -95,7 +94,7 @@ struct DeviceBatchedDot : DeviceSegmentedSumType<V, InDotPtr<V>, OutIt, Linear, 
     void operator()(const DeviceMatrixType<V> &d_x, const DeviceMatrixType<V> &d_y, OutIt outIt) {
         InDotPtr<V> in(d_x.d_data, d_y.d_data);
         throwErrorIf(d_x.stride != d_y.stride, "Different stride to execute batched dot.");
-        (this->*sumMethod_)(in, outIt, Linear(d_x.stride));
+        Base::operator()(in, outIt, Linear(d_x.stride));
     }
 };
 
@@ -104,7 +103,6 @@ struct DeviceBatchedDot : DeviceSegmentedSumType<V, InDotPtr<V>, OutIt, Linear, 
 template<class V, class OutIt>
 struct DeviceDotJq : DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 1> {
     typedef DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 1> Base;
-    using Base::sumMethod_;
 public:
     
     DeviceDotJq(Device &device, DeviceStream *devStream)
@@ -117,7 +115,7 @@ public:
                     const int *d_yOffset, OutIt outIt) {
         In2TypeDotPtr<V, char, V> in(d_q.d_data, d_J.d_data);
         Offset2way offset(d_yOffset, d_q.stride, d_J.stride);
-        (this->*sumMethod_)(in, outIt, offset);
+        Base::operator()(in, outIt, offset);
     }
 };
 
@@ -169,20 +167,19 @@ struct In2TypeDotPtrVec4 {
 
 template<class V, class OutIt>
 struct DeviceDotJqVec4 :
-            DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, OutIt, Offset2way, 4> {
-    typedef DeviceSegmentedSumType<V, In2TypeDotPtr<V, char, V>, V*, Offset2way, 4> Base;
-    using Base::sumMethod_;
+            DeviceSegmentedSumType<V, In2TypeDotPtrVec4<V, char, V>, OutIt, Offset2way, 4> {
+    typedef DeviceSegmentedSumType<V, In2TypeDotPtrVec4<V, char, V>, V*, Offset2way, 4> Base;
     
-    DeviceDotJqVec4(Device &device, DeviceStream *devStream)
+    DeviceDotJqVec4(Device &device, DeviceStream *devStream = NULL)
             : Base(device, devStream) { }
 
     DeviceDotJqVec4(DeviceStream *devStream) : Base(devStream) { }
     
     void operator()(const DeviceMatrixType<V> &d_J, const DeviceBitMatrix &d_q,
                     const int *d_yOffset, OutIt out) {
-        In2TypeDotPtr<V, char, V> in(d_q.d_data, d_J.d_data);
+        In2TypeDotPtrVec4<V, char, V> in(d_q.d_data, d_J.d_data);
         Offset2way offset(d_yOffset, d_q.stride / 4, d_J.stride / 4);
-        (this->*sumMethod_)(in, out, offset);
+        Base::operator()(in, out, offset);
     }
 };
 

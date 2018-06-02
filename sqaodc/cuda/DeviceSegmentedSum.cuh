@@ -376,9 +376,11 @@ DeviceSegmentedSumType(Device &device, DeviceStream *devStream) {
         devStream = device.defaultStream();
     devStream_ = devStream;
     devAlloc_ = device.objectAllocator();
+    stream_ = NULL;
 
     registerMethods();
-    stream_ = devStream_->getCudaStream();
+    if (devStream_ != NULL)
+        stream_ = devStream_->getCudaStream();
 }
 
 
@@ -391,15 +393,17 @@ DeviceSegmentedSumType(DeviceStream *devStream){
     devAlloc_ = NULL;
     segLen_ = 0;
     nSegments_ = 0;
+    stream_ = NULL;
 
     registerMethods();
-    stream_ = devStream_->getCudaStream();
+    if (devStream_ != NULL)
+        stream_ = devStream_->getCudaStream();
 }
 
 
 template<class V, class InIt, class OutIt, class OffIt, int vecLen> inline
 DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
-~DeviceSegmentedSumType() {
+~DeviceSegmentedSumType() WAR_VC_NOTHROW {
     if (d_tempStoragePreAlloc_ != NULL)
         devAlloc_->deallocate(d_tempStoragePreAlloc_);
 }
@@ -424,7 +428,6 @@ DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::configure(sq::SizeType se
     typename MethodMap::iterator it = methodMap_.lower_bound(segLen_);
     throwErrorIf(it == methodMap_.end(), "Segment length (%d) not supported.", segLen_);
     sumMethod_ = it->second;
-
     
     d_tempStorage_ = NULL;
     tempStorageSize_ = 0;
@@ -520,10 +523,13 @@ struct DeviceBatchedSum : public DeviceSegmentedSumType<V, V*, OutIt, Linear, 1>
     typedef DeviceSegmentedSumType<V, V*, OutIt, Linear, 1> Base;
     using Base::sumMethod_;
     
+    DeviceBatchedSum(Device &device, DeviceStream *devStream = NULL) 
+        : Base(device, devStream) { }
+
     DeviceBatchedSum(DeviceStream *devStream) : Base(devStream) { }
 
     void operator()(const DeviceMatrixType<V> &d_x, OutIt out) {
-        (this->*sumMethod_)(d_x.d_data, out, Linear(d_x.stride));
+        Base::operator()(d_x.d_data, out, Linear(d_x.stride));
     }
 };
 
