@@ -16,6 +16,7 @@ template<class V>
 struct DeviceMatrixType : DeviceObject {
     typedef V ValueType;
     typedef sq::SizeType SizeType;
+    enum { STRIDE_ALIGNMENT = 128 / sizeof(V) };
     
     DeviceMatrixType() {
         d_data = NULL;
