@@ -16,7 +16,7 @@ libcuda_la_SOURCES=cudafuncs.cpp DeviceMemoryStore.cpp Device.cpp DeviceStream.c
 
 
 NVCC=@NVCC@
-NVCCFLAGS=@NVCCFLAGS@
+NVCCFLAGS=@NVCCFLAGS@ --expt-extended-lambda
 
 .cu.o:
 	$(NVCC) -c -arch=sm_61 $<  -o $@
