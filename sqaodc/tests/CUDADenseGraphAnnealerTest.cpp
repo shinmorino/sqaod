@@ -134,11 +134,12 @@ void CUDADenseGraphAnnealerTest::test() {
         sqcpu::DGFuncs<real>::calculateHamiltonian(&h, &J, &c, W);
         int flippos[m];
         for (int idx = 0; idx < m; ++idx)
-            flippos[idx] = (idx * 3) % m;
+            flippos[idx] = (idx * 3) % N;
 
         HostMatrix q(m, N);
-        for (int idx = 0; idx < N * m; ++idx)
-            q.data[idx] = real((idx % 2) * 2 - 1);
+        for (int row = 0; row < m; ++row)
+            for (int col = 0; col < N; ++col)
+                q(row, col) = real(((row + col) % 2) * 2 - 1);
         for (int idx = 0; idx < m; ++idx) {
             sq::mapToRowVector(Jq)(idx) = sq::mapTo(J).row(flippos[idx]).dot(sq::mapTo(q).row(idx));
 #if 0
