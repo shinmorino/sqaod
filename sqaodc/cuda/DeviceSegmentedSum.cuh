@@ -18,7 +18,7 @@ struct DeviceSegmentedSumType : sq::NullBase {
 
     DeviceSegmentedSumType(DeviceStream *devStream);
 
-    virtual ~DeviceSegmentedSumType();
+    virtual ~DeviceSegmentedSumType() WAR_VC_NOTHROW;
 
     void configure(sq::SizeType segLen, sq::SizeType nSegments, bool useTempStorage);
 
