@@ -1,7 +1,8 @@
 #include "CPUDenseGraphAnnealer.h"
 #include "SharedFormulas.h"
-#include <sqaodc/common/internal/ShapeChecker.h>
 #include <common/Common.h>
+#include <sqaodc/common/EigenBridge.h>
+#include <sqaodc/common/internal/ShapeChecker.h>
 #include <time.h>
 #include "Dot_SIMD.h"
 
@@ -69,12 +70,11 @@ void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om
 
     N_ = W.rows;
     m_ = N_ / 4;
-    h_.resize(1, N_);
+    h_.resize(N_);
     J_.resize(N_, N_);
 
-    Vector h(sq::mapFrom(h_));
-    Matrix J(sq::mapFrom(J_));
-    DGFuncs<real>::calculateHamiltonian(&h, &J, &c_, W);
+    DGFuncs<real>::calculateHamiltonian(&h_, &J_, &c_, W);
+    J_.clearPadding();
     om_ = om;
     if (om_ == sq::optMaximize) {
         h_ *= real(-1.);
@@ -93,9 +93,10 @@ void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &
     m_ = N_ / 4;
 
     om_ = sq::optMinimize;
-    h_ = sq::mapToRowVector(h);
-    J_ = sq::mapTo(J);
+    h_ = h;
+    J_ = J;
     c_ = c;
+    J_.clearPadding();
     setState(solProblemSet);
 }
 
@@ -123,32 +124,37 @@ const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::set_q(const sq::BitSet &q) {
-    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, q, __func__);
+    sqint::isingModelShapeCheck(h_, J_, c_, q, __func__);
     throwErrorIfNotPrepared();
     throwErrorIf(q.size != N_,
                  "Dimension of q, %d, should be equal to N, %d.", q.size, N_);
+    sq::EigenMappedMatrixType<real> matQ(mapTo(matQ_));
+    sq::EigenMappedRowVectorType<char> eq(mapToRowVector(q));
     for (int idx = 0; idx < m_; ++idx)
-        matQ_.row(idx) = mapToRowVector(sq::cast<real>(q));
+        matQ.row(idx) = eq.cast<real>();
+    matQ_.clearPadding();
     setState(solQSet);
 }
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::set_qset(const sq::BitSetArray &q) {
-    sqint::isingModelShapeCheck(sq::mapFrom(h_), sq::mapFrom(J_), c_, q, __func__);
+    sqint::isingModelShapeCheck(h_, J_, c_, q, __func__);
     m_ = q.size();
     prepare(); /* update num trotters */
+    sq::EigenMappedMatrixType<real> matQ(mapTo(matQ_));
     for (int idx = 0; idx < m_; ++idx) {
         Vector qvec = sq::cast<real>(q[idx]);
-        matQ_.row(idx) = sq::mapToRowVector(qvec);
+        matQ.row(idx) = sq::mapToRowVector(qvec);
     }
+    matQ_.clearPadding();
     setState(solQSet);
 }
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::getHamiltonian(Vector *h, Matrix *J, real *c) const {
     throwErrorIfProblemNotSet();
-    mapToRowVector(*h) = h_;
-    mapTo(*J) = J_;
+    *h = h_;
+    *J = J_;
     *c = c_;
 }
 
@@ -162,9 +168,12 @@ const sq::BitSetArray &CPUDenseGraphAnnealer<real>::get_q() const {
 template<class real>
 void CPUDenseGraphAnnealer<real>::randomizeSpin() {
     throwErrorIfNotPrepared();
-    real *q = matQ_.data();
-    for (int idx = 0; idx < sq::IdxType(N_ * m_); ++idx)
-        q[idx] = random_->randInt(2) ? real(1.) : real(-1.);
+    for (int row = 0; row < m_; ++row) {
+        real *q = matQ_.rowPtr(row);
+        for (int col = 0; col < N_; ++col)
+            q[col] = random_->randInt(2) ? real(1.) : real(-1.);
+    }
+    matQ_.clearPadding();
     setState(solQSet);
 }
 
@@ -193,7 +202,7 @@ void CPUDenseGraphAnnealer<real>::makeSolution() {
 template<class real>
 void CPUDenseGraphAnnealer<real>::calculate_E() {
     throwErrorIfQNotSet();
-    DGFuncs<real>::calculate_E(&E_, sq::mapFrom(h_), sq::mapFrom(J_), c_, sq::mapFrom(matQ_));
+    DGFuncs<real>::calculate_E(&E_, h_, J_, c_, matQ_);
     if (om_ == sq::optMaximize)
         mapToRowVector(E_) *= real(-1.);
     setState(solEAvailable);
@@ -204,8 +213,10 @@ template<class real>
 void CPUDenseGraphAnnealer<real>::syncBits() {
     bitsX_.clear();
     bitsQ_.clear();
+    
+    sq::BitMatrix matBitQ = sq::cast<char>(matQ_);
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        sq::BitSet q = sq::extractRow<char>(matQ_, idx);
+        sq::BitSet q(matBitQ.rowPtr(idx), matBitQ.cols);
         bitsQ_.pushBack(q);
         bitsX_.pushBack(x_from_q(q));
     }
@@ -213,18 +224,18 @@ void CPUDenseGraphAnnealer<real>::syncBits() {
 
 
 template<class real> inline static
-void tryFlip(sq::EigenMatrixType<real> &matQ, int y, const sq::EigenRowVectorType<real> &h, const sq::EigenMatrixType<real> &J, 
+void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, const sq::MatrixType<real> &J, 
              sq::Random &random, real twoDivM, real coef, real beta) {
-    int N = J.rows();
-    int m = matQ.rows();
+    int N = J.rows;
+    int m = matQ.rows;
     int x = random.randInt(N);
     real qyx = matQ(y, x);
 #if defined(__AVX2__)
-    real sum = dot_avx2(J.row(x).data(), matQ.row(y).data(), N);
+    real sum = dot_avx2(J.rowPtr(x), matQ.rowPtr(y), N);
 #elif defined(__SSE2__)
-    real sum = dot_sse2(J.row(x).data(), matQ.row(y).data(), N);
+    real sum = dot_sse2(J.rowPtr(x), matQ.rowPtr(y), N);
 #else
-    real sum = J.row(x).dot(matQ.row(y));
+    real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
 #endif
     real dE = twoDivM * qyx * (h(x) + sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;

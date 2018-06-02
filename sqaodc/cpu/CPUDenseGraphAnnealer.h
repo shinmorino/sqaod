@@ -2,7 +2,6 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
-#include <sqaodc/common/EigenBridge.h>
 
 namespace sqaod_cpu {
 
@@ -11,8 +10,6 @@ namespace sq = sqaod;
 template<class real>
 class CPUDenseGraphAnnealer : public sq::DenseGraphAnnealer<real> {
 
-    typedef sq::EigenMatrixType<real> EigenMatrix;
-    typedef sq::EigenRowVectorType<real> EigenRowVector;
     typedef sq::MatrixType<real> Matrix;
     typedef sq::VectorType<real> Vector;
 
@@ -77,9 +74,9 @@ private:
     Vector E_;
     sq::BitSetArray bitsX_;
     sq::BitSetArray bitsQ_;
-    EigenMatrix matQ_;
-    EigenRowVector h_;
-    EigenMatrix J_;
+    Matrix matQ_;
+    Vector h_;
+    Matrix J_;
     real c_;
 
     typedef CPUDenseGraphAnnealer<real> This;
