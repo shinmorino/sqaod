@@ -302,7 +302,7 @@ struct VectorType {
     void allocate(SizeType _size) {
         assert(!mapped);
         size = _size;
-        SizeType alignedSize = roundUp(size * sizeof(V), SQAODC_SIMD_ALIGNMENT);
+        SizeType alignedSize = (SizeType)roundUp(size * sizeof(V), SQAODC_SIMD_ALIGNMENT);
         data = (V*)aligned_alloc(SQAODC_SIMD_ALIGNMENT, alignedSize);
     }
     

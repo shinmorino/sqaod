@@ -58,13 +58,13 @@ struct NullBase {
 };
 
 
-inline
-int divru(int v, int base) {
+template<class V>
+inline V divru(V v, int base) {
     return (v + base - 1) / base;
 }
-            
-inline
-int roundUp(int v, int base) {
+        
+template<class V>
+inline V roundUp(V v, int base) {
     return divru(v, base) * base;
 }
 
