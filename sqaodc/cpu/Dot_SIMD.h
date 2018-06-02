@@ -22,4 +22,10 @@ float dot_sse2(const float *v0, const float *v1, sq::SizeType N);
 
 #endif
 
+
+double dot_naive(const double *v0, const double *v1, sq::SizeType N);
+
+float dot_naive(const float *v0, const float *v1, sq::SizeType N);
+
+
 }

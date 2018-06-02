@@ -211,4 +211,19 @@ float dot_avx2(const float *v0, const float *v1, sq::SizeType N) {
 
 #endif
 
+
+double dot_naive(const double *v0, const double *v1, sq::SizeType N) {
+    double sum = 0.;
+    for (sq::IdxType idx = 0; idx < N; ++idx)
+        sum += v0[idx] * v1[idx];
+    return sum;
+}
+
+float dot_naive(const float *v0, const float *v1, sq::SizeType N) {
+    double sum = 0.;
+    for (sq::IdxType idx = 0; idx < N; ++idx)
+        sum += v0[idx] * v1[idx];
+    return sum;
+}
+
 }
