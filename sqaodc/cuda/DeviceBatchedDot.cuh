@@ -141,12 +141,6 @@ struct InSumPtrVec4 {
         VecIn x = d_x[idx];
         return (x.x + x.y ) + (x.z + x.w);
     }
-    
-    __device__ __forceinline__
-    V operator[](const int2 &idx2) const {
-        VecIn x = d_x[idx];
-        return (x.x + x.y ) + (x.z + x.w);
-    }
 
     __device__ __forceinline__
     SelfType operator+(sq::IdxType idx) const {
