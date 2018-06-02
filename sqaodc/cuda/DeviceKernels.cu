@@ -60,7 +60,9 @@ void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxTy
 
 template<class Op>
 static void transform2d(const Op &op, sq::SizeType width, sq::SizeType height, cudaStream_t stream) {
-    dim3 blockDim(128, 1);
+    dim3 blockDim;
+    blockDim.x = std::min(roundUp(width, WARP_SIZE), 128);
+    blockDim.y = 128 / blockDim.x;
     for (sq::IdxType idx = 0; idx < height; idx += 65535) {
         int hSpan = std::min(height - idx, 65535);
         dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
@@ -502,10 +504,15 @@ cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
 
 template<class V> void DeviceCopyKernels::
 clearPadding(DeviceMatrixType<V> *mat) {
-    DeviceMatrixType<V> dmat = *mat;
-    transform2d([=]__device__(int gidx, int gidy) mutable {
-        dmat(gidx + mat->cols, gidy) = V();
-    }, mat->stride - mat->cols, mat->rows, stream_);
+    int toPad = mat->stride - mat->cols;
+    if (toPad != 0) {
+        V *d_data = mat->d_data;
+        sq::SizeType stride = mat->stride;
+        sq::SizeType cols = mat->cols;
+        transform2d([=]__device__(int gidx, int gidy) mutable {
+            d_data[gidx + cols + gidy * stride] = V();
+        }, toPad, mat->rows, stream_);
+    }
 }
 
 DeviceCopyKernels::DeviceCopyKernels(DeviceStream *stream) {
