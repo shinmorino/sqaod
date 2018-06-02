@@ -129,6 +129,49 @@ template<> struct ValueTraits<float> { typedef float4 VectorType; typedef float 
 template<> struct ValueTraits<double> { typedef double4 VectorType; typedef double ScalarType; };
 template<> struct ValueTraits<char> { typedef char4 VectorType; typedef char ScalarType; };
 
+template<class V>
+struct InSumPtrVec4 {
+    typedef InSumPtrVec4<V> SelfType;
+    typedef typename ValueTraits<V>::VectorType VecIn;
+    __host__ __device__
+    InSumPtrVec4(const V *_d_x) : d_x((const VecIn*)_d_x) { }
+
+    __device__ __forceinline__
+    V operator[](sq::IdxType idx) const {
+        VecIn x = d_x[idx];
+        return (x.x + x.y ) + (x.z + x.w);
+    }
+    
+    __device__ __forceinline__
+    V operator[](const int2 &idx2) const {
+        VecIn x = d_x[idx];
+        return (x.x + x.y ) + (x.z + x.w);
+    }
+
+    __device__ __forceinline__
+    SelfType operator+(sq::IdxType idx) const {
+        return SelfType(&d_x[idx]);
+    }
+
+    const VecIn *d_x;
+};
+
+template<class V, class OutIt>
+struct DeviceBatchedSumVec4 :
+            DeviceSegmentedSumType<V, InSumPtrVec4<V>, OutIt, Linear, 4> {
+    typedef DeviceSegmentedSumType<V, InSumPtrVec4<V>, OutIt, Linear, 4> Base;
+    
+    DeviceBatchedSumVec4(Device &device, DeviceStream *devStream = NULL)
+            : Base(device, devStream) { }
+
+    DeviceBatchedSumVec4(DeviceStream *devStream) : Base(devStream) { }
+    
+    void operator()(const DeviceMatrixType<V> &d_mat, OutIt out) {
+        InSumPtrVec4<V> in(d_mat.d_data);
+        Base::operator()(in, out, Linear(d_mat.stride / 4));
+    }
+};
+
 
 template<class Vout, class Vin0, class Vin1>
 struct In2TypeDotPtrVec4 {

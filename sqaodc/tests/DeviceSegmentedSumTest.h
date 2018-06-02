@@ -15,8 +15,8 @@ public:
     virtual void run(std::ostream &ostm);
 
 private:
-    template<class V>
-    void runSegmentedSum(int segLen, int nSegments);
+    template<class V, class SegmentedSum>
+    void runSegmentedSum(int segLen, int nSegments, bool clearPadding);
     template<class V>
     void test();
 
