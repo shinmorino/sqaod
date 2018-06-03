@@ -77,6 +77,12 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
         searchers_[idx].setQUBO(W_, tileSize_);
         searchers_[idx].initSearch();
     }
+
+    if (nMaxThreads_ == 1)
+        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeSingleThread;
+    else
+        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel;
+
     setState(solPrepared);
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
@@ -136,9 +142,33 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
 
 
 template<class real>
-bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
+bool CPUDenseGraphBFSearcher<real>::searchRangeSingleThread(sq::PackedBitSet *curXEnd) {
     throwErrorIfNotPrepared();
     clearState(solSolutionAvailable);
+
+    sq::PackedBitSet batchBegin = x_;
+    sq::PackedBitSet batchEnd = std::min(x_ + tileSize_, xMax_); ;
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    if (batchBegin < batchEnd)
+        rangeMap_.insert(batchBegin, batchEnd);
+#endif
+
+    if (batchBegin < batchEnd)
+        searchers_[0].searchRange(batchBegin, batchEnd);
+
+    x_ = batchEnd;
+    if (curXEnd != NULL)
+        *curXEnd = x_;
+    return (xMax_ == x_);
+}
+
+
+template<class real>
+bool CPUDenseGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *curXEnd) {
+    throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
+
 #ifdef _OPENMP
 #pragma omp parallel
     {
@@ -159,24 +189,16 @@ bool CPUDenseGraphBFSearcher<real>::searchRange(sq::PackedBitSet *curXEnd) {
             searchers_[threadNum].searchRange(batchBegin, batchEnd);
     }
     x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nMaxThreads_), xMax_);
-#else
-    sq::PackedBitSet batchBegin = x_;
-    sq::PackedBitSet batchEnd = std::min(x_ + tileSize_, xMax_); ;
-
-#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-    if (batchBegin < batchEnd)
-        rangeMap_.insert(batchBegin, batchEnd);
-#endif
-
-    if (batchBegin < batchEnd)
-        searchers_[0].searchRange(batchBegin, batchEnd);
-
-    x_ = batchEnd;
-#endif
     if (curXEnd != NULL)
         *curXEnd = x_;
     return (xMax_ == x_);
+
+#else
+    abort_("Should not reach here.");
+    return false;
+#endif
 }
+
 
 template class CPUDenseGraphBFSearcher<float>;
 template class CPUDenseGraphBFSearcher<double>;

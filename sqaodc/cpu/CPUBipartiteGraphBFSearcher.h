@@ -44,11 +44,19 @@ public:
 
     void makeSolution();
 
-    bool searchRange(sq::PackedBitSet *currentX0, sq::PackedBitSet *currentX1);
+    bool searchRange(sq::PackedBitSet *currentX0, sq::PackedBitSet *currentX1) {
+        return (this->*searchMethod_)(currentX0, currentX1);
+    }
 
     /* void search(); */
     
 private:    
+    bool searchRangeSingleThread(sq::PackedBitSet *currentX0, sq::PackedBitSet *currentX1);
+    bool searchRangeParallel(sq::PackedBitSet *currentX0, sq::PackedBitSet *currentX1);
+
+    typedef bool (CPUBipartiteGraphBFSearcher::*SearchMethod)(sq::PackedBitSet *, sq::PackedBitSet *);
+    SearchMethod searchMethod_;
+    
     Vector b0_, b1_;
     Matrix W_;
     real Emin_;

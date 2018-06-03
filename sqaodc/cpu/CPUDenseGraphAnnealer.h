@@ -57,15 +57,18 @@ public:
         (this->*annealMethod_)(G, beta);
     }
 
+private:    
     void annealOneStepNaive(real G, real beta);
     void annealOneStepColoring(real G, real beta);
+    void annealOneStepColoringParallel(real G, real beta);
 
-private:    
     typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
-
+    sq::Algorithm algo_;
+    
     /* actual annealing function for annealOneStepColored. */
-    void annealColoredPlane(real G, real beta, int offset);
+    void annealColoredPlane(real G, real beta);
+    void annealColoredPlaneParallel(real G, real beta);
 
     void syncBits();
     
@@ -78,7 +81,7 @@ private:
     Vector h_;
     Matrix J_;
     real c_;
-
+    
     typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
     using Base::om_;

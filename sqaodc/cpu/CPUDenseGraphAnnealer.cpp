@@ -12,13 +12,13 @@ using namespace sqaod_cpu;
 template<class real>
 CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
-    annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
+    selectAlgorithm(sq::algoDefault);
 #ifdef _OPENMP
     nMaxThreads_ = omp_get_max_threads();
-    sq::log("# max threads: %d", nMaxThreads_);
 #else
     nMaxThreads_ = 1;
 #endif
+    sq::log("# max threads: %d", nMaxThreads_);
     random_ = new sq::Random[nMaxThreads_];
 }
 
@@ -39,29 +39,24 @@ template<class real>
 sq::Algorithm CPUDenseGraphAnnealer<real>::selectAlgorithm(enum sq::Algorithm algo) {
     switch (algo) {
     case sq::algoNaive:
-        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
-        return sq::algoNaive;
     case sq::algoColoring:
+        algo_ = algo;
+        return algo_;
     case sq::algoDefault:
-        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-        return sq::algoColoring;
+        algo_ = sq::algoColoring;
+        return algo_;
         break;
     default:
         sq::log("Uknown algo, %s, defaulting to %s.",
                 sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
+        algo_ = sq::algoColoring;
         return sq::algoColoring;
     }
 }
 
 template<class real>
 sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
-    if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepNaive)
-        return sq::algoNaive;
-    if (annealMethod_ == &CPUDenseGraphAnnealer::annealOneStepColoring)
-        return sq::algoColoring;
-    abort_("Must not reach here.");
-    return sq::algoDefault; /* to suppress warning. */
+    return algo_;
 }
 
 template<class real>
@@ -187,6 +182,21 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     bitsQ_.reserve(m_);
     matQ_.resize(m_, N_);;
     E_.resize(m_);
+
+    switch (algo_) {
+    case sq::algoNaive:
+        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
+        break;
+    case sq::algoColoring:
+        if (nMaxThreads_ == 1)
+            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
+        else
+            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel;
+        break;
+    default:
+        abort_("Must not reach here.");
+    }
+
     setState(solPrepared);
 }
 
@@ -261,19 +271,34 @@ void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     clearState(solSolutionAvailable);
 }
 
-
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int stepOffset) {
+void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
-#ifndef _OPENMP
     /* single thread */
     sq::Random &random = random_[0];
     for (int yOffset = 0; yOffset < 2; ++yOffset) {
         for (int y = yOffset; y < m_; y += 2)
             tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
     }
-#else
+}
+
+template<class real>
+void CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
+    throwErrorIfQNotSet();
+    
+    for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
+        annealColoredPlane(G, beta);
+    clearState(solSolutionAvailable);
+}
+
+
+template<class real>
+void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel(real G, real beta) {
+#ifdef _OPENMP
+    real twoDivM = real(2.) / real(m_);
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
 #  pragma omp parallel
     {
@@ -297,12 +322,11 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta, int step
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
+void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
     throwErrorIfQNotSet();
     
-    int stepOffset = random_[0].randInt(2);
     for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
-        annealColoredPlane(G, beta, (stepOffset + idx) & 1);
+        annealColoredPlaneParallel(G, beta);
     clearState(solSolutionAvailable);
 }
 

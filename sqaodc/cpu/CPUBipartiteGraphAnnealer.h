@@ -68,9 +68,12 @@ public:
     void annealOneStepNaive(real G, real beta);
 
     void annealOneStepColoring(real G, real beta);
+
+    void annealOneStepColoringParallel(real G, real beta);
     
 private:
     typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
+    sq::Algorithm algo_;
     AnnealMethod annealMethod_;
     
     void syncBits();
@@ -79,6 +82,10 @@ private:
                                 const EigenRowVector &h, const EigenMatrix &J,
                                 const EigenMatrix &qFixed, real G, real beta);
 
+    void annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
+                                        const EigenRowVector &h, const EigenMatrix &J,
+                                        const EigenMatrix &qFixed, real G, real beta);
+    
     sq::Random *random_;
     int nMaxThreads_;
     EigenRowVector h0_, h1_;

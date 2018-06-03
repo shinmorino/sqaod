@@ -43,11 +43,19 @@ public:
     
     void makeSolution();
 
-    bool searchRange(sq::PackedBitSet *curXEnd);
+    bool searchRange(sq::PackedBitSet *curXEnd) {
+        return (this->*searchMethod_)(curXEnd);
+    }
 
     /* void search(); */
     
 private:    
+    bool searchRangeSingleThread(sq::PackedBitSet *curXEnd);
+    bool searchRangeParallel(sq::PackedBitSet *curXEnd);
+
+    typedef bool (CPUDenseGraphBFSearcher::*SearchMethod)(sq::PackedBitSet *);
+    SearchMethod searchMethod_;
+
     Matrix W_;
     real Emin_;
     Vector E_;

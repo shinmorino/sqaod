@@ -13,13 +13,13 @@ using namespace sqaod_cpu;
 template<class real>
 CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
-    annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
+    selectAlgorithm(sq::algoDefault);
 #ifdef _OPENMP
     nMaxThreads_ = omp_get_max_threads();
-    sq::log("# max threads: %d", nMaxThreads_);
 #else
     nMaxThreads_ = 1;
 #endif
+    sq::log("# max threads: %d", nMaxThreads_);
     random_ = new sq::Random[nMaxThreads_];
 }
 
@@ -40,28 +40,23 @@ template<class real>
 sq::Algorithm CPUBipartiteGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     switch (algo) {
     case sq::algoNaive:
-        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepNaive;
-        return sq::algoNaive;
     case sq::algoColoring:
+        algo_ = algo;
+        return algo_;
     case sq::algoDefault:
-        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
-        return sq::algoColoring;
+        algo_ = sq::algoColoring;
+        return algo_;
     default:
         sq::log("Uknown algo, %s, defaulting to %s.",
             sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepColoring;
-        return sq::algoColoring;
+        algo_ = sq::algoColoring;
+        return algo;
     }
 }
 
 template<class real>
 sq::Algorithm CPUBipartiteGraphAnnealer<real>::getAlgorithm() const {
-    if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepNaive)
-        return sq::algoNaive;
-    if (annealMethod_ == &CPUBipartiteGraphAnnealer::annealOneStepColoring)
-        return sq::algoColoring;
-    abort_("Must not reach here.");
-    return sq::algoDefault; /* to suppress warning. */
+    return algo_;
 }
 
 template<class real>
@@ -226,6 +221,20 @@ void CPUBipartiteGraphAnnealer<real>::prepare() {
     matQ1_.resize(m_, N1_);
     E_.resize(m_);
 
+    switch (algo_) {
+    case sq::algoNaive:
+        annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepNaive;
+        break;
+    case sq::algoColoring:
+        if (nMaxThreads_ == 1)
+            annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoring;
+        else
+            annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel;
+        break;
+    default:
+        abort_("Must not reach here.");
+    }
+    
     setState(solPrepared);
 }
 
@@ -276,15 +285,6 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     clearState(solSolutionAvailable);
 }
 
-template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
-    throwErrorIfQNotSet();
-
-    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
-    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
-}
-
-
 template<class real, class T> static inline
 void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h, const T &J, sq::SizeType N, sq::SizeType m, 
              real twoDivM, real beta, real coef, sq::Random &random) {
@@ -308,14 +308,34 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
     real twoDivM = real(2.) / m_;
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
 
-#ifndef _OPENMP
     EigenMatrix dEmat = qFixed * J.transpose();
     sq::Random &random = random_[0];
     for (int offset = 0; offset < 2; ++offset) {
         for (int im = offset; im < m_; im += 2)
             tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
     }
-#else
+}
+
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
+    throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
+
+    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
+    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+}
+
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::
+annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
+                               const EigenRowVector &h, const EigenMatrix &J,
+                               const EigenMatrix &qFixed, real G, real beta) {
+#ifdef _OPENMP    
+    real twoDivM = real(2.) / m_;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+
     int m2 = (m_ / 2) * 2; /* round down */
     EigenMatrix dEmat(qFixed.rows(), J.rows());
     // dEmat = qFixed * J.transpose();  // For debug
@@ -353,11 +373,20 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
             tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
         }
     }
-    
-
+#else
+    abort_("Must not reach here."):
 #endif
-    clearState(solSolutionAvailable);
 }
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
+    throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
+
+    annealHalfStepColoringParallel(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
+    annealHalfStepColoringParallel(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+}
+
 
 
 template<class real>
