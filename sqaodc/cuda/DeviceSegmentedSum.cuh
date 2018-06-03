@@ -389,7 +389,7 @@ DeviceSegmentedSumType<V, InIt, OutIt, OffIt, vecLen>::
 DeviceSegmentedSumType(DeviceStream *devStream){
     d_tempStoragePreAlloc_ = NULL;
     d_tempStorage_ = NULL;
-    devStream_ = NULL;
+    devStream_ = devStream;
     devAlloc_ = NULL;
     segLen_ = 0;
     nSegments_ = 0;
