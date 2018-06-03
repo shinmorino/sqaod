@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 namespace sqaod_cpu {
 
@@ -58,22 +59,26 @@ public:
     }
 
 private:    
-    void annealOneStepNaive(real G, real beta);
-    void annealOneStepColoring(real G, real beta);
-    void annealOneStepColoringParallel(real G, real beta);
-
     typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
     sq::Algorithm algo_;
-    
+
+    void annealOneStepNaive(real G, real beta);
+    void annealOneStepColoring(real G, real beta);
+    void annealOneStepColoringParallel(real G, real beta);
     /* actual annealing function for annealOneStepColored. */
     void annealColoredPlane(real G, real beta);
     void annealColoredPlaneParallel(real G, real beta);
 
+    /* experimental */
+    void annealOneStepColoringParallel2(real G, real beta);
+    sqaod_internal::ParallelWorkDistributor parallel_;
+    void annealColoredPlaneParallel2(real G, real beta);
+
     void syncBits();
     
     sq::Random *random_;
-    int nMaxThreads_;
+    int nWorkers_;
     Vector E_;
     sq::BitSetArray bitsX_;
     sq::BitSetArray bitsQ_;

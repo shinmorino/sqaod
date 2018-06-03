@@ -3,7 +3,7 @@
 
 #include <sqaodc/common/Common.h>
 #include <sqaodc/common/EigenBridge.h>
-
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 namespace sqaod_cpu {
 
@@ -64,6 +64,11 @@ public:
     void annealOneStep(real G, real beta) {
         (this->*annealMethod_)(G, beta);
     }
+    
+private:
+    typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
+    sq::Algorithm algo_;
+    AnnealMethod annealMethod_;
 
     void annealOneStepNaive(real G, real beta);
 
@@ -71,13 +76,6 @@ public:
 
     void annealOneStepColoringParallel(real G, real beta);
     
-private:
-    typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
-    sq::Algorithm algo_;
-    AnnealMethod annealMethod_;
-    
-    void syncBits();
-
     void annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                                 const EigenRowVector &h, const EigenMatrix &J,
                                 const EigenMatrix &qFixed, real G, real beta);
@@ -85,9 +83,18 @@ private:
     void annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
                                         const EigenRowVector &h, const EigenMatrix &J,
                                         const EigenMatrix &qFixed, real G, real beta);
+
+    /* experimental */
+    sqaod_internal::ParallelWorkDistributor parallel_;
+    void annealOneStepColoringParallel2(real G, real beta);
+    void annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
+                                         const EigenRowVector &h, const EigenMatrix &J,
+                                         const EigenMatrix &qFixed, real G, real beta);
+    
+    void syncBits();
     
     sq::Random *random_;
-    int nMaxThreads_;
+    int nWorkers_;
     EigenRowVector h0_, h1_;
     EigenMatrix J_;
     real c_;

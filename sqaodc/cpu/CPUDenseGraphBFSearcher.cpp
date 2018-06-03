@@ -12,13 +12,9 @@ using namespace sqaod_cpu;
 template<class real>
 CPUDenseGraphBFSearcher<real>::CPUDenseGraphBFSearcher() {
     tileSize_ = 1024;
-#ifdef _OPENMP
-    nMaxThreads_ = omp_get_max_threads();
-    sq::log("# max threads: %d", nMaxThreads_);
-#else
-    nMaxThreads_ = 1;
-#endif
-    searchers_ = new BatchSearcher[nMaxThreads_];
+    nWorkers_ = sq::getNumActiveCores();
+    sq::log("# wokers: %d", nWorkers_);
+    searchers_ = new BatchSearcher[nWorkers_];
 }
 
 template<class real>
@@ -73,12 +69,12 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
         tileSize_ = sq::SizeType(xMax_);
         sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
-    for (int idx = 0; idx < nMaxThreads_; ++idx) {
+    for (int idx = 0; idx < nWorkers_; ++idx) {
         searchers_[idx].setQUBO(W_, tileSize_);
         searchers_[idx].initSearch();
     }
 
-    if (nMaxThreads_ == 1)
+    if (nWorkers_ == 1)
         searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeSingleThread;
     else
         searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel;
@@ -108,7 +104,7 @@ void CPUDenseGraphBFSearcher<real>::makeSolution() {
 
     xList_.clear();
     sq::PackedBitSetArray packedXList;
-    for (int idx = 0; idx < nMaxThreads_; ++idx) {
+    for (int idx = 0; idx < nWorkers_; ++idx) {
         const BatchSearcher &searcher = searchers_[idx];
         if (searcher.Emin_ < Emin_) {
             Emin_ = searcher.Emin_;
@@ -188,7 +184,7 @@ bool CPUDenseGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *curXEn
         if (batchBegin < batchEnd)
             searchers_[threadNum].searchRange(batchBegin, batchEnd);
     }
-    x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nMaxThreads_), xMax_);
+    x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nWorkers_), xMax_);
     if (curXEnd != NULL)
         *curXEnd = x_;
     return (xMax_ == x_);
@@ -198,6 +194,36 @@ bool CPUDenseGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *curXEn
     return false;
 #endif
 }
+
+
+template<class real>
+bool CPUDenseGraphBFSearcher<real>::searchRangeParallel2(sq::PackedBitSet *curXEnd) {
+    throwErrorIfNotPrepared();
+    clearState(solSolutionAvailable);
+
+    auto searchWorker = [=](int threadIdx) {
+        sq::PackedBitSet batchBegin = x_ + tileSize_ * threadIdx;
+        sq::PackedBitSet batchEnd = x_ + tileSize_ * (threadIdx + 1);
+        batchBegin = std::min(std::max(0ULL, batchBegin), xMax_);
+        batchEnd = std::min(std::max(0ULL, batchEnd), xMax_);
+
+#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            rangeMap_.insert(batchBegin, batchEnd);
+        }
+#endif
+        if (batchBegin < batchEnd)
+            searchers_[threadIdx].searchRange(batchBegin, batchEnd);
+    };
+    parallel_.run(searchWorker);
+    
+    x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nWorkers_), xMax_);
+    if (curXEnd != NULL)
+        *curXEnd = x_;
+    return (xMax_ == x_);
+}
+
 
 
 template class CPUDenseGraphBFSearcher<float>;

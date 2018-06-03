@@ -14,13 +14,9 @@ template<class real>
 CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
     selectAlgorithm(sq::algoDefault);
-#ifdef _OPENMP
-    nMaxThreads_ = omp_get_max_threads();
-#else
-    nMaxThreads_ = 1;
-#endif
-    sq::log("# max threads: %d", nMaxThreads_);
-    random_ = new sq::Random[nMaxThreads_];
+    nWorkers_ = sq::getNumActiveCores();
+    sq::log("# workers: %d", nWorkers_);
+    random_ = new sq::Random[nWorkers_];
 }
 
 template<class real>
@@ -31,7 +27,7 @@ CPUBipartiteGraphAnnealer<real>::~CPUBipartiteGraphAnnealer() {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::seed(unsigned long long seed) {
-    for (int idx = 0; idx < nMaxThreads_; ++idx)
+    for (int idx = 0; idx < nWorkers_; ++idx)
         random_[idx].seed(seed + 17 * idx);
     setState(solRandSeedGiven);
 }
@@ -198,6 +194,22 @@ void CPUBipartiteGraphAnnealer<real>::randomizeSpin() {
         for (int idx = 0; idx < sq::IdxType(N1_ * m_); ++idx)
             q[idx] = random.randInt(2) ? real(1.) : real(-1.);
     }
+
+#if 0
+    auto randomizeWorker = [this](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        if (threadIdx == 0) {
+            real *q = matQ0_.data();
+            for (int idx = 0; idx < sq::IdxType(N0_ * m_); ++idx)
+                q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        }
+        else if (threadIdx == 1) {
+            real *q = matQ1_.data();
+            for (int idx = 0; idx < sq::IdxType(N1_ * m_); ++idx)
+                q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        }
+    };
+#endif
     setState(solQSet);
 }
 
@@ -226,7 +238,7 @@ void CPUBipartiteGraphAnnealer<real>::prepare() {
         annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepNaive;
         break;
     case sq::algoColoring:
-        if (nMaxThreads_ == 1)
+        if (nWorkers_ == 1)
             annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoring;
         else
             annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel;
@@ -342,7 +354,7 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int qRowSpan = (qFixed.rows() + nMaxThreads_ - 1) / nMaxThreads_;
+        int qRowSpan = (qFixed.rows() + nWorkers_ - 1) / nWorkers_;
         int qRowBegin = std::min(J.rows(), qRowSpan * threadNum);
         int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadNum + 1));
         qRowSpan = qRowEnd - qRowBegin;
@@ -376,6 +388,51 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
 #else
     abort_("Must not reach here."):
 #endif
+}
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::
+annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
+                                const EigenRowVector &h, const EigenMatrix &J,
+                                const EigenMatrix &qFixed, real G, real beta) {
+    real twoDivM = real(2.) / m_;
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+
+    int m2 = (m_ / 2) * 2; /* round down */
+    EigenMatrix dEmat(qFixed.rows(), J.rows());
+    // dEmat = qFixed * J.transpose();  // For debug
+    auto EcalWorker = [=, &qAnneal, &dEmat, &h, &J, &qFixed](int threadIdx) {
+        int qRowSpan = (qFixed.rows() + nWorkers_ - 1) / nWorkers_;
+        int qRowBegin = std::min(J.rows(), qRowSpan * threadIdx);
+        int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadIdx + 1));
+        qRowSpan = qRowEnd - qRowBegin;
+        if (0 < qRowSpan)
+            dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) =
+                    qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
+    };
+    parallel_.run(EcalWorker);
+        
+    auto flipWorker0 = [=, &qAnneal, &dEmat, &h, &J, &qFixed](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        for (int im = 2 * threadIdx; im < m2; im += 2 * nWorkers_) {
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+        }
+        if ((threadIdx == 0) && ((m_ % 2) != 0)) { /* m is odd. */
+            int im = m_ - 1;
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+        }
+    };
+    parallel_.run(flipWorker0);
+        
+    auto flipWorker1 = [=, &qAnneal, &dEmat, &h, &J, &qFixed](int threadIdx) {
+        sq::Random &random = random_[threadIdx];
+        for (int im = threadIdx * 2 + 1; im < m2; im += 2 * nWorkers_) {
+            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+        }
+    };
+    parallel_.run(flipWorker1);
+
+    clearState(solSolutionAvailable);
 }
 
 template<class real>

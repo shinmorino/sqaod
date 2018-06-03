@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
+#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
 #include <sqaodc/common/internal/RangeMap.h>
@@ -48,20 +49,25 @@ public:
     }
 
     /* void search(); */
+
     
 private:    
+    typedef bool (CPUDenseGraphBFSearcher::*SearchMethod)(sq::PackedBitSet *);
+    SearchMethod searchMethod_;
+
     bool searchRangeSingleThread(sq::PackedBitSet *curXEnd);
     bool searchRangeParallel(sq::PackedBitSet *curXEnd);
 
-    typedef bool (CPUDenseGraphBFSearcher::*SearchMethod)(sq::PackedBitSet *);
-    SearchMethod searchMethod_;
+    /* experimental */
+    sqaod_internal::ParallelWorkDistributor parallel_;
+    bool searchRangeParallel2(sq::PackedBitSet *curXEnd);
 
     Matrix W_;
     real Emin_;
     Vector E_;
     sq::BitSetArray xList_;
 
-    int nMaxThreads_;
+    int nWorkers_;
     BatchSearcher *searchers_;
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
