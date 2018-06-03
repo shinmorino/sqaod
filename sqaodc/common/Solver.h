@@ -22,9 +22,9 @@ struct Solver : NullBase {
     
     virtual Algorithm getAlgorithm() const = 0;
 
-    virtual Preferences getPreferences() const = 0;
+    virtual Preferences getPreferences() const;
 
-    virtual void setPreference(const Preference &pref) = 0;
+    virtual void setPreference(const Preference &pref);
 
     template<class V>
     void setPreference(enum PreferenceName name, const V value) {
@@ -43,7 +43,7 @@ struct Solver : NullBase {
     virtual void makeSolution() = 0;
     
 protected:
-    Solver() : solverState_(solNone), om_(optNone) { }
+    Solver() : solverState_(solNone), om_(optNone), experiment_(0) { }
 
     int solverState_;
 
@@ -72,6 +72,7 @@ protected:
     void throwErrorIfQNotSet() const;
     
     OptimizeMethod om_;
+    int experiment_;
 };
 
 

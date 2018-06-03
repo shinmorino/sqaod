@@ -28,7 +28,7 @@ enum PreferenceName {
     pnTileSize1 = 5,   /* tileSize1 for bipartite graph searchers */
     pnPrecision = 6,
     pnDevice = 7,
-    pnMax = 8,
+    pnExperiment = 100, /* flag for experiments */
 };
 
 enum PreferenceName preferenceNameFromString(const char *name);
@@ -52,6 +52,7 @@ struct Preference {
         SizeType nTrotters;
         const char *precision;
         const char *device;
+        int experiment;
     };
 };
 
