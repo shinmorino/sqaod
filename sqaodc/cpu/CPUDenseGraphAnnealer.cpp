@@ -186,8 +186,10 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     case sq::algoColoring:
         if (nWorkers_ == 1)
             annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-        else
+        else if (experiment_ == 0)
             annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel;
+        else
+            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel2;
         break;
     default:
         abort_("Must not reach here.");

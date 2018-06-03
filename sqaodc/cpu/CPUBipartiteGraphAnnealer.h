@@ -109,6 +109,7 @@ private:
     using Base::N0_;
     using Base::N1_;
     using Base::m_;
+    using Base::experiment_;
     /* annealer state */
     using Base::solRandSeedGiven;
     using Base::solPrepared;

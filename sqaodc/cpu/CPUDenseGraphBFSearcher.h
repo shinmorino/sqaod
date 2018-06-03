@@ -81,6 +81,7 @@ private:
     using Base::tileSize_;
     using Base::x_;
     using Base::xMax_;
+    using Base::experiment_;
     /* searcher state */
     using Base::solPrepared;
     using Base::solProblemSet;

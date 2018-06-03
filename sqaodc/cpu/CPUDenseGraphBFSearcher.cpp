@@ -76,8 +76,10 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
 
     if (nWorkers_ == 1)
         searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeSingleThread;
-    else
+    else if (experiment_ == 0)
         searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel;
+    else
+        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel2;
 
     setState(solPrepared);
 

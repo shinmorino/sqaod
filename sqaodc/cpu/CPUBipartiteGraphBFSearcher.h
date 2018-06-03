@@ -85,6 +85,7 @@ private:
     using Base::x1_;
     using Base::x0max_;
     using Base::x1max_;
+    using Base::experiment_;
     /* searcher state */
     using Base::solPrepared;
     using Base::solProblemSet;

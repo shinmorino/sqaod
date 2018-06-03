@@ -92,8 +92,10 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
 
     if (nWorkers_ == 1)
         searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeSingleThread;
-    else
+    else if (experiment_ == 0)
         searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeParallel;
+    else
+        searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeParallel2;
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
     sq::SizeType nX0Spans = sq::SizeType((x0max_ + tileSize0_ - 1) / tileSize0_);

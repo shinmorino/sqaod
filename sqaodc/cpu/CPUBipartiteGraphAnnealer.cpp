@@ -240,8 +240,10 @@ void CPUBipartiteGraphAnnealer<real>::prepare() {
     case sq::algoColoring:
         if (nWorkers_ == 1)
             annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoring;
-        else
+        else if (experiment_ == 0)
             annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel;
+        else
+            annealMethod_ = &CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel2;
         break;
     default:
         abort_("Must not reach here.");
