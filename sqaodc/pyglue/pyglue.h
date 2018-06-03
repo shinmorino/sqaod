@@ -291,7 +291,8 @@ int parsePreference(const char *key, PyObject *valueObj, sqaod::Preference *pref
     case sqaod::pnNumTrotters:
     case sqaod::pnTileSize:
     case sqaod::pnTileSize0:
-    case sqaod::pnTileSize1: {
+    case sqaod::pnTileSize1:
+    case sqaod::pnExperiment: {
         if (IsIntegerType(valueObj)) {
             *pref = sqaod::Preference(prefName, PyLong_AsLong(valueObj));
             return 0;
@@ -352,7 +353,8 @@ PyObject *createPreferenceValue(const sqaod::Preference &pref) {
     case sqaod::pnNumTrotters:
     case sqaod::pnTileSize:
     case sqaod::pnTileSize0:
-    case sqaod::pnTileSize1: {
+    case sqaod::pnTileSize1:
+    case sqaod::pnExperiment: {
         return Py_BuildValue("i", pref.size);
     }
     case sqaod::pnPrecision : {
