@@ -317,6 +317,14 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel(real G, real beta) 
 #endif
 }
 
+template<class real>
+void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
+    throwErrorIfQNotSet();
+    
+    for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
+        annealColoredPlaneParallel(G, beta);
+    clearState(solSolutionAvailable);
+}
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel2(real G, real beta) {
@@ -344,11 +352,11 @@ void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel2(real G, real beta)
 
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
+void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel2(real G, real beta) {
     throwErrorIfQNotSet();
     
     for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
-        annealColoredPlaneParallel(G, beta);
+        annealColoredPlaneParallel2(G, beta);
     clearState(solSolutionAvailable);
 }
 

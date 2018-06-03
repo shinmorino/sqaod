@@ -390,6 +390,17 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
 #endif
 }
 
+
+template<class real>
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
+    throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
+
+    annealHalfStepColoringParallel(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
+    annealHalfStepColoringParallel(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+}
+
+
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
@@ -436,12 +447,12 @@ annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
 }
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel(real G, real beta) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel2(real G, real beta) {
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
 
-    annealHalfStepColoringParallel(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
-    annealHalfStepColoringParallel(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+    annealHalfStepColoringParallel2(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
+    annealHalfStepColoringParallel2(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
 }
 
 
