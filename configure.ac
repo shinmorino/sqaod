@@ -108,7 +108,8 @@ fi
 
 case z${SIMD_OPT} in
      zavx2) CFLAGS="$CFLAGS -mavx2 -mfma" ;;
-     *)    CFLAGS="$CFLAGS -m${SIMD_OPT}" ;;
+     z)     CFLAGS="$CFLAGS -msse2" ;;
+     *)     CFLAGS="$CFLAGS -m${SIMD_OPT}" ;;
 esac
 AC_SUBST([SIMD_POSTFIX], "-${SIMD_OPT}")
 
