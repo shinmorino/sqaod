@@ -24,10 +24,10 @@ public:
                                sq::SizeType N, sq::SizeType m, int nPlanes);
 
     template<class real>
-    void generate(DeviceRandom &d_random, sq::SizeType size);
+    void generate(DeviceRandom &d_random, size_t size);
 
-    void generateFloat(DeviceRandom &d_random, sq::SizeType size);
-    void generateDouble(DeviceRandom &d_random, sq::SizeType size);
+    void generateFloat(DeviceRandom &d_random, size_t size);
+    void generateDouble(DeviceRandom &d_random, size_t size);
 
     template<class V>
     const V *acquire(sq::SizeType size) {
@@ -37,11 +37,11 @@ public:
     }
 
 private:
-    void reserve(sq::SizeType bufSize);
+    void reserve(size_t bufSize);
 
     sq::IdxType posInElm_;
-    sq::SizeType sizeInElm_;
-    sq::SizeType sizeInByte_;
+    size_t sizeInElm_;
+    size_t sizeInByte_;
     void *d_buffer_;
     DeviceObjectAllocator *devAlloc_;
     DeviceStream *devStream_;
@@ -49,12 +49,12 @@ private:
 
 
 template<> inline
-void DeviceRandomBuffer::generate<float>(DeviceRandom &d_random, sq::SizeType size) {
+void DeviceRandomBuffer::generate<float>(DeviceRandom &d_random, size_t size) {
     generateFloat(d_random, size);
 }
 
 template<> inline
-void DeviceRandomBuffer::generate<double>(DeviceRandom &d_random, sq::SizeType size) {
+void DeviceRandomBuffer::generate<double>(DeviceRandom &d_random, size_t size) {
     generateDouble(d_random, size);
 }
 

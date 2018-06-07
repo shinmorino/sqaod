@@ -5,14 +5,14 @@
 using namespace sqaod_cuda;
 
 DeviceRandomBuffer::DeviceRandomBuffer() {
-    sizeInByte_ = -1;
+    sizeInByte_ = (size_t)-1;
     sizeInElm_ = 0;
     posInElm_ = 0;
     d_buffer_ = NULL;
 }
 
 DeviceRandomBuffer::DeviceRandomBuffer(Device &device, DeviceStream *devStream) {
-    sizeInByte_ = -1;
+    sizeInByte_ = (size_t)-1;
     d_buffer_ = NULL;
     sizeInElm_ = 0;
     posInElm_ = 0;
@@ -27,8 +27,8 @@ void DeviceRandomBuffer::deallocate() {
     if (d_buffer_ != NULL) {
         devAlloc_->deallocate(d_buffer_);
         d_buffer_ = NULL;
-        sizeInByte_ = -1;
-        sizeInElm_ = -1;
+        sizeInByte_ = (size_t)-1;
+        sizeInElm_ = (size_t)-1;
     }
 }
 
@@ -39,7 +39,7 @@ void DeviceRandomBuffer::assignDevice(Device &device, DeviceStream *devStream) {
     devStream_ = devStream;
 }
 
-void DeviceRandomBuffer::reserve(sq::SizeType size) {
+void DeviceRandomBuffer::reserve(size_t size) {
     if ((sizeInByte_ != size) && (d_buffer_ != NULL))
         deallocate();
     if (d_buffer_ == NULL) {
@@ -62,7 +62,7 @@ void DeviceRandomBuffer::generateFlipPositions(DeviceRandom &d_random,
                                                sq::SizeType N, sq::SizeType m,
                                                int nRuns) {
     int nToGenerate = N * m * nRuns;
-    sq::SizeType size = nToGenerate * sizeof(int);
+    size_t size = nToGenerate * sizeof(int);
     reserve(size);
     sq::IdxType offset;
     sq::SizeType posToWrap;
@@ -101,7 +101,7 @@ static void genRandKernel(double *d_buffer, int nToGenerate,
 }
 
 
-void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sq::SizeType nToGenerate) {
+void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, size_t nToGenerate) {
     reserve(nToGenerate * sizeof(float));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));
@@ -116,7 +116,7 @@ void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sq::SizeType nToG
     sizeInElm_ = nToGenerate;
 }
 
-void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sq::SizeType nToGenerate) {
+void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, size_t nToGenerate) {
     reserve(nToGenerate * sizeof(double));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));
