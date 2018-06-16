@@ -25,7 +25,7 @@ def anneal(an) :
         warmup = end - begin
         # print(warmup)
         if warmup < 5. :
-            nIters = int(5. / warmup * nIters) + 1
+            nIters *= 3
             print('nIters(updated) = {0}'.format(nIters))
             
     elapsedTimePerIter = warmup / nIters        
@@ -66,7 +66,8 @@ def search(an) :
         warmup = end - begin
         # print(warmup)
         if warmup < 5. :
-            nIters = int(5. / warmup * nIters) + 1
+            nIters *= 3
+            print('nIters(updated) = {0}'.format(nIters))
             
     elapsedTimePerIter = warmup / nIters        
     nIters = int(duration / warmup * nIters) + 1
