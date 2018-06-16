@@ -9,7 +9,7 @@
 #  pragma warning(disable:4267)
 #endif
 
-#ifdef SQAOD_WITH_BLAS
+#ifdef SQAODC_WITH_BLAS
 #  define EIGEN_USE_BLAS
 #endif
 

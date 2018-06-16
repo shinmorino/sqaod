@@ -65,7 +65,7 @@ void log(const char *format, ...) FORMATATTR(1, 2);
 
 #ifdef _WIN32
 #define SQAODC_CUDA_ENABLED
-/* #define SQAOD_WITH_BLAS */
+/* #define SQAODC_WITH_BLAS */
 
 /* FIXME: to suppress warnings : 
  * warning : exception specification for virtual function is
