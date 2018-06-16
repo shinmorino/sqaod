@@ -72,11 +72,11 @@ then
 fi
 
 AC_ARG_WITH([blas],
-[  --with-blas    use CPU blas.  [[default=yes]]],
+[  --with-blas    use CPU blas.  [[default=no]]],
 [case "${withval}" in
   yes) blas=true ;;
   *)  blas=false ;;
-esac],[blas=true])
+esac],[blas=false])
 AM_CONDITIONAL([WITH_BLAS], [test x${blas} = xtrue])
 
 blasdef='#define SQAODC_WITH_BLAS' 
