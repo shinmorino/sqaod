@@ -20,11 +20,13 @@ def anneal(an) :
         for i in range(nIters) :
             # print('.', end='', file=sys.stderr)
             an.anneal_one_step(G, beta);
+        an.make_solution()
         end = timer()
         warmup = end - begin
         # print(warmup)
         if warmup < 5. :
             nIters = int(5. / warmup * nIters) + 1
+            print('nIters(updated) = {0}'.format(nIters))
             
     elapsedTimePerIter = warmup / nIters        
     nIters = int(duration / warmup * nIters) + 1
@@ -37,6 +39,7 @@ def anneal(an) :
     for i in range(nIters) :
         # print('.', end='', file=sys.stderr)
         an.anneal_one_step(G, beta);
+    an.make_solution()
     end = timer()
     elapsedTime = end - begin
     elapsedTimePerIter = elapsedTime / nIters
@@ -49,7 +52,7 @@ def anneal(an) :
 
 
 def search(an) :
-    an.prepare()
+    searher.prepare()
     timer = timeit.default_timer
     warmup = 0.
     nIters = 1
@@ -57,7 +60,8 @@ def search(an) :
         begin = timer();
         for i in range(nIters) :
             # print('.', end='', file=sys.stderr)
-            an.search();
+            searher.search();
+        searher.make_solution()
         end = timer()
         warmup = end - begin
         # print(warmup)
@@ -74,7 +78,8 @@ def search(an) :
     begin = timer();
     for i in range(nIters) :
         # print('.', end='', file=sys.stderr)
-        an.search();
+        searher.search();
+    searher.make_solution()
     end = timer()
     elapsedTime = end - begin
     elapsedTimePerIter = elapsedTime / nIters
