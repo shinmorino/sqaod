@@ -45,8 +45,8 @@ def anneal(an) :
     elapsedTimePerIter = elapsedTime / nIters
     print('Done,')
     sys.stdout.flush()
-    print('Averarge time : {0} sec, # iterations executed in {1} sec. : {2}'
-          .format(elapsedTimePerIter, duration, nIters))
+    print('Averarge time : {0} sec, {1} iterations executed in {2} sec.'
+          .format(elapsedTimePerIter, nIters, elapsedTime))
     
     return nIters, elapsedTimePerIter
 
@@ -86,8 +86,8 @@ def search(an) :
     elapsedTimePerIter = elapsedTime / nIters
     print('Done,')
     sys.stdout.flush()
-    print('Averarge time : {0} sec, # iterations executed in {1} sec. : {2}'
-          .format(elapsedTimePerIter, duration, nIters))
+    print('Averarge time : {0} sec, {1} iterations executed in {2} sec.'
+          .format(elapsedTimePerIter, nIters, elapsedTime))
     
     return nIters, elapsedTimePerIter
 
