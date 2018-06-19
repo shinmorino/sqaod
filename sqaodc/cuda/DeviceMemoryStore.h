@@ -37,7 +37,7 @@ public:
     }
     
     bool acquire(uintptr_t *addr);
-    bool release(uintptr_t addr);
+    bool release(uintptr_t addr, uintptr_t *freeKey);
 
     void addRegion(uintptr_t addr);
     
@@ -66,12 +66,13 @@ public:
     void addFreeHeap(uintptr_t pv, size_t size);
     
     uintptr_t acquire(size_t *size);
-    void release(uintptr_t addr, size_t size);
+    size_t release(uintptr_t addr, size_t size, uintptr_t *freeKey);
 
 private:
     static
     int layerIdxFromSize(size_t size);
-
+    static
+    size_t layerIdxToChunkSize(int layerIdx);
 
     enum { nBitmapLayers = 11 };
     HeapBitmap bitmapLayers_[nBitmapLayers];

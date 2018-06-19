@@ -38,7 +38,9 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
     uintptr_t key = *freeRegions_.begin();
     RegionMap::iterator rit = regions_.find(key);
 #ifdef DEBUG_ALLOC
-    fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, rit->first - regionSize_, rit->first - 1, rit->second);
+    fprintf(stderr, "Acquire Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, rit->first - regionSize_, rit->first - 1, rit->second);
+    for (RegionMap::iterator it = regions_.begin(); it != regions_.end(); ++it)
+        fprintf(stderr, "Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, it->first - regionSize_, it->first - 1, it->second);
 #endif
     int iChunk = __builtin_ctz(rit->second);
     rit->second ^= (1 << iChunk);
@@ -51,7 +53,7 @@ bool HeapBitmap::acquire(uintptr_t *addr) {
     return true;
 }
 
-bool HeapBitmap::release(uintptr_t addr) {
+bool HeapBitmap::release(uintptr_t addr, uintptr_t *freeKey) {
 #ifdef DEBUG_ALLOC
     fprintf(stderr, "Release: Region: %3d, addr: %I64x\n", regionSize_, addr);
     for (RegionMap::iterator it = regions_.begin(); it != regions_.end(); ++it)
@@ -76,10 +78,15 @@ bool HeapBitmap::release(uintptr_t addr) {
     it->second ^= (1 << chunkIdx);
     if (!isRegionEmpty(it->second))
         return false;
-        
+
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Free: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, it->first - regionSize_, it->first - 1, it->second);
+#endif
     regions_.erase(it);
     assert(freeRegions_.find(key) != freeRegions_.end());
     freeRegions_.erase(key);
+    *freeKey = regionBegin;
+
     return true;
 }
 
@@ -87,6 +94,9 @@ void HeapBitmap::addRegion(uintptr_t addr) {
     uintptr_t key = addr + regionSize_;
     freeRegions_.insert(key);
     regions_[key] = regionMask;
+#ifdef DEBUG_ALLOC
+    fprintf(stderr, "Add Region: %3d, %I64x - %I64x, mask: %2x\n", regionSize_, key - regionSize_, key - 1, regionMask);
+#endif
 }
 
 void FixedSizedChunks::initialize() {
@@ -110,6 +120,8 @@ void FixedSizedChunks::finalize() {
 
 size_t FixedSizedChunks::newHeapSize(size_t reqSize) const {
     int layerIdx = layerIdxFromSize(reqSize);
+    if (layerIdx == 0)
+        return reqSize * HeapBitmap::nChunksInRegion * HeapBitmap::nChunksInRegion * HeapBitmap::nChunksInRegion;
     if (layerIdx <= 5)
         return reqSize * HeapBitmap::nChunksInRegion * HeapBitmap::nChunksInRegion;
     return reqSize * HeapBitmap::nChunksInRegion;
@@ -136,30 +148,49 @@ uintptr_t FixedSizedChunks::acquire(size_t *size) {
     
     const int parentLayerIdx = layerIdx + 5;
     HeapBitmap &parentBitmap = bitmapLayers_[parentLayerIdx];
-    if (parentBitmap.acquire(&addr)) {
-        bitmap.addRegion(addr);
-        bool res = bitmap.acquire(&addr);
-        abortIf(!res, "bitmap.acquire() failed.");
-        return addr;
+    bool success = parentBitmap.acquire(&addr);
+    if ((!success) && (parentLayerIdx <= 5)) {
+        /* retrying with grand parent layer. */
+        HeapBitmap &gParentBitmap = bitmapLayers_[parentLayerIdx + 5];
+        success = gParentBitmap.acquire(&addr);
+        if (!success)
+            return (uintptr_t)-1;
+        parentBitmap.addRegion(addr);
+        success = parentBitmap.acquire(&addr);
     }
-
-    return (uintptr_t)-1;
+    if (!success)
+        return (uintptr_t)-1;
+    
+    bitmap.addRegion(addr);
+    bool res = bitmap.acquire(&addr);
+    abortIf(!res, "bitmap.acquire() failed.");
+    return addr;
 }
 
-void FixedSizedChunks::release(uintptr_t addr, size_t size) {
+size_t FixedSizedChunks::release(uintptr_t addr, size_t size, uintptr_t *freeKey) {
     int layerIdx = layerIdxFromSize(size);
-    bool regionReleased = bitmapLayers_[layerIdx].release(addr);
-    /* process releasing region */
-    if (regionReleased) {
-        /* FIXME: bitmap reagion is empty,
-         * returning a region to parent memory store. */
+    bool chunkReleased = bitmapLayers_[layerIdx].release(addr, freeKey);
+    if (!chunkReleased)
+        return 0;
+    while (layerIdx <= 5) {
+        addr = *freeKey;
+        layerIdx += 5;
+        chunkReleased = bitmapLayers_[layerIdx].release(addr, freeKey);
+        if (!chunkReleased)
+            return 0;
     }
+    return layerIdxToChunkSize(layerIdx) * HeapBitmap::nChunksInRegion;
 }
 
 int FixedSizedChunks::layerIdxFromSize(size_t size) {
     size_t size4 = (size + 3) / 4;
     return int(sizeof(size_t) * 8 - __builtin_clzll(size4 - 1));
 }
+
+size_t FixedSizedChunks::layerIdxToChunkSize(int layerIdx) {
+    return 4 << layerIdx;
+}
+
 
 /*
  * HeapMap
@@ -366,7 +397,7 @@ uintptr_t DeviceMemoryStore::allocFromHeapMap(size_t *size) {
         addr = heapMap_.acquire(size);
     }
 #ifdef DEBUG_ALLOC
-    fprintf(stderr, "Aqruied Heapmap: %I64x, %zd.\n", addr, *size);
+    fprintf(stderr, "Acquired Heapmap: %I64x, %zd.\n", addr, *size);
 #endif
     return addr;
 }
@@ -388,5 +419,8 @@ uintptr_t DeviceMemoryStore::allocFromFixedSizedChunks(size_t *size) {
 }
 
 void DeviceMemoryStore::deallocateInFixedSizedChunks(uintptr_t addr, size_t size) {
-    fixedSizedChunks_.release(addr, size);
+    uintptr_t freeKey = (uintptr_t)-1;
+    size_t chunkSize = fixedSizedChunks_.release(addr, size, &freeKey);
+    if (chunkSize != 0)
+        deallocateInHeapMap(freeKey, chunkSize);
 }
