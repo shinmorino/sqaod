@@ -44,15 +44,15 @@ def anneal(an) :
     elapsedTime = end - begin
     elapsedTimePerIter = elapsedTime / nIters
     print('Done,')
-    sys.stdout.flush()
     print('Averarge time : {0} sec, {1} iterations executed in {2} sec.'
           .format(elapsedTimePerIter, nIters, elapsedTime))
+    sys.stdout.flush()
     
     return nIters, elapsedTimePerIter
 
 
-def search(an) :
-    searher.prepare()
+def search(searcher) :
+    searcher.prepare()
     timer = timeit.default_timer
     warmup = 0.
     nIters = 1
@@ -60,8 +60,8 @@ def search(an) :
         begin = timer();
         for i in range(nIters) :
             # print('.', end='', file=sys.stderr)
-            searher.search();
-        searher.make_solution()
+            searcher.search();
+        searcher.make_solution()
         end = timer()
         warmup = end - begin
         # print(warmup)
@@ -79,15 +79,15 @@ def search(an) :
     begin = timer();
     for i in range(nIters) :
         # print('.', end='', file=sys.stderr)
-        searher.search();
-    searher.make_solution()
+        searcher.search();
+    searcher.make_solution()
     end = timer()
     elapsedTime = end - begin
     elapsedTimePerIter = elapsedTime / nIters
     print('Done,')
-    sys.stdout.flush()
     print('Averarge time : {0} sec, {1} iterations executed in {2} sec.'
           .format(elapsedTimePerIter, nIters, elapsedTime))
+    sys.stdout.flush()
     
     return nIters, elapsedTimePerIter
 
