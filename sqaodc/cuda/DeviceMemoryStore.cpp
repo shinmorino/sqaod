@@ -1,5 +1,6 @@
 #include "DeviceMemoryStore.h"
 #include "cudafuncs.h"
+#include <algorithm>
 
 using namespace sqaod_cuda;
 
@@ -205,7 +206,7 @@ void HeapMap::finalize() {
 }
 
 size_t HeapMap::newHeapSize() {
-    return currentHeapSize_;
+    return std::min(currentHeapSize_, 256ull << 20);
 }
 
 void HeapMap::addFreeHeap(uintptr_t heap, size_t size) {
@@ -276,7 +277,7 @@ DeviceMemoryStore::DeviceMemoryStore() {
 void DeviceMemoryStore::initialize() {
     if (enableLocalStore_) {
         fixedSizedChunks_.initialize();
-        size_t newHeapSize = 512ull * (1ull << 20); /* 512 M */
+        size_t newHeapSize = 128ull * (1ull << 20); /* 128 M */
         uintptr_t newHeap = cudaMalloc(newHeapSize);
         d_mems_.pushBack((void*)newHeap);
         heapMap_.addFreeHeap(newHeap, newHeapSize);
