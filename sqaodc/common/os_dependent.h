@@ -4,7 +4,7 @@
 
 namespace sqaod {
 
-int getNumActiveCores();
+int getDefaultNumThreads();
 
 
 void *aligned_alloc(int alignment, size_t size);

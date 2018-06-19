@@ -13,7 +13,7 @@ template<class real>
 CPUDenseGraphAnnealer<real>::CPUDenseGraphAnnealer() {
     m_ = -1;
     selectAlgorithm(sq::algoDefault);
-    nWorkers_ = sq::getNumActiveCores();
+    nWorkers_ = sq::getDefaultNumThreads();
     sq::log("# workers: %d", nWorkers_);
     random_ = new sq::Random[nWorkers_];
 }

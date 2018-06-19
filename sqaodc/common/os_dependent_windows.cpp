@@ -3,11 +3,15 @@
 
 #include "os_dependent.h"
 
-int sqaod::getNumActiveCores() {
+int sqaod::getDefaultNumThreads() {
+#ifdef _OPENMP
     HANDLE h = GetCurrentProcess();
     DWORD_PTR processAffinityMask, systemAffinityMask;
     GetProcessAffinityMask(h, &processAffinityMask, &systemAffinityMask);
     return (int)__popcnt64(processAffinityMask);
+#else
+    return 1;
+#endif
 }
 
 #include <malloc.h>

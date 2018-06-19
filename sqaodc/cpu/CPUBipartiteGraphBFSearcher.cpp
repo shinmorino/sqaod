@@ -13,7 +13,7 @@ template<class real>
 CPUBipartiteGraphBFSearcher<real>::CPUBipartiteGraphBFSearcher() {
     tileSize0_ = 1024;
     tileSize1_ = 1024;
-    nWorkers_ = sq::getNumActiveCores();
+    nWorkers_ = sq::getDefaultNumThreads();
     sq::log("# workers: %d", nWorkers_);
     searchers_ = new BatchSearcher[nWorkers_];
 }

@@ -12,7 +12,7 @@ using namespace sqaod_cpu;
 template<class real>
 CPUDenseGraphBFSearcher<real>::CPUDenseGraphBFSearcher() {
     tileSize_ = 1024;
-    nWorkers_ = sq::getNumActiveCores();
+    nWorkers_ = sq::getDefaultNumThreads();
     sq::log("# wokers: %d", nWorkers_);
     searchers_ = new BatchSearcher[nWorkers_];
 }
