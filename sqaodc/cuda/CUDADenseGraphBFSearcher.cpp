@@ -89,8 +89,8 @@ void CUDADenseGraphBFSearcher<real>::prepare() {
     deallocate();
     
     x_ = 0;
-    sq::SizeType maxTileSize = 1u << N_;
-    if (maxTileSize < tileSize_) {
+    sq::PackedBitSet maxTileSize = 1ull << N_;
+    if (maxTileSize < (sq::PackedBitSet)tileSize_) {
         tileSize_ = maxTileSize;
         sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
     }
