@@ -16,7 +16,7 @@ public:
     void assignDevice(Device &device, DeviceStream *devStream = NULL);
 
     bool available(sq::SizeType size) const {
-        int nElmsAvailable = sizeInElm_ - posInElm_;
+        size_t nElmsAvailable = sizeInElm_ - posInElm_;
         return ((int)size) <= nElmsAvailable;
     }
 
