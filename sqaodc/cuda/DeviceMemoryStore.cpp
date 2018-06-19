@@ -206,7 +206,7 @@ void HeapMap::finalize() {
 }
 
 size_t HeapMap::newHeapSize() {
-    return std::min(currentHeapSize_, 256ull << 20);
+    return std::min(currentHeapSize_, size_t(256) << 20);
 }
 
 void HeapMap::addFreeHeap(uintptr_t heap, size_t size) {
