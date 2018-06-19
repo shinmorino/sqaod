@@ -261,7 +261,7 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *cu
     return (x0_ == x0max_);
 
 #else
-    abort_(!"Must not reach here.");
+    abort_("Must not reach here.");
     return false;
 #endif
 }

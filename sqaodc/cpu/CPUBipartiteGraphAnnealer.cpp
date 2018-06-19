@@ -388,7 +388,7 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
         }
     }
 #else
-    abort_("Must not reach here."):
+    abort_("Must not reach here.");
 #endif
 }
 
