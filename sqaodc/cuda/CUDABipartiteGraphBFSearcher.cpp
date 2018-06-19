@@ -10,15 +10,15 @@ using namespace sqaod_cuda;
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher() {
-    tileSize0_ = 1024;
-    tileSize1_ = 1024;
+    tileSize0_ = 8192;
+    tileSize1_ = 8192;
     deviceAssigned_ = false;
 }
 
 template<class real>
 CUDABipartiteGraphBFSearcher<real>::CUDABipartiteGraphBFSearcher(Device &device) {
-    tileSize0_ = 1024;
-    tileSize1_ = 1024;
+    tileSize0_ = 8192;
+    tileSize1_ = 8192;
     deviceAssigned_ = false;
     assignDevice(device);
 }

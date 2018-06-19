@@ -11,13 +11,13 @@ using namespace sqaod_cuda;
 
 template<class real>
 CUDADenseGraphBFSearcher<real>::CUDADenseGraphBFSearcher() {
-    tileSize_ = 16384; /* FIXME: give a correct size */
+    tileSize_ = 1u << 18; /* FIXME: give a correct size */
     deviceAssigned_ = false;
 }
 
 template<class real>
 CUDADenseGraphBFSearcher<real>::CUDADenseGraphBFSearcher(Device &device) {
-    tileSize_ = 16384; /* FIXME: give a correct size */
+    tileSize_ = 1u << 18; /* FIXME: give a correct size */
     deviceAssigned_ = false;
     assignDevice(device);
 }
