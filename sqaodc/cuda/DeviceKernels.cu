@@ -379,6 +379,43 @@ transpose(DeviceMatrix *d_At, const DeviceMatrix &d_A) {
 }
 
 
+template <class real>
+__global__ static void
+symmetrizeKernel(real *d_Asym, sq::SizeType AtStride, const real *d_A, sq::SizeType Astride, SizeType cols, SizeType rows) {
+
+    int inTileLeft = blockDim.x * blockIdx.x;
+    int inTileTop = blockDim.y * blockIdx.y;
+    
+    int xIn = inTileLeft + threadIdx.x;
+    int yIn = inTileTop + threadIdx.y;
+
+    real vIn = (xIn < cols) && (yIn < rows) ? d_A[xIn + Astride * yIn] : real();
+
+    __shared__ real tile[32][33];
+    tile[threadIdx.y][threadIdx.x] = vIn;
+	__syncthreads();
+
+    int xOut = inTileTop + threadIdx.x;
+    int yOut = inTileLeft + threadIdx.y;
+    real vOut = tile[threadIdx.x][threadIdx.y];
+    
+    if ((xOut < rows) && (yOut < cols)) {
+        real v = d_A[xOut + AtStride * yOut];
+        d_Asym[xOut + AtStride * yOut] = (v + vOut) * real(0.5);
+    }
+}
+
+
+template<class real> void DeviceMathKernelsType<real>::
+symmetrize(DeviceMatrix *d_At, const DeviceMatrix &d_A) {
+    dim3 blockDim(32, 32);
+    dim3 gridDim(divru(d_A.cols, 32), divru(d_A.rows, 32));
+    symmetrizeKernel<<<gridDim, blockDim, 0, stream_>>>(d_At->d_data, d_At->stride, d_A.d_data, d_A.stride, d_A.cols, d_A.rows);
+    DEBUG_SYNC;
+}
+
+
+
 template<class real> void DeviceMathKernelsType<real>::
 min(DeviceScalar *d_min, const DeviceVector &d_x) {
     size_t temp_storage_bytes;
