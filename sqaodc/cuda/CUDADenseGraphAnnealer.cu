@@ -129,7 +129,8 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
     m_ = N_ / 4;
     om_ = om;
 
-    DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
+    devAlloc_->allocate(&d_J_, N_, N_);
+    DeviceMatrix *dW = &d_J_; /* use d_J_ as temp matrix. */
     DeviceMatrix *dWsym = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
     devFormulas_.devMath.symmetrize(dWsym, *dW);
