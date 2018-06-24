@@ -1,9 +1,11 @@
 #include "DeviceMathTest.h"
 #include <cuda/DeviceMath.h>
 #include <cuda/DeviceCopy.h>
+#include <cpu/SharedFormulas.h>
 #include <common/EigenBridge.h>
 #include "utils.h"
 
+namespace sqcpu = sqaod_cpu;
 namespace sqcu = sqaod_cuda;
 namespace sq = sqaod;
 
@@ -292,6 +294,15 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         HostMatrix hTrans(hMat.dim().transpose());
         sq::mapTo(hTrans) = sq::mapTo(hMat).transpose();
         TEST_ASSERT(dB == hTrans);
+    }
+
+    testcase("symmetrize") {
+        HostMatrix hMat = testMat<real>(sq::Dim(dim.rows, dim.rows));
+        devCopy(&dA, hMat);
+        devMath.symmetrize(&dB, dA);
+        device_.synchronize();
+        HostMatrix hSym = sqcpu::symmetrize(hMat);
+        TEST_ASSERT(dB == hSym);
     }
 
     testcase("mvProduct") {
