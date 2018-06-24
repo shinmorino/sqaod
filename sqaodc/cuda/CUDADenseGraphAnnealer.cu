@@ -132,11 +132,11 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
     DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     DeviceMatrix *dWsym = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
-    devCopy_.clearPadding(dW);
     devFormulas_.devMath.symmetrize(dWsym, *dW);
     if (om == sq::optMaximize)
         devFormulas_.devMath.scale(dWsym, -1., *dWsym);
     devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dWsym);
+    devCopy_.clearPadding(&d_J_);
     devStream_->synchronize();
 
     setState(solProblemSet);
@@ -156,6 +156,7 @@ void CUDADenseGraphAnnealer<real>::setHamiltonian(const HostVector &h, const Hos
 
     devCopy_(&d_h_, h);
     devCopy_(&d_J_, J);
+    devCopy_.clearPadding(&d_J_);
     devCopy_(&d_c_, c);
     devStream_->synchronize();
 
