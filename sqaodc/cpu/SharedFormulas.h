@@ -7,6 +7,10 @@ namespace sqaod_cpu {
 
 namespace sq = sqaod;
 
+template<class V>
+sq::MatrixType<V> symmetrize(const sq::MatrixType<V> &mat);
+
+
 template<class real>
 struct DGFuncs {
     typedef sq::MatrixType<real> Matrix;
