@@ -10,6 +10,9 @@
     <Filter Include="cuda">
       <UniqueIdentifier>{233c1d4f-0002-49d1-a7bf-d5fb2b487958}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common\internal">
+      <UniqueIdentifier>{8cc67127-561f-4df8-a885-d3bb912615d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\sqaodc\cuda\cudafuncs.h">
@@ -163,6 +166,27 @@
     </ClInclude>
     <ClInclude Include="..\..\sqaodc\cuda\DeviceBatchedDot.cuh">
       <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_cpp.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_linux.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_LockFree.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_omp.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\RangeMap.h">
+      <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\common\internal\ShapeChecker.h">
+      <Filter>common\internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

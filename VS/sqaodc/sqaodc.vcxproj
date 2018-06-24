@@ -16,6 +16,13 @@
     <ClInclude Include="..\..\sqaodc\common\defines.h" />
     <ClInclude Include="..\..\sqaodc\common\EigenBridge.h" />
     <ClInclude Include="..\..\sqaodc\common\Formulas.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_cpp.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_linux.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_LockFree.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ParallelWorkDistributor_omp.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\RangeMap.h" />
+    <ClInclude Include="..\..\sqaodc\common\internal\ShapeChecker.h" />
     <ClInclude Include="..\..\sqaodc\common\Matrix.h" />
     <ClInclude Include="..\..\sqaodc\common\Preference.h" />
     <ClInclude Include="..\..\sqaodc\common\Random.h" />
