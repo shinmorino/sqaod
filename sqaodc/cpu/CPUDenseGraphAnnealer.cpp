@@ -57,14 +57,15 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    sqint::matrixCheckIfSymmetric(W, __func__);
+    sqint::quboShapeCheck(W, __func__);
 
     N_ = W.rows;
     m_ = N_ / 4;
     h_.resize(N_);
     J_.resize(N_, N_);
-
-    DGFuncs<real>::calculateHamiltonian(&h_, &J_, &c_, W);
+    
+    Matrix Wsym = symmetrize(W);
+    DGFuncs<real>::calculateHamiltonian(&h_, &J_, &c_, Wsym);
     J_.clearPadding();
     om_ = om;
     if (om_ == sq::optMaximize) {
@@ -78,14 +79,13 @@ void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om
 template<class real>
 void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &J, real c) {
     sqint::isingModelShapeCheck(h, J, c, __func__);
-    sqint::matrixCheckIfSymmetric(J, __func__);
 
     N_ = J.rows;
     m_ = N_ / 4;
 
     om_ = sq::optMinimize;
     h_ = h;
-    J_ = J;
+    J_ = symmetrize(J);
     c_ = c;
     J_.clearPadding();
     setState(solProblemSet);

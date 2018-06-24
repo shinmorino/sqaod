@@ -1,6 +1,7 @@
 #include "CPUDenseGraphBFSearcher.h"
 #include "CPUDenseGraphBatchSearch.h"
 #include <sqaodc/common/internal/ShapeChecker.h>
+#include "SharedFormulas.h"
 #include <cmath>
 
 #include <float.h>
@@ -25,12 +26,12 @@ CPUDenseGraphBFSearcher<real>::~CPUDenseGraphBFSearcher() {
 
 template<class real>
 void CPUDenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om) {
-    sqint::matrixCheckIfSymmetric(W, __func__);
+    sqint::quboShapeCheck(W, __func__);
     throwErrorIf(63 < W.rows, "N must be smaller than 64, N=%d.", W.rows);
     clearState(solProblemSet);
 
     N_ = W.rows;
-    W_ = W;
+    W_ = symmetrize(W);
     om_ = om;
     if (om_ == sq::optMaximize)
         W_ *= real(-1.);
