@@ -101,7 +101,8 @@ static void genRandKernel(double *d_buffer, int nToGenerate,
 }
 
 
-void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, size_t nToGenerate) {
+void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, sq::SizeType nToGenerate) {
+    abortIf(nToGenerate < 0, "nToGenerate < 0, maybe due to overflow of nToGenerate.");
     reserve(nToGenerate * sizeof(float));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));
@@ -116,7 +117,8 @@ void DeviceRandomBuffer::generateFloat(DeviceRandom &d_random, size_t nToGenerat
     sizeInElm_ = nToGenerate;
 }
 
-void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, size_t nToGenerate) {
+void DeviceRandomBuffer::generateDouble(DeviceRandom &d_random, sq::SizeType nToGenerate) {
+    abortIf(nToGenerate < 0, "nToGenerate < 0, maybe due to overflow of nToGenerate.");
     reserve(nToGenerate * sizeof(double));
     dim3 blockDim(128);
     dim3 gridDim(divru(nToGenerate, blockDim.x));

@@ -17,17 +17,17 @@ public:
 
     bool available(sq::SizeType size) const {
         size_t nElmsAvailable = sizeInElm_ - posInElm_;
-        return ((int)size) <= nElmsAvailable;
+        return size_t(size) <= nElmsAvailable;
     }
 
     void generateFlipPositions(DeviceRandom &d_random,
                                sq::SizeType N, sq::SizeType m, int nPlanes);
 
     template<class real>
-    void generate(DeviceRandom &d_random, size_t size);
+    void generate(DeviceRandom &d_random, sq::SizeType size);
 
-    void generateFloat(DeviceRandom &d_random, size_t size);
-    void generateDouble(DeviceRandom &d_random, size_t size);
+    void generateFloat(DeviceRandom &d_random, sq::SizeType size);
+    void generateDouble(DeviceRandom &d_random, sq::SizeType size);
 
     template<class V>
     const V *acquire(sq::SizeType size) {
@@ -49,12 +49,12 @@ private:
 
 
 template<> inline
-void DeviceRandomBuffer::generate<float>(DeviceRandom &d_random, size_t size) {
+void DeviceRandomBuffer::generate<float>(DeviceRandom &d_random, sq::SizeType size) {
     generateFloat(d_random, size);
 }
 
 template<> inline
-void DeviceRandomBuffer::generate<double>(DeviceRandom &d_random, size_t size) {
+void DeviceRandomBuffer::generate<double>(DeviceRandom &d_random, sq::SizeType size) {
     generateDouble(d_random, size);
 }
 
