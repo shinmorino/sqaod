@@ -93,7 +93,7 @@ void CUDADenseGraphBFSearcher<real>::prepare() {
     x_ = 0;
     sq::PackedBitSet maxTileSize = 1ull << N_;
     if (maxTileSize < (sq::PackedBitSet)tileSize_) {
-        tileSize_ = maxTileSize;
+        tileSize_ = (sq::SizeType)maxTileSize;
         sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
     }
     batchSearch_.setQUBO(W_, tileSize_);
