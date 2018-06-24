@@ -273,8 +273,13 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
     bitsPairX_.reserve(m_);
     bitsPairQ_.reserve(m_);
 
-    int requiredSize = ((N0_ + N1_) * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    /* estimate # rand nums required per one anneal. */
+    sq::SizeType N = N0_ + N1_;
+    nRunsPerRandGen_ = maxRandBufCapacity / (m_ * N * sizeof(real));
+    nRunsPerRandGen_ = std::max(2, std::min(nRunsPerRandGen_, (sq::SizeType)maxNRunsPerRandGen));
+    sq::SizeType requiredSize = nRunsPerRandGen_ * m_ * N * sizeof(real) / sizeof(float);
     d_random_.setRequiredSize(requiredSize);
+
     setState(solPrepared);
 }
 

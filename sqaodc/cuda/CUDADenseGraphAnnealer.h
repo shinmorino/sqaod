@@ -89,7 +89,8 @@ private:
 
     enum {
         /* FIXME: parameterise */
-        nRunsPerRandGen = 10
+        maxRandBufCapacity = 128 << 20,
+        maxNRunsPerRandGen = 10,
     };
 
     void syncBits();
@@ -102,6 +103,7 @@ private:
     DeviceVector d_Jq_;
     DeviceVector h_E_;
     DeviceBitMatrix h_q_;
+    sq::SizeType nRunsPerRandGen_;
     DeviceRandomBuffer flipPosBuffer_;
     DeviceRandomBuffer realNumBuffer_;
     HostVector E_;

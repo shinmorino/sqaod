@@ -4,6 +4,7 @@
 #include "cub_iterator.cuh"
 #include <cub/cub.cuh>
 #include "DeviceBatchedDot.cuh"
+#include <algorithm>
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
@@ -275,9 +276,13 @@ void CUDADenseGraphAnnealer<real>::prepare() {
     halloc.allocate(&h_q_, sq::Dim(m_, N_));
     xlist_.reserve(m_);
     qlist_.reserve(m_);
+
     /* estimate # rand nums required per one anneal. */
-    int requiredSize = (N_ * m_ * (nRunsPerRandGen + 1)) * sizeof(real) / 4;
+    nRunsPerRandGen_ = maxRandBufCapacity / (m_ * N_ * sizeof(real));
+    nRunsPerRandGen_ = std::max(2, std::min(nRunsPerRandGen_, (sq::SizeType)maxNRunsPerRandGen));
+    sq::SizeType requiredSize = nRunsPerRandGen_ * m_ * N_ * sizeof(real) / sizeof(float);
     d_random_.setRequiredSize(requiredSize);
+
     throwOnError(cudaMemsetAsync(d_reachCount_, 0, sizeof(uint2), devStream_->getCudaStream()));
 
     DotJq<real> &dotJq = static_cast<DotJq<real>&>(*dotJq_);
@@ -461,9 +466,9 @@ void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real beta) {
     clearState(solSolutionAvailable);
     
     if (!flipPosBuffer_.available(m_ * N_))
-        flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen);
+        flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen_);
     if (!realNumBuffer_.available(m_ * N_))
-        realNumBuffer_.generate<real>(d_random_, N_ * m_ * nRunsPerRandGen);
+        realNumBuffer_.generate<real>(d_random_, N_ * m_ * nRunsPerRandGen_);
     for (int idx = 0; idx < N_; ++idx) {
         const int *d_flipPos = flipPosBuffer_.acquire<int>(m_);
         const real *d_random = realNumBuffer_.acquire<real>(m_);
