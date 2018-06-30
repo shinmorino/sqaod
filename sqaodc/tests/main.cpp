@@ -8,6 +8,7 @@
 #ifdef SQAODC_CUDA_ENABLED
 
 #include "DeviceTest.h"
+#include "DeviceTransform2dTest.h"
 #include "DeviceMathTest.h"
 #include "CUDAFormulasDGFuncTest.h"
 #include "CUDAFormulasBGFuncTest.h"
@@ -26,6 +27,7 @@ int main(int argc, char* argv[]) {
     runTest<CPUBipartiteGraphAnnealerTest>();
 #ifdef SQAODC_CUDA_ENABLED
     runTest<DeviceTest>();
+    runTest<DeviceTransform2dTest>();
     runTest<DeviceSegmentedSumTest>();
     runTest<DeviceMathTest>();
     runTest<CUDAFormulasDGFuncTest>();
