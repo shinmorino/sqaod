@@ -328,7 +328,7 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
     devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
-#if 1
+#if 0
 
 template<int offset, class real>
 __global__ static void
