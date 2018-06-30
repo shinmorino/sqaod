@@ -91,17 +91,16 @@ void CUDADenseGraphBFSearcher<real>::prepare() {
     deallocate();
     
     x_ = 0;
-    sq::PackedBitSet maxTileSize = 1ull << N_;
-    if (maxTileSize < (sq::PackedBitSet)tileSize_) {
-        tileSize_ = (sq::SizeType)maxTileSize;
-        sq::log("Tile size is adjusted to %d for N=%d", maxTileSize, N_);
+    xMax_ = 1ull << N_;
+    if (xMax_ < (sq::PackedBitSet)tileSize_) {
+        tileSize_ = (sq::SizeType)xMax_;
+        sq::log("Tile size is adjusted to %d for N=%d", tileSize_, N_);
     }
     batchSearch_.setQUBO(W_, tileSize_);
     HostObjectAllocator().allocate(&h_packedXmin_, tileSize_ * 2);
 
     Emin_ = std::numeric_limits<real>::max();
     xList_.clear();
-    xMax_ = 1ull << N_;
 
     setState(solPrepared);
 
