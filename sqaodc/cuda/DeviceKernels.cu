@@ -1,6 +1,6 @@
 #include <cub/cub.cuh>
-#include "cub_iterator.cuh"
 #include "cudafuncs.h"
+#include "devfuncs.cuh"
 #include "DeviceKernels.h"
 #include <algorithm>
 

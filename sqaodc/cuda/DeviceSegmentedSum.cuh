@@ -2,8 +2,8 @@
 
 #include <common/types.h>
 #include <cub/cub.cuh>
-#include <cuda/cub_iterator.cuh>
 #include <cuda/cudafuncs.h>
+#include <cuda/devfuncs.cuh>
 #include <map>
 
 namespace sqaod_cuda {
