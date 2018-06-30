@@ -1,4 +1,5 @@
 #include "CUDABipartiteGraphAnnealer.h"
+#include "devfuncs.cuh"
 #include <sqaodc/common/internal/ShapeChecker.h>
 #include <cmath>
 #include <float.h>
@@ -327,6 +328,8 @@ calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
     devFormulas_.devMath.mmProduct(d_Jq, 1., d_qFixed, opNone, d_J, op);
 }
 
+#if 1
+
 template<int offset, class real>
 __global__ static void
 tryFlipKernel(real *d_qAnneal, sq::SizeType qAnnealStride,
@@ -366,8 +369,6 @@ tryFlipKernel(real *d_qAnneal, sq::SizeType qAnnealStride,
     }
 }
 
-
-
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
         const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
@@ -390,6 +391,77 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     DEBUG_SYNC;
 }
 
+#else
+
+template<int offset, class real>
+__device__ __forceinline__ static void
+deviceTryFlip(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
+              int N, int m, const real *d_Emat, sq::SizeType EmatStride,
+              const real *d_h, const real *d_realRand,
+              real twoDivM, real coef, real beta, bool runLastLine) {
+    int iq = gidx;
+    int m2 = m / 2; /* round down */
+
+    if ((iq < N) && (gidy < m2)) {
+        int im = 2 * gidy + offset;
+        real q = d_qAnneal[im * qAnnealStride + iq];
+        real dE = twoDivM * q * (d_h[iq] + d_Emat[im * qAnnealStride + iq]);
+
+        int neibour0 = (im == 0) ? m - 1 : im - 1;
+        int neibour1 = (im == m - 1) ? 0 : im + 1;
+        dE -= q * (d_qAnneal[neibour0 * qAnnealStride + iq] + d_qAnneal[neibour1 * qAnnealStride + iq]) * coef;
+        real thresh = dE < real(0.) ? real(1.) : exp(-dE * beta);
+        if (thresh > d_realRand[N * gidy + iq])
+            d_qAnneal[im * qAnnealStride + iq] = - q;
+    }
+    if ((offset == 0) && runLastLine && (gidy == 0)) {
+        int im = m - 1;
+        if (iq < N) {
+            real q = d_qAnneal[im * qAnnealStride + iq];
+            real dE = twoDivM * q * (d_h[iq] + d_Emat[im * EmatStride + iq]);
+
+            int neibour0 = im - 2;
+            int neibour1 = 0;
+            dE -= q * (d_qAnneal[neibour0 * qAnnealStride + iq] + d_qAnneal[neibour1 * qAnnealStride + iq]) * coef;
+            real thresh = dE < real(0.) ? real(1.) : exp(-dE * beta);
+            if (thresh > d_realRand[N * gidy + iq])
+                d_qAnneal[im * qAnnealStride + iq] = - q;
+        }
+    }
+}
+
+template<class real> void CUDABipartiteGraphAnnealer<real>::
+tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
+        const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
+    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real twoDivM = real(2.) / m_;
+    int m2 = m_ / 2;
+    bool mIsOdd = (m_ & 1) != 0;
+
+    real *d_qAnneal_data = d_qAnneal->d_data;
+    sq::SizeType qAnnealStride = d_qAnneal->stride;
+    const real *d_Emat = d_Jq.d_data;
+    sq::SizeType EmatStride = d_Jq.stride;
+    const real *d_h_data = d_h.d_data;
+    
+    cudaStream_t stream = devStream_->getCudaStream();
+
+    auto flipOp0 = [=]__device__(int gidx, int gidy) {
+        deviceTryFlip<0>(gidx, gidy,
+                         d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                         d_h_data, d_realRand, twoDivM, coef, beta, mIsOdd);        
+    };
+    transform2d(flipOp0, N, m2, dim3(64, 2), stream);
+    
+    auto flipOp1 = [=]__device__(int gidx, int gidy) {
+        deviceTryFlip<1>(gidx, gidy,
+                         d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                         d_h_data, d_realRand, twoDivM, coef, beta, false);        
+    };
+    transform2d(flipOp1, N, m2, dim3(64, 2), stream);
+}
+
+#endif
 
 template<class real>
 void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
