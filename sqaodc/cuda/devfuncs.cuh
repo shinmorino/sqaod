@@ -2,6 +2,7 @@
 
 #include <common/types.h>
 #include <iterator>
+#include <algorithm>
 
 namespace sqaod_cuda {
 
@@ -336,5 +337,41 @@ struct iterator_traits<sqaod_cuda::InLinear2dPtr<real>> : sqaod_cuda::base_itera
 
 template<>
 struct iterator_traits<sqaod_cuda::Linear> : sqaod_cuda::base_iterator_traits<int> { };
+
+}
+
+#include "cudafuncs.h"
+
+namespace sqaod_cuda {
+
+namespace sq = sqaod;
+
+
+template<class Op>  __global__
+void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxType offset) {
+    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+    int gidy = blockDim.y * blockIdx.y + threadIdx.y + offset;
+    if ((gidx < width) && (gidy < height))
+        op(gidx, gidy);
+}
+
+template<class Op>
+void transform2d(const Op &op, sq::SizeType width, sq::SizeType height, const dim3 &blockDim, cudaStream_t stream) {
+    sq::SizeType yStep = (65535 / blockDim.y) * blockDim.y;
+    for (sq::IdxType idx = 0; idx < height; idx += yStep) {
+        int hSpan = std::min(height - idx, yStep);
+        dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
+        transform2dKernel<<<gridDim, blockDim, 0, stream>>>(op, width, height, idx);
+        DEBUG_SYNC;
+    }
+}
+
+template<class OutType, class InType>
+void transform2d(OutType d_out, InType d_in, sq::SizeType width, sq::SizeType height, const dim3 &blockDim, cudaStream_t stream) {
+    auto op = [=]__device__(int gidx, int gidy) {
+        d_out(gidx, gidy) = (typename OutType::value_type)d_in(gidx, gidy);
+    };
+    transform2d(op, width, height, blockDim, stream);
+}
 
 }

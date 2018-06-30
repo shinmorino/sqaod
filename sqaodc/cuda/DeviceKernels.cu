@@ -29,48 +29,6 @@ inline void scale(OutType &d_out, const InType &d_in, sq::SizeType size, cudaStr
     DEBUG_SYNC;
 }
 
-template<class OutType, class InType>  static __global__
-void scale2dKernel(OutType d_y, const InType d_x, SizeType width, SizeType height) {
-    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
-    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
-    if ((gidx < width) && (gidy < height))
-        d_y(gidx, gidy) = (typename OutType::value_type)d_x(gidx, gidy);
-}
-
-template<class OutType, class InType>
-static void scale2d(OutType d_out, InType d_in, sq::SizeType width, sq::SizeType height, cudaStream_t stream) {
-    dim3 blockDim(64, 2);
-    for (sq::IdxType idx = 0; idx < height; idx += 65535) {
-        int hSpan = std::min(height - idx, 65535);
-        dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
-        scale2dKernel <<<gridDim, blockDim, 0, stream>>>(d_out, d_in, width, height);
-        d_in.addYOffset(65535);  d_out.addYOffset(65535);
-        DEBUG_SYNC;
-    }
-}
-
-
-template<class Op>  static __global__
-void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxType offset) {
-    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
-    int gidy = blockDim.y * blockIdx.y + threadIdx.y + offset;
-    if ((gidx < width) && (gidy < height))
-        op(gidx, gidy);
-}
-
-template<class Op>
-static void transform2d(const Op &op, sq::SizeType width, sq::SizeType height, cudaStream_t stream) {
-    dim3 blockDim;
-    blockDim.x = std::min(roundUp(width, WARP_SIZE), 128);
-    blockDim.y = 128 / blockDim.x;
-    for (sq::IdxType idx = 0; idx < height; idx += 65535) {
-        int hSpan = std::min(height - idx, 65535);
-        dim3 gridDim(divru(width, blockDim.x), divru(hSpan, blockDim.y));
-        transform2dKernel <<<gridDim, blockDim, 0, stream>>>(op, width, height, idx);
-        DEBUG_SYNC;
-    }
-}
-
 
 template<class OutType, class InType>
 __global__ static
@@ -132,11 +90,11 @@ void DeviceMathKernelsType<real>::scale(DeviceMatrix *d_A, real alpha, const Dev
     auto inPtr = InPtr<real>(d_X.d_data, d_X.stride);
     if (addAssignFactor == 0.) {
         auto outPtr = MulOutPtr<real>(d_A->d_data, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_X.cols, d_X.rows, stream_);
+        transform2d(outPtr, inPtr, d_X.cols, d_X.rows, dim3(64, 2), stream_);
     }
     else {
         auto outPtr = AddAssignOutPtr<real>(d_A->d_data, addAssignFactor, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_X.cols, d_X.rows, stream_);
+        transform2d(outPtr, inPtr, d_X.cols, d_X.rows, dim3(64, 2), stream_);
     }
 }
     
@@ -159,11 +117,11 @@ scaleBroadcast(DeviceMatrix *d_A, real alpha, const DeviceScalar &d_c, real addA
     auto inPtr = InScalarPtr<real>(d_c.d_data);
     if (addAssignFactor == 0.) {
         auto outPtr = MulOutPtr<real>(d_A->d_data, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
     else {
         auto outPtr = AddAssignOutPtr<real>(d_A->d_data, addAssignFactor, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
 }
 
@@ -174,11 +132,11 @@ scaleBroadcastToRows(DeviceMatrix *d_A, real alpha, const DeviceVector &d_x, rea
     auto inPtr = InRowBroadcastPtr<real>(d_x.d_data);
     if (addAssignFactor == 0.) {
         auto outPtr = MulOutPtr<real>(d_A->d_data, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
     else {
         auto outPtr = AddAssignOutPtr<real>(d_A->d_data, addAssignFactor, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
 }
 
@@ -188,11 +146,11 @@ scaleBroadcastToColumns(DeviceMatrix *d_A, real alpha, const DeviceVector &d_x, 
     auto inPtr = InColumnBroadcastPtr<real>(d_x.d_data);
     if (addAssignFactor == 0.) {
         auto outPtr = MulOutPtr<real>(d_A->d_data, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
     else {
         auto outPtr = AddAssignOutPtr<real>(d_A->d_data, addAssignFactor, alpha, d_A->stride);
-        ::scale2d(outPtr, inPtr, d_A->cols, d_A->rows, stream_);
+        transform2d(outPtr, inPtr, d_A->cols, d_A->rows, dim3(64, 2), stream_);
     }
 }
 
@@ -508,14 +466,14 @@ template<class V> void DeviceCopyKernels::
 broadcast(DeviceMatrixType<V> *dst, const V &v) const {
     auto outPtr = NullOutPtr(dst->d_data, dst->stride);
     auto inPtr = InConstPtr<V>(v);
-    scale2d(outPtr, inPtr, dst->cols, dst->rows, stream_);
+    transform2d(outPtr, inPtr, dst->cols, dst->rows, dim3(64, 2), stream_);
 }
 
 template<class V> void DeviceCopyKernels::
 broadcastToRows(DeviceMatrixType<V> *dst, const DeviceVectorType<V> &vec) const {
     auto outPtr = NullOutPtr(dst->d_data, dst->stride);
     auto inPtr = InRowBroadcastPtr<V>(vec.d_data);
-    scale2d(outPtr, inPtr, dst->cols, dst->rows, stream_);
+    transform2d(outPtr, inPtr, dst->cols, dst->rows, dim3(64, 2), stream_);
 }
 
 template<class V> void DeviceCopyKernels::
@@ -536,7 +494,7 @@ template<class Vdst, class Vsrc> void DeviceCopyKernels::
 cast(DeviceMatrixType<Vdst> *dst, const DeviceMatrixType<Vsrc> &src) {
     auto outPtr = NullOutPtr(dst->d_data, dst->stride);
     auto inPtr = InPtr<Vsrc>(src.d_data, src.stride);
-    scale2d(outPtr, inPtr, src.cols, src.rows, stream_);
+    transform2d(outPtr, inPtr, src.cols, src.rows, dim3(64, 2), stream_);
 }
 
 template<class V> void DeviceCopyKernels::
@@ -546,9 +504,9 @@ clearPadding(DeviceMatrixType<V> *mat) {
         V *d_data = mat->d_data;
         sq::SizeType stride = mat->stride;
         sq::SizeType cols = mat->cols;
-        transform2d([=]__device__(int gidx, int gidy) mutable {
+        transform2d([=]__device__(int gidx, int gidy) {
             d_data[gidx + cols + gidy * stride] = V();
-        }, toPad, mat->rows, stream_);
+        }, toPad, mat->rows, dim3(32, 4), stream_);
     }
 }
 
@@ -624,44 +582,29 @@ template void sqaod_cuda::generateBitSetSequence(DeviceMatrixType<float> *d_q, P
 template void sqaod_cuda::generateBitSetSequence(DeviceMatrixType<char> *d_q, PackedBitSet xBegin, PackedBitSet xEnd, cudaStream_t stream);
 
 
-
 template<class V>
-__global__ static void
-randomizeSpin2d_Kernel(V *d_buffer, sq::SizeType stride,
-                       const unsigned int *d_random, sq::IdxType offset, sq::SizeType sizeToWrap,
-                       sq::SizeType width, sq::SizeType height) {
-    int gidx = blockDim.x * blockIdx.x + threadIdx.x;
-    int gidy = blockDim.y * blockIdx.y + threadIdx.y;
-    if ((gidx < width) && (gidy < height))
-        d_buffer[gidx + gidy * stride] =
-                (d_random[(gidx + gidy * width + offset) % sizeToWrap] & 1) ? V(1) : V(-1);
+void randomizeSpin(V *d_q, int size, int nTrotters, int stride,
+                   DeviceRandom &d_random, cudaStream_t stream) {
+    dim3 blockDim(128);
+    sq::IdxType offset;
+    sq::SizeType sizeToWrap;
+    const unsigned int *d_randnum = d_random.get(size * nTrotters, &offset, &sizeToWrap);
+    auto op = [=]__device__(int gidx, int gidy) {
+        d_q[gidx + gidy * stride] =
+            (d_randnum[(gidx + gidy * size) % sizeToWrap] & 1) ? V(1) : V(-1);
+    };
+    transform2d(op, size, nTrotters, blockDim, stream);
+    DEBUG_SYNC;
 }
-
 
 template<class V>
 void sqaod_cuda::randomizeSpin(DeviceVectorType<V> *d_q, DeviceRandom &d_random, cudaStream_t stream) {
-    dim3 blockDim(128);
-    dim3 gridDim(divru(d_q->size, blockDim.x));
-    sq::IdxType offset;
-    sq::SizeType sizeToWrap;
-    const unsigned int *d_randnum = d_random.get(d_q->size, &offset, &sizeToWrap);
-    randomizeSpin2d_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q->d_data, 0,
-                                                             d_randnum, offset, sizeToWrap,
-                                                             d_q->size, 1);
-    DEBUG_SYNC;
+    randomizeSpin(d_q->d_data, d_q->size, 1, 0, d_random, stream);
 }
 
 template<class V>
 void sqaod_cuda::randomizeSpin(DeviceMatrixType<V> *d_q, DeviceRandom &d_random, cudaStream_t stream) {
-    dim3 blockDim(64, 2);
-    dim3 gridDim(divru(d_q->cols, blockDim.x), divru(d_q->rows, blockDim.y));
-    sq::IdxType offset;
-    sq::SizeType sizeToWrap;
-    const unsigned int *d_randnum = d_random.get(d_q->cols * d_q->rows, &offset, &sizeToWrap);
-    randomizeSpin2d_Kernel<<<gridDim, blockDim, 0, stream>>>(d_q->d_data, d_q->stride,
-                                                             d_randnum, offset, sizeToWrap,
-                                                             d_q->cols, d_q->rows);
-    DEBUG_SYNC;
+    randomizeSpin(d_q->d_data, d_q->cols, d_q->rows, d_q->stride, d_random, stream);
 }
 
 template void sqaod_cuda::randomizeSpin(DeviceVectorType<double> *d_matq, DeviceRandom &d_random, cudaStream_t stream);
