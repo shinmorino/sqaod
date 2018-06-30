@@ -11,7 +11,7 @@
 
 namespace sqaod_internal {
 
-typedef struct ParallelWorkDistributor_omp ParallelWorkDistributor;
+typedef ParallelWorkDistributor_omp ParallelWorkDistributor;
 
 // typedef ParallelWorkDistributor_cpp ParallelWorkDistributor;
 // typedef ParallelWorkDistributor_LockFree ParallelWorkDistributor;
