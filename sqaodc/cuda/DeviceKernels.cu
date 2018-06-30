@@ -557,26 +557,27 @@ template<class V>
 __global__ static
 void generateBitsSequenceKernel(V *d_data, sq::SizeType stride, int N,
                                 SizeType nSeqs, PackedBitSet xBegin) {
-    IdxType seqIdx = blockDim.y * blockIdx.x + threadIdx.y;
-    if ((seqIdx < nSeqs) && (threadIdx.x < N)) {
-        PackedBitSet bits = xBegin + seqIdx;
-        bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
-        d_data[seqIdx * stride + threadIdx.x] = bitSet ? V(1) : V(0);
-    }
 }
 
 template<class V> void
 sqaod_cuda::generateBitSetSequence(DeviceMatrixType<V> *d_q, PackedBitSet xBegin, PackedBitSet xEnd,
                                    cudaStream_t stream) {
     sq::SizeType N = d_q->cols;
-    dim3 blockDim, gridDim;
+    dim3 blockDim;
     blockDim.x = roundUp(N, 32); /* Packed bits <= 63 bits. */
     blockDim.y = 128 / blockDim.x; /* 2 or 4, sequences per block. */
     SizeType nSeqs = sq::SizeType(xEnd - xBegin);
-    gridDim.x = divru(int(xEnd - xBegin), blockDim.y);
-    generateBitsSequenceKernel
-            <<<gridDim, blockDim, 0, stream>>>(d_q->d_data, d_q->stride, d_q->cols, nSeqs, xBegin);
-    DEBUG_SYNC;
+
+    V *d_data = d_q->d_data;
+    sq::SizeType stride = d_q->stride;
+
+    auto op = [=]__device__(int gidx, int gidy) {
+        IdxType seqIdx = gidy;
+        PackedBitSet bits = xBegin + seqIdx;
+        bool bitSet = bits & (1ull << (N - 1 - threadIdx.x));
+        d_data[seqIdx * stride + gidx] = bitSet ? V(1) : V(0);
+    };
+    transform2d(op, N, nSeqs, blockDim, stream);
 }
 
 template void sqaod_cuda::generateBitSetSequence(DeviceMatrixType<double> *d_q, PackedBitSet xBegin, PackedBitSet xEnd, cudaStream_t stream);
