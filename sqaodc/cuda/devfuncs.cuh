@@ -346,6 +346,24 @@ namespace sqaod_cuda {
 
 namespace sq = sqaod;
 
+template<class Op>  __global__
+void transformBlock2dKernel(Op op, sq::IdxType blockDimYOffset) {
+    dim3 blockIdxWithOffset(blockIdx);
+    blockIdxWithOffset.y += blockDimYOffset;
+    op(blockDim, blockIdxWithOffset, threadIdx);
+}
+
+template<class Op>
+void transformBlock2d(const Op &op, sq::SizeType nBlocksX, sq::SizeType nBlocksY, const dim3 &blockDim, cudaStream_t stream) {
+    sq::SizeType blockIdxYStep = 65535 / blockDim.y;
+    for (sq::IdxType blockIdxYOffset = 0; blockIdxYOffset < nBlocksY; blockIdxYOffset += blockIdxYStep) {
+        int blockDimYSpan = std::min(nBlocksY - blockIdxYOffset, blockIdxYStep);
+        dim3 gridDim(nBlocksX, blockDimYSpan);
+        transformBlock2dKernel<<<gridDim, blockDim, 0, stream>>>(op, blockIdxYOffset);
+        DEBUG_SYNC;
+    }
+}
+
 
 template<class Op>  __global__
 void transform2dKernel(Op op, sq::SizeType width, sq::SizeType height, sq::IdxType offset) {
