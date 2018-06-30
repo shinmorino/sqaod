@@ -39,13 +39,13 @@
     <ClInclude Include="..\..\sqaodc\cpu\Dot_SIMD.h" />
     <ClInclude Include="..\..\sqaodc\cpu\SharedFormulas.h" />
     <ClInclude Include="..\..\sqaodc\cuda\api.h" />
-    <ClInclude Include="..\..\sqaodc\cuda\cub_iterator.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphAnnealer.h" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDABipartiteGraphBFSearcher.h" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDADenseGraphAnnealer.h" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDADenseGraphBFSearcher.h" />
     <ClInclude Include="..\..\sqaodc\cuda\CUDAFormulas.h" />
     <ClInclude Include="..\..\sqaodc\cuda\cudafuncs.h" />
+    <ClInclude Include="..\..\sqaodc\cuda\devfuncs.cuh" />
     <ClInclude Include="..\..\sqaodc\cuda\Device.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceArray.h" />
     <ClInclude Include="..\..\sqaodc\cuda\DeviceBatchedDot.cuh" />

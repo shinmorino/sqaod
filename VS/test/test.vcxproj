@@ -105,6 +105,7 @@
     <CudaCompile>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
       <PtxAsOptionV>true</PtxAsOptionV>
+      <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -128,6 +129,7 @@
     <CudaCompile>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
       <PtxAsOptionV>true</PtxAsOptionV>
+      <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

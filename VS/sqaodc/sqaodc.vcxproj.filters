@@ -93,9 +93,6 @@
     <ClInclude Include="..\..\sqaodc\common\EigenBridge.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sqaodc\cuda\cub_iterator.cuh">
-      <Filter>cuda</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sqaodc\cuda\CUDADenseGraphAnnealer.h">
       <Filter>cuda</Filter>
     </ClInclude>
@@ -187,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqaodc\common\internal\ShapeChecker.h">
       <Filter>common\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqaodc\cuda\devfuncs.cuh">
+      <Filter>cuda</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
