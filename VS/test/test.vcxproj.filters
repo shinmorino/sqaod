@@ -30,8 +30,10 @@
     <ClInclude Include="..\..\sqaodc\tests\BFSearcherRangeCoverageTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\CPUBipartiteGraphAnnealerTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\CUDABipartiteGraphAnnealerTest.h" />
+    <ClInclude Include="..\..\sqaodc\tests\DeviceTransform2dTest.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\sqaodc\tests\DeviceSegmentedSumTest.cu" />
+    <CudaCompile Include="..\..\sqaodc\tests\DeviceTransform2dTest.cu" />
   </ItemGroup>
 </Project>

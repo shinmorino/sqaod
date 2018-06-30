@@ -43,11 +43,13 @@
     <ClInclude Include="..\..\sqaodc\tests\DeviceRandomTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\DeviceSegmentedSumTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\DeviceTest.h" />
+    <ClInclude Include="..\..\sqaodc\tests\DeviceTransform2dTest.h" />
     <ClInclude Include="..\..\sqaodc\tests\MinimalTestSuite.h" />
     <ClInclude Include="..\..\sqaodc\tests\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\sqaodc\tests\DeviceSegmentedSumTest.cu" />
+    <CudaCompile Include="..\..\sqaodc\tests\DeviceTransform2dTest.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{527F1650-4C0D-4EE3-80E0-0A231528B7EC}</ProjectGuid>
