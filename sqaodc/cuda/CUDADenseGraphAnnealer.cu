@@ -1,7 +1,7 @@
 #include "CUDADenseGraphAnnealer.h"
 #include <sqaodc/common/internal/ShapeChecker.h>
 #include "DeviceKernels.h"
-#include "cub_iterator.cuh"
+#include "devfuncs.cuh"
 #include <cub/cub.cuh>
 #include "DeviceBatchedDot.cuh"
 #include <algorithm>

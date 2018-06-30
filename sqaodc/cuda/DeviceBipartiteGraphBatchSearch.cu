@@ -1,7 +1,7 @@
 #include <cub/cub.cuh>
 #include <device_launch_parameters.h>
 #include "DeviceBipartiteGraphBatchSearch.h"
-#include "cub_iterator.cuh"
+#include "devfuncs.cuh"
 
 using namespace sqaod_cuda;
 
