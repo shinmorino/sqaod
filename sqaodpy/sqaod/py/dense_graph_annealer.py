@@ -28,7 +28,7 @@ class DenseGraphAnnealer :
 
     def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
-        checkers.symmetric_matrix(W, 'W');
+        W = (W + W.T) / 2. # symmetrize
 
         h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         self._optimize = optimize
@@ -38,7 +38,7 @@ class DenseGraphAnnealer :
         
     def set_hamiltonian(self, h, J, c) :
         checkers.dense_graph.hJc(h, J, c)
-        checkers.symmetric_matrix(J, 'J');
+        J = (J + J.T) / 2. # symmetrize
         self._optimize = sqaod.minimize
         self._h, self._J, self._c = h, J, c
         self._N = J.shape[0]
