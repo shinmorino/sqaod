@@ -187,7 +187,11 @@ template<class real>
 void DenseGraphBFSearcher<real>::setPreference(const Preference &pref) {
     if (pref.name == pnTileSize) {
         throwErrorIf(pref.tileSize <= 0, "tileSize must be a positive integer.");
-        tileSize_ = pref.tileSize;
+
+        SizeType tileSize = roundUp(pref.tileSize, 256);
+        if (pref.tileSize != tileSize)
+            log("Tile size is adjusted to %d.", tileSize_);
+        tileSize_ = tileSize;
     }
     else {
         Solver<real>::setPreference(pref);
@@ -213,15 +217,24 @@ Preferences BipartiteGraphBFSearcher<real>::getPreferences() const {
     return prefs;
 }
 
+
 template<class real>
 void BipartiteGraphBFSearcher<real>::setPreference(const Preference &pref) {
     if (pref.name == pnTileSize0) {
         throwErrorIf(pref.tileSize <= 0, "tileSize0 must be a positive integer.");
-        tileSize0_ = pref.tileSize;
+
+        SizeType tileSize0 = roundUp(pref.tileSize, 256);
+        if (pref.tileSize != tileSize0)
+            log("Tile size 0 is adjusted to %d.", tileSize0_);
+        tileSize0_ = tileSize0;
     }
     if (pref.name == pnTileSize1) {
         throwErrorIf(pref.tileSize <= 0, "tileSize1 must be a positive integer.");
-        tileSize1_ = pref.tileSize;
+
+        SizeType tileSize1 = roundUp(pref.tileSize, 256);
+        if (pref.tileSize != tileSize1)
+            log("Tile size 1 is adjusted to %d.", tileSize1_);
+        tileSize1_ = tileSize1;
     }
 }
 
