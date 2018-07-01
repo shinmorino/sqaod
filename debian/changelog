@@ -1,3 +1,17 @@
+sqaod (0.3.0-0~xenial) xenial; urgency=medium
+
+  * Beta 2. Version 0.3.0
+    Interfaces for the python package and c++ solver interfaces have been fixed.
+
+  * Peformance tuning for both CPU-based and CUDA-based solvers(#33, #34).
+
+  * Device memory leak fixed(#51).
+
+  * BLAS disabled for better performance (#52).
+
+ -- Shinya Morino <shin.morino@gmail.com>  Sun,1 July 2018 12:00:00 +0900
+
+
 sqaod (0.2.0-0~xenial) xenial; urgency=medium
 
   * Beta 1. Version 0.2.0
