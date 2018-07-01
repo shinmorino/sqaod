@@ -5,8 +5,13 @@ Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 
-## Project status (as of 5/5)
-### **Beta1 has been released on 5/5.**<BR>
+## Project status (as of 7/1)
+### Beta2 release is in preparation. <BR>
+ Beta2 codebase has been fixed.
+ * important updates in Beta2
+   - Pefromance tuning for both CPU-based and CUDA-based solvers([#33](https://github.com/shinmorino/sqaod/issues/33), [#34](https://github.com/shinmorino/sqaod/issues/34)).
+   - Device memory leak fixed([#51](https://github.com/shinmorino/sqaod/issues/51)).
+   - BLAS disabled for better performance ([#52](https://github.com/shinmorino/sqaod/issues/52)).
  * important updates in Beta1
    - Python interface is fixed.<BR>
    API change : In alpha2, set_q() was previously used to set a bit vector and an array of bit vectors to annealers.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
@@ -14,9 +19,6 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
    Setting SQAOD_VERBOSE as non '0' value to enable log output, otherwise logs are suppressed.
    - Stride is introduced to MatrixType<> and DeviceMatrixType<> to enable further optimizataion, which is the final library-wide modification.
    - For more details, please see [Beta1](https://github.com/shinmorino/sqaod/milestone/3) milestone.
-   
-The next release is [Beta2](https://github.com/shinmorino/sqaod/milestone/2) planned in the end of June.<BR>
-Since project-wide modifications have been completed, remaining works are for optimization and documentation.<BR>
 
 ## Installation  
 Here's an instruction to install beta1 binary distribution of sqaod.  Beta1 binary distribuion is provided only for Ubuntu 16.04.<BR>
@@ -105,25 +107,6 @@ $ python dense_graph_annealer.py
  
  Press <enter> to keep the current choice[*], or type selection number: 1
 ~~~
-
-You can have BLAS library of your choice as well.<BR>
-Though libsqaodc only installs libblas3 as a dependency, you can also have openblas and/or atlas as alternatives.  By using update-alternative, you can choose which BLAS library to use.
-
-~~~
- $ sudo apt-get install libopenblas-base libatlas3-base
- $ sudo update-alternatives --config libblas.so.3
- There are 3 choices for the alternative libblas.so.3 (providing /usr/lib/libblas.so.3).
-
-   Selection    Path                                    Priority   Status
- ------------------------------------------------------------
- * 0            /usr/lib/openblas-base/libblas.so.3      40        auto mode
-   1            /usr/lib/atlas-base/atlas/libblas.so.3   35        manual mode
-   2            /usr/lib/libblas/libblas.so.3            10        manual mode
-   3            /usr/lib/openblas-base/libblas.so.3      40        manual mode
- 
- Press <enter> to keep the current choice[*], or type selection number: 
-~~~
-
 
 ### Feedback and requests
 I welcome your feedback and requests.<BR>
