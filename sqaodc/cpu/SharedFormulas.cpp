@@ -147,7 +147,13 @@ void BGFuncs<real>::calculate_E_2d(Matrix *E,
     EigenMatrix ebx1 = (eb1 * ex1.transpose()).transpose(); /* FIXME: reduce transpose */
     eE.rowwise() = ebx0.row(0);
     eE.colwise() += ebx1.col(0);
+#ifdef _WIN32
+    EigenMatrix eWx = eW * ex0.transpose();
+    EigenMatrix exWx = ex1 * eWx;
+    eE += exWx;
+#else
     eE += ex1 * (eW * ex0.transpose());
+#endif
 }
 
 
