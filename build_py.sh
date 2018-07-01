@@ -15,4 +15,5 @@ python incpathgen.py > incpath
 make clean all
 cd ../../..
 
+pip install numpy=1.11
 python setup.py bdist_wheel --plat-name manylinux1_x86_64 # --python-tag=py2
