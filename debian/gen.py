@@ -44,7 +44,7 @@ Package: libsqaodc-{simd}
 Provides: libsqaodc.so.0
 Section: libs
 Architecture: amd64
-Depends:  libgomp1:amd64, libblas3:amd64, libstdc++6:amd64, ${{shlibs:Depends}}
+Depends:  libgomp1:amd64, libstdc++6:amd64, ${{shlibs:Depends}}
 Description: sqaodc library (simd opt = {simd} ).
 
 '''[1:].format(pkgver=pkgver, simd=simd)
