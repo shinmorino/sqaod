@@ -9,7 +9,7 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
 ### Beta2 release is in preparation. <BR>
  Beta2 codebase has been fixed.
  * important updates in Beta2
-   - Pefromance tuning for both CPU-based and CUDA-based solvers([#33](https://github.com/shinmorino/sqaod/issues/33), [#34](https://github.com/shinmorino/sqaod/issues/34)).
+   - Peformance tuning for both CPU-based and CUDA-based solvers([#33](https://github.com/shinmorino/sqaod/issues/33), [#34](https://github.com/shinmorino/sqaod/issues/34)).
    - Device memory leak fixed([#51](https://github.com/shinmorino/sqaod/issues/51)).
    - BLAS disabled for better performance ([#52](https://github.com/shinmorino/sqaod/issues/52)).
  * important updates in Beta1
