@@ -71,6 +71,7 @@ private:
     BatchSearcher *searchers_;
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
+    std::mutex mutex_;
     sqaod_internal::RangeMap rangeMap_;
 #endif
     
