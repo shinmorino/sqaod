@@ -1,13 +1,12 @@
 # Sqaod
-#### Latest version : Beta1 0.2.0 (deb), 0.2.0b1 (python). 
+#### Latest version : Beta2 0.3.0 (deb), 0.3.0 (python). 
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 
 ## Project status (as of 7/1)
-### Beta2 release is in preparation. <BR>
- Beta2 codebase has been fixed.
+### Beta2 has been released on 7/1. <BR>
  * important updates in Beta2
    - Peformance tuning for both CPU-based and CUDA-based solvers([#33](https://github.com/shinmorino/sqaod/issues/33), [#34](https://github.com/shinmorino/sqaod/issues/34)).
    - Device memory leak fixed([#51](https://github.com/shinmorino/sqaod/issues/51)).
@@ -21,7 +20,7 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
    - For more details, please see [Beta1](https://github.com/shinmorino/sqaod/milestone/3) milestone.
 
 ## Installation  
-Here's an instruction to install beta1 binary distribution of sqaod.  Beta1 binary distribuion is provided only for Ubuntu 16.04.<BR>
+Here's an instruction to install beta2 binary distribution of sqaod.  Beta2 binary distribuion is provided only for Ubuntu 16.04.<BR>
 If you want to use other Linux distribution, currently you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).<BR>
 Or if you need a binary distribution for your linux distro, please file a request to [Issues](https://github.com/shinmorino/sqaod/issues).  Windows version and/or docker images are possible as well.
 
@@ -41,7 +40,7 @@ Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, d
 ### 2. Installing native libraries.
 Sqaod has its own C++ native libraries which are invoked via python c-extensions.  These libraries are released as deb packages.  Please use apt-get to install them.
 
- **Note:** If you installed previous versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
+ **Note:** If you installed alpha versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
 ~~~
  # removing older packages if you instsalled.
  $ sudo apt-get remove libsqaod-cuda-9-0
