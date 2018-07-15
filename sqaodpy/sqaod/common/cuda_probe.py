@@ -12,7 +12,7 @@ def is_cuda_available() :
 
 def cuda_failure_reason() :
     try :
-        # loading driver
+        # try loading cuda module.
         import sqaod.cuda
     except RuntimeError as e :
         print(e)
