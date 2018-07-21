@@ -77,7 +77,7 @@ AC_ARG_WITH([blas],
   yes) blas=true ;;
   *)  blas=false ;;
 esac],[blas=false])
-AM_CONDITIONAL([WITH_BLAS], [test x${blas} = xfalse])
+AM_CONDITIONAL([WITH_BLAS], [test x${blas} = xtrue])
 
 blasdef='#define SQAODC_WITH_BLAS' 
 if test x$blas = xfalse

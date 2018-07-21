@@ -20,7 +20,7 @@ if CUDA_ENABLED
 test_SOURCES+=CUDAFormulasBGFuncTest.cpp CUDAFormulasDGFuncTest.cpp DeviceRandomTest.cpp CUDADenseGraphBFSolverTest.cpp DeviceSegmentedSumTest.cu CUDADenseGraphAnnealerTest.cpp CUDABipartiteGraphAnnealerTest.cpp utils.cpp DeviceMathTest.cpp DeviceTransform2dTest.cu DeviceTest.cpp
 
 LDADD+=$(top_builddir)/sqaodc/libsqaodc_cuda.la
-LDFLAGS+=-L/usr/local/cuda/lib64 -lcudart -ldl
+LDFLAGS+=-L$(CUDA_PREFIX)/lib64 -lcudart -ldl
 #LDFLAGS+=@CUDA_LDFLAGS@ -lcublas -lcurand -lcudart
 
 # CUDA build rules
