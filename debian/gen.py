@@ -2,11 +2,15 @@ from __future__ import print_function
 import sys
 
 # args, consts
-simd = sys.argv[1]
-cudaver='0-0'
-if len(sys.argv) >= 3:
-    cudaver = sys.argv[2]
-pkgver='0.2.0~xenial'
+
+sqaodver=sys.argv[1]
+distname=sys.argv[2]
+simd = sys.argv[3]
+cudaver = sys.argv[4]
+
+cudaver = cudaver.replace('.', '-')
+pkgver=sqaodver + '~' + distname
+
 pkg_name = 'libsqaodc-{simd}'.format(simd=simd)
 lib='libsqaodc.so.0'
 
