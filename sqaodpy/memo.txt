@@ -1,0 +1,4 @@
+
+$ dir2pi dist
+$ pip install --extra-index-url file://`pwd`/dist/simple --global-option build sqaod
+
