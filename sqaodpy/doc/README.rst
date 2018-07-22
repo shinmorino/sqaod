@@ -7,6 +7,11 @@ Sqaod is a collection of sovlers for simulated quantum annealing, providing a hi
 This package is intended for researchers and engineers  to explore various problems on qunatum computing with conventional workstations and servers.  Sqaod is also available for deployment in commercial usecases.
 Please visit `sqaod website <https://github.com/shinmorino/sqaod>`_ and `sqaod wiki <https://github.com/shinmorino/sqaod/wiki>`_ at github for details.
 
+Installation
+-------
+In order to use sqaod, you also need to install native libraries adding to the python package.  Please visit `sqaod website <https://github.com/shinmorino/sqaod/wiki/Installation>`_ for details.
+
+
 Features
 --------
 
