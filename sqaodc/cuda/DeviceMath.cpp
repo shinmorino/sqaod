@@ -9,7 +9,6 @@ using sq::SizeType;
 template<class real>
 void DeviceMathType<real>::broadcastToDiagonal(DeviceMatrix *A, real v) {
     assertValidMatrix(*A, __func__);
-    SizeType size = std::min(A->rows, A->cols);
     devCopy_.broadcastToDiagonal(A, v, 0);
 }
 
