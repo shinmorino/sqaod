@@ -45,7 +45,7 @@ Description: sqaodc dev files
 
 control_vpkg = '''
 Package: libsqaodc
-Provides: libsqaodc.so.0
+Provides:
 Section: libs
 Architecture: any
 Depends: libsqaodc-sse2:amd64 (>= {pkgver}), libsqaodc-avx2:amd64 (>= {pkgver})
@@ -57,7 +57,7 @@ Description: sqaodc library
 
 control_lib = '''
 Package: libsqaodc-{simd}
-Provides: libsqaodc.so.0
+Provides:
 Section: libs
 Architecture: amd64
 Depends:  libgomp1:amd64, libstdc++6:amd64, ${{shlibs:Depends}}
@@ -69,7 +69,7 @@ Description: sqaodc library (simd opt = {simd} ).
 
 control_cuda='''
 Package: libsqaodc-cuda-{cudaver}
-Provides: libsqaodc-cuda.so.0
+Provides: 
 Section: libs
 Architecture: amd64
 Depends: libsqaodc (>= {pkgver}), cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}
