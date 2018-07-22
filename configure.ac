@@ -142,8 +142,6 @@ AC_CONFIG_FILES([Makefile
 		 sqaodc/cpu/Makefile
 		 sqaodc/cuda/Makefile
 		 sqaodc/tests/Makefile
-		 sqaodpy/sqaod/cuda/src/Makefile
-		 sqaodpy/sqaod/cpu/src/Makefile
 ])
 AC_OUTPUT
 
