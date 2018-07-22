@@ -71,7 +71,7 @@ void createBipartiteGraph(sq::VectorType<real> *b0, sq::VectorType<real> *b1, sq
     *W = matrix<real>(sq::Dim(N1, N0));
 }
 
-template<class real, template<class real> class S>
+template<class real, template<class> class S>
 void runSearch(S<real> &searcher) {
     auto start = std::chrono::system_clock::now();
     searcher.search();
@@ -84,7 +84,7 @@ void runSearch(S<real> &searcher) {
 }
 
 
-template<class real, template<class real> class A>
+template<class real, template<class> class A>
 void anneal(A<real> &an) {
     real Ginit = real(20.);
     real Gfin = real(0.01);
