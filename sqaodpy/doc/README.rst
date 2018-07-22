@@ -48,7 +48,11 @@ Features
 Development plan
 ----------------
 
-Current version is Beta1, ver 0.2.0b0.
+Current version is Beta2(Update1), ver 0.3.1.
 
-* Python interfaces are fixed, and most functionalities are tested.
-* Remaining works are optimizations and documentation, which are going to be made by Beta2 planned in the end of June.
+* Ver 0.3.1 (Beta2 Update1)
+  * No changes in solvers and programming interface 
+  * Adding environmental checks(library installation, versions).
+* Ver 0.3.0 (Beta2)
+  * Python interfaces are fixed, and most functionalities are tested.
+  * Remaining works are optimizations and documentation, which are going to be made by Beta2 planned in the end of June.
