@@ -1,19 +1,52 @@
 from setuptools import setup, find_packages, Extension, dist
+from sysconfig import get_config_vars
+import numpy as np
 import sys
-
-#https://stackoverflow.com/questions/35112511/pip-setup-py-bdist-wheel-no-longer-builds-forced-non-pure-wheels
-class BinaryDistribution(dist.Distribution):
-    def has_ext_modules(self):
-        return True
-
-    
-if 'linux' in sys.platform :
-    package_data = {'sqaod.cpu' : ['*.so', 'sqaod/cpu/*.so' ], 'sqaod.cuda' : ['*.so', 'sqaod/cuda/*.so' ] }
-else :    
-    package_data = {'sqaod.cpu' : ['*.pyd', 'sqaod/cpu/*.pyd' ], 'sqaod.cuda' : ['*.pyd', 'sqaod/cuda/*.pyd' ] }
-    
+import os
+from ctypes.util import find_library
 
 name = 'sqaod'
+version = '0.3.1'
+
+npinclude = np.get_include()
+
+(opt,) = get_config_vars('OPT')
+os.environ['OPT'] = " ".join(
+    flag for flag in opt.split() if flag != '-Wstrict-prototypes'
+)
+
+
+def extension(pkg, name) :
+    ext = Extension('sqaod/{}/{}'.format(pkg, name),
+                    include_dirs = [npinclude],
+                    libraries = ['sqaodc'],
+                    library_dirs = ['/usr/lib', 'sqaod/{}'.format(pkg)],
+                    sources = ['sqaod/{}/src/{}.cpp'.format(pkg, name)],
+                    extra_compile_args = ['-std=c++11', '-Wno-format-security'])
+    return ext
+
+def cuda_extension(pkg, name) :
+    ext = Extension('sqaod/{}/{}'.format(pkg, name),
+                    include_dirs = [npinclude],
+                    libraries = ['sqaodc_cuda', 'sqaodc'],
+                    library_dirs = ['/usr/lib', 'sqaod/{}'.format(pkg)],
+                    sources = ['sqaod/{}/src/{}.cpp'.format(pkg, name)],
+                    extra_compile_args = ['-std=c++11', '-Wno-format-security'])
+    return ext
+
+ext_modules = []
+ext_modules.append(extension('cpu', 'cpu_formulas'))
+ext_modules.append(extension('cpu', 'cpu_dg_bf_searcher'))
+ext_modules.append(extension('cpu', 'cpu_dg_annealer'))
+ext_modules.append(extension('cpu', 'cpu_bg_bf_searcher'))
+ext_modules.append(extension('cpu', 'cpu_bg_annealer'))
+if find_library('sqaodc_cuda') is not None :
+    ext_modules.append(cuda_extension('cuda', 'cuda_device'))
+    ext_modules.append(cuda_extension('cuda', 'cuda_formulas'))
+    ext_modules.append(cuda_extension('cuda', 'cuda_dg_bf_searcher'))
+    ext_modules.append(cuda_extension('cuda', 'cuda_dg_annealer'))
+    ext_modules.append(cuda_extension('cuda', 'cuda_bg_bf_searcher'))
+    ext_modules.append(cuda_extension('cuda', 'cuda_bg_annealer'))
 
 pyver= [
     'Programming Language :: Python :: 2',
@@ -45,10 +78,9 @@ url = 'https://github.com/shinmorino/sqaod/'
 with open('README.rst') as file:
     long_description = file.read()
 
-
 setup(
     name=name,
-    version='0.3.1',
+    version=version,
     url=url,
     author=author,
     author_email=email,
@@ -60,7 +92,5 @@ setup(
     install_requires=['numpy>=1.11'],
     keywords='Simulated quantum annealing, Quantum annealing, Quantum computing, Monte Carlo, OpenMP, GPU, CUDA',
     classifiers=classifiers,
-    package_data=package_data,
-    include_package_data=True,
-    distclass=BinaryDistribution
+    ext_modules=ext_modules
 )
