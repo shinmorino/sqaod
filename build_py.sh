@@ -6,7 +6,7 @@
 # twine upload --repository-url https://test.pypi.org/legacy/ sqaod_py2-0.1.0-cp27-cp27mu-manylinux1.whl
 
 rm -rf sqaodpy/build sqaodpy/dist sqaodpy/*.egg-info
-pip install numpy==1.11
+pip install numpy
 
 cd sqaodpy/sqaod/cpu/src
 python incpathgen.py > incpath
@@ -16,4 +16,4 @@ python incpathgen.py > incpath
 make clean all
 cd ../../..
 
-python setup.py bdist_wheel --plat-name manylinux1_x86_64 # --python-tag=py2
+python setup_whl.py bdist_wheel --plat-name manylinux1_x86_64 # --python-tag=py2
