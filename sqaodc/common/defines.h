@@ -74,6 +74,8 @@ void log(const char *format, ...) FORMATATTR(1, 2);
 
 #endif
 
+#define SQAODC_VERSION 301  /* version 0.3.1 */
+
 
 /* define this macro to enable range coverage tests in BF searchers. */
 // #define SQAODC_ENABLE_RANGE_COVERAGE_TEST

@@ -8,6 +8,11 @@
 #include <sqaodc/common/Formulas.h>
 #include <sqaodc/common/os_dependent.h>
 
+
+extern "C"
+void sqaodc_version(int *version, const char **simd);
+
+
 namespace sqaod {
 
 bool isCUDAAvailable();
