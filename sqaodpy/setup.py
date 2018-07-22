@@ -42,7 +42,7 @@ classifiers=[
 classifiers = classifiers + pyver
 url = 'https://github.com/shinmorino/sqaod/'
 
-with open('doc/README.rst') as file:
+with open('README.rst') as file:
     long_description = file.read()
 
 
