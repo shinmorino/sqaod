@@ -29,6 +29,18 @@ Vcs-Browser: https://github.com/shinmorino/sqaod.git
 
 '''[1:]
 
+# dev package template
+control_devpkg = '''
+Package: libsqaodc-dev
+Provides:
+Section: libs
+Architecture: any
+Depends: libsqaodc:amd64 (>= {pkgver})
+Description: sqaodc dev files
+
+'''[1:].format(pkgver=pkgver)
+
+
 # virtual package template
 
 control_vpkg = '''
@@ -67,6 +79,7 @@ Description: sqaodc CUDA library
 
 if simd == 'sse2' :
     # build virtual libsqaodc.
+    control += control_devpkg
     control += control_vpkg
 control += control_lib
 if simd == 'sse2' :
