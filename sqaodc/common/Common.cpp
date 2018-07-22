@@ -133,28 +133,28 @@ namespace sq = sqaod;
 template<class V> inline
 sq::BitMatrix sq::x_from_q(const sq::MatrixType<V> &q) {
     BitMatrix x(q.dim());
-    mapTo(x) = (mapTo(q).cast<char>().array() + 1) / 2;
+    mapTo(x) = (mapTo(q).template cast<char>().array() + 1) / 2;
     return x;
 }
 
 template<class V> inline
 sq::BitSet sq::x_from_q(const sq::VectorType<V> &q) {
     BitSet x(q.size);
-    mapToRowVector(x) = (mapToRowVector(q).cast<char>().array() + 1) / 2;
+    mapToRowVector(x) = (mapToRowVector(q).template cast<char>().array() + 1) / 2;
     return x;
 }
 
 template<class V> inline
 sq::MatrixType<V> sqaod::x_to_q(const BitMatrix &x) {
     sq::MatrixType<V> q(x.dim());
-    mapTo(q) = (mapTo(x).array() * 2 - 1).cast<V>();
+    mapTo(q) = (mapTo(x).array() * 2 - 1).template cast<V>();
     return q;
 }
 
 template<class V> inline
 sq::VectorType<V> sqaod::x_to_q(const BitSet &x) {
     sq::VectorType<V> q(x.size);
-    mapToRowVector(q) = (mapToRowVector(x).array() * 2 - 1).cast<V>();
+    mapToRowVector(q) = (mapToRowVector(x).array() * 2 - 1).template cast<V>();
     return q;
 }
 
