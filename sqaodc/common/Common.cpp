@@ -2,6 +2,20 @@
 #include <iostream>
 #include <float.h>
 
+
+extern "C"
+void sqaodc_version(int *version, const char **simd) {
+    *version = SQAODC_VERSION;
+#if defined(__SSE2__)
+    *simd = "sse2";
+#elif defined(__AVX2__)
+    *simd = "avx2";
+#else
+    *simd = "none";
+#endif
+}
+
+
 #ifndef SQAODC_CUDA_ENABLED
 bool sqaod::isCUDAAvailable() {
     return false;

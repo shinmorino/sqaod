@@ -1,4 +1,12 @@
 #include <sqaodc/sqaodc_native.h>
+#include <cuda_runtime_api.h>
+
+
+extern "C"
+void sqaodc_cuda_version(int *version, int *cuda_version) {
+    *version = SQAODC_VERSION;
+    *cuda_version = CUDART_VERSION;
+}
 
 namespace sqaod {
 

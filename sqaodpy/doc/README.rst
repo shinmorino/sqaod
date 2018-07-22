@@ -7,6 +7,11 @@ Sqaod is a collection of sovlers for simulated quantum annealing, providing a hi
 This package is intended for researchers and engineers  to explore various problems on qunatum computing with conventional workstations and servers.  Sqaod is also available for deployment in commercial usecases.
 Please visit `sqaod website <https://github.com/shinmorino/sqaod>`_ and `sqaod wiki <https://github.com/shinmorino/sqaod/wiki>`_ at github for details.
 
+Installation
+-------
+In order to use sqaod, you also need to install native libraries adding to the python package.  Please visit `sqaod website <https://github.com/shinmorino/sqaod/wiki/Installation>`_ for details.
+
+
 Features
 --------
 
@@ -43,7 +48,11 @@ Features
 Development plan
 ----------------
 
-Current version is Beta1, ver 0.2.0b0.
+Current version is Beta2(Update1), ver 0.3.1.
 
-* Python interfaces are fixed, and most functionalities are tested.
-* Remaining works are optimizations and documentation, which are going to be made by Beta2 planned in the end of June.
+* Ver 0.3.1 (Beta2 Update1)
+  * No changes in solvers and programming interface 
+  * Adding environmental checks(library installation, versions).
+* Ver 0.3.0 (Beta2)
+  * Python interfaces are fixed, and most functionalities are tested.
+  * Remaining works are optimizations and documentation, which are going to be made by Beta2 planned in the end of June.

@@ -3,9 +3,15 @@
 #include <sqaodc/common/Solver.h>
 #include <sqaodc/common/Formulas.h>
 
+
+extern "C"
+void sqaodc_cuda_version(int *version, int *cuda_version);
+
+
 namespace sqaod {
 
 namespace cuda {
+
 
 class Device : public NullBase {
 public:
