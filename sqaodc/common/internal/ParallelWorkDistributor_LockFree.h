@@ -106,7 +106,12 @@ private:
     bool run_;
     std::function<void(int)> functor_;
     volatile int64_t triggered_[32];
-    std::atomic_int completionCounter_;
+    
+#if 5 <= __GNUC__
+    std::atomic_int completionCounter_;     /* g++-5 */
+#else
+    std::atomic<int> completionCounter_;
+#endif
 };
 
 }
