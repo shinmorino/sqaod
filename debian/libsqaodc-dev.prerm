@@ -5,6 +5,7 @@ set -e
 if [ "$1" != "upgrade" ]
 then
     rm -f /usr/lib/libsqaodc.so
+    rm -f /usr/lib/libsqaodc_cuda.so
 fi
 
 #DEBHELPER#
