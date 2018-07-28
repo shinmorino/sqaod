@@ -156,7 +156,7 @@ scaleBroadcastToColumns(DeviceMatrix *d_A, real alpha, const DeviceVector &d_x, 
 
 template<class real> void DeviceMathKernelsType<real>::
 sum(DeviceScalar *d_dst, real alpha, const DeviceVector &d_x, real addAssignFactor) {
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                            d_x.d_data, d_dst->d_data, d_x.size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -177,7 +177,7 @@ void DeviceMathKernelsType<real>::sum(DeviceScalar *d_dst, real alpha, const Dev
     sq::SizeType size = d_A.rows * d_A.cols;
     InLinear2dPtr<real> in(d_A.d_data, d_A.stride, d_A.cols);
 
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                            in, d_dst->d_data, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -208,7 +208,7 @@ sumDiagonal(DeviceScalar *d_dst, real alpha, const DeviceMatrix &d_A, sq::SizeTy
     int size = std::min(d_A.cols - xOffset, d_A.rows - yOffset);
 
     auto inPtr = InDiagonalPtr<real>(d_A.d_data, d_A.stride, xOffset, yOffset);
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                            inPtr, d_A.d_data, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -228,7 +228,7 @@ template<class real> void DeviceMathKernelsType<real>::
 sumRowwise(DeviceVector *d_x, real alpha, const DeviceMatrix &d_A) {
     auto outPtr = MulOutPtr<real>(d_x->d_data, alpha);
 #if 0
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     d_A.d_data, outPtr, d_A.rows,
                                     Linear(d_A.stride, 0), Linear(d_A.stride, d_A.cols),
@@ -253,7 +253,7 @@ dot(DeviceScalar *d_c, real alpha, const DeviceVector &d_x, const DeviceVector &
     InDotPtr<real> inPtr(d_x.d_data, d_y.d_data);
     if (addAssignFactor == 0.) {
         auto outPtr = MulOutPtr<real>(d_c->d_data, alpha);
-        size_t temp_storage_bytes;
+        size_t temp_storage_bytes = 0;
         cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                                inPtr, outPtr, d_x.size, stream_, CUB_DEBUG);
         void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -263,7 +263,7 @@ dot(DeviceScalar *d_c, real alpha, const DeviceVector &d_x, const DeviceVector &
     }
     else {
         auto outPtr = AddAssignOutPtr<real>(d_c->d_data, addAssignFactor, alpha);
-        size_t temp_storage_bytes;
+        size_t temp_storage_bytes = 0;
         cub::DeviceReduce::Sum(NULL, temp_storage_bytes,
                                inPtr, outPtr, d_x.size, stream_, CUB_DEBUG);
         void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -282,7 +282,7 @@ dotRowwise(DeviceVector *d_z, real alpha, const DeviceMatrix &d_X, const DeviceM
     InDotPtr<real> inPtr(d_X.d_data, d_Y.d_data);
     auto outPtr = MulOutPtr<real>(d_z->d_data, alpha);
     InDotPtr<real> inPtr(d_X.d_data, d_y.d_data);
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceSegmentedReduce::Sum(NULL, temp_storage_bytes,
                                     inPtr, outPtr, nBatch,
                                     Linear(xStride, 0), Linear(xStride, size),
@@ -378,7 +378,7 @@ symmetrize(DeviceMatrix *d_Asym, const DeviceMatrix &d_A) {
 
 template<class real> void DeviceMathKernelsType<real>::
 min(DeviceScalar *d_min, const DeviceVector &d_x) {
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceReduce::Min(NULL, temp_storage_bytes,
                            d_x.d_data, d_min->d_data, d_x.size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
@@ -392,7 +392,7 @@ min(DeviceScalar *d_min, const DeviceMatrix &d_A) {
     sq::SizeType size = d_A.rows * d_A.cols;
     InLinear2dPtr<real> in(d_A.d_data, d_A.stride, d_A.cols);
 
-    size_t temp_storage_bytes;
+    size_t temp_storage_bytes = 0;
     cub::DeviceReduce::Min(NULL, temp_storage_bytes,
                            in, d_min->d_data, size, stream_, CUB_DEBUG);
     void *d_temp_storage = devStream_->allocate(temp_storage_bytes, __func__);
