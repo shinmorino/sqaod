@@ -5,19 +5,17 @@ Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 
-## Project status (as of 7/1)
-### Beta2 has been released on 7/1. <BR>
- * important updates in Beta2
-   - Peformance tuning for both CPU-based and CUDA-based solvers([#33](https://github.com/shinmorino/sqaod/issues/33), [#34](https://github.com/shinmorino/sqaod/issues/34)).
-   - Device memory leak fixed([#51](https://github.com/shinmorino/sqaod/issues/51)).
-   - BLAS disabled for better performance ([#52](https://github.com/shinmorino/sqaod/issues/52)).
- * important updates in Beta1
-   - Python interface is fixed.<BR>
-   API change : In alpha2, set_q() was previously used to set a bit vector and an array of bit vectors to annealers.  In beta1, set_q() is to set a bit vector, and newly-introduced set_qset() is to set an array of bit vectors.
-   - SQAOD_VERBOSE env var is introduced to control log output.<BR>
-   Setting SQAOD_VERBOSE as non '0' value to enable log output, otherwise logs are suppressed.
-   - Stride is introduced to MatrixType<> and DeviceMatrixType<> to enable further optimizataion, which is the final library-wide modification.
-   - For more details, please see [Beta1](https://github.com/shinmorino/sqaod/milestone/3) milestone.
+## Project status (as of 8/10)
+### Preparing to release Beta2(Update1). <BR>
+Now Beta2 Update1 is being prepared.  This release is aiming at easier installation.<BR>
+In Beta2, binary packages are provided only for Ubuntu 16.04 and python 3.5.  If you're not using this version set of packages, you need to build sqaod from source.<BR>
+On Beta2 Update1, one is able to install sqaod on more distributions without compiling from source.  Please refer [Install process improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement) for the plan of binary package releases.<BR><BR>
+Since I made some modifications on build processes, I recommend you to checkout beta2 source code as shown below if you need to compile from source.
+~~~
+ $ git clone https://github.com/shinmorino/sqaod.git
+ $ cd sqaod
+ $ git checkout 0.3.0-beta2
+~~~
 
 ## Installation  
 Here's an instruction to install beta2 binary distribution of sqaod.  Beta2 binary distribuion is provided only for Ubuntu 16.04.<BR>
