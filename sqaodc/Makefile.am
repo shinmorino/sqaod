@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS=-I m4
 SUBDIRS=common cpu
 
 nobase_pkginclude_HEADERS=sqaodc.h common/sqaod_config.h common/defines.h common/types.h common/Common.h common/Random.h common/Matrix.h common/Array.h common/Solver.h common/Preference.h common/Formulas.h common/os_dependent.h cuda/api.h pyglue/pyglue.h pyglue/annealer.inc pyglue/bf_searcher.inc pyglue/formulas.inc
-libdir = @libdir@/$(build_cpu)-$(build_os)
+#libdir = @libdir@/$(build_cpu)-$(build_os)
 
 
 if CUDA_ENABLED
