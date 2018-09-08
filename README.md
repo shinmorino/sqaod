@@ -8,8 +8,11 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
 ## Project status (as of 8/10)
 ### Preparing to release Beta2(Update1). <BR>
 Now Beta2 Update1 is being prepared.  This release is aiming at easier installation.<BR>
-In Beta2, binary packages are provided only for Ubuntu 16.04 and python 3.5.  If you're not using this version set of packages, you need to build sqaod from source.<BR>
-On Beta2 Update1, one is able to install sqaod on more distributions without compiling from source.  Please refer [Install process improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement) for the plan of binary package releases.<BR><BR>
+On Beta2 Update1, one is able to install sqaod on more distributions without compiling from source.  Please refer [Install process improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement) for the plan of binary package releases.<BR>
+#### Update (9/8):
+Binary packages have been built for Ubuntu 16.04(CUDA 9.0/9.2), 17.10(CUDA 9.2) and CentOS(RHEL) 7 (CUDA 9.0/9.2).  Python wheels have been built for Python 2.7, 3.5, 3.6, 3.7.  All packaegs are placed at [gh-branch of the reposiroty](https://github.com/shinmorino/sqaod/tree/gh-pages/archive/sqaod-0.3.1-packages), whilch will be added to apt/rpm repositories.
+
+
 Since I made some modifications on build processes, I recommend you to checkout beta2 source code as shown below if you need to compile from source.
 ~~~
  $ git clone https://github.com/shinmorino/sqaod.git
