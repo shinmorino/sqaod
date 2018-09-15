@@ -1,24 +1,23 @@
 # Sqaod
-#### Latest version : Beta2 0.3.0 (deb), 0.3.0 (python). 
+#### Latest version : Beta2 0.3.1 (deb), 0.3.1 (python). 
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
+## Note
+Beta2(Update1) has been released.  Currently there're inconsistencies between the current release and documentation, which will be fixed during weekend.
 
-## Project status (as of 8/10)
-### Preparing to release Beta2(Update1). <BR>
-Now Beta2 Update1 is being prepared.  This release is aiming at easier installation.<BR>
+## Project status (as of 9/16)
+Beta2 Update1 has been released.  This release is aiming at easier installation.<BR>
 On Beta2 Update1, one is able to install sqaod on more distributions without compiling from source.  Please refer [Install process improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement) for the plan of binary package releases.<BR>
-#### Update (9/8):
-Binary packages have been built for Ubuntu 16.04(CUDA 9.0/9.2), 17.10(CUDA 9.2) and CentOS(RHEL) 7 (CUDA 9.0/9.2).  Python wheels have been built for Python 2.7, 3.5, 3.6, 3.7.  All packaegs are placed at [gh-branch of the reposiroty](https://github.com/shinmorino/sqaod/tree/gh-pages/archive/sqaod-0.3.1-packages), whilch will be added to apt/rpm repositories.
-
-
-Since I made some modifications on build processes, I recommend you to checkout beta2 source code as shown below if you need to compile from source.
-~~~
- $ git clone https://github.com/shinmorino/sqaod.git
- $ cd sqaod
- $ git checkout 0.3.0-beta2
-~~~
+- apt-repositories
+  - apt-repositories have been prepared for Ubuntu 16.04(CUDA 9.0/9.2) and 17.10(CUDA 9.2).
+- RPM repositories
+  - Preparation of RPM repository for CentOS(RHEL) 7 (CUDA 9.0/9.2) is still in progress.
+- Python(PyPI)
+  - Python wheels have been uploaded to PyPI for Python 2.7, 3.5, 3.6, 3.7.
+- Package files
+  - All packaegs are placed at [gh-branch of the reposiroty](https://github.com/shinmorino/sqaod/tree/gh-pages/archive/sqaod-0.3.1-packages).
 
 ## Installation  
 Here's an instruction to install beta2 binary distribution of sqaod.  Beta2 binary distribuion is provided only for Ubuntu 16.04.<BR>
