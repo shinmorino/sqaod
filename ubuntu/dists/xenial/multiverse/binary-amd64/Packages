@@ -5,34 +5,14 @@ Installed-Size: 41
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Architecture: amd64
 Source: sqaod
-Version: 0.3.0-0~xenial
-Provides: libsqaodc.so.0
-Depends: libsqaodc-sse2:amd64 (>= 0.2.0~xenial), libsqaodc-avx2:amd64 (>= 0.2.0~xenial)
-Filename: pool/multiverse/s/sqaod/libsqaodc_0.3.0-0~xenial_amd64.deb
-Size: 11076
-MD5sum: 6a2546712d8e28ba3fcc25ef5e9eaf4d
-SHA1: 44aecc8e4b959681c0cdf42e8dcebeaa07ff4988
-SHA256: 9b36d4fd6a180eaa6584c955be44b5b3888921a73c2e1cde5db93efea5be3810
-SHA512: b4cb8ecf8f8cf881de5be08659e35aed112f1cb0d88ec314681870484b76b6fe3f1bf0a83b5670bfa57d04e24950605c564c3b95ab0fae9041b9e48fbb3c3afb
-Description: sqaodc library
-Homepage: https://github.com/shinmorino/sqaod
-
-Package: libsqaodc
-Priority: optional
-Section: libs
-Installed-Size: 41
-Maintainer: Shinya Morino <shin.morino@gmail.com>
-Architecture: amd64
-Source: sqaod
-Version: 0.2.0-0~xenial
-Provides: libsqaodc.so.0
-Depends: libsqaodc-sse2:amd64 (>= 0.2.0~xenial), libsqaodc-avx2:amd64 (>= 0.2.0~xenial)
-Filename: pool/multiverse/s/sqaod/libsqaodc_0.2.0-0~xenial_amd64.deb
-Size: 10966
-MD5sum: 9167d3449b49730ec5acd986a2d49a3f
-SHA1: e99e861a36504b7ddb9b0b3cfc921efdb4623745
-SHA256: dca6637ef385cd94da55f29e1d5843573047237fca4cb95031b0284ecd948a5b
-SHA512: 18a81bcb0f2e2a1670655ece9ae4ca2591bcc0471f94e8eb22f4bf1f9fa3d6f184eb01d85fc83907d3f066072232eaa2703c4559afb8dba623d87d26cf63c660
+Version: 0.3.1-0~xenial
+Depends: libsqaodc-sse2:amd64 (>= 0.3.1~xenial), libsqaodc-avx2:amd64 (>= 0.3.1~xenial)
+Filename: pool/multiverse/s/sqaod/libsqaodc_0.3.1-0~xenial_amd64.deb
+Size: 11192
+MD5sum: 40c7c5012e2db9d61b1802693b265343
+SHA1: bb138940dfc60824361debdaea157bda6f08947e
+SHA256: ca672d88ebf8ac8ea04978d7a824169e554f8ace6c4e5fc00b2aa0296825e229
+SHA512: 70e3a6bdbf95feb648892cbbca28478ada36784addce1b8decaf361dde5aab7d07aea3a29c82a5b094a9790473638ea7bade605bf44961be9e9063fdf76b0ded
 Description: sqaodc library
 Homepage: https://github.com/shinmorino/sqaod
 
@@ -43,73 +23,69 @@ Installed-Size: 459
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Architecture: amd64
 Source: sqaod
-Version: 0.3.0-0~xenial
-Provides: libsqaodc.so.0
+Version: 0.3.1-0~xenial
 Depends: libgomp1:amd64, libstdc++6:amd64, libc6 (>= 2.16), libgcc1 (>= 1:3.0), libgomp1 (>= 4.9)
-Filename: pool/multiverse/s/sqaod/libsqaodc-avx2_0.3.0-0~xenial_amd64.deb
-Size: 117040
-MD5sum: abc5e876f94d3206c6e50d60a3d7176b
-SHA1: f7e137b588414e6cc4e4c3d9d37a4fb077a65abe
-SHA256: 06c60004309f1d7db9a7d8dd94553000ed5be93f722e34bbfdae13078a8f2ecf
-SHA512: e40bbdaa29b78c96049b2dcf4d80e6163213695f4b5c17005b40107624617019744921e4c9ca03b20d9b94cdbb238ac0538ded08252489599775f546c3c434ee
-Description: sqaodc library (simd opt = avx2 ).
-Homepage: https://github.com/shinmorino/sqaod
-
-Package: libsqaodc-avx2
-Priority: optional
-Section: libs
-Installed-Size: 407
-Maintainer: Shinya Morino <shin.morino@gmail.com>
-Architecture: amd64
-Source: sqaod
-Version: 0.2.0-0~xenial
-Provides: libsqaodc.so.0
-Depends: libgomp1:amd64, libblas3:amd64, libstdc++6:amd64, libc6 (>= 2.16), libgcc1 (>= 1:3.0), libgomp1 (>= 4.9)
-Filename: pool/multiverse/s/sqaod/libsqaodc-avx2_0.2.0-0~xenial_amd64.deb
-Size: 106696
-MD5sum: a0dd7f2225c0459b8201313763b9a614
-SHA1: a6d0325e6e3eeb853676b6d653f7cd27dd19f41b
-SHA256: 6f5960a064ee215ce50f210ced68d2db46ca60313c1508602ffb8309b410eb49
-SHA512: a2679e7548ca1e1a02d0ae16121af3d5ffd6653bf8cd75ede5b0c881b8b96ee6e6e3d44fbd2e3d2a8dd607fa99b69174366149dc22d5cbfcad6799bddc43ee74
+Filename: pool/multiverse/s/sqaod/libsqaodc-avx2_0.3.1-0~xenial_amd64.deb
+Size: 117312
+MD5sum: a8d56b00858bb0c741a1a86d4ecd9233
+SHA1: 1e8ff00d9f4443950e135e8f09ad55ee577889a8
+SHA256: 60d453dbbc14f469d1a83bd5ed09afc8f64e9975171db788f0d6a3195c4ad574
+SHA512: fc32789a576681855273dd8d6f30b209b6754f320653e86af2071a5c5ac36611b3452f285b241bb52fa68137969eb6c0ad4bca5dc3bc068ab02b2bc9869264fb
 Description: sqaodc library (simd opt = avx2 ).
 Homepage: https://github.com/shinmorino/sqaod
 
 Package: libsqaodc-cuda-9-0
 Priority: optional
 Section: libs
-Installed-Size: 11310
+Installed-Size: 11362
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Architecture: amd64
 Source: sqaod
-Version: 0.3.0-0~xenial
-Provides: libsqaodc-cuda.so.0
-Depends: libsqaodc (>= 0.2.0~xenial), cuda-cublas-9-0:amd64, cuda-cudart-9-0:amd64, cuda-curand-9-0:amd64, cuda-cublas-9-0, cuda-cudart-9-0, cuda-curand-9-0, libc6 (>= 2.14), libgcc1 (>= 1:3.0)
-Filename: pool/multiverse/s/sqaod/libsqaodc-cuda-9-0_0.3.0-0~xenial_amd64.deb
-Size: 1177964
-MD5sum: 5daecb054c2fa2ef8738902bfc0a29ca
-SHA1: 74b8925e2536b4f87d53e5617ca8546cecf98abb
-SHA256: f10c330ac30db106f7ba558c436aacf8fd88f0ca25a584ef458426efc2c80577
-SHA512: 6b8597cf3e4b1f552cb9f7e717dfdb8ad684dc09e76f3de9fcb266917afbd2ca3fcaae79479c4dfe155b7ae89ebb66faf079deec747c238cc4cf89e656654a33
+Version: 0.3.1-0~xenial
+Depends: libsqaodc (>= 0.3.1~xenial), cuda-cublas-9-0:amd64, cuda-cudart-9-0:amd64, cuda-curand-9-0:amd64, cuda-cublas-9-0, cuda-cudart-9-0, cuda-curand-9-0, libc6 (>= 2.14), libgcc1 (>= 1:3.0)
+Filename: pool/multiverse/s/sqaod/libsqaodc-cuda-9-0_0.3.1-0~xenial_amd64.deb
+Size: 1186484
+MD5sum: db32a2824483c1e74205ec8ffcade82d
+SHA1: 9306feb21f063314bd3c8652b79d038030a257c7
+SHA256: aa248a17c0867cb6fc71a76069b327cee5389f35fe53b19f868f354bc2cb7dba
+SHA512: aad8c880df8c4409744f2c59c23a8abd0bd11079e5ba13e0d6c221f05c4790b34229ab4b4b34f2b18dadf30f74866d6ca66a8dc90a26d6a3f717c890e2fd74b6
 Description: sqaodc CUDA library
 Homepage: https://github.com/shinmorino/sqaod
 
-Package: libsqaodc-cuda-9-0
+Package: libsqaodc-cuda-9-2
 Priority: optional
 Section: libs
-Installed-Size: 10802
+Installed-Size: 10746
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Architecture: amd64
 Source: sqaod
-Version: 0.2.0-0~xenial
-Provides: libsqaodc-cuda.so.0
-Depends: libsqaodc (>= 0.2.0~xenial), cuda-cublas-9-0:amd64, cuda-cudart-9-0:amd64, cuda-curand-9-0:amd64, cuda-cublas-9-0, cuda-cudart-9-0, cuda-curand-9-0, libc6 (>= 2.16), libgcc1 (>= 1:3.0)
-Filename: pool/multiverse/s/sqaod/libsqaodc-cuda-9-0_0.2.0-0~xenial_amd64.deb
-Size: 1113192
-MD5sum: 559b45c42cfee5e311ff48399fe5baed
-SHA1: 425dcbe2a83a42e38e0cde6b8ba4ec35a04650b1
-SHA256: f15d7568fd56bdd992510014eb6c627317f245cdfe513aa482bcbe2a161f179c
-SHA512: 7dea6d96fc2dab37ce0c59ea5967309aef2f014a2ae1a3eb2094b6ae13126bc42f70fd651859faf1e30f0922cc100cf816a8d2af8655096bbf64d58d7ca10d0f
+Version: 0.3.1-0~xenial
+Depends: libsqaodc (>= 0.3.1~xenial), cuda-cublas-9-2:amd64, cuda-cudart-9-2:amd64, cuda-curand-9-2:amd64, cuda-cublas-9-2, cuda-cudart-9-2, cuda-curand-9-2, libc6 (>= 2.14), libgcc1 (>= 1:3.0), libsqaodc-sse2
+Filename: pool/multiverse/s/sqaod/libsqaodc-cuda-9-2_0.3.1-0~xenial_amd64.deb
+Size: 1083608
+MD5sum: bbc41d9f8d5b7329de235964ccb5b690
+SHA1: ae97a481ff3cd6831cba885281918942b6f387ee
+SHA256: 2186b17d132c862260a924870aabdf308b5e6184c643bf661bf42dc1f38f9c53
+SHA512: 64854e4d8943d2c93330aff59e10ca06c1b32f67bc87dec4c31b9fbb0db1a2aee2e2adc27b1ebc4ed28b150732324666ad0457e07244865fb571d205ee8da71f
 Description: sqaodc CUDA library
+Homepage: https://github.com/shinmorino/sqaod
+
+Package: libsqaodc-dev
+Priority: optional
+Section: libs
+Installed-Size: 160
+Maintainer: Shinya Morino <shin.morino@gmail.com>
+Architecture: amd64
+Source: sqaod
+Version: 0.3.1-0~xenial
+Depends: libsqaodc:amd64 (>= 0.3.1~xenial)
+Filename: pool/multiverse/s/sqaod/libsqaodc-dev_0.3.1-0~xenial_amd64.deb
+Size: 25558
+MD5sum: a275a1cc68da0dea22a74a2e811907f5
+SHA1: 31ae4ff9b1fda33f50e97133085ade6344d4a8d2
+SHA256: 1317bd3c3613c4b57f41c50d4200286d9717d19ab56dcc8f3fa53135cdc5ce3c
+SHA512: 3213227212db9156417cc0226d68c17d26935723b5ca89d196e5849c46067fda34a23d98ff574f6c6406dc58e53a0417e347d77dba79b1e7949792739f6a2983
+Description: sqaodc dev files
 Homepage: https://github.com/shinmorino/sqaod
 
 Package: libsqaodc-sse2
@@ -119,34 +95,14 @@ Installed-Size: 447
 Maintainer: Shinya Morino <shin.morino@gmail.com>
 Architecture: amd64
 Source: sqaod
-Version: 0.3.0-0~xenial
-Provides: libsqaodc.so.0
+Version: 0.3.1-0~xenial
 Depends: libgomp1:amd64, libstdc++6:amd64, libc6 (>= 2.16), libgcc1 (>= 1:3.0), libgomp1 (>= 4.9)
-Filename: pool/multiverse/s/sqaod/libsqaodc-sse2_0.3.0-0~xenial_amd64.deb
-Size: 121018
-MD5sum: 50e186c567e7d0f021cdc9f473744c8d
-SHA1: 6f8e3b778ea0028006891c846cc10171dddc5fb9
-SHA256: 78754c8bb81d3e831808d33e1f5a794a6d14312fcdb3ec73fab4031b8b384bfb
-SHA512: 9e153d491f75f20e4de58faea4f28c2db6723fb40d23dd9e0e79743f024d9f8c6b552fdde5af7a261a54d8411a89b888213c6a093909c7d15b078a5985b8989e
-Description: sqaodc library (simd opt = sse2 ).
-Homepage: https://github.com/shinmorino/sqaod
-
-Package: libsqaodc-sse2
-Priority: optional
-Section: libs
-Installed-Size: 403
-Maintainer: Shinya Morino <shin.morino@gmail.com>
-Architecture: amd64
-Source: sqaod
-Version: 0.2.0-0~xenial
-Provides: libsqaodc.so.0
-Depends: libgomp1:amd64, libblas3:amd64, libstdc++6:amd64, libc6 (>= 2.16), libgcc1 (>= 1:3.0), libgomp1 (>= 4.9)
-Filename: pool/multiverse/s/sqaod/libsqaodc-sse2_0.2.0-0~xenial_amd64.deb
-Size: 112492
-MD5sum: 541f7cbdf317e332a41643360f4d20e7
-SHA1: af5f4c73a84fbd10a6123f1e6e22350bbc77fb82
-SHA256: 7f9900b92d7a5e52f8356b910d57ce329ef81d20ba9c71edf243515198adc026
-SHA512: 87cf81ad36ffea947c00df0419f7e1f2508e99f99e8e8b1a4e418a2dbefb1f4a95261ffdb05ad8809cb6849530a2742a1f275c39643227e7d8d62cbd76c8a3d6
+Filename: pool/multiverse/s/sqaod/libsqaodc-sse2_0.3.1-0~xenial_amd64.deb
+Size: 120886
+MD5sum: e9c0c098239761022a6cc5cfc50a7a7e
+SHA1: 4f4641f52f7ab9c46f165d0abd551fc46b900738
+SHA256: 0823f8fbcf9a745ff86b960bb5442d5a518ad6d6cba55c25545b458484f68ec5
+SHA512: c0c6926a1596e0c57ed4cb7afe8b71b09927339f2837e9d7a80a68fbea319a760a76b9f0996d95c902a157a4dd14c5fd5328f00b18e2de8e12b1ff918b783b0d
 Description: sqaodc library (simd opt = sse2 ).
 Homepage: https://github.com/shinmorino/sqaod
 

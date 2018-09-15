@@ -1,0 +1,5 @@
+Origin: ubuntu artful
+Label: ubuntu artful
+Archive: artful
+Architecture: amd64
+Component: multiverse
