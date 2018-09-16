@@ -88,7 +88,7 @@ echo 'deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86
    sudo tee /etc/apt/sources.list.d/cuda.list
 sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
 sudo apt-get update
-sudo apt--get install cuda-drivers
+sudo apt-get install cuda-drivers
 
 sudo apt-get install libsqaodc-cuda-9-0
 ~~~
