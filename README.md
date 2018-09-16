@@ -52,9 +52,9 @@ find /usr/lib | grep libsqaodc | sudo xargs rm -f
 If you installed alpha versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
 ~~~
 # removing older packages if you instsalled.
-sudo apt-get remove libsqaod-cuda-9-0
-sudo apt-get remove libsqaod-avx2
-sudo apt-get remove libsqaod
+sudo apt-get remove libsqaodc-cuda-9-0
+sudo apt-get remove libsqaodc-avx2
+sudo apt-get remove libsqaodc
 
 # remove apt-repository setting.
 sudo rm -f /etc/sources.list.d/sqaod.list
@@ -70,7 +70,7 @@ sudo apt-get install apt-transport-https apt-utils
 # adding apt repository setting.
  
 . /etc/lsb-release
-echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu ${DISTRIB_CODENAME} multiverse' | \
+echo "deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu ${DISTRIB_CODENAME} multiverse" | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
 
 # install repository key.
@@ -78,15 +78,16 @@ curl -s -L https://shinmorino.github.io/sqaod/gpgkey | sudo apt-key add -
 
 # update and install sqaodc native library.
 sudo apt-get update
-sudo apt-get install libsqaod
+sudo apt-get install libsqaodc
 ~~~
 
 ### 3. Installing CUDA driver/libraries (if you need CUDA-based solvers.)
 
 ~~~
-echo 'deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /' | \
+distribution=$(. /etc/os-release;echo $ID${VERSION_ID//.})
+echo "deb http://developer.download.nvidia.com/compute/cuda/repos/${distribution}/x86_64 /" | \
    sudo tee /etc/apt/sources.list.d/cuda.list
-sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${distribution}/x86_64/7fa2af80.pub
 sudo apt-get update
 sudo apt-get install cuda-drivers
 
@@ -108,7 +109,7 @@ pip install -U sqaod
 Python examples are in [sqaod/sqaodpy/examples](https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example).  The below is an example to run dense graph annealer.
 
 ~~~
-wget https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example/dense_graph_annealer.py
+curl -s -L -O https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example/dense_graph_annealer.py
 python dense_graph_annealer.py
 ~~~
 
