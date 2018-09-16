@@ -1,0 +1,5 @@
+[sqaod]
+name=sqaod
+baseurl=https://shinmorino.github.io/sqaod/rpm/centos7
+gpgcheck=0
+enabled=1
