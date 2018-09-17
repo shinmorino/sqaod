@@ -15,8 +15,8 @@ Ubuntu 16.04(CUDA 9.0, 9.2), 17.10(CUDA 9.2), CentOS(RHEL) 7 (CUDA 9.0, 9.2) are
 - On Ubuntu 16.04 and **17.10(New)**, users are able to install sqaod by using apt and pip, without compiling source code.
   - Apt repository for Ubuntu 16.04 has been updated to 0.3.1.
   - Apt repository for Ubuntu 17.10 has been newly created, and available to install 0.3.1.
-  - Python binary packages(wheel) for Python 2.7, 3.5, 3.6, 3.7 have been uploaded to PyPI.  
-  - Integration of RPM repository is undergoing.  CentOS/RHEL 7 users need to download RPM packages from the link, [gh-pages branch of repository](https://github.com/shinmorino/sqaod/tree/gh-pages/archive/sqaod-0.3.1-packages).
+- **New:** On CentOS(RHEL) 7, yum repository is available to install 0.3.1.
+- Python binary packages(wheel) for Python 2.7, 3.5, **3.6, 3.7 (New)** are available on PyPI.  
   
   - Please visit [Installation Process Improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement)
 
@@ -33,8 +33,8 @@ Please visit the '[Release history](https://github.com/shinmorino/sqaod/wiki/Rel
 
 If you're using Ubuntu 16.04/17.10 and CentOS(RHEL) 7, please visit [Installation](https://github.com/shinmorino/sqaod/wiki/Installation) page at sqaod wiki.
 
-If you want to use other Linux distribution other than Ubuntu 16.04/17.10 and CentOS(RHEL) 7, you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).
-If you need a binary distribution for your linux distro, please file a request to [Issues](https://github.com/shinmorino/sqaod/issues).  Windows version and/or docker images are possible as well.
+If you want to use other Linux distribution, you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).
+Please file a request to [Issues](https://github.com/shinmorino/sqaod/issues) if you need binary distribution for your linux distro.  Windows version and/or docker images are possible as well.
 
 
 Here's a quick instruction to install Beta2 Update1 release to Ubuntu 16.04/17.10.
