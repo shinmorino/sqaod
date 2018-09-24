@@ -113,6 +113,10 @@ curl -s -L -O https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/
 python dense_graph_annealer.py
 ~~~
 
+### Dockerfile
+[Dockerfile](https://github.com/shinmorino/sqaod/tree/gh-pages/docker/kato) for Ubuntu-16.04 with CUDA-9.2, contribution from [Kato-san](https://github.com/gyu-don).
+
+
 ### Feedback and requests
 I welcome your feedback and requests.<BR>
 Please file your feedback and/or requests to [Issues](https://github.com/shinmorino/sqaod/issues).<BR>
