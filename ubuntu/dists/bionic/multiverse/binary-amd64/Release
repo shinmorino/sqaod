@@ -1,0 +1,5 @@
+Origin: ubuntu bionic
+Label: ubuntu bionic
+Archive: bionic
+Architecture: amd64
+Component: multiverse
