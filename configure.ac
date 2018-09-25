@@ -44,7 +44,7 @@ then
   fi
   echo "CUDA Prefix : $cuda_prefix"
 
-  cuda_ver=`echo $cuda_prefix | grep -o -e 9\.[[0-9]]`
+  cuda_ver=`echo $cuda_prefix | grep -o -e '\(10\|9\)\.[[0-9]]'`
   echo "CUDA Version : $cuda_ver"
 
   if test $cuda_ver = $cuda_prefix
@@ -60,13 +60,19 @@ then
   if test z${CUDA_ARCH} = z
   then
     CUDA_ARCH="35 50 60 61 70"
+    PTX_ARCH=70
+    if test ${cuda_ver} = '10.0'
+    then
+      CUDA_ARCH="$CUDA_ARCH 75"
+      PTX_ARCH=75
+    fi
   fi
 
   for arch in ${CUDA_ARCH}
     do
       NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_$arch,code=sm_$arch"
   done
-  NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_70,code=compute_70"
+  NVCCFLAGS="$NVCCFLAGS -gencode arch=compute_${PTX_ARCH},code=compute_${PTX_ARCH}"
   echo "NVCC options : $NVCCFLAGS"
 
 fi
