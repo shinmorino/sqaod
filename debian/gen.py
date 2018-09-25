@@ -69,7 +69,7 @@ Description: sqaodc library (simd opt = {simd} ).
 
 control_cuda='''
 Package: libsqaodc-cuda-{cudaver}
-Provides: 
+Provides: libsqaodc-cuda
 Section: libs
 Architecture: amd64
 Depends: libsqaodc (>= {pkgver}), cuda-cublas-{cudaver}:amd64, cuda-cudart-{cudaver}:amd64, cuda-curand-{cudaver}:amd64, ${{shlibs:Depends}}

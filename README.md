@@ -1,109 +1,121 @@
 # Sqaod
-#### Latest version : Beta2 0.3.0 (deb), 0.3.0 (python). 
+#### Latest version : Beta2 0.3.1 (deb), 0.3.1 (python). 
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
+## Project status (as of 9/16)
+#### Beta2 Update1 has been released.
 
-## Project status (as of 8/10)
-### Preparing to release Beta2(Update1). <BR>
-Now Beta2 Update1 is being prepared.  This release is aiming at easier installation.<BR>
-In Beta2, binary packages are provided only for Ubuntu 16.04 and python 3.5.  If you're not using this version set of packages, you need to build sqaod from source.<BR>
-On Beta2 Update1, one is able to install sqaod on more distributions without compiling from source.  Please refer [Install process improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement) for the plan of binary package releases.<BR><BR>
-Since I made some modifications on build processes, I recommend you to checkout beta2 source code as shown below if you need to compile from source.
-~~~
- $ git clone https://github.com/shinmorino/sqaod.git
- $ cd sqaod
- $ git checkout 0.3.0-beta2
-~~~
+This release is aiming at easier installation.
+
+Ubuntu 16.04(CUDA 9.0, 9.2), 17.10(CUDA 9.2), CentOS(RHEL) 7 (CUDA 9.0, 9.2) are supported.
+
+
+- On Ubuntu 16.04 and **17.10(New)**, users are able to install sqaod by using apt and pip, without compiling source code.
+  - Apt repository for Ubuntu 16.04 has been updated to 0.3.1.
+  - Apt repository for Ubuntu 17.10 has been newly created, and available to install 0.3.1.
+- **New:** On CentOS(RHEL) 7, yum repository is available to install 0.3.1.
+- Python binary packages(wheel) for Python 2.7, 3.5, **3.6, 3.7 (New)** are available on PyPI.  
+  
+  - Please visit [Installation Process Improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement)
+
+- From this release, avx2 version of CPU native library is default, while previous releases used sse2 version by default.
+
+#### Future plan
+- Version 1.0 release is planned after offical CUDA release on Ubuntu 18.04.
+- Version 1.1 planning is undergoing.  Please file your requests to [Version 1.1 planning(#55)]( https://github.com/shinmorino/sqaod/issues/55).
+
+Please visit the '[Release history](https://github.com/shinmorino/sqaod/wiki/Release-history)' page for changes and updates.
+
 
 ## Installation  
-Here's an instruction to install beta2 binary distribution of sqaod.  Beta2 binary distribuion is provided only for Ubuntu 16.04.<BR>
-If you want to use other Linux distribution, currently you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).<BR>
-Or if you need a binary distribution for your linux distro, please file a request to [Issues](https://github.com/shinmorino/sqaod/issues).  Windows version and/or docker images are possible as well.
 
-### 1. Installing NVIDIA Driver<BR>
-If you want to run CUDA-based solvers, you need NVIDIA GPU and NVIDIA driver installed on your machine.<BR>
-GPUs of compute capabiity 3.5 (2nd gen Kepler) or later is required. Recommendation is Maxwell(compute capability 5.0) or later.  Please visit [CUDA GPUs](https://developer.nvidia.com/cuda-gpus) to check compute capability of GPUs.
+If you're using Ubuntu 16.04/17.10 and CentOS(RHEL) 7, please visit [Installation](https://github.com/shinmorino/sqaod/wiki/Installation) page at sqaod wiki.
 
-To install CUDA packages required for sqaod, please visit [CUDA downloads](https://developer.nvidia.com/cuda-downloads), and download 'deb(network)' or 'deb(local)' package.<BR>
-Afer downloading the deb package, run the following commands.  Here, CUDA 9.1, deb(network) package is assumed.
+If you want to use other Linux distribution, you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).
+Please file a request to [Issues](https://github.com/shinmorino/sqaod/issues) if you need binary distribution for your linux distro.  Windows version and/or docker images are possible as well.
+
+
+Here's a quick instruction to install Beta2 Update1 release to Ubuntu 16.04/17.10.
+
+
+### 1. Cleaning environment.
+
+If you installed sqaod from source, clean up native libraries at first.
 ~~~
- $ sudo dpkg -i cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
- $ sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
- $ sudo apt-get update
- $ sudo apt--get install cuda-drivers
-~~~
-
-### 2. Installing native libraries.
-Sqaod has its own C++ native libraries which are invoked via python c-extensions.  These libraries are released as deb packages.  Please use apt-get to install them.
-
- **Note:** If you installed alpha versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
-~~~
- # removing older packages if you instsalled.
- $ sudo apt-get remove libsqaod-cuda-9-0
- $ sudo apt-get remove libsqaod-avx2
- $ sudo apt-get remove libsqaod
-
- # remove apt-repository setting.
- $ sudo rm -f /etc/sources.list.d/sqaod.list
+find /usr/lib | grep libsqaodc
+# if you find libraries, remove them.
+find /usr/lib | grep libsqaodc | sudo xargs rm -f
 ~~~
 
- For installation, please run the following.<BR>
+If you installed alpha versions (alpha1, alpha2) of libsqaod, uninstall them first, and remove apt-repository setting.
 ~~~
- $ sudo apt-get update
- $ sudo apt-get install apt-transport-https apt-utils
+# removing older packages if you instsalled.
+sudo apt-get remove libsqaodc-cuda-9-0
+sudo apt-get remove libsqaodc-avx2
+sudo apt-get remove libsqaodc
 
- # adding apt repository setting.
- $ echo 'deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu xenial multiverse' | \
+# remove apt-repository setting.
+sudo rm -f /etc/sources.list.d/sqaod.list
+~~~
+
+
+### 2. Installing native libraries
+
+~~~
+sudo apt-get update
+sudo apt-get install apt-transport-https apt-utils
+
+# adding apt repository setting.
+ 
+. /etc/lsb-release
+echo "deb [arch=amd64] https://shinmorino.github.io/sqaod/ubuntu ${DISTRIB_CODENAME} multiverse" | \
    sudo tee /etc/apt/sources.list.d/sqaod.list
 
- # install repositry key.
- $ curl -s -L https://shinmorino.github.io/sqaod/gpgkey | sudo apt-key add -
+# install repository key.
+curl -s -L https://shinmorino.github.io/sqaod/gpgkey | sudo apt-key add -
 
- # update and install sqaodc native library.
- $ sudo apt-get update
- $ sudo apt-get install libsqaodc
- 
- # install CUDA native library if you need CUDA-based solvers.
- $ sudo apt-get install libsqaodc-cuda-9-0
+# update and install sqaodc native library.
+sudo apt-get update
+sudo apt-get install libsqaodc
 ~~~
 
+### 3. Installing CUDA driver/libraries (if you need CUDA-based solvers.)
 
-### 3. installing python package
+~~~
+distribution=$(. /etc/os-release;echo $ID${VERSION_ID//.})
+echo "deb http://developer.download.nvidia.com/compute/cuda/repos/${distribution}/x86_64 /" | \
+   sudo tee /etc/apt/sources.list.d/cuda.list
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${distribution}/x86_64/7fa2af80.pub
+sudo apt-get update
+sudo apt-get install cuda-drivers
 
-Sqaod is currently supporting python 2.7 and python 3.3 - 3.5.  For details, please visit the project [sqaod project page](https://pypi.python.org/pypi/sqaod/) on PyPI.<BR>
+sudo apt-get install libsqaodc-cuda-9-0
+~~~
+##### Note: Above is an example for CUDA 9.0.  If you prefer CUDA 9.2, install libsqaodc-cuda-9-2.
+
+
+### 4. Installing python package
+
+#### Python 2.7/3.5/3.6/3.7.
 To install sqaod python package, use pip as shown below.
 ~~~
- $ pip install -U sqaod
+pip install -U sqaod
 ~~~
 
-
-### 4. Running examples
+### 5. Running examples
 
 Python examples are in [sqaod/sqaodpy/examples](https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example).  The below is an example to run dense graph annealer.
 
 ~~~
-$ wget https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example/dense_graph_annealer.py
-$ python dense_graph_annealer.py
+curl -s -L -O https://raw.githubusercontent.com/shinmorino/sqaod/master/sqaodpy/example/dense_graph_annealer.py
+python dense_graph_annealer.py
 ~~~
 
-### 5. Using libraries of your choice.
+### Dockerfile
+[Dockerfile](https://github.com/shinmorino/sqaod/tree/gh-pages/docker/kato) for Ubuntu-16.04 with CUDA-9.2, contribution from [Kato-san](https://github.com/gyu-don).
 
- When installing libsqaodc package, sse2 and avx2 versions of native libraries are installed.  The default is the sse2 version.  To choose which version to enable, use update-alternative as shown below.
-
-~~~
- $ sudo update-alternatives --config libsqaodc.so.0
- There are 2 choices for the alternative libsqaodc.so.0 (providing /usr/lib/libsqaodc.so.0).
-
-   Selection    Path                                    Priority   Status
- ------------------------------------------------------------
- * 0            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        auto mode
-   1            /usr/lib/libsqaodc-avx2/libsqaodc.so.0   20        manual mode
-   2            /usr/lib/libsqaodc-sse2/libsqaodc.so.0   50        manual mode
- 
- Press <enter> to keep the current choice[*], or type selection number: 1
-~~~
 
 ### Feedback and requests
 I welcome your feedback and requests.<BR>

@@ -8,8 +8,8 @@ This package is intended for researchers and engineers  to explore various probl
 Please visit `sqaod website <https://github.com/shinmorino/sqaod>`_ and `sqaod wiki <https://github.com/shinmorino/sqaod/wiki>`_ at github for details.
 
 Installation
--------
-In order to use sqaod, you also need to install native libraries adding to the python package.  Please visit `sqaod website <https://github.com/shinmorino/sqaod/wiki/Installation>`_ for details.
+------------
+In order to use sqaod, you also need to install native libraries.  Please visit `Installation <https://github.com/shinmorino/sqaod/wiki/Installation>`_ for details.
 
 
 Features
@@ -41,18 +41,21 @@ Features
   
 * Able to solve problems with large number of bits.
 
-  Since sqaod is a pure software implementation, solvers are able to deal with problems with a large number of bits.
+  Sqaod is a software implementation for simulated quantum annealing.  Solvers are able to deal with problems with a large number of bits, while other hardware devices have limitation on solving large problems.
 
-  Problem sizes are limited by memory amount and/or calculation time.  On recent workstations and servers large amount of DRAM are available, and performance of Sqaod is excellent since it's optimized with modern computing devices.
+  Problem sizes are limited by memory amount and/or calculation time.  On recent workstations and servers large amount of DRAM are available, and performance of Sqaod is excellent since it's optimized on modern computing devices.
   
-Development plan
-----------------
+Release history
+---------------
 
 Current version is Beta2(Update1), ver 0.3.1.
 
 * Ver 0.3.1 (Beta2 Update1)
-  * No changes in solvers and programming interface 
+
+  * No changes in solvers and programming interface
   * Adding environmental checks(library installation, versions).
+
 * Ver 0.3.0 (Beta2)
+
   * Python interfaces are fixed, and most functionalities are tested.
   * Remaining works are optimizations and documentation, which are going to be made by Beta2 planned in the end of June.
