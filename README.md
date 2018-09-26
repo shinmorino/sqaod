@@ -4,17 +4,16 @@
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
-## Project status (as of 9/16)
-#### Beta2 Update1 has been released.
+## Project status
+#### Ubuntu 18.04LTS(CUDA 10.0) packges are uploaded to apt repository. (2018/9/26)
+
+#### Beta2 Update1 has been released. (2018/9/18)
 
 This release is aiming at easier installation.
 
-Ubuntu 16.04(CUDA 9.0, 9.2), 17.10(CUDA 9.2), CentOS(RHEL) 7 (CUDA 9.0, 9.2) are supported.
-
-
-- On Ubuntu 16.04 and **17.10(New)**, users are able to install sqaod by using apt and pip, without compiling source code.
+- On Ubuntu 16.04 and **17.10, 18.04(New)**, users are able to install sqaod by using apt and pip, without compiling source code.
   - Apt repository for Ubuntu 16.04 has been updated to 0.3.1.
-  - Apt repository for Ubuntu 17.10 has been newly created, and available to install 0.3.1.
+  - **New:** Apt repository for Ubuntu 17.10/18.04 has been newly created, and available to install 0.3.1.
 - **New:** On CentOS(RHEL) 7, yum repository is available to install 0.3.1.
 - Python binary packages(wheel) for Python 2.7, 3.5, **3.6, 3.7 (New)** are available on PyPI.  
   
