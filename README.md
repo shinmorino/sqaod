@@ -5,6 +5,9 @@ Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
+#### One fix will be applied to enable upper/lower triangle matrices for dense graph solvers, [#57](https://github.com/shinmorino/sqaod/issues/55). (2018/10/9)
+
+
 #### Ubuntu 18.04LTS(CUDA 10.0) packges are uploaded to apt repository. (2018/9/26)
 
 #### Beta2 Update1 has been released. (2018/9/18)
