@@ -4,7 +4,7 @@ import sys
 import sqaod
 from sqaod import algorithm as algo
 from . import formulas
-from sqaod.common import checkers
+from sqaod.common import checkers, symmetrize
 
 class DenseGraphBFSearcher :
     
@@ -16,7 +16,7 @@ class DenseGraphBFSearcher :
             
     def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
-        checkers.symmetric_matrix(W, 'W');
+        W = symmetrize(W)
         N = W.shape[0]
         self._W = optimize.sign(W)
         self._N = N

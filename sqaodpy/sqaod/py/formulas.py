@@ -1,12 +1,12 @@
 import numpy as np
 import sqaod
-from sqaod.common import checkers
+from sqaod.common import checkers, symmetrize
 
 # dense graph
 
 def dense_graph_calculate_hamiltonian(W, dtype = None) :
     checkers.dense_graph.qubo(W)
-    checkers.symmetric_matrix(W, 'W');
+    W = symmetrize(W)
 
     N = W.shape[0]
     h = np.ndarray((N), dtype=np.float64)
@@ -26,7 +26,7 @@ def dense_graph_calculate_hamiltonian(W, dtype = None) :
 def dense_graph_calculate_E(W, x, dtype = None) :
     checkers.dense_graph.qubo(W)
     checkers.dense_graph.x(W, x)
-    checkers.symmetric_matrix(W, 'W');
+    W = symmetrize(W)
 
     if len(x.shape) != 1 :
         if x.shape[0] != 1 :
@@ -37,8 +37,8 @@ def dense_graph_calculate_E(W, x, dtype = None) :
 def dense_graph_batch_calculate_E(W, x, dtype = None) :
     checkers.dense_graph.qubo(W)
     checkers.dense_graph.xbatch(W, x)
+    W = symmetrize(W)
     
-    checkers.symmetric_matrix(W, 'W');
     if len(x.shape) == 1:
         x = x.reshape(1, -1)
     return np.sum(x * np.matmul(W, x.T).T, 1)
@@ -46,14 +46,14 @@ def dense_graph_batch_calculate_E(W, x, dtype = None) :
 def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
     checkers.dense_graph.hJc(h, J, c)
     checkers.dense_graph.q(J, q)
-    checkers.symmetric_matrix(J, 'J');
+    J = symmetrize(J)
     
     return - c - np.dot(h, q) - np.dot(q, np.matmul(J, q.T))
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
     checkers.dense_graph.hJc(h, J, c)
     checkers.dense_graph.qbatch(J, q)
-    checkers.symmetric_matrix(J, 'J');
+    J = symmetrize(J)
     
     if len(q.shape) == 1:
         q = q.reshape(1, -1)

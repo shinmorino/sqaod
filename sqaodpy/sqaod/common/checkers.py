@@ -29,12 +29,6 @@ def raise_wrong_shape(caption, mat) :
     msg = ''.join(tokens)
     raise Exception(msg)
 
-def raise_not_symmetric(caption, mat) :
-    tokens = ['given mat is not symmetric dim=(', caption, ') = ']
-    tokens.append(str(mat.shape))
-    msg = ''.join(tokens)
-    raise Exception(msg)
-
 def raise_dims_dont_match(caption, varlist) :
     tokens = ['dimension mismatch for ', caption, '. ']
     for var in varlist :
@@ -63,10 +57,9 @@ def assert_is_scalar(caption, scalar) :
     if not common.is_scalar(scalar) :
         raise_not_a_scalar(caption, scalar)
 
-
-def symmetric_matrix(W, caption) :
-    if not common.is_symmetric(W) :
-        raise_not_symmetric(caption, (J))
+def square_matrix(W, caption) :
+    if not common.is_square(W) :
+        raise_wrong_shape(caption, (W))
         
 # dense graph    
 

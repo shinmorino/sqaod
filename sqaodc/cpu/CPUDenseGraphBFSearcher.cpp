@@ -31,7 +31,7 @@ void CPUDenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod 
     clearState(solProblemSet);
 
     N_ = W.rows;
-    W_ = symmetrize(W);
+    W_ = W;
     om_ = om;
     if (om_ == sq::optMaximize)
         W_ *= real(-1.);

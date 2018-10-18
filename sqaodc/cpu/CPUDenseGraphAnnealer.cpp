@@ -64,8 +64,7 @@ void CPUDenseGraphAnnealer<real>::setQUBO(const Matrix &W, sq::OptimizeMethod om
     h_.resize(N_);
     J_.resize(N_, N_);
     
-    Matrix Wsym = symmetrize(W);
-    DGFuncs<real>::calculateHamiltonian(&h_, &J_, &c_, Wsym);
+    DGFuncs<real>::calculateHamiltonian(&h_, &J_, &c_, W);
     J_.clearPadding();
     om_ = om;
     if (om_ == sq::optMaximize) {
@@ -85,7 +84,7 @@ void CPUDenseGraphAnnealer<real>::setHamiltonian(const Vector &h, const Matrix &
 
     om_ = sq::optMinimize;
     h_ = h;
-    J_ = symmetrize(J);
+    J_ = J;
     c_ = c;
     J_.clearPadding();
     setState(solProblemSet);

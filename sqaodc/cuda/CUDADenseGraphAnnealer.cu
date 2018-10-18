@@ -130,13 +130,11 @@ void CUDADenseGraphAnnealer<real>::setQUBO(const HostMatrix &W, sq::OptimizeMeth
     om_ = om;
 
     devAlloc_->allocate(&d_J_, N_, N_);
-    DeviceMatrix *dW = &d_J_; /* use d_J_ as temp matrix. */
-    DeviceMatrix *dWsym = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
+    DeviceMatrix *dW = devStream_->tempDeviceMatrix<real>(W.dim(), __func__);
     devCopy_(dW, W);
-    devFormulas_.devMath.symmetrize(dWsym, *dW);
     if (om == sq::optMaximize)
-        devFormulas_.devMath.scale(dWsym, -1., *dWsym);
-    devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dWsym);
+        devFormulas_.devMath.scale(dW, -1., *dW);
+    devFormulas_.calculateHamiltonian(&d_h_, &d_J_, &d_c_, *dW);
     devCopy_.clearPadding(&d_J_);
     devStream_->synchronize();
 

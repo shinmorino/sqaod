@@ -6,19 +6,6 @@
 namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
 
-template<class V>
-sq::MatrixType<V> sqaod_cpu::symmetrize(const sq::MatrixType<V> &mat) {
-    sq::MatrixType<V> sym(mat.dim());
-    sq::EigenMatrixType<V> eMat(sq::mapTo(mat));
-    sq::mapTo(sym) = (eMat + eMat.transpose()) / V(2);
-    return sym;
-}
-
-template sq::MatrixType<float> sqaod_cpu::symmetrize(const sq::MatrixType<float> &mat);
-template sq::MatrixType<double> sqaod_cpu::symmetrize(const sq::MatrixType<double> &mat);
-template sq::MatrixType<char> sqaod_cpu::symmetrize(const sq::MatrixType<char> &mat);
-
-
 template<class real>
 void DGFuncs<real>::calculate_E(real *E,
                                 const Matrix &W, const Vector &x) {

@@ -2,6 +2,14 @@ import sys
 import numbers
 import numpy as np
 
+import sys
+this = sys.modules[__name__]
+
+this.rtol_fp64 = 1.0e-5
+this.atol_fp64 = 1.0e-8
+this.rtol_fp32 = 1.0e-4
+this.atol_fp32 = 1.0e-5
+
 # common
 
 def is_scalar(v) :
@@ -30,8 +38,33 @@ def is_bits(v) :
             return False
     return True
 
-def is_symmetric(mat) :
-    return np.allclose(mat, mat.T)
+def is_symmetric(mat, rtol = this.rtol_fp64, atol = this.atol_fp64) :
+    this = sys.modules[__name__]
+    if mat.dtype == np.float64 :
+        rtol, atol = this.rtol_fp64, this.atol_fp64
+    else :
+        rtol, atol = this.rtol_fp32, this.atol_fp32
+    return np.allclose(mat, mat.T, rtol, atol)
+
+def is_triangular(mat) :
+    atol = this.rtol_fp64 if mat.dtype == np.float64 else this.rtol_fp32
+    if not np.any(np.triu(mat, 1) > atol) :
+        return True
+    return not np.any(np.tril(mat, -1) > atol)
+
+def symmetrize(mat) :
+    if is_symmetric(mat) :
+        return mat
+    
+    if is_triangular(mat) :
+        d = np.diag(mat)
+        mat = mat + mat.T
+        N = mat.shape[0]
+        mat[range(N), range(N)] -= d
+        return mat
+    
+    raise RuntimeError("given matrix is not triangular nor symmetric.")
+    
 
 def generate_random_symmetric_W(N, wmin = -0.5, wmax = 0.5, dtype=np.float64) :
     W = np.zeros((N, N), dtype)

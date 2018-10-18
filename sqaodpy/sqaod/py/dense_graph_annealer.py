@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 import sqaod
 from . import formulas
-from sqaod.common import checkers
+from sqaod.common import checkers, symmetrize
 from types import MethodType
 from sqaod import algorithm as algo
 
@@ -28,7 +28,7 @@ class DenseGraphAnnealer :
 
     def set_qubo(self, W, optimize = sqaod.minimize) :
         checkers.dense_graph.qubo(W)
-        W = (W + W.T) / 2. # symmetrize
+        W = symmetrize(W)
 
         h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         self._optimize = optimize
@@ -38,7 +38,7 @@ class DenseGraphAnnealer :
         
     def set_hamiltonian(self, h, J, c) :
         checkers.dense_graph.hJc(h, J, c)
-        J = (J + J.T) / 2. # symmetrize
+        J = symmetrize(J)
         self._optimize = sqaod.minimize
         self._h, self._J, self._c = h, J, c
         self._N = J.shape[0]

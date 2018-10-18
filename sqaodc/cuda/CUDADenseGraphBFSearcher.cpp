@@ -56,7 +56,7 @@ void CUDADenseGraphBFSearcher<real>::setQUBO(const Matrix &W, sq::OptimizeMethod
     throwErrorIf(63 < W.rows, "N must be smaller than 64, N=%d.", W.rows);
 
     N_ = W.rows;
-    W_ = sqcpu::symmetrize(W);
+    W_ = W;
     om_ = om;
     if (om_ == sq::optMaximize)
         W_ *= real(-1.);

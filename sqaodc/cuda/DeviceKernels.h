@@ -46,8 +46,6 @@ struct DeviceMathKernelsType {
 
     void transpose(DeviceMatrix *d_tr, const DeviceMatrix &d_mat);
 
-    void symmetrize(DeviceMatrix *d_sym, const DeviceMatrix &d_mat);
-
     void min(DeviceScalar *d_min, const DeviceVector &d_x);
 
     void min(DeviceScalar *d_min, const DeviceMatrix &d_A);

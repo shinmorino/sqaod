@@ -11,6 +11,7 @@ import sqaod.common as common
 
 def dense_graph_calculate_E(cext, cobj, W, x, dtype) :
     W = common.fix_type(W, dtype)
+    W = common.symmetrize(W)
     x = common.fix_type(x, np.int8)
 
     checkers.dense_graph.qubo(W)
@@ -22,6 +23,7 @@ def dense_graph_calculate_E(cext, cobj, W, x, dtype) :
 
 def dense_graph_batch_calculate_E(cext, cobj, W, x, dtype) :
     W = common.fix_type(W, dtype)
+    W = common.symmetrize(W)
     x = common.fix_type(x, np.int8)
     if len(x.shape) == 1 :
         x = x.reshape(1, -1)
@@ -37,6 +39,7 @@ def dense_graph_batch_calculate_E(cext, cobj, W, x, dtype) :
 
 def dense_graph_calculate_hamiltonian(cext, cobj, W, dtype) :
     W = common.fix_type(W, dtype)
+    W = common.symmetrize(W)
     checkers.dense_graph.qubo(W)
 
     N = W.shape[0]
@@ -50,6 +53,7 @@ def dense_graph_calculate_hamiltonian(cext, cobj, W, dtype) :
 
 def dense_graph_calculate_E_from_spin(cext, cobj, h, J, c, q, dtype) :
     h, J = common.fix_type([h, J], dtype)
+    J = common.symmetrize(J)
     q = common.fix_type(q, np.int8)
     checkers.dense_graph.hJc(h, J, c);
     checkers.dense_graph.q(J, q);
@@ -60,6 +64,7 @@ def dense_graph_calculate_E_from_spin(cext, cobj, h, J, c, q, dtype) :
 
 def dense_graph_batch_calculate_E_from_spin(cext, cobj, h, J, c, q, dtype) :
     h, J = common.fix_type([h, J], dtype)
+    J = common.symmetrize(J)
     if len(q.shape) == 1 :
         q = q.reshape(1, -1)
     checkers.dense_graph.hJc(h, J, c);

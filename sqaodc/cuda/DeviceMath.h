@@ -87,8 +87,6 @@ struct DeviceMathType {
     void min(DeviceScalar *s, const DeviceVector &x);
 
     void transpose(DeviceMatrix *dAt, const DeviceMatrix &A);
-
-    void symmetrize(DeviceMatrix *dAsym, const DeviceMatrix &A);
     
     /* get matrix shape resulting from matrix arithmetic */
     sq::Dim getMatrixShape(const DeviceMatrix &A, MatrixOp opA);

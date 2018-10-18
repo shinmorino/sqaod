@@ -239,15 +239,6 @@ void DeviceMathType<real>::transpose(DeviceMatrix *dAt, const DeviceMatrix &A) {
     devKernels_.transpose(dAt, A);
 }
 
-template<class real>
-void DeviceMathType<real>::symmetrize(DeviceMatrix *dAsym, const DeviceMatrix &A) {
-    Dim dim = getMatrixShape(A, opTranspose);
-    devAlloc_->allocateIfNull(dAsym, dim);
-    assertValidMatrix(*dAsym, dim, __func__);
-    devKernels_.symmetrize(dAsym, A);
-}
-
-
 /* Matrix shape */
 template<class real>
 sq::Dim DeviceMathType<real>::getMatrixShape(const DeviceMatrix &A, MatrixOp opA) {

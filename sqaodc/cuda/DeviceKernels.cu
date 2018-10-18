@@ -337,45 +337,6 @@ transpose(DeviceMatrix *d_At, const DeviceMatrix &d_A) {
     transformBlock2d(op, sq::divru(d_A.cols ,32), sq::divru(d_A.rows, 32), dim3(32, 32), stream_);
 }
 
-
-template<class real> void DeviceMathKernelsType<real>::
-symmetrize(DeviceMatrix *d_Asym, const DeviceMatrix &d_A) {
-    real *d_Asym_data = d_Asym->d_data;
-    sq::SizeType AsymStride = d_Asym->stride;
-    real *d_A_data = d_A.d_data;
-    sq::SizeType AStride = d_A.stride;
-    sq::SizeType cols = d_A.cols, rows = d_A.rows;
-    
-    auto op = [=]__device__(const dim3 &blockDim, const dim3 &blockIdx, const dim3 &threadIdx) {
-        
-        int inTileLeft = blockDim.x * blockIdx.x;
-        int inTileTop = blockDim.y * blockIdx.y;
-        
-        int xIn = inTileLeft + threadIdx.x;
-        int yIn = inTileTop + threadIdx.y;
-        
-        real vIn = (xIn < cols) && (yIn < rows) ? d_A_data[xIn + AStride * yIn] : real();
-        
-        __shared__ real tile[32][33];
-        tile[threadIdx.y][threadIdx.x] = vIn;
-	    __syncthreads();
-        
-        int xOut = inTileTop + threadIdx.x;
-        int yOut = inTileLeft + threadIdx.y;
-        real vOut = tile[threadIdx.x][threadIdx.y];
-        
-        if ((xOut < rows) && (yOut < cols)) {
-            real v = d_A_data[xOut + AsymStride * yOut];
-            d_Asym_data[xOut + AsymStride * yOut] = (v + vOut) * real(0.5);
-        }
-
-    };
-
-    transformBlock2d(op, sq::divru(d_A.cols ,32), sq::divru(d_A.rows, 32), dim3(32, 32), stream_);
-}
-
-
-
 template<class real> void DeviceMathKernelsType<real>::
 min(DeviceScalar *d_min, const DeviceVector &d_x) {
     size_t temp_storage_bytes = 0;
