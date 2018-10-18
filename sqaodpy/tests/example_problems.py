@@ -27,3 +27,13 @@ def bipartite_graph_random(N0, N1, dtype = np.float64) :
     b1 = np.random.random((N1)) - 0.5
     W = np.random.random((N1, N0)) - 0.5
     return _quantize(b0, dtype), _quantize(b1, dtype), _quantize(W, dtype)
+
+def upper_triangular_random_matrix(N, dtype = np.float64) :
+    W = np.random.random((N, N)) - 0.5
+    W = np.asarray(W, dtype)
+    return np.triu(W)
+
+def lower_triangular_random_matrix(N, dtype = np.float64) :
+    W = np.random.random((N, N)) - 0.5
+    W = np.asarray(W, dtype)
+    return np.tril(W)
