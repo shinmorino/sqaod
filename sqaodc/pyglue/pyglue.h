@@ -235,12 +235,16 @@ PyObject *newScalarObj(float v) {
 inline
 bool isFloat64(PyObject *dtype) {
     /* Since PyFloat64ArrType_Type may be defined as another type, using PyDoubleArrType_Type. */
-    return dtype == (PyObject*)&PyDoubleArrType_Type;
+    if (dtype == (PyObject*)&PyDoubleArrType_Type)
+        return true;
+    return PyObject_RichCompareBool(dtype, (PyObject*)&PyDoubleArrType_Type, Py_EQ) != 0;
 }
 inline
 bool isFloat32(PyObject *dtype) {
     /* Since PyFloat32ArrType_Type may be defined as another type, using PyFloatArrType_Type. */
-    return dtype == (PyObject*)&PyFloatArrType_Type;
+    if (dtype == (PyObject*)&PyFloatArrType_Type)
+        return true;
+    return PyObject_RichCompareBool(dtype, (PyObject*)&PyFloatArrType_Type, Py_EQ) != 0;
 }
 
 #define ASSERT_DTYPE(dtype) if (!isFloat32(dtype) && !isFloat64(dtype)) \
