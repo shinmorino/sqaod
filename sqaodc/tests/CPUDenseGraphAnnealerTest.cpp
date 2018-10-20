@@ -21,7 +21,7 @@ void CPUDenseGraphAnnealerTest::tearDown() {
     
 void CPUDenseGraphAnnealerTest::run(std::ostream &ostm) {
     int N = 100;
-
+#if 0
     testcase("symmetrize") {
         sq::MatrixType<float> W = sq::MatrixType<float>::zeros(N, N);
         for (sqaod::SizeType iRow = 0; iRow < N; ++iRow) {
@@ -46,6 +46,7 @@ void CPUDenseGraphAnnealerTest::run(std::ostream &ostm) {
         sq::MatrixType<float> Wsym = sqcpu::symmetrize(W);
         TEST_ASSERT(sq::isSymmetric(Wsym));
     }
+#endif
 
     int m = N;
     sqcpu::CPUDenseGraphAnnealer<float> annealer;
