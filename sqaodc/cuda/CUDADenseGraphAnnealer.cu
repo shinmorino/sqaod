@@ -432,7 +432,8 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
     dim3 blockDim(128);
 
     int nThreadsToFlipBits = m_ / 2;
-    dim3 gridDim(divru(nThreadsToFlipBits, blockDim.x));
+    dim3 gridDim(std::max(divru(nThreadsToFlipBits, blockDim.x), 1));
+    gridDim.x = std::min((unsigned int)1, gridDim.x); /* for the case of m == 1. */
     cudaStream_t stream = devStream_->getCudaStream();
     bool mIsOdd = (m_ & 1) != 0;
 #if 0

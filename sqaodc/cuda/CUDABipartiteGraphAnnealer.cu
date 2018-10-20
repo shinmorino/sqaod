@@ -446,19 +446,29 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     
     cudaStream_t stream = devStream_->getCudaStream();
 
-    auto flipOp0 = [=]__device__(int gidx, int gidy) {
-        deviceTryFlip<0>(gidx, gidy,
-                         d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                         d_h_data, d_realRand, twoDivM, coef, beta, mIsOdd);        
-    };
-    transform2d(flipOp0, N, m2, dim3(64, 2), stream);
-    
-    auto flipOp1 = [=]__device__(int gidx, int gidy) {
-        deviceTryFlip<1>(gidx, gidy,
-                         d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                         d_h_data, d_realRand, twoDivM, coef, beta, false);        
-    };
-    transform2d(flipOp1, N, m2, dim3(64, 2), stream);
+    if (m_ == 1) {
+        auto flipOp0 = [=]__device__(int gidx, int gidy) {
+            deviceTryFlip<0>(gidx, gidy,
+                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                d_h_data, d_realRand, twoDivM, coef, beta, false);
+        };
+        transform2d(flipOp0, N, 1, dim3(128), stream);
+    }
+    else {
+        auto flipOp0 = [=]__device__(int gidx, int gidy) {
+            deviceTryFlip<0>(gidx, gidy,
+                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                d_h_data, d_realRand, twoDivM, coef, beta, mIsOdd);
+        };
+        transform2d(flipOp0, N, m2, dim3(64, 2), stream);
+
+        auto flipOp1 = [=]__device__(int gidx, int gidy) {
+            deviceTryFlip<1>(gidx, gidy,
+                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                d_h_data, d_realRand, twoDivM, coef, beta, false);
+        };
+        transform2d(flipOp1, N, m2, dim3(64, 2), stream);
+    }
 }
 
 #endif
