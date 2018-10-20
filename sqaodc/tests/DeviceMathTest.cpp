@@ -296,6 +296,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         TEST_ASSERT(dB == hTrans);
     }
 
+#if 0
     testcase("symmetrize") {
         HostMatrix hMat = testMat<real>(sq::Dim(dim.rows, dim.rows));
         devCopy(&dA, hMat);
@@ -304,6 +305,7 @@ void DeviceMathTest::tests(const sqaod::Dim &dim) {
         HostMatrix hSym = sqcpu::symmetrize(hMat);
         TEST_ASSERT(dB == hSym);
     }
+#endif
 
     testcase("mvProduct") {
         HostMatrix A = testMatBalanced<real>(dim);
