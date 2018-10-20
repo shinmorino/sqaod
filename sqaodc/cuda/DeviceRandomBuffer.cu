@@ -13,9 +13,9 @@ DeviceRandomBuffer::DeviceRandomBuffer() {
 
 DeviceRandomBuffer::DeviceRandomBuffer(Device &device, DeviceStream *devStream) {
     sizeInByte_ = (size_t)-1;
-    d_buffer_ = NULL;
     sizeInElm_ = 0;
     posInElm_ = 0;
+    d_buffer_ = NULL;
     assignDevice(device, devStream);
 }
 
@@ -28,7 +28,8 @@ void DeviceRandomBuffer::deallocate() {
         devAlloc_->deallocate(d_buffer_);
         d_buffer_ = NULL;
         sizeInByte_ = (size_t)-1;
-        sizeInElm_ = (size_t)-1;
+        sizeInElm_ = 0;
+        posInElm_ = 0;
     }
 }
 
