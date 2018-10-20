@@ -116,18 +116,20 @@ struct NpVectorType {
         obj = pyObj;
         PyArrayObject *arr = (PyArrayObject*)pyObj;
         real *data = (real*)PyArray_DATA(arr);
-        int size;
         throwErrorIf(3 <= PyArray_NDIM(arr), "ndarray is not 1-diemsional.");
         if (PyArray_NDIM(arr) == 2) {
             int rows = (int)PyArray_SHAPE(arr)[0];
             int cols = (int)PyArray_SHAPE(arr)[1];
             throwErrorIf((rows != 1) && (cols != 1), "ndarray is not 1-diemsional.");
-            size = std::max(rows, cols);
+            /* Workaround for VC optimization bug */
+            int size = std::max(rows, cols);
+            vec.map(data, size);
         }
         else /*if (PyArray_NDIM(arr) == 1) */  {
-            size = (int)PyArray_SHAPE(arr)[0];
+            /* Workaround for VC optimization bug */
+            int size = (int)PyArray_SHAPE(arr)[0];
+            vec.map(data, size);
         }
-        vec.map(data, size);
     }
 
     /* accessor for ease of coding. */
