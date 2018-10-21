@@ -11,6 +11,8 @@ enum Algorithm {
     algoNaive,
     algoColoring,
     algoBruteForceSearch,
+    algoSANaive,
+    algoSAColoring,
 };
 
 

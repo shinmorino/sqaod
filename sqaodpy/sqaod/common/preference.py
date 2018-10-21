@@ -8,6 +8,8 @@ algorithm.default = 'default'
 algorithm.naive = 'naive'
 algorithm.coloring = 'coloring'
 algorithm.brute_force_search = 'brute_force_search'
+algorithm.sa_naive = 'sa_naive'
+algorithm.sa_coloring = 'sa_coloring'
 
 
 class Minimize :
