@@ -62,13 +62,15 @@ private:
     typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
     sq::Algorithm algo_;
-
+    
     void annealOneStepNaive(real G, real beta);
     void annealOneStepColoring(real G, real beta);
     void annealOneStepColoringParallel(real G, real beta);
     /* actual annealing function for annealOneStepColored. */
     void annealColoredPlane(real G, real beta);
     void annealColoredPlaneParallel(real G, real beta);
+    /* simulated annealing */
+    void annealOneStepSANaive(real kT, real beta);
 
     /* experimental */
     void annealOneStepColoringParallel2(real G, real beta);

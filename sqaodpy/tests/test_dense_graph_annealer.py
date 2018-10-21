@@ -156,7 +156,7 @@ class TestDenseGraphAnnealerBase:
         an.randomize_spin()
 
         Ginit, Gfin = 5, 0.01
-        beta = 1. / 0.02
+        beta = 1. / 0.005
         nSteps = 100
 
         G = Ginit
@@ -166,9 +166,8 @@ class TestDenseGraphAnnealerBase:
             G *= tau
         an.make_solution()
 
-    def _test_anneal_minimize(self, algorithm) :
+    def _test_anneal_minimize(self, algorithm, m) :
         N = 10
-        m = 4
         an = self.anpkg.dense_graph_annealer(dtype=self.dtype)
         W = np.ones((N, N), dtype=self.dtype)
         an.set_qubo(W, sq.minimize)
@@ -180,9 +179,8 @@ class TestDenseGraphAnnealerBase:
         E = an.get_E()
         self.assertEqual(E.min(), 0)
 
-    def _test_anneal_maximize(self, algorithm) :
+    def _test_anneal_maximize(self, algorithm, m) :
         N = 10
-        m = 4
         an = self.anpkg.dense_graph_annealer(dtype=self.dtype)
         W = - np.ones((N, N), dtype=self.dtype)
         an.set_qubo(W, sq.maximize)
@@ -194,9 +192,8 @@ class TestDenseGraphAnnealerBase:
         E = an.get_E()
         self.assertEqual(E.max(), 0)
 
-    def _test_anneal_hamiltonian(self, algorithm) :
+    def _test_anneal_hamiltonian(self, algorithm, m) :
         N = 10
-        m = 4
         an = self.anpkg.dense_graph_annealer(dtype=self.dtype)
         W = np.ones((N, N), dtype=self.dtype)
         h, J, c = sq.py.formulas.dense_graph_calculate_hamiltonian(W)
@@ -210,38 +207,62 @@ class TestDenseGraphAnnealerBase:
         self.assertEqual(E.max(), 0)
 
     def test_anneal_minimize(self) :
-        self._test_anneal_minimize(sq.algorithm.naive)
-        self._test_anneal_minimize(sq.algorithm.coloring)
-        self._test_anneal_minimize(sq.algorithm.default)
+        self._test_anneal_minimize(sq.algorithm.naive, 4)
+        self._test_anneal_minimize(sq.algorithm.coloring, 4)
+        self._test_anneal_minimize(sq.algorithm.default, 4)
 
     def test_anneal_maximize(self) :
-        self._test_anneal_maximize(sq.algorithm.naive)
-        self._test_anneal_maximize(sq.algorithm.coloring)
-        self._test_anneal_maximize(sq.algorithm.default)
+        self._test_anneal_maximize(sq.algorithm.naive, 4)
+        self._test_anneal_maximize(sq.algorithm.coloring, 4)
+        self._test_anneal_maximize(sq.algorithm.default, 4)
 
     def test_anneal_hamiltonian(self) :
-        self._test_anneal_hamiltonian(sq.algorithm.naive)
-        self._test_anneal_hamiltonian(sq.algorithm.coloring)
-        self._test_anneal_hamiltonian(sq.algorithm.default)
-        
+        self._test_anneal_hamiltonian(sq.algorithm.naive, 4)
+        self._test_anneal_hamiltonian(sq.algorithm.coloring, 4)
+        self._test_anneal_hamiltonian(sq.algorithm.default, 4)
 
-class TestNativeDenseGraphAnnealerBase(TestDenseGraphAnnealerBase) :
-    def __init__(self, anpkg, dtype) :
-        TestDenseGraphAnnealerBase.__init__(self, anpkg, dtype)
+    def test_sa(self) :
+        self._test_anneal_minimize(sq.algorithm.default, 1)
+        self._test_anneal_maximize(sq.algorithm.sa_naive, 1)
+        self._test_anneal_hamiltonian(sq.algorithm.sa_naive, 1)
 
     def test_set_algorithm(self) :
         ann = self.new_annealer(10, 10)
-        ann.set_preferences(algorithm = sq.algorithm.default)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
+        
         ann.set_preferences(algorithm = sq.algorithm.naive)
         pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.naive)
+        self.assertEqual(pref['algorithm'], sq.algorithm.naive)
 
         ann.set_preferences(algorithm = sq.algorithm.coloring)
         pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+        self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+        ann.set_preferences(algorithm = sq.algorithm.sa_naive)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+        
+
+# py        
+class TestPyDenseGraphAnnealer(TestDenseGraphAnnealerBase, unittest.TestCase) :
+    def __init__(self, testFunc) :
+        TestDenseGraphAnnealerBase.__init__(self, sq.py, np.float64)
+        unittest.TestCase.__init__(self, testFunc)
+
+    def test_set_default_algorithm(self):
+        ann = self.new_annealer(10, 10)
+        ann.set_preferences(algorithm = sq.algorithm.default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.naive)
+
+        ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
+        ann.prepare()
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+# native        
+class TestNativeDenseGraphAnnealerBase(TestDenseGraphAnnealerBase) :
+    def __init__(self, anpkg, dtype) :
+        TestDenseGraphAnnealerBase.__init__(self, anpkg, dtype)
 
     def test_prec_prefs(self) :
         an = self.new_annealer(10, 10)
@@ -253,7 +274,19 @@ class TestNativeDenseGraphAnnealerBase(TestDenseGraphAnnealerBase) :
         an = self.new_annealer(10, 10)
         self.assertEqual(an.dtype, self.dtype)
 
+    def test_set_default_algorithm(self):
+        ann = self.new_annealer(10, 10)
+        ann.set_preferences(algorithm = sq.algorithm.default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
 
+        ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
+        ann.prepare()
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+
+# cpu        
 class TestCPUDenseGraphAnnealerBase(TestNativeDenseGraphAnnealerBase) :
     def __init__(self, dtype) :
         TestNativeDenseGraphAnnealerBase.__init__(self, sq.cpu, dtype)
@@ -263,37 +296,19 @@ class TestCPUDenseGraphAnnealerBase(TestNativeDenseGraphAnnealerBase) :
         prefs = an.get_preferences()
         self.assertEqual(prefs['device'], 'cpu')
 
-    def test_set_algorithm(self) :
-        ann = self.new_annealer(10, 10)
-        ann.set_preferences(algorithm = sq.algorithm.default)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-        ann.set_preferences(algorithm = sq.algorithm.naive)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.naive)
-
-        ann.set_preferences(algorithm = sq.algorithm.coloring)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-
-class TestPyDenseGraphAnnealer(TestDenseGraphAnnealerBase, unittest.TestCase) :
-    def __init__(self, testFunc) :
-        TestDenseGraphAnnealerBase.__init__(self, sq.py, np.float64)
-        unittest.TestCase.__init__(self, testFunc)
-
+        
 class TestCPUDenseGraphAnnealerFP32(TestCPUDenseGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
         TestCPUDenseGraphAnnealerBase.__init__(self, np.float32)
         unittest.TestCase.__init__(self, testFunc)
-
+        
 class TestCPUDenseGraphAnnealerFP64(TestCPUDenseGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
         TestCPUDenseGraphAnnealerBase.__init__(self, np.float64)
         unittest.TestCase.__init__(self, testFunc)
 
 
+# cuda
 if sq.is_cuda_available() :
     class TestCUDADenseGraphAnnealerBase(TestNativeDenseGraphAnnealerBase) :
         def __init__(self, dtype) :
@@ -304,26 +319,10 @@ if sq.is_cuda_available() :
             prefs = an.get_preferences()
             self.assertEqual(prefs['device'], 'cuda')
 
-        def test_set_algorithm(self) :
-            ann = self.new_annealer(10, 10)
-            ann.set_preferences(algorithm = sq.algorithm.default)
-            pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-            ann.set_preferences(algorithm = sq.algorithm.naive)
-            pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-            ann.set_preferences(algorithm = sq.algorithm.coloring)
-            pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-
     class TestCUDADenseGraphAnnealerFP32(TestCUDADenseGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :
             TestCUDADenseGraphAnnealerBase.__init__(self, np.float32)
             unittest.TestCase.__init__(self, testFunc)
-            
 
     class TestCUDADenseGraphAnnealerFP64(TestCUDADenseGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :

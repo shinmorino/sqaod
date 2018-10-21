@@ -45,17 +45,22 @@ class DenseGraphAnnealer :
         self._m = self._N // 2
         
     def _select_algorithm(self, algoname) :
-        if algoname == algo.naive :
-            self.anneal_one_step = \
-                MethodType(DenseGraphAnnealer.anneal_one_step_naive, self)
-        else :
+        if algoname == algo.coloring :
             self.anneal_one_step = \
                 MethodType(DenseGraphAnnealer.anneal_one_step_coloring, self)
+        elif algoname == algo.sa_naive :
+            self.anneal_one_step = \
+                MethodType(DenseGraphAnnealer.anneal_one_step_sa_naive, self)
+        else :
+            self.anneal_one_step = \
+                MethodType(DenseGraphAnnealer.anneal_one_step_naive, self)
 
     def _get_algorithm(self) :
-        if self.anneal_one_step is self.anneal_one_step_naive :
-            return algo.naive;
-        return algo.coloring
+        if self.anneal_one_step.__func__ == DenseGraphAnnealer.anneal_one_step_coloring :
+            return algo.coloring;
+        if self.anneal_one_step.__func__ == DenseGraphAnnealer.anneal_one_step_sa_naive :
+            return algo.sa_naive;
+        return algo.naive
             
     def set_preferences(self, prefdict = None, **prefs) :
         if not prefdict is None :
@@ -118,6 +123,8 @@ class DenseGraphAnnealer :
         self._E = self._optimize.sign(E)
 
     def prepare(self) :
+        if self._m == 1 :
+            self._select_algorithm(algo.sa_naive)
         self._q = np.empty((self._m, self._N), dtype=np.int8)
 
     def make_solution(self) :
@@ -170,6 +177,22 @@ class DenseGraphAnnealer :
         for loop in range(0, self._N) :
             self.anneal_colored_plane(G, beta, 0)
             self.anneal_colored_plane(G, beta, 1)
+    
+    # for simulated annealing (not for simulated quantum annealing).
+    def anneal_one_step_sa_naive(self, kT, beta) :
+        h, J, c, q = self._vars()
+        N = self._N
+
+        for iq in range(self._m) :
+            qm = q[iq]
+            for i in range(self._N):
+                x = np.random.randint(N)
+                qx = qm[x]
+                sum = np.dot(J[x], qm); # diagnoal elements in J are zero.
+                dE = 2. * qx * (h[x] + sum)
+                threshold = 1. if (dE <= 0.) else np.exp(-dE * kT * beta)
+                if threshold > np.random.rand():
+                    qm[x] = - qx
 
                 
 def dense_graph_annealer(W = None, optimize = sqaod.minimize, **prefs) :

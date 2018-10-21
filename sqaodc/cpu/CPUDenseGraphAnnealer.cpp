@@ -36,12 +36,12 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::selectAlgorithm(enum sq::Algorithm al
     switch (algo) {
     case sq::algoNaive:
     case sq::algoColoring:
+    case sq::algoSANaive:
         algo_ = algo;
         return algo_;
     case sq::algoDefault:
         algo_ = sq::algoColoring;
         return algo_;
-        break;
     default:
         sq::log("Uknown algo, %s, defaulting to %s.",
                 sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
@@ -178,6 +178,14 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     matQ_.resize(m_, N_);;
     E_.resize(m_);
 
+    if (m_ == 1) {
+        /* force set to SANaive when m == 1. */
+        if (algo_ != sq::algoSANaive) {
+            algo_ = sq::algoSANaive;
+            sq::log("algorithm set to sa_coloring since m == 1.");
+        }
+    }
+    
     switch (algo_) {
     case sq::algoNaive:
         annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepNaive;
@@ -189,6 +197,9 @@ void CPUDenseGraphAnnealer<real>::prepare() {
             annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel;
         else
             annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel2;
+        break;
+    case sq::algoSANaive:
+        annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepSANaive;
         break;
     default:
         abort_("Must not reach here.");
@@ -358,6 +369,45 @@ void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel2(real G, real be
     
     for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
         annealColoredPlaneParallel2(G, beta);
+    clearState(solSolutionAvailable);
+}
+
+
+template<class real> inline static
+void tryFlipSA(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, const sq::MatrixType<real> &J, 
+             sq::Random &random, real Tnorm) {
+    int N = J.rows;
+    int x = random.randInt(N);
+    real qyx = matQ(y, x);
+#if defined(__AVX2__)
+    real sum = dot_avx2(J.rowPtr(x), matQ.rowPtr(y), N);
+#elif defined(__SSE2__)
+    real sum = dot_sse2(J.rowPtr(x), matQ.rowPtr(y), N);
+#else
+    real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
+#endif
+    real dE = real(2.) * qyx * (h(x) + sum);
+    real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * Tnorm);
+    if (threshold > random.random<real>())
+        matQ(y, x) = - qyx;
+}
+
+template<class real>
+void CPUDenseGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
+    throwErrorIfQNotSet();
+
+    real Tnorm = kT * beta;
+    
+#ifndef _OPENMP
+    sq::Random &random = random_[0];
+#else
+    sq::Random &random = random_[omp_get_thread_num()];
+#pragma omp parallel for
+#endif   
+    for (int y = 0; y < m_; ++y) {
+        for (int loop = 0; loop < sq::IdxType(N_); ++loop)
+            tryFlipSA(matQ_, y, h_, J_, random, Tnorm);
+    }
     clearState(solSolutionAvailable);
 }
 
