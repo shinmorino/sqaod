@@ -74,12 +74,22 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real beta);
+    void annealOneStep(real G, real beta) {
+        (this->*annealMethod_)(G, beta);
+    }
+
+    void annealOneStepSQA(real G, real beta);
+
+    void annealOneStepSA(real kT, real beta);
 
     /* CUDA Kernels */
-    void annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq,
-                       const int *d_x, const real *d_random,
-                       const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta);
+    void annealOneStepSQA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq,
+                          const int *d_x, const real *d_random,
+                          const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta);
+    
+    void annealOneStepSA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq,
+                         const int *d_x, const real *d_random,
+                         const DeviceVector &d_h, const DeviceMatrix &d_J, real Tnorm);
 
     void calculate_Jq(DeviceVector *d_Jq, const DeviceMatrix &d_J, const DeviceBitMatrix &d_matq,
                       const int *d_flipPos);
@@ -95,6 +105,10 @@ private:
 
     void syncBits();
 
+    typedef void (CUDADenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
+    AnnealMethod annealMethod_;
+    sq::Algorithm algo_;
+    
     DeviceRandom d_random_;
     DeviceMatrix d_J_;
     DeviceVector d_h_;

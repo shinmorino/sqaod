@@ -79,16 +79,25 @@ public:
 
     void makeSolution();
 
-    void annealOneStep(real G, real beta);
-    
+    void annealOneStep(real G, real beta) {
+        (this->*annealMethod_)(G, beta);
+    }
+
+    void annealOneStepSQA(real G, real beta);
+
+    void annealOneStepSA(real G, real beta);
 
     /* public for debug */
     void calculate_Jq(DeviceMatrix *d_Jq, const DeviceMatrix &d_J, MatrixOp op,
                       const DeviceMatrix &d_qFixed);
 
     /* public for debug */
-    void tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, 
-                 const DeviceVector &d_h, const real *d_realRand, real G, real beta);
+    void tryFlipSQA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, 
+                    const DeviceVector &d_h, const real *d_realRand, real G, real beta);
+
+    /* public for debug */
+    void tryFlipSA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m, 
+                   const DeviceVector &d_h, const real *d_realRand, real Tnorm);
 
 private:
     void deallocateProblem();
@@ -101,6 +110,10 @@ private:
     };
 
     void syncBits();
+
+    typedef void (CUDABipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
+    AnnealMethod annealMethod_;
+    sq::Algorithm algo_;
 
     DeviceRandom d_random_;
     DeviceRandomBuffer d_randReal_;

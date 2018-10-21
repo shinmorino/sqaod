@@ -25,6 +25,7 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
     devStream_ = NULL;
     m_ = -1;
     d_reachCount_ = NULL;
+    selectAlgorithm(sq::algoDefault);
 }
 
 template<class real>
@@ -33,6 +34,7 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer(Device &device) {
     m_ = -1;
     d_reachCount_ = NULL;
     assignDevice(device);
+    selectAlgorithm(sq::algoDefault);
 }
 
 template<class real>
@@ -103,12 +105,25 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
 
 template<class real>
 sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
-    return sq::algoColoring;
+    switch (algo) {
+    case sq::algoColoring:
+    case sq::algoSANaive:
+        algo_ = algo;
+        return algo_;
+    case sq::algoDefault:
+        algo_ = sq::algoColoring;
+        return algo_;
+    default:
+        sq::log("Uknown algo, %s, defaulting to %s.",
+                sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
+        algo_ = sq::algoColoring;
+        return sq::algoColoring;
+    }
 }
 
 template<class real>
 sq::Algorithm CUDADenseGraphAnnealer<real>::getAlgorithm() const {
-    return sq::algoColoring;
+    return algo_;
 }
 
 
@@ -270,6 +285,25 @@ void CUDADenseGraphAnnealer<real>::prepare() {
 
     deallocateInternalObjects();
 
+    if (m_ == 1) {
+        /* force set to SANaive when m == 1. */
+        if (algo_ != sq::algoSANaive) {
+            algo_ = sq::algoSANaive;
+            sq::log("algorithm set to sa_naive since m == 1.");
+        }
+    }
+    
+    switch (algo_) {
+    case sq::algoColoring:
+        annealMethod_ = &CUDADenseGraphAnnealer::annealOneStepSQA;
+        break;
+    case sq::algoSANaive:
+        annealMethod_ = &CUDADenseGraphAnnealer::annealOneStepSA;
+        break;
+    default:
+        abort_("Must not reach here.");
+    }
+    
     HostObjectAllocator halloc;
     devAlloc_->allocate(&d_matq_, m_, N_);
     devAlloc_->allocate(&d_Jq_, m_);
@@ -371,11 +405,11 @@ void CUDADenseGraphAnnealer<real>::calculate_Jq(DeviceVector *d_Jq,
 
 template<bool mIsOdd, class real>
 __global__ static void
-tryFlipKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
-              const real *d_h,
-              const int *d_x, const real *d_random, sq::SizeType m,
-              const real twoDivM, const real coef, const real beta,
-              uint2 *reachCount) {
+tryFlipSQAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
+                 const real *d_h,
+                 const int *d_x, const real *d_random, sq::SizeType m,
+                 const real twoDivM, const real coef, const real beta,
+                 uint2 *reachCount) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
 #pragma unroll
@@ -424,8 +458,9 @@ tryFlipKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
 }
 
 template<class real> void CUDADenseGraphAnnealer<real>::
-annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x, const real *d_random,
-              const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta) {
+annealOneStepSQA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
+                 const real *d_random,
+                 const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta) {
     real twoDivM = real(2.) / real(m_);
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
 
@@ -438,25 +473,25 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
     bool mIsOdd = (m_ & 1) != 0;
 #if 0
     if (mIsOdd) {
-        tryFlipKernel<true><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
-                                                              d_Jq.d_data, d_h.d_data,
-                                                              d_x, d_random, m_,
-                                                              twoDivM, coef, beta, d_reachCount_);
+        tryFlipKernelSQA<true><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
+                                                                 d_Jq.d_data, d_h.d_data,
+                                                                 d_x, d_random, m_,
+                                                                 twoDivM, coef, beta, d_reachCount_);
     }
     else {
-        tryFlipKernel<false><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
-                                                               d_Jq.d_data, d_h.d_data,
-                                                               d_x, d_random, m_,
-                                                               twoDivM, coef, beta, d_reachCount_);
+        tryFlipKernelSQA<false><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
+                                                                  d_Jq.d_data, d_h.d_data,
+                                                                  d_x, d_random, m_,
+                                                                  twoDivM, coef, beta, d_reachCount_);
     }
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_matq->stride,
                     (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
                     (void*)&m_, (void*)&twoDivM, (void*)&coef, (void*)&beta, (void*)&d_reachCount_, NULL};
     if (mIsOdd)
-        cudaLaunchKernel((void*)tryFlipKernel<true, real>, gridDim, blockDim, args, 0, stream);
+        cudaLaunchKernel((void*)tryFlipSQAKernel<true, real>, gridDim, blockDim, args, 0, stream);
     else
-        cudaLaunchKernel((void*)tryFlipKernel<false, real>, gridDim, blockDim, args, 0, stream);
+        cudaLaunchKernel((void*)tryFlipSQAKernel<false, real>, gridDim, blockDim, args, 0, stream);
 #endif
     DEBUG_SYNC;
 }
@@ -464,7 +499,7 @@ annealOneStep(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
 
 
 template<class real>
-void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real beta) {
+void CUDADenseGraphAnnealer<real>::annealOneStepSQA(real G, real beta) {
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
     
@@ -476,7 +511,71 @@ void CUDADenseGraphAnnealer<real>::annealOneStep(real G, real beta) {
         const int *d_flipPos = flipPosBuffer_.acquire<int>(m_);
         const real *d_random = realNumBuffer_.acquire<real>(m_);
         calculate_Jq(&d_Jq_, d_J_, d_matq_, d_flipPos);
-        annealOneStep(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, G, beta);
+        annealOneStepSQA(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, G, beta);
+    }
+}
+
+
+/* Simulated annealing */
+
+template<class real>
+__global__ static void
+tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
+                const real *d_h,
+                const int *d_x, const real *d_random, sq::SizeType m,
+                const real coef, const real Tnorm) {
+
+    int gid = blockDim.x * blockIdx.x + threadIdx.x;
+    if (gid < m) {
+        int y = gid;
+        int x = d_x[y]; /* N */
+        char qyx = d_q[qStride * y + x];
+        
+        real dE = real(2.) * (real)qyx * (d_Jq[y] + d_h[x]);
+        real threshold = (dE < real(0.)) ? real(1.) : exp(-dE * Tnorm);
+        if (threshold > d_random[y])
+            d_q[qStride * y + x] = - qyx;
+    }
+}
+
+template<class real> void CUDADenseGraphAnnealer<real>::
+annealOneStepSA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
+                const real *d_random,
+                const DeviceVector &d_h, const DeviceMatrix &d_J, real Tnorm) {
+    dim3 blockDim(128);
+    dim3 gridDim(std::max(divru(m_, blockDim.x), 1));
+    cudaStream_t stream = devStream_->getCudaStream();
+#if 0
+    tryFlipKernel<real><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
+                                                          d_Jq.d_data, d_h.d_data,
+                                                          d_x, d_random, m_,
+                                                          Tnorm);
+#else
+    void *args[] = {(void*)&d_matq->d_data, (void*)&d_matq->stride,
+                    (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
+                    (void*)&m_, (void*)&Tnorm, NULL};
+    cudaLaunchKernel((void*)tryFlipSAKernel<real>, gridDim, blockDim, args, 0, stream);
+#endif
+    DEBUG_SYNC;
+}
+
+
+template<class real>
+void CUDADenseGraphAnnealer<real>::annealOneStepSA(real kT, real beta) {
+    throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
+    
+    if (!flipPosBuffer_.available(m_ * N_))
+        flipPosBuffer_.generateFlipPositions(d_random_, N_, m_, nRunsPerRandGen_);
+    if (!realNumBuffer_.available(m_ * N_))
+        realNumBuffer_.generate<real>(d_random_, N_ * m_ * nRunsPerRandGen_);
+
+    real Tnorm = kT * beta;
+    for (int idx = 0; idx < N_; ++idx) {
+        const int *d_flipPos = flipPosBuffer_.acquire<int>(m_);
+        const real *d_random = realNumBuffer_.acquire<real>(m_);
+        calculate_Jq(&d_Jq_, d_J_, d_matq_, d_flipPos);
+        annealOneStepSA(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, Tnorm);
     }
 }
 

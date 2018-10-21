@@ -13,6 +13,7 @@ template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {
     devStream_ = NULL;
     m_ = -1;
+    selectAlgorithm(sq::algoDefault);
 }
 
 template<class real>
@@ -20,6 +21,7 @@ CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer(Device &device) {
     devStream_ = NULL;
     m_ = -1;
     assignDevice(device);
+    selectAlgorithm(sq::algoDefault);
 }
 
 template<class real>
@@ -80,7 +82,21 @@ void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
 
 template<class real>
 sq::Algorithm CUDABipartiteGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
-    return sq::algoColoring;
+    switch (algo) {
+    case sq::algoColoring:
+    case sq::algoSANaive:
+    case sq::algoSAColoring:
+        algo_ = algo;
+        return algo_;
+    case sq::algoDefault:
+        algo_ = sq::algoColoring;
+        return algo_;
+    default:
+        sq::log("Uknown algo, %s, defaulting to %s.",
+                sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
+        algo_ = sq::algoColoring;
+        return sq::algoColoring;
+    }
 }
 
 template<class real>
@@ -263,6 +279,25 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
 
     deallocateInternalObjects();
 
+    if (m_ == 1) {
+        /* force set to SANaive when m == 1. */
+        if ((algo_ != sq::algoSANaive) && (algo_ != sq::algoSAColoring)) {
+            algo_ = sq::algoSAColoring;
+            sq::log("algorithm set to sa_coloring since m == 1.");
+        }
+    }
+    
+    switch (algo_) {
+    case sq::algoColoring:
+        annealMethod_ = &CUDABipartiteGraphAnnealer::annealOneStepSQA;
+        break;
+    case sq::algoSANaive:
+        annealMethod_ = &CUDABipartiteGraphAnnealer<real>::annealOneStepSA;
+        break;
+    default:
+        abort_("Must not reach here.");
+    }
+
     devAlloc_->allocate(&d_matq0_, m_, N0_);
     devAlloc_->allocate(&d_matq1_, m_, N1_);
 
@@ -395,10 +430,10 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
 
 template<int offset, class real>
 __device__ __forceinline__ static void
-deviceTryFlip(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
-              int N, int m, const real *d_Emat, sq::SizeType EmatStride,
-              const real *d_h, const real *d_realRand,
-              real twoDivM, real coef, real beta, bool runLastLine) {
+deviceTryFlipSQA(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
+                 int N, int m, const real *d_Emat, sq::SizeType EmatStride,
+                 const real *d_h, const real *d_realRand,
+                 real twoDivM, real coef, real beta, bool runLastLine) {
     int iq = gidx;
     int m2 = m / 2; /* round down */
 
@@ -431,8 +466,8 @@ deviceTryFlip(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
 }
 
 template<class real> void CUDABipartiteGraphAnnealer<real>::
-tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
-        const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
+tryFlipSQA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
+           const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
     real coef = std::log(std::tanh(G * beta / m_)) * beta;
     real twoDivM = real(2.) / m_;
     int m2 = m_ / 2;
@@ -446,35 +481,25 @@ tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     
     cudaStream_t stream = devStream_->getCudaStream();
 
-    if (m_ == 1) {
-        auto flipOp0 = [=]__device__(int gidx, int gidy) {
-            deviceTryFlip<0>(gidx, gidy,
-                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                d_h_data, d_realRand, twoDivM, coef, beta, false);
-        };
-        transform2d(flipOp0, N, 1, dim3(128), stream);
-    }
-    else {
-        auto flipOp0 = [=]__device__(int gidx, int gidy) {
-            deviceTryFlip<0>(gidx, gidy,
-                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                d_h_data, d_realRand, twoDivM, coef, beta, mIsOdd);
-        };
-        transform2d(flipOp0, N, m2, dim3(64, 2), stream);
+    auto flipOp0 = [=]__device__(int gidx, int gidy) {
+        deviceTryFlipSQA<0>(gidx, gidy,
+                            d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                            d_h_data, d_realRand, twoDivM, coef, beta, mIsOdd);
+    };
+    transform2d(flipOp0, N, m2, dim3(64, 2), stream);
 
-        auto flipOp1 = [=]__device__(int gidx, int gidy) {
-            deviceTryFlip<1>(gidx, gidy,
-                d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                d_h_data, d_realRand, twoDivM, coef, beta, false);
-        };
-        transform2d(flipOp1, N, m2, dim3(64, 2), stream);
-    }
+    auto flipOp1 = [=]__device__(int gidx, int gidy) {
+        deviceTryFlipSQA<1>(gidx, gidy,
+                            d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                            d_h_data, d_realRand, twoDivM, coef, beta, false);
+    };
+    transform2d(flipOp1, N, m2, dim3(64, 2), stream);
 }
 
 #endif
 
 template<class real>
-void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
+void CUDABipartiteGraphAnnealer<real>::annealOneStepSQA(real G, real beta) {
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
 
@@ -487,15 +512,79 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStep(real G, real beta) {
     /* 1st */
     calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
     d_randNum = d_randReal_.acquire<real>(N1_ * m_);
-    tryFlip(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, G, beta);
+    tryFlipSQA(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, G, beta);
     DEBUG_SYNC;
 
     /* 2nd */
     calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
     d_randNum = d_randReal_.acquire<real>(N0_ * m_);
-    tryFlip(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, beta);
+    tryFlipSQA(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, G, beta);
+    DEBUG_SYNC;
+}
+
+
+template<class real>
+__device__ __forceinline__ static void
+deviceTryFlipSA(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
+                int N, int m, const real *d_Emat, sq::SizeType EmatStride,
+                const real *d_h, const real *d_realRand,
+                real Tnorm) {
+    int iq = gidx;
+
+    if ((iq < N) && (gidy < m)) {
+        int im = gidy;
+        real q = d_qAnneal[im * qAnnealStride + iq];
+        real dE = real(2.) * q * (d_h[iq] + d_Emat[im * qAnnealStride + iq]);
+        real thresh = dE < real(0.) ? real(1.) : exp(-dE * Tnorm);
+        if (thresh > d_realRand[N * gidy + iq])
+            d_qAnneal[im * qAnnealStride + iq] = - q;
+    }
+}
+
+template<class real> void CUDABipartiteGraphAnnealer<real>::
+tryFlipSA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
+          const DeviceVector &d_h, const real *d_realRand, real Tnorm) {
+
+    real *d_qAnneal_data = d_qAnneal->d_data;
+    sq::SizeType qAnnealStride = d_qAnneal->stride;
+    const real *d_Emat = d_Jq.d_data;
+    sq::SizeType EmatStride = d_Jq.stride;
+    const real *d_h_data = d_h.d_data;
+    
+    cudaStream_t stream = devStream_->getCudaStream();
+
+    auto flipOp0 = [=]__device__(int gidx, int gidy) {
+        deviceTryFlipSA(gidx, gidy,
+                        d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
+                        d_h_data, d_realRand, Tnorm);
+    };
+    transform2d(flipOp0, N, m, dim3(64, 2), stream);
+}
+
+
+template<class real>
+void CUDABipartiteGraphAnnealer<real>::annealOneStepSA(real kT, real beta) {
+    throwErrorIfQNotSet();
+    clearState(solSolutionAvailable);
+
+    int nRequiredRandNum = (N0_ + N1_) * m_;
+    if (!d_randReal_.available(nRequiredRandNum))
+        d_randReal_.generate<real>(d_random_, nRequiredRandNum);
+    const real *d_randNum;
+
+    real Tnorm = kT * beta;
+    
+    /* 1st */
+    calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
+    d_randNum = d_randReal_.acquire<real>(N1_ * m_);
+    tryFlipSA(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, Tnorm);
     DEBUG_SYNC;
 
+    /* 2nd */
+    calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
+    d_randNum = d_randReal_.acquire<real>(N0_ * m_);
+    tryFlipSA(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, Tnorm);
+    DEBUG_SYNC;
 }
 
 
