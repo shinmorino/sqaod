@@ -48,16 +48,26 @@ class BipartiteGraphAnnealer :
         self._h0, self._h1, self._J, self._c = h0, h1, J, c
         
     def _select_algorithm(self, algoname) :
-        if algoname == algo.naive :
-            self.anneal_one_step = \
-                MethodType(BipartiteGraphAnnealer.anneal_one_step_naive, self)
-        else :
+        if algoname == algo.coloring :
             self.anneal_one_step = \
                 MethodType(BipartiteGraphAnnealer.anneal_one_step_coloring, self)
+        elif algoname == algo.sa_naive :
+            self.anneal_one_step = \
+                MethodType(BipartiteGraphAnnealer.anneal_one_step_sa_naive, self)
+        elif algoname == algo.sa_coloring :
+            self.anneal_one_step = \
+                MethodType(BipartiteGraphAnnealer.anneal_one_step_sa_coloring, self)
+        else : # algoname == algo.naive :
+            self.anneal_one_step = \
+                MethodType(BipartiteGraphAnnealer.anneal_one_step_naive, self)
 
     def _get_algorithm(self) :
-        if self.anneal_one_step is self.anneal_one_step_naive :
+        if self.anneal_one_step.__func__ == BipartiteGraphAnnealer.anneal_one_step_naive :
             return algo.naive;
+        elif self.anneal_one_step.__func__ == BipartiteGraphAnnealer.anneal_one_step_sa_naive :
+            return algo.sa_naive;
+        elif self.anneal_one_step.__func__ == BipartiteGraphAnnealer.anneal_one_step_sa_coloring :
+            return algo.sa_coloring;
         return algo.coloring
             
     def set_preferences(self, prefdict = None, **prefs) :
@@ -129,6 +139,10 @@ class BipartiteGraphAnnealer :
     def prepare(self) :
         self._q0 = np.empty((self._m, self._N0), dtype=np.int8)
         self._q1 = np.empty((self._m, self._N1), dtype=np.int8)
+        if self._m == 1 :
+            cur_algo = self._get_algorithm()
+            if  cur_algo != algo.sa_naive and cur_algo != algo.sa_coloring :
+                self._select_algorithm(algo.sa_naive)
 
     def make_solution(self) :
         self._x_pairs = []
@@ -203,6 +217,51 @@ class BipartiteGraphAnnealer :
         m = self._m
         self._anneal_half_step_coloring(N1, q1, h1, J, q0, G, beta, m)
         self._anneal_half_step_coloring(N0, q0, h0, J.T, q1, G, beta, m)
+
+    # simulated annealing
+    def anneal_one_step_sa_naive(self, kT, beta) :
+        h0, h1, J, c, q0, q1 = self._vars()
+        N0, N1 = self.get_problem_size()
+        m = self._m
+        N = N0 + N1
+
+        for im in range(m) :
+            q0m, q1m = q0[im],q1[im]
+
+            for loop in range(N) :
+                iq = np.random.randint(N)
+                if (iq < N0) :
+                    q = q0m[iq]
+                    dE = 2. * q * (h0[iq] + np.dot(J.T[iq], q1m))
+                    thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                    if thresh > np.random.rand():
+                        q0m[iq] = -q
+                else :
+                    iq -= N0
+                    q = q1m[iq]
+                    dE = 2. * q * (h1[iq] + np.dot(J[iq], q0m))
+                    thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                    if thresh > np.random.rand():
+                        q1m[iq] = -q
+                        
+    def _anneal_half_step_sa_coloring(self, N, qAnneal, h, J, qFixed, kT, beta, m) :
+        dEmat = np.matmul(J, qFixed.T)
+        for im in range(m) :
+            qAnnealm = qAnneal[im]
+            for iq in range(0, N) :
+                q = qAnnealm[iq]
+                dE = 2. * q * (h[iq] + dEmat[iq, im])
+                thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                if thresh > np.random.rand():
+                    qAnnealm[iq] = -q
+                
+    def anneal_one_step_sa_coloring(self, kT, beta) :
+        h0, h1, J, c, q0, q1 = self._vars()
+        N0, N1 = self.get_problem_size()
+        m = self._m
+        self._anneal_half_step_sa_coloring(N1, q1, h1, J, q0, kT, beta, m)
+        self._anneal_half_step_sa_coloring(N0, q0, h0, J.T, q1, kT, beta, m)
+        
 
 
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \

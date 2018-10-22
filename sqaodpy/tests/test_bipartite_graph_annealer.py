@@ -171,7 +171,7 @@ class TestBipartiteGraphAnnealerBase:
         an.randomize_spin()
 
         Ginit, Gfin = 5, 0.01
-        beta = 1. / 0.02
+        beta = 1. / 0.0001
         nSteps = 100
 
         G = Ginit
@@ -182,9 +182,8 @@ class TestBipartiteGraphAnnealerBase:
         an.make_solution()
         
         
-    def _test_anneal_minimize(self, algorithm) :
+    def _test_anneal_minimize(self, algorithm, m) :
         N0, N1 = 10, 8
-        m = 6
         an = self.anpkg.bipartite_graph_annealer(dtype=self.dtype)
         b0 = np.ones((N0), dtype=self.dtype)
         b1 = np.ones((N1), dtype=self.dtype)
@@ -198,9 +197,8 @@ class TestBipartiteGraphAnnealerBase:
         E = an.get_E()
         self.assertEqual(E.min(), 0)
 
-    def _test_anneal_hamiltonian(self, algorithm) :
+    def _test_anneal_hamiltonian(self, algorithm, m) :
         N0, N1 = 10, 8
-        m = 6
         an = self.anpkg.bipartite_graph_annealer(dtype=self.dtype)
         b0 = np.ones((N0), dtype=self.dtype)
         b1 = np.ones((N1), dtype=self.dtype)
@@ -215,9 +213,8 @@ class TestBipartiteGraphAnnealerBase:
         E = an.get_E()
         self.assertEqual(E.min(), 0)
 
-    def _test_anneal_maximize(self, algorithm) :
+    def _test_anneal_maximize(self, algorithm, m) :
         N0, N1 = 10, 8
-        m = 6
         an = self.anpkg.bipartite_graph_annealer(dtype=self.dtype)
         b0 = - np.ones((N0), dtype=self.dtype)
         b1 = - np.ones((N1), dtype=self.dtype)
@@ -232,22 +229,67 @@ class TestBipartiteGraphAnnealerBase:
         self.assertEqual(E.max(), 0)
 
     def test_anneal_minimize(self) :
-        self._test_anneal_minimize(sq.algorithm.naive)
-        self._test_anneal_minimize(sq.algorithm.coloring)
-        self._test_anneal_minimize(sq.algorithm.default)
+        self._test_anneal_minimize(sq.algorithm.naive, 6)
+        self._test_anneal_minimize(sq.algorithm.coloring, 6)
+        self._test_anneal_minimize(sq.algorithm.default, 6)
 
     def test_anneal_maximize(self) :
-        self._test_anneal_maximize(sq.algorithm.naive)
-        self._test_anneal_maximize(sq.algorithm.coloring)
-        self._test_anneal_maximize(sq.algorithm.default)
+        self._test_anneal_maximize(sq.algorithm.naive, 6)
+        self._test_anneal_maximize(sq.algorithm.coloring, 6)
+        self._test_anneal_maximize(sq.algorithm.default, 6)
 
     def test_anneal_hamiltonian(self) :
-        self._test_anneal_hamiltonian(sq.algorithm.naive)
-        self._test_anneal_hamiltonian(sq.algorithm.coloring)
-        self._test_anneal_hamiltonian(sq.algorithm.default)
+        self._test_anneal_hamiltonian(sq.algorithm.naive, 6)
+        self._test_anneal_hamiltonian(sq.algorithm.coloring, 6)
+        self._test_anneal_hamiltonian(sq.algorithm.default, 6)
 
+    def test_set_algorithm(self) :
+        ann = self.new_annealer(10, 10, 1)
         
+        ann.set_preferences(algorithm = sq.algorithm.naive)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.naive)
 
+        ann.set_preferences(algorithm = sq.algorithm.coloring)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+        ann.set_preferences(algorithm = sq.algorithm.sa_naive)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+        ann.set_preferences(algorithm = sq.algorithm.sa_coloring)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_coloring)
+        
+    def test_anneal_sa_naive(self) :
+        self._test_anneal_minimize(sq.algorithm.sa_naive, 1)
+        self._test_anneal_maximize(sq.algorithm.sa_naive, 2)
+        self._test_anneal_hamiltonian(sq.algorithm.sa_naive, 1)
+
+    def test_anneal_sa_coloring(self) :
+        self._test_anneal_minimize(sq.algorithm.sa_coloring, 1)
+        self._test_anneal_maximize(sq.algorithm.sa_coloring, 1)
+        self._test_anneal_hamiltonian(sq.algorithm.sa_coloring, 1)
+
+# py        
+class TestPyBipartiteGraphAnnealer(TestBipartiteGraphAnnealerBase, unittest.TestCase) :
+    def __init__(self, testFunc) :
+        TestBipartiteGraphAnnealerBase.__init__(self, sq.py, np.float64)
+        unittest.TestCase.__init__(self, testFunc)
+
+    def test_set_default_algorithm(self):
+        ann = self.new_annealer(10, 10, 10)
+        ann.set_preferences(algorithm = sq.algorithm.default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.naive)
+
+        ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
+        ann.prepare()
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+        
+# native        
 class TestNativeBipartiteGraphAnnealerBase(TestBipartiteGraphAnnealerBase) :
     def __init__(self, anpkg, dtype) :
         TestBipartiteGraphAnnealerBase.__init__(self, anpkg, dtype)
@@ -256,6 +298,18 @@ class TestNativeBipartiteGraphAnnealerBase(TestBipartiteGraphAnnealerBase) :
         an = self.new_annealer(10, 10, 1)
         self.assertEqual(an.dtype, self.dtype)
 
+    def test_set_default_algorithm(self):
+        ann = self.new_annealer(10, 10, 10)
+        ann.set_preferences(algorithm = sq.algorithm.default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+        ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
+        ann.prepare()
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_coloring)
+
+# cpu
 class TestCPUBipartiteGraphAnnealerBase(TestNativeBipartiteGraphAnnealerBase) :
     def __init__(self, dtype) :
         TestNativeBipartiteGraphAnnealerBase.__init__(self, sq.cpu, dtype)
@@ -263,28 +317,7 @@ class TestCPUBipartiteGraphAnnealerBase(TestNativeBipartiteGraphAnnealerBase) :
     def test_device_pref(self) :
         an = self.new_annealer(10, 10, 1)
         prefs = an.get_preferences()
-        self.assertEqual(prefs['device'], 'cpu')
-
-    def test_set_algorithm(self) :
-        ann = self.new_annealer(10, 10, 1)
-        ann.set_preferences(algorithm = sq.algorithm.default)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-        ann.set_preferences(algorithm = sq.algorithm.naive)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.naive)
-
-        ann.set_preferences(algorithm = sq.algorithm.coloring)
-        pref = ann.get_preferences()
-        self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
-
-
-        
-class TestPyBipartiteGraphAnnealer(TestBipartiteGraphAnnealerBase, unittest.TestCase) :
-    def __init__(self, testFunc) :
-        TestBipartiteGraphAnnealerBase.__init__(self, sq.py, np.float64)
-        unittest.TestCase.__init__(self, testFunc)
+        self.assertEqual(prefs['device'], 'cpu')        
 
 class TestCPUBipartiteGraphAnnealerFP32(TestCPUBipartiteGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
@@ -297,7 +330,7 @@ class TestCPUBipartiteGraphAnnealerFP64(TestCPUBipartiteGraphAnnealerBase, unitt
         unittest.TestCase.__init__(self, testFunc)
 
 if sq.is_cuda_available() :
-
+    # cuda
     class TestCUDABipartiteGraphAnnealerBase(TestNativeBipartiteGraphAnnealerBase) :
         def __init__(self, dtype) :
             TestNativeBipartiteGraphAnnealerBase.__init__(self, sq.cuda, dtype)
@@ -311,15 +344,29 @@ if sq.is_cuda_available() :
             ann = self.new_annealer(10, 10, 1)
             ann.set_preferences(algorithm = sq.algorithm.default)
             pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
 
             ann.set_preferences(algorithm = sq.algorithm.naive)
             pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
 
             ann.set_preferences(algorithm = sq.algorithm.coloring)
             pref = ann.get_preferences()
-            self.assertTrue(pref['algorithm'] == sq.algorithm.coloring)
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+            ann.set_preferences(algorithm = sq.algorithm.sa_coloring)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.sa_coloring)
+
+        @unittest.skip('sa_naive is not implemented in CUDABipartiteGraphAnnealer')    
+        def test_anneal_sa_naive(self) :
+            pass
+        
+        def test_anneal_sa_coloring(self) :
+            self._test_anneal_minimize(sq.algorithm.sa_coloring, 1)
+            self._test_anneal_maximize(sq.algorithm.sa_coloring, 1)
+            self._test_anneal_hamiltonian(sq.algorithm.sa_coloring, 1)
+            
 
     class TestCUDABipartiteGraphAnnealerFP32(TestCUDABipartiteGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :

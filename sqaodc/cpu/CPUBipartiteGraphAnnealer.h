@@ -90,6 +90,15 @@ private:
     void annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
                                          const EigenRowVector &h, const EigenMatrix &J,
                                          const EigenMatrix &qFixed, real G, real beta);
+
+
+    /* simulated annealing */
+    void annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
+                                  const EigenRowVector &h, const EigenMatrix &J,
+                                  const EigenMatrix &qFixed, real Tnorm);
+    void annealOneStepSANaive(real G, real beta);
+    void annealOneStepSAColoring(real G, real beta);
+
     
     void syncBits();
     
