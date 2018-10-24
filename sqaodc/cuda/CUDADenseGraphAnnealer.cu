@@ -106,10 +106,11 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
 template<class real>
 sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     switch (algo) {
-    case sq::algoColoring:
     case sq::algoSANaive:
-        algo_ = algo;
+    case sq::algoSAColoring:
+        algo_ = sq::algoSANaive;
         return algo_;
+    case sq::algoColoring:
     case sq::algoDefault:
         algo_ = sq::algoColoring;
         return algo_;
@@ -523,7 +524,7 @@ __global__ static void
 tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
                 const real *d_h,
                 const int *d_x, const real *d_random, sq::SizeType m,
-                const real coef, const real Tnorm) {
+                const real Tnorm) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < m) {
@@ -546,10 +547,10 @@ annealOneStepSA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_
     dim3 gridDim(std::max(divru(m_, blockDim.x), 1));
     cudaStream_t stream = devStream_->getCudaStream();
 #if 0
-    tryFlipKernel<real><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
-                                                          d_Jq.d_data, d_h.d_data,
-                                                          d_x, d_random, m_,
-                                                          Tnorm);
+    tryFlipSAKernel<real><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
+                                                            d_Jq.d_data, d_h.d_data,
+                                                            d_x, d_random, m_,
+                                                            Tnorm);
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_matq->stride,
                     (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
