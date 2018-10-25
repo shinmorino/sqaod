@@ -15,6 +15,7 @@ enum Algorithm {
     algoSAColoring,
 };
 
+bool isSQAAlgorithm(Algorithm algo);
 
 const char *algorithmToString(Algorithm algo);
 

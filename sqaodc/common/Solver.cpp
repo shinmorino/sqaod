@@ -137,6 +137,11 @@ Algorithm BFSearcher<real>::getAlgorithm() const {
 }
 
 template<class real>
+sqaod::Algorithm Annealer<real>::getAlgorithm() const {
+    return algo_;
+}
+
+template<class real>
 Preferences Annealer<real>::getPreferences() const {
     Preferences prefs = Solver<real>::getPreferences();
     prefs.pushBack(Preference(pnAlgorithm, this->getAlgorithm()));
@@ -158,6 +163,29 @@ void Annealer<real>::setPreference(const Preference &pref) {
     }
     else {
         Solver<real>::setPreference(pref);
+    }
+}
+
+template<class real>
+void Annealer<real>::selectDefaultAlgorithm(sqaod::Algorithm algoOrg, sqaod::Algorithm algoDef, sqaod::Algorithm algoSADef) {
+    if (algoOrg == sqaod::algoDefault) {
+        algo_ = algoDef;
+        return;
+    }
+
+    if (sqaod::isSQAAlgorithm(algoOrg))
+        algo_ = algoDef;
+    else
+        algo_ = algoSADef;
+    sqaod::log("%s is not supported, selecting the default algorithm of %s.",
+               sqaod::algorithmToString(algoOrg), sqaod::algorithmToString(algo_));
+}
+
+template<class real>
+void Annealer<real>::selectDefaultSAAlgorithm(sqaod::Algorithm algoOrg, sqaod::Algorithm algoSADef) {
+    if (algoOrg != algoSADef) {
+        algo_ = algoSADef;
+        sqaod::log("Selecting %s as the default SA algorithm.", sqaod::algorithmToString(algo_));
     }
 }
 

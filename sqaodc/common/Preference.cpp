@@ -7,6 +7,16 @@
 
 using namespace sqaod;
 
+bool sqaod::isSQAAlgorithm(Algorithm algo) {
+    switch (algo) {
+    case algoNaive:
+    case algoColoring:
+        return true;
+    default:
+        return false;
+    }
+}
+
 const char *sqaod::algorithmToString(Algorithm algo) {
     switch (algo) {
     case algoNaive:
