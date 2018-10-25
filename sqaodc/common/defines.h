@@ -60,6 +60,7 @@ void log(const char *format, ...) FORMATATTR(1, 2);
 #include <sqaodc/common/sqaod_config.h>
 
 #define WAR_VC_NOTHROW
+#define WAR_VC_MULTIPLE_INHERITANCE
 
 #endif
 
@@ -71,6 +72,8 @@ void log(const char *format, ...) FORMATATTR(1, 2);
  * warning : exception specification for virtual function is
  * incompatible with that of overridden function. */
 #define WAR_VC_NOTHROW throw()
+
+#define WAR_VC_MULTIPLE_INHERITANCE __multiple_inheritance
 
 #endif
 

@@ -15,7 +15,7 @@ namespace sqaod_cuda {
 namespace sq = sqaod;
 
 template<class real>
-class CUDABipartiteGraphAnnealer : public sqaod::cuda::BipartiteGraphAnnealer<real> {
+class WAR_VC_MULTIPLE_INHERITANCE CUDABipartiteGraphAnnealer : public sqaod::cuda::BipartiteGraphAnnealer<real> {
     typedef sq::MatrixType<real> HostMatrix;
     typedef sq::VectorType<real> HostVector;
     typedef sq::BitSetPairArray BitSetPairArray;
