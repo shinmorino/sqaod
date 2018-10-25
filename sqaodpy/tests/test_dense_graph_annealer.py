@@ -241,7 +241,11 @@ class TestDenseGraphAnnealerBase:
         pref = ann.get_preferences()
         self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
         
-
+    def test_reuse_solver(self) :
+        # test no errors
+        ann = self.new_annealer(10, 1)
+        self.anneal(ann)
+        self.anneal(ann)
 # py        
 class TestPyDenseGraphAnnealer(TestDenseGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :

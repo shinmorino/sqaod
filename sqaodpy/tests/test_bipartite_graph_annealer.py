@@ -272,6 +272,12 @@ class TestBipartiteGraphAnnealerBase:
         self._test_anneal_maximize(sq.algorithm.sa_coloring, 1)
         self._test_anneal_hamiltonian(sq.algorithm.sa_coloring, 1)
 
+    def test_reuse_solver(self) :
+        # test no errors
+        ann = self.new_annealer(10, 10, 1)
+        self.anneal(ann)
+        self.anneal(ann)
+
 # py        
 class TestPyBipartiteGraphAnnealer(TestBipartiteGraphAnnealerBase, unittest.TestCase) :
     def __init__(self, testFunc) :
