@@ -111,6 +111,8 @@ private:
 
     typedef CPUBipartiteGraphAnnealer<real> This;
     typedef sq::BipartiteGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::om_;
     using Base::N0_;
     using Base::N1_;

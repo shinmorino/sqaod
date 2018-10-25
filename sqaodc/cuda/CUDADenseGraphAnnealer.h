@@ -132,6 +132,8 @@ private:
 
     typedef CUDADenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::N_;
     using Base::m_;
     using Base::om_;

@@ -88,6 +88,8 @@ private:
     
     typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::om_;
     using Base::N_;
     using Base::m_;
