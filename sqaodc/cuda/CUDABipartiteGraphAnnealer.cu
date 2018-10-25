@@ -84,24 +84,14 @@ template<class real>
 sq::Algorithm CUDABipartiteGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     switch (algo) {
     case sq::algoColoring:
-    case sq::algoSANaive:
     case sq::algoSAColoring:
         algo_ = algo;
-        return algo_;
-    case sq::algoDefault:
-        algo_ = sq::algoColoring;
-        return algo_;
+        break;
     default:
-        sq::log("Uknown algo, %s, defaulting to %s.",
-                sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        algo_ = sq::algoColoring;
-        return sq::algoColoring;
+        selectDefaultAlgorithm(algo, sq::algoColoring, sq::algoSAColoring);
+        break;
     }
-}
-
-template<class real>
-sq::Algorithm CUDABipartiteGraphAnnealer<real>::getAlgorithm() const {
-    return sq::algoColoring;
+    return algo_;
 }
 
 template<class real>
@@ -279,19 +269,14 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
 
     deallocateInternalObjects();
 
-    if (m_ == 1) {
-        /* force set to SANaive when m == 1. */
-        if ((algo_ != sq::algoSANaive) && (algo_ != sq::algoSAColoring)) {
-            algo_ = sq::algoSAColoring;
-            sq::log("algorithm set to sa_coloring since m == 1.");
-        }
-    }
-    
+    if (m_ == 1)
+        selectDefaultSAAlgorithm(algo_, sq::algoSAColoring);
+
     switch (algo_) {
     case sq::algoColoring:
         annealMethod_ = &CUDABipartiteGraphAnnealer::annealOneStepSQA;
         break;
-    case sq::algoSANaive:
+    case sq::algoSAColoring:
         annealMethod_ = &CUDABipartiteGraphAnnealer<real>::annealOneStepSA;
         break;
     default:

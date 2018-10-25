@@ -41,8 +41,6 @@ public:
 
     virtual sq::Algorithm selectAlgorithm(sq::Algorithm algo);
     
-    virtual sq::Algorithm getAlgorithm() const;
-    
     void seed(unsigned long long seed);
 
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
@@ -113,7 +111,6 @@ private:
 
     typedef void (CUDABipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
-    sq::Algorithm algo_;
 
     DeviceRandom d_random_;
     DeviceRandomBuffer d_randReal_;
@@ -143,6 +140,7 @@ private:
     using Base::N0_;
     using Base::N1_;
     using Base::m_;
+    using Base::algo_;
     /* annealer state */
     using Base::solRandSeedGiven;
     using Base::solPrepared;

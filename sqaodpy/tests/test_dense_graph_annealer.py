@@ -319,6 +319,36 @@ if sq.is_cuda_available() :
             prefs = an.get_preferences()
             self.assertEqual(prefs['device'], 'cuda')
 
+        def test_set_algorithm(self) :
+            ann = self.new_annealer(10, 10)
+        
+            ann.set_preferences(algorithm = sq.algorithm.naive)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+            ann.set_preferences(algorithm = sq.algorithm.coloring)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+            ann.set_preferences(algorithm = sq.algorithm.sa_naive)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+            ann.set_preferences(algorithm = sq.algorithm.sa_coloring)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+        def test_set_default_algorithm(self):
+            ann = self.new_annealer(10, 10)
+            ann.set_preferences(algorithm = sq.algorithm.default)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+            ann = self.new_annealer(10, 10)
+            ann.set_preferences(algorithm = sq.algorithm.default)
+            pref = ann.get_preferences()
+            self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
     class TestCUDADenseGraphAnnealerFP32(TestCUDADenseGraphAnnealerBase, unittest.TestCase) :
         def __init__(self, testFunc) :
             TestCUDADenseGraphAnnealerBase.__init__(self, np.float32)
