@@ -2,7 +2,6 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
-#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 namespace sqaod_cpu {
 
@@ -69,11 +68,6 @@ private:
     /* simulated annealing */
     void annealOneStepSANaive(real kT, real beta);
 
-    /* experimental */
-    void annealOneStepColoringParallel2(real G, real beta);
-    sqaod_internal::ParallelWorkDistributor parallel_;
-    void annealColoredPlaneParallel2(real G, real beta);
-
     void syncBits();
     
     sq::Random *random_;
@@ -94,7 +88,6 @@ private:
     using Base::N_;
     using Base::m_;
     using Base::algo_;
-    using Base::experiment_;
     /* annealer state */
     using Base::solRandSeedGiven;
     using Base::solPrepared;

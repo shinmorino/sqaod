@@ -5,6 +5,8 @@
 #include <float.h>
 #include <algorithm>
 #include <exception>
+#include <omp.h>
+
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cpu;
@@ -92,10 +94,8 @@ void CPUBipartiteGraphBFSearcher<real>::prepare() {
 
     if (nWorkers_ == 1)
         searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeSingleThread;
-    else if (experiment_ == 0)
-        searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeParallel;
     else
-        searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeParallel2;
+        searchMethod_ = &CPUBipartiteGraphBFSearcher<real>::searchRangeParallel;
 
 #ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
     sq::SizeType nX0Spans = sq::SizeType((x0max_ + tileSize0_ - 1) / tileSize0_);
@@ -266,69 +266,6 @@ bool CPUBipartiteGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *cu
 #endif
 }
 
-
-template<class real>
-bool CPUBipartiteGraphBFSearcher<real>::searchRangeParallel2(sq::PackedBitSet *curX0, sq::PackedBitSet *curX1) {
-    throwErrorIfNotPrepared();
-    clearState(solSolutionAvailable);
-    
-    sq::PackedBitSetArray batch0begin(nWorkers_), batch0end(nWorkers_);
-    sq::PackedBitSetArray batch1begin(nWorkers_), batch1end(nWorkers_);
-
-    /* calculate begin/end */
-    sq::PackedBitSet x0 = x0_;
-    sq::PackedBitSet x0end = std::min(x0 + tileSize0_, x0max_);
-    sq::PackedBitSet x1 = x1_;
-    for (int idx = 0; idx < nWorkers_; ++idx) {
-
-        batch1begin.pushBack(x1);
-        sq::PackedBitSet x1end = std::min(x1 + tileSize1_, x1max_);
-        batch1end.pushBack(x1end);
-        batch0begin.pushBack(x0);
-        batch0end.pushBack(x0end);
-
-        x1 = x1end;
-        if (x1 == x1max_) {
-            x1 = 0;
-            /* move to the next x0 range. */
-            x0 = std::min(x0 + tileSize0_, x0max_);
-            x0end = std::min(x0 + tileSize0_, x0max_);
-        }
-    }
-
-#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-    for (int idx = 0; idx < nWorkers_; ++idx) {
-        sq::SizeType batchIdx = sq::SizeType(batch0begin[idx] / tileSize0_);
-        rangeMapArray_[batchIdx].insert(batch1begin[idx], batch1end[idx]);
-    }
-#endif
-    
-    auto searchWorker = [=, &batch0begin, &batch0end, &batch1begin, &batch1end](int threadIdx) {
-        sq::PackedBitSet b0b = batch0begin[threadIdx];
-        sq::PackedBitSet b0e = batch0end[threadIdx];
-        sq::PackedBitSet b1b = batch1begin[threadIdx];
-        sq::PackedBitSet b1e = batch1end[threadIdx];
-        if ((b0b < b0e) && (b1b < b1e))
-            searchers_[threadIdx].searchRange(b0b, b0e, b1b, b1e);
-    };
-    parallel_.run(searchWorker);
-
-    /* move to next batch */
-    x0_ = batch0begin[nWorkers_ - 1];
-    x1_ = batch1end[nWorkers_ - 1];
-
-    if (x1_ == x1max_) {
-        x1_ = 0;
-        x0_ = std::min(x0_ + tileSize0_, x0max_);
-    }
-    
-    if (curX0 != NULL)
-        *curX0 = x0_;
-    if (curX1 != NULL)
-        *curX1 = x1_;
-
-    return (x0_ == x0max_);
-}
 
 template class CPUBipartiteGraphBFSearcher<float>;
 template class CPUBipartiteGraphBFSearcher<double>;

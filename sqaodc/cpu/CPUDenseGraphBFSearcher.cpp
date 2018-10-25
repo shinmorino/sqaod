@@ -3,6 +3,7 @@
 #include <sqaodc/common/internal/ShapeChecker.h>
 #include "SharedFormulas.h"
 #include <cmath>
+#include <omp.h>
 
 #include <float.h>
 #include <algorithm>
@@ -77,10 +78,8 @@ void CPUDenseGraphBFSearcher<real>::prepare() {
 
     if (nWorkers_ == 1)
         searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeSingleThread;
-    else if (experiment_ == 0)
-        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel;
     else
-        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel2;
+        searchMethod_ = &CPUDenseGraphBFSearcher<real>::searchRangeParallel;
 
     setState(solPrepared);
 
@@ -197,36 +196,6 @@ bool CPUDenseGraphBFSearcher<real>::searchRangeParallel(sq::PackedBitSet *curXEn
     return false;
 #endif
 }
-
-
-template<class real>
-bool CPUDenseGraphBFSearcher<real>::searchRangeParallel2(sq::PackedBitSet *curXEnd) {
-    throwErrorIfNotPrepared();
-    clearState(solSolutionAvailable);
-
-    auto searchWorker = [=](int threadIdx) {
-        sq::PackedBitSet batchBegin = x_ + tileSize_ * threadIdx;
-        sq::PackedBitSet batchEnd = x_ + tileSize_ * (threadIdx + 1);
-        batchBegin = std::min(std::max(0ULL, batchBegin), xMax_);
-        batchEnd = std::min(std::max(0ULL, batchEnd), xMax_);
-
-#ifdef SQAODC_ENABLE_RANGE_COVERAGE_TEST
-        {
-            std::unique_lock<std::mutex> lock(mutex_);
-            rangeMap_.insert(batchBegin, batchEnd);
-        }
-#endif
-        if (batchBegin < batchEnd)
-            searchers_[threadIdx].searchRange(batchBegin, batchEnd);
-    };
-    parallel_.run(searchWorker);
-    
-    x_ = std::min(sq::PackedBitSet(x_ + tileSize_ * nWorkers_), xMax_);
-    if (curXEnd != NULL)
-        *curXEnd = x_;
-    return (xMax_ == x_);
-}
-
 
 
 template class CPUDenseGraphBFSearcher<float>;

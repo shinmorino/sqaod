@@ -4,6 +4,7 @@
 #include <sqaodc/common/EigenBridge.h>
 #include <sqaodc/common/internal/ShapeChecker.h>
 #include <time.h>
+#include <omp.h>
 #include "Dot_SIMD.h"
 
 namespace sqint = sqaod_internal;
@@ -179,10 +180,8 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     case sq::algoColoring:
         if (nWorkers_ == 1)
             annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoring;
-        else if (experiment_ == 0)
-            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel;
         else
-            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel2;
+            annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepColoringParallel;
         break;
     case sq::algoSANaive:
         annealMethod_ = &CPUDenseGraphAnnealer::annealOneStepSANaive;
@@ -321,40 +320,6 @@ void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel(real G, real bet
     
     for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
         annealColoredPlaneParallel(G, beta);
-    clearState(solSolutionAvailable);
-}
-
-template<class real>
-void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel2(real G, real beta) {
-    real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
-    
-    sq::IdxType m2 = (m_ / 2) * 2; /* round down */
-
-    auto flipWorker0 = [this, m2, twoDivM, coef, beta](int threadIdx) {
-        sq::Random &random = random_[threadIdx];
-        for (int y = threadIdx * 2; y < m2; y += 2 * nWorkers_)
-            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-        if ((threadIdx == 0) && ((m_ % 2) != 0)) /* m is odd. */
-            tryFlip(matQ_, m_ - 1, h_, J_, random, twoDivM, coef, beta);
-    };
-    parallel_.run(flipWorker0);
-    
-    auto flipWorker1 = [this, m2, twoDivM, coef, beta](int threadIdx) {
-        sq::Random &random = random_[threadIdx];
-        for (int y = 1 + threadIdx * 2; y < m2; y += 2 * nWorkers_)
-            tryFlip(matQ_, y, h_, J_, random, twoDivM, coef, beta);
-    };
-    parallel_.run(flipWorker1);
-}
-
-
-template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel2(real G, real beta) {
-    throwErrorIfQNotSet();
-    
-    for (int idx = 0; idx < (sq::IdxType)N_; ++idx)
-        annealColoredPlaneParallel2(G, beta);
     clearState(solSolutionAvailable);
 }
 

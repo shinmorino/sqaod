@@ -21,20 +21,6 @@ template<> const char *typeString<double>() { return "double"; }
 using namespace sqaod;
 
 template<class real>
-Preferences Solver<real>::getPreferences() const {
-    Preferences prefs;
-    prefs.pushBack(Preference(pnExperiment, experiment_));
-    return prefs;
-}
-
-template<class real>
-void Solver<real>::setPreference(const Preference &pref) {
-    if (pref.name == pnExperiment) {
-        experiment_ = pref.experiment;
-    }
-}
-
-template<class real>
 void Solver<real>::setPreferences(const Preferences &prefs) {
     for (Preferences::const_iterator it = prefs.begin();
          it != prefs.end(); ++it) {
@@ -143,7 +129,7 @@ sqaod::Algorithm Annealer<real>::getAlgorithm() const {
 
 template<class real>
 Preferences Annealer<real>::getPreferences() const {
-    Preferences prefs = Solver<real>::getPreferences();
+    Preferences prefs;
     prefs.pushBack(Preference(pnAlgorithm, this->getAlgorithm()));
     prefs.pushBack(Preference(pnNumTrotters, m_));
     prefs.pushBack(Preference(pnPrecision, typeString<real>()));
@@ -160,9 +146,6 @@ void Annealer<real>::setPreference(const Preference &pref) {
     }
     else if (pref.name == pnAlgorithm) {
         this->selectAlgorithm(pref.algo);
-    }
-    else {
-        Solver<real>::setPreference(pref);
     }
 }
 
@@ -204,7 +187,7 @@ void BipartiteGraphSolver<real>::getProblemSize(SizeType *N0, SizeType *N1) cons
 
 template<class real>
 Preferences DenseGraphBFSearcher<real>::getPreferences() const {
-    Preferences prefs = Solver<real>::getPreferences();
+    Preferences prefs;
     prefs.pushBack(Preference(pnAlgorithm, algoBruteForceSearch));
     prefs.pushBack(Preference(pnTileSize, tileSize_));
     prefs.pushBack(Preference(pnPrecision, typeString<real>()));
@@ -220,9 +203,6 @@ void DenseGraphBFSearcher<real>::setPreference(const Preference &pref) {
         if (pref.tileSize != tileSize)
             log("Tile size is adjusted to %d.", tileSize_);
         tileSize_ = tileSize;
-    }
-    else {
-        Solver<real>::setPreference(pref);
     }
 }
 

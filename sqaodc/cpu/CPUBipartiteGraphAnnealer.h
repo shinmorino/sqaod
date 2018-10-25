@@ -3,7 +3,6 @@
 
 #include <sqaodc/common/Common.h>
 #include <sqaodc/common/EigenBridge.h>
-#include <sqaodc/common/internal/ParallelWorkDistributor.h>
 
 namespace sqaod_cpu {
 
@@ -81,14 +80,6 @@ private:
                                         const EigenRowVector &h, const EigenMatrix &J,
                                         const EigenMatrix &qFixed, real G, real beta);
 
-    /* experimental */
-    sqaod_internal::ParallelWorkDistributor parallel_;
-    void annealOneStepColoringParallel2(real G, real beta);
-    void annealHalfStepColoringParallel2(int N, EigenMatrix &qAnneal,
-                                         const EigenRowVector &h, const EigenMatrix &J,
-                                         const EigenMatrix &qFixed, real G, real beta);
-
-
     /* simulated annealing */
     void annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
                                   const EigenRowVector &h, const EigenMatrix &J,
@@ -118,7 +109,6 @@ private:
     using Base::N1_;
     using Base::m_;
     using Base::algo_;
-    using Base::experiment_;
     /* annealer state */
     using Base::solRandSeedGiven;
     using Base::solPrepared;
