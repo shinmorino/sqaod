@@ -12,7 +12,7 @@ cudaver = cudaver.replace('.', '-')
 pkgver=sqaodver + '~' + distname
 
 pkg_name = 'libsqaodc-{simd}'.format(simd=simd)
-lib='libsqaodc.so.0'
+lib='libsqaodc.so.1'
 
 # control template
 

@@ -48,7 +48,7 @@ with open('README.rst') as file:
 
 setup(
     name=name,
-    version='0.3.1',
+    version='1.0.0',
     url=url,
     author=author,
     author_email=email,
