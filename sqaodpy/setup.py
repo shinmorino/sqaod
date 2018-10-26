@@ -6,7 +6,7 @@ import os
 from ctypes.util import find_library
 
 name = 'sqaod'
-version = '0.3.1'
+version = '1.0.0'
 
 npinclude = np.get_include()
 

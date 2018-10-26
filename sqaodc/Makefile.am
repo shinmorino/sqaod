@@ -24,7 +24,7 @@ if CUDA_ENABLED
     lib_LTLIBRARIES+=libsqaodc_cuda.la
     libsqaodc_cuda_la_SOURCES=
     libsqaodc_cuda_la_LIBADD=cuda/libcuda.la libsqaodc.la
-    libsqaodc_cuda_la_LDFLAGS=-version-info 0:0:0 @CUDA_LDFLAGS@ -lcublas -lcurand -lcudart
+    libsqaodc_cuda_la_LDFLAGS=-version-info 1:0:0 @CUDA_LDFLAGS@ -lcublas -lcurand -lcudart
 endif
 
 # see how to set version info

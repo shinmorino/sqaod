@@ -1,44 +1,32 @@
 # Sqaod
 #### Latest version : Beta2 0.3.1 (deb), 0.3.1 (python). 
+#### Prepration of v1.0 release is undergoing (2018/10/27)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
-#### One fix will be applied to enable upper/lower triangle matrices for dense graph solvers, [#57](https://github.com/shinmorino/sqaod/issues/57). (2018/10/9)
 
-#### Ubuntu 18.04LTS(CUDA 10.0) packges are uploaded to apt repository. (2018/9/26)
-
-#### Beta2 Update1 has been released. (2018/9/18)
-
-This release is aiming at easier installation.
-
-- On Ubuntu 16.04 and **17.10, 18.04(New)**, users are able to install sqaod by using apt and pip, without compiling source code.
-  - Apt repository for Ubuntu 16.04 has been updated to 0.3.1.
-  - **New:** Apt repository for Ubuntu 17.10/18.04 has been newly created, and available to install 0.3.1.
-- **New:** On CentOS(RHEL) 7, yum repository is available to install 0.3.1.
-- Python binary packages(wheel) for Python 2.7, 3.5, **3.6, 3.7 (New)** are available on PyPI.  
-  
-  - Please visit [Installation Process Improvement](https://github.com/shinmorino/sqaod/wiki/Installation-process-improvement)
-
-- From this release, avx2 version of CPU native library is default, while previous releases used sse2 version by default.
+#### Version 1.0 (2018/10/27)
+- All solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57).
+- Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  [[#58]](https://github.com/shinmorino/sqaod/issues/58).
+- Misc bug fixes.
 
 #### Future plan
 - Version 1.0 release is planned after offical CUDA release on Ubuntu 18.04.
-- Version 1.1 planning is undergoing.  Please file your requests to [Version 1.1 planning(#55)]( https://github.com/shinmorino/sqaod/issues/55).
+- Version 1.1 planning is undergoing.  Please file your requests to [Version 1.1 planning [#55]]( https://github.com/shinmorino/sqaod/issues/55).
 
 Please visit the '[Release history](https://github.com/shinmorino/sqaod/wiki/Release-history)' page for changes and updates.
 
-
 ## Installation  
 
-If you're using Ubuntu 16.04/17.10 and CentOS(RHEL) 7, please visit [Installation](https://github.com/shinmorino/sqaod/wiki/Installation) page at sqaod wiki.
+If you're using Ubuntu 16.04/18.04 or CentOS(RHEL) 7, please visit [Installation](https://github.com/shinmorino/sqaod/wiki/Installation) page at sqaod wiki.
 
 If you want to use other Linux distribution, you need to build from source. See wiki, [Build from source](https://github.com/shinmorino/sqaod/wiki/Build-from-source).
 Please file a request to [Issues](https://github.com/shinmorino/sqaod/issues) if you need binary distribution for your linux distro.  Windows version and/or docker images are possible as well.
 
 
-Here's a quick instruction to install Beta2 Update1 release to Ubuntu 16.04/17.10.
+Here's a quick instruction to install sqaod v1.0 to Ubuntu 16.04/18.04.
 
 
 ### 1. Cleaning environment.
