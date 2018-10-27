@@ -13,6 +13,7 @@ SUBDIRS+=tests
 
 lib_LTLIBRARIES=libsqaodc.la
 libsqaodc_la_LIBADD=$(top_builddir)/sqaodc/common/libcommon.la $(top_builddir)/sqaodc/cpu/libcpu.la
+libsqaodc_la_LDFLAGS=-version-info 1:0:0
 libsqaodc_la_SOURCES=
 if WITH_BLAS
     libsqaodc_la_LIBADD+=-lblas
