@@ -141,7 +141,7 @@ with open(pkg_name + '.prerm', 'w') as file:
 # CUDA package
 if simd == 'sse2' :
     pkg_name = 'libsqaodc-cuda-{cudaver}'.format(cudaver=cudaver)
-    lib='libsqaodc_cuda.so.0'
+    lib='libsqaodc_cuda.so.1'
     
     # install
     install='usr/lib/*/libsqaodc_cuda.so.* usr/lib/{name}'.format(name=pkg_name)
