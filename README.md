@@ -9,7 +9,7 @@ Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more det
 
 #### Version 1.0 (2018/10/27)
 - All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57).
-- Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  [[#58]](https://github.com/shinmorino/sqaod/issues/58).
+- Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  [[#59]](https://github.com/shinmorino/sqaod/issues/59).
 - Misc bug fixes.
 
 #### Future plan

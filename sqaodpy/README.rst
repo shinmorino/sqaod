@@ -54,7 +54,7 @@ Current version is Version 1.0.0.
 
   * All solvers and functions are able to accept upper/lower triangular matrices. `[#57] <https://github.com/shinmorino/sqaod/issues/57>`_.
 
-  * Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  `[#58] <https://github.com/shinmorino/sqaod/issues/58>`_.
+  * Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  `[#59] <https://github.com/shinmorino/sqaod/issues/59>`_.
 
   * Misc bug fixes.
 
