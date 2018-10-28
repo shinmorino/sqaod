@@ -40,8 +40,6 @@ public:
 
     virtual sq::Algorithm selectAlgorithm(sq::Algorithm algo);
     
-    virtual sq::Algorithm getAlgorithm() const;
-    
     void seed(unsigned long long seed);
 
     void setQUBO(const HostMatrix &W, sq::OptimizeMethod om = sq::optMinimize);
@@ -107,7 +105,6 @@ private:
 
     typedef void (CUDADenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
-    sq::Algorithm algo_;
     
     DeviceRandom d_random_;
     DeviceMatrix d_J_;
@@ -135,9 +132,12 @@ private:
 
     typedef CUDADenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::N_;
     using Base::m_;
     using Base::om_;
+    using Base::algo_;
     /* annealer state */
     using Base::solRandSeedGiven;
     using Base::solPrepared;

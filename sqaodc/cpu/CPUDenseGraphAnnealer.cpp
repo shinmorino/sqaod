@@ -38,20 +38,11 @@ sq::Algorithm CPUDenseGraphAnnealer<real>::selectAlgorithm(enum sq::Algorithm al
     case sq::algoColoring:
     case sq::algoSANaive:
         algo_ = algo;
-        return algo_;
-    case sq::algoDefault:
-        algo_ = sq::algoColoring;
-        return algo_;
+        break;
     default:
-        sq::log("Uknown algo, %s, defaulting to %s.",
-                sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        algo_ = sq::algoColoring;
-        return sq::algoColoring;
+        selectDefaultAlgorithm(algo, sq::algoColoring, sq::algoSANaive);
+        break;
     }
-}
-
-template<class real>
-sq::Algorithm CPUDenseGraphAnnealer<real>::getAlgorithm() const {
     return algo_;
 }
 
@@ -178,13 +169,8 @@ void CPUDenseGraphAnnealer<real>::prepare() {
     matQ_.resize(m_, N_);;
     E_.resize(m_);
 
-    if (m_ == 1) {
-        /* force set to SANaive when m == 1. */
-        if (algo_ != sq::algoSANaive) {
-            algo_ = sq::algoSANaive;
-            sq::log("algorithm set to sa_coloring since m == 1.");
-        }
-    }
+    if (m_ == 1)
+        selectDefaultSAAlgorithm(algo_, sq::algoSANaive);
     
     switch (algo_) {
     case sq::algoNaive:

@@ -106,27 +106,16 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
 template<class real>
 sq::Algorithm CUDADenseGraphAnnealer<real>::selectAlgorithm(sq::Algorithm algo) {
     switch (algo) {
-    case sq::algoSANaive:
-    case sq::algoSAColoring:
-        algo_ = sq::algoSANaive;
-        return algo_;
     case sq::algoColoring:
-    case sq::algoDefault:
-        algo_ = sq::algoColoring;
-        return algo_;
+    case sq::algoSANaive:
+        algo_ = algo;
+        break;
     default:
-        sq::log("Uknown algo, %s, defaulting to %s.",
-                sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        algo_ = sq::algoColoring;
-        return sq::algoColoring;
+        selectDefaultAlgorithm(algo, sq::algoColoring, sq::algoSANaive);
+        break;
     }
-}
-
-template<class real>
-sq::Algorithm CUDADenseGraphAnnealer<real>::getAlgorithm() const {
     return algo_;
 }
-
 
 template<class real>
 void CUDADenseGraphAnnealer<real>::seed(unsigned long long seed) {
@@ -286,14 +275,9 @@ void CUDADenseGraphAnnealer<real>::prepare() {
 
     deallocateInternalObjects();
 
-    if (m_ == 1) {
-        /* force set to SANaive when m == 1. */
-        if (algo_ != sq::algoSANaive) {
-            algo_ = sq::algoSANaive;
-            sq::log("algorithm set to sa_naive since m == 1.");
-        }
-    }
-    
+    if (m_ == 1)
+        selectDefaultSAAlgorithm(algo_, sq::algoSANaive);
+
     switch (algo_) {
     case sq::algoColoring:
         annealMethod_ = &CUDADenseGraphAnnealer::annealOneStepSQA;

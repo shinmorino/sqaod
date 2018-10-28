@@ -21,8 +21,6 @@ public:
     void seed(unsigned long long seed);
 
     sq::Algorithm selectAlgorithm(enum sq::Algorithm algo);
-
-    sq::Algorithm getAlgorithm() const;
     
     /* void getProblemSize(SizeType *N) const; */
 
@@ -61,7 +59,6 @@ public:
 private:    
     typedef void (CPUDenseGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
     AnnealMethod annealMethod_;
-    sq::Algorithm algo_;
     
     void annealOneStepNaive(real G, real beta);
     void annealOneStepColoring(real G, real beta);
@@ -91,9 +88,12 @@ private:
     
     typedef CPUDenseGraphAnnealer<real> This;
     typedef sq::DenseGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::om_;
     using Base::N_;
     using Base::m_;
+    using Base::algo_;
     using Base::experiment_;
     /* annealer state */
     using Base::solRandSeedGiven;

@@ -40,20 +40,11 @@ sq::Algorithm CPUBipartiteGraphAnnealer<real>::selectAlgorithm(sq::Algorithm alg
     case sq::algoSANaive:
     case sq::algoSAColoring:
         algo_ = algo;
-        return algo_;
-    case sq::algoDefault:
-        algo_ = sq::algoColoring;
-        return algo_;
+        break;
     default:
-        sq::log("Uknown algo, %s, defaulting to %s.",
-            sq::algorithmToString(algo), sq::algorithmToString(sq::algoColoring));
-        algo_ = sq::algoColoring;
-        return algo;
+        selectDefaultAlgorithm(algo, sq::algoColoring, sq::algoSAColoring);
+        break;
     }
-}
-
-template<class real>
-sq::Algorithm CPUBipartiteGraphAnnealer<real>::getAlgorithm() const {
     return algo_;
 }
 
@@ -235,13 +226,8 @@ void CPUBipartiteGraphAnnealer<real>::prepare() {
     matQ1_.resize(m_, N1_);
     E_.resize(m_);
 
-    if (m_ == 1) {
-        /* force set to SAColoring when m == -1. */
-        if ((algo_ != sq::algoSANaive) && (algo_ != sq::algoSAColoring)) {
-            algo_ = sq::algoSAColoring;
-            sq::log("algorithm set to sa_coloring since m == -1.");
-        }
-    }
+    if (m_ == 1)
+        selectDefaultSAAlgorithm(algo_, sq::algoSAColoring);
 
     switch (algo_) {
     case sq::algoNaive:

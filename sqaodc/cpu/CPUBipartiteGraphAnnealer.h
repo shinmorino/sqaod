@@ -24,8 +24,6 @@ public:
 
     sq::Algorithm selectAlgorithm(sq::Algorithm algo);
 
-    sq::Algorithm getAlgorithm() const;
-
     /* void getProblemSize(SizeType *N0, SizeType *N1) const; */
 
     void setQUBO(const Vector &b0, const Vector &b1, const Matrix &W,
@@ -67,7 +65,6 @@ public:
     
 private:
     typedef void (CPUBipartiteGraphAnnealer<real>::*AnnealMethod)(real G, real beta);
-    sq::Algorithm algo_;
     AnnealMethod annealMethod_;
 
     void annealOneStepNaive(real G, real beta);
@@ -114,10 +111,13 @@ private:
 
     typedef CPUBipartiteGraphAnnealer<real> This;
     typedef sq::BipartiteGraphAnnealer<real> Base;
+    using Base::selectDefaultAlgorithm;
+    using Base::selectDefaultSAAlgorithm;
     using Base::om_;
     using Base::N0_;
     using Base::N1_;
     using Base::m_;
+    using Base::algo_;
     using Base::experiment_;
     /* annealer state */
     using Base::solRandSeedGiven;

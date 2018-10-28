@@ -96,6 +96,8 @@ template<class real>
 struct Annealer : Solver<real> {
     virtual ~Annealer() WAR_VC_NOTHROW { }
 
+    virtual Algorithm getAlgorithm() const;
+
     virtual Preferences getPreferences() const;
 
     virtual void setPreference(const Preference &pref);
@@ -110,6 +112,10 @@ struct Annealer : Solver<real> {
 
 protected:
     Annealer() : m_(0) { }
+    sqaod::Algorithm algo_;
+
+    void selectDefaultAlgorithm(sqaod::Algorithm algoOrg, sqaod::Algorithm algoDef, sqaod::Algorithm algoSADef);
+    void selectDefaultSAAlgorithm(sqaod::Algorithm algoOrg, sqaod::Algorithm algoSADef);
 
     SizeType m_;
 };
