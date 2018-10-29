@@ -1,13 +1,12 @@
 # Sqaod
-#### Latest version : Beta2 0.3.1 (deb), 0.3.1 (python). 
-#### Prepration of v1.0 release is undergoing (2018/10/27)
+#### Latest version : v1.0.0 (deb), 1.0.0 (python). (2018/10/28)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
 
-#### Version 1.0 (2018/10/27)
+#### Version 1.0 Released (2018/10/28)
 - All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57).
 - Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  [[#59]](https://github.com/shinmorino/sqaod/issues/59).
 - Misc bug fixes.
@@ -79,10 +78,12 @@ sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/
 sudo apt-get update
 sudo apt-get install cuda-drivers
 
-sudo apt-get install libsqaodc-cuda-9-0
-~~~
-##### Note: Above is an example for CUDA 9.0.  If you prefer CUDA 9.2, install libsqaodc-cuda-9-2.
+sudo apt-get install libsqaodc-cuda-10-0
 
+# If you prefer CUDA 9.0, run following. (Packages with CUDA 9.0 is available on Ubuntu16.04.)
+sudo apt-get install libsqaodc-cuda-9-0
+
+~~~
 
 ### 4. Installing python package
 
