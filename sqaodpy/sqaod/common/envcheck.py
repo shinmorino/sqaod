@@ -27,7 +27,7 @@ def _sqaodc_version_getter(so) :
     return (ver.value, simd.value)
 
 def check_libsqaodc() :
-    return _check_shared_object('libsqaodc.so.0', _sqaodc_version_getter)
+    return _check_shared_object('libsqaodc.so.1', _sqaodc_version_getter)
 
 def _sqaodc_cuda_version_getter(so) :
     funcname = 'sqaodc_cuda_version'
@@ -42,7 +42,7 @@ def _sqaodc_cuda_version_getter(so) :
     return (ver.value, cuda_ver.value)
 
 def check_libsqaodc_cuda() :
-    return _check_shared_object('libsqaodc_cuda.so.0', _sqaodc_cuda_version_getter)
+    return _check_shared_object('libsqaodc_cuda.so.1', _sqaodc_cuda_version_getter)
 
 
 def get_string_version(numver) :
@@ -106,6 +106,6 @@ class EnvChecker :
     
 if __name__ == '__main__' :
     show_libraries()
-    checker = EnvChecker('0.3.1')
+    checker = EnvChecker('1.0.0')
     checker.check()
     checker.show()

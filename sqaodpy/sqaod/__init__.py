@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '0.3.1'
+__version__ = '1.0.1'
 
 from .common.envcheck import *
 from .common.cuda_probe import is_cuda_available
