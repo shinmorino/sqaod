@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.bipartite_graph_bf_searcher_base import BipartiteGraphBFSearcherBase
+from sqaod.common import docstring
 from . import cuda_bg_bf_searcher as cext
 from . import device
 
@@ -29,6 +30,8 @@ def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None,
     searcher = BipartiteGraphBFSearcher(b0, b1, W, optimize, dtype, prefs)
     return searcher
 
+# inherit docstring from interface
+docstring.inherit(BipartiteGraphBFSearcher, sqaod.py.BipartiteGraphBFSearcher)
 
 if __name__ == '__main__' :
     N0 = 14

@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.dense_graph_annealer_base import DenseGraphAnnealerBase
+from sqaod.common import docstring
 from . import cuda_dg_annealer as cext
 from . import device
 
@@ -29,7 +30,7 @@ def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **
     ann = DenseGraphAnnealer(W, optimize, dtype, prefs)
     return ann
 
-# refer docstring from interface
+# inherit docstring from interface
 docstring.inherit(DenseGraphAnnealer, sqaod.py.DenseGraphAnnealer)
 
 if __name__ == '__main__' :

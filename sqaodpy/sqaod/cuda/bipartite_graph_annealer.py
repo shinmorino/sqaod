@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.bipartite_graph_annealer_base import BipartiteGraphAnnealerBase
+from sqaod.common import docstring
 from . import cuda_bg_annealer as cext
 from . import device
 
@@ -28,6 +29,8 @@ def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
     """
     return BipartiteGraphAnnealer(b0, b1, W, optimize, dtype, prefs)
 
+# inherit docstring from interface
+docstring.inherit(BipartiteGraphAnnealer, sqaod.py.BipartiteGraphAnnealer)
 
 if __name__ == '__main__' :
     N0 = 40
