@@ -1,0 +1,377 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Preferences &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Formulas" href="formulas.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="formulas.html" title="Formulas"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="preferences">
+<h1>Preferences<a class="headerlink" href="#preferences" title="Permalink to this headline">¶</a></h1>
+<p>Solvers in sqaod has preferences, which are defined as values with keywords.  In v1.0.x, following preferences are defined.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="8%" />
+<col width="19%" />
+<col width="58%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">keyword</th>
+<th class="head">access</th>
+<th class="head">type</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td colspan="4"><strong>common preferences</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#algorithm">algorithm</a></td>
+<td>R/W</td>
+<td>str</td>
+<td>select algorithm.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#precision">precision</a></td>
+<td>RO</td>
+<td>str</td>
+<td>numerical precision (double/float)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#device">device</a></td>
+<td>RO</td>
+<td>str</td>
+<td>computing device an annlaer is using</td>
+</tr>
+<tr class="row-even"><td colspan="4"><strong>preference available on annealers</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#n-trotters">n_trotters</a></td>
+<td>R/W</td>
+<td>positive integer</td>
+<td>number of trotters for annealers.</td>
+</tr>
+<tr class="row-even"><td colspan="4"><strong>preference available on brute-force searcher</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#tile-size">tile_size</a></td>
+<td>R/W</td>
+<td>positive integer</td>
+<td>tile size for dense graph brute-force searchers</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="#tile-size-0-tile-size-1">tile_size_0</a></td>
+<td>R/W</td>
+<td>positive integer</td>
+<td>tile size 0 for bipartite graph brute-force searchers</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="#tile-size-0-tile-size-1">tile_size_1</a></td>
+<td>R/W</td>
+<td>positive integer</td>
+<td>tile size for bipartite graph brute-force searchers</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="algorithm">
+<h2>algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
+<p><strong>algorithm</strong> is a R/W preference to select sovler algorithm.
+You can select algorithm by passing <a class="reference internal" href="#sqaod-algorithm">sqaod.algorithm</a> to annealers’ set_preference() method.</p>
+<p>ex.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqaod</span> <span class="kn">as</span> <span class="nn">sq</span>
+<span class="kn">import</span> <span class="nn">sqoad.algorithm</span> <span class="kn">as</span> <span class="nn">algo</span>
+
+<span class="n">W</span> <span class="o">=</span> <span class="n">create</span> <span class="n">QUBO</span> <span class="o">...</span>
+
+<span class="c1"># create a dense graph annealer to minimize QUBO(W) energy.</span>
+<span class="n">ann</span> <span class="o">=</span> <span class="n">sq</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">dense_graph_annealer</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span>
+
+<span class="c1"># select algorithm.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">set_preferences</span><span class="p">(</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">coloring</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Each solver has its default SQA algorithm and SA algorithm.  If you set sqaod.default as algorith, an annealer selects its default one.</li>
+<li>For cases of n_trotters == 1, an annealer will select its SA default algorithms because SQA algorithms do not work in these cases.</li>
+<li>If an user selects an unsupported algorithm, solver will select its default algorithm, and log it.</li>
+</ul>
+</div>
+<div class="section" id="dense-graph-annealer-algorithms">
+<h3>Dense Graph Annealer Algorithms<a class="headerlink" href="#dense-graph-annealer-algorithms" title="Permalink to this headline">¶</a></h3>
+<p>Annealres in sqaod implements algorithms shown below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="45%" />
+<col width="12%" />
+<col width="13%" />
+<col width="13%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Annealer class</th>
+<th class="head">naive</th>
+<th class="head">coloring</th>
+<th class="head">sa_naive</th>
+<th class="head">sa_coloring</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>sqaod.py.DenseGraphAnnealer</td>
+<td>D</td>
+<td>x</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>sqaod.cpu.DenseGraphAnnealer</td>
+<td>x</td>
+<td>D</td>
+<td>d</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>sqaod.cuda.DenseGraphAnnealer</td>
+<td>&#160;</td>
+<td>D</td>
+<td>d</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>sqaod.py.BipartiteGraphAnnealer</td>
+<td>D</td>
+<td>x</td>
+<td>D</td>
+<td>x</td>
+</tr>
+<tr class="row-even"><td>sqaod.cpu.BipartiteGraphAnnealer</td>
+<td>x</td>
+<td>D</td>
+<td>x</td>
+<td>d</td>
+</tr>
+<tr class="row-odd"><td>sqaod.cuda.BipartiteGraphAnnealer</td>
+<td>&#160;</td>
+<td>D</td>
+<td>&#160;</td>
+<td>d</td>
+</tr>
+</tbody>
+</table>
+<p>D = default SQA algorithm, d = default SA algorithm, x = selectable.</p>
+</div>
+<div class="section" id="bipartite-graph-annealer-algorithms">
+<h3>Bipartite Graph Annealer Algorithms<a class="headerlink" href="#bipartite-graph-annealer-algorithms" title="Permalink to this headline">¶</a></h3>
+<p>The only algorithm that brute-force searcher has <strong>sqaod.algorithm.brute_force_search</strong>.</p>
+<p>Users are not able to select any other algorithms.  If you try to select other algorithms, brute-force searchers simplly ignore it.</p>
+</div>
+<div class="section" id="sqaod-algorithm">
+<h3>sqaod.algorithm<a class="headerlink" href="#sqaod-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>Module level attributes, <strong>sqaod.algorithm</strong>, is used to select solver algorithm.  <strong>sqaod.algorithm</strong> is defined in sqaod.common, and its atribute is accessible as <strong>sqaod.algorithm.default</strong> as an example.</p>
+<span class="target" id="module-sqaod.common.preference"></span><dl class="data">
+<dt id="sqaod.common.preference.algorithm">
+<code class="descclassname">sqaod.common.preference.</code><code class="descname">algorithm</code><em class="property"> = &lt;sqaod.common.preference.Algorithm object&gt;</em><a class="headerlink" href="#sqaod.common.preference.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>signatures to select algorithms</p>
+<p>algorithm signatures are provided as attributes shown below:</p>
+<dl class="docutils">
+<dt><strong>default:</strong></dt>
+<dd>select default algorithm.
+Each solver class has its default algorithm.  By specifying algorithm.default,
+the default algirhtm will be chosen,</dd>
+<dt><strong>naive :</strong></dt>
+<dd>Naive version of SQA algorithm,</dd>
+<dt><strong>coloring :</strong></dt>
+<dd>SQA algorithm is parallelized by using color-coding,</dd>
+<dt><strong>brute_force_search :</strong></dt>
+<dd>Brute-force search.
+All brute-force searchers have ‘brute_force_search’ algorithm,</dd>
+<dt><strong>sa_naive :</strong></dt>
+<dd>naive version of SA(simulated annealing, not SQA),</dd>
+<dt><strong>sa_coloring :</strong></dt>
+<dd>color-code version of SA.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sqaod.common.Algorithm</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="precision">
+<h3>precision<a class="headerlink" href="#precision" title="Permalink to this headline">¶</a></h3>
+<p><strong>precision</strong> is a read-only attribute to show solver numerical precision.</p>
+<dl class="docutils">
+<dt>Value</dt>
+<dd>“float” or “double”.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Solvers in sqaod.py package does not return precision.</p>
+</div>
+</div>
+<div class="section" id="device">
+<h3>device<a class="headerlink" href="#device" title="Permalink to this headline">¶</a></h3>
+<p><strong>device</strong> is a read-only preference, representing device type used by solvers.</p>
+<dl class="docutils">
+<dt>Value</dt>
+<dd><p class="first">‘CPU’ for solvers in sqaod.cpu package</p>
+<p class="last">‘CUDA’ for solvers in sqaod.cuda package.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Solvers in sqaod.py package does not return device.</p>
+</div>
+</div>
+<div class="section" id="n-trotters">
+<h3>n_trotters<a class="headerlink" href="#n-trotters" title="Permalink to this headline">¶</a></h3>
+<p><strong>n_trotters</strong> is a read-write preference available in annealers.</p>
+<dl class="docutils">
+<dt>Value</dt>
+<dd>positive integer.</dd>
+</dl>
+<p>For SQA algorithms, n_trotters works to specify number of trotters as the name tells.
+For SA algorithms, n_trotters works as number of qubit arrays parallelly annealed.</p>
+</div>
+<div class="section" id="tile-size">
+<h3>tile_size<a class="headerlink" href="#tile-size" title="Permalink to this headline">¶</a></h3>
+<p><strong>tile_size</strong> is a read-write preference available in dense graph brute-force searchers.</p>
+<dl class="docutils">
+<dt>Value</dt>
+<dd>positive integer.</dd>
+</dl>
+<p>Brute-force searchers do batched calculation of QUBO energy, and the tile_size preference specifies batch size.</p>
+<p>Typically larger tile_size will give better performance.</p>
+<p>Some brute-force searchers may correct given values to more optimal ones.</p>
+</div>
+<div class="section" id="tile-size-0-tile-size-1">
+<h3>tile_size_0, tile_size_1<a class="headerlink" href="#tile-size-0-tile-size-1" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>tile_size_0</strong> and <strong>tile_size_1</strong> are read-write preferences available in bipartite graph brute-force searchers.</p>
+<dl class="docutils">
+<dt>Value</dt>
+<dd>positive integer.</dd>
+</dl>
+<p>Brute-force searchers do batched calculation of QUBO energy, and the tile_size_0 and tile_size_1 preferences specifie batch size.</p>
+<p>Typically larger tile_size will give better performance.</p>
+<p>Some brute-force searchers may correct given values to more optimal ones.</p>
+</div>
+</div>
+<div class="section" id="sqaod-maximize-sqaod-minimize">
+<h2>sqaod.maximize, sqaod.minimize<a class="headerlink" href="#sqaod-maximize-sqaod-minimize" title="Permalink to this headline">¶</a></h2>
+<p>Module level attributes, <strong>sqaod.maximize</strong> and <strong>sqaod.minimize</strong> are used to specify optimize direction to maximize or minimize QUBO energy. Though these attributes are originally defined in sqaod.common.preference module, they’re imported directly under sqaod package for ease of use.</p>
+<dl class="attribute">
+<dt id="sqaod.common.preference.maximize">
+<code class="descclassname">preference.</code><code class="descname">maximize</code><em class="property"> = &lt;sqaod.common.preference.Maximize object&gt;</em><a class="headerlink" href="#sqaod.common.preference.maximize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sqaod.common.preference.minimize">
+<code class="descclassname">preference.</code><code class="descname">minimize</code><em class="property"> = &lt;sqaod.common.preference.Minimize object&gt;</em><a class="headerlink" href="#sqaod.common.preference.minimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Preferences</a><ul>
+<li><a class="reference internal" href="#algorithm">algorithm</a><ul>
+<li><a class="reference internal" href="#dense-graph-annealer-algorithms">Dense Graph Annealer Algorithms</a></li>
+<li><a class="reference internal" href="#bipartite-graph-annealer-algorithms">Bipartite Graph Annealer Algorithms</a></li>
+<li><a class="reference internal" href="#sqaod-algorithm">sqaod.algorithm</a></li>
+<li><a class="reference internal" href="#precision">precision</a></li>
+<li><a class="reference internal" href="#device">device</a></li>
+<li><a class="reference internal" href="#n-trotters">n_trotters</a></li>
+<li><a class="reference internal" href="#tile-size">tile_size</a></li>
+<li><a class="reference internal" href="#tile-size-0-tile-size-1">tile_size_0, tile_size_1</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="formulas.html"
+                        title="previous chapter">Formulas</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/preference.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="formulas.html" title="Formulas"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

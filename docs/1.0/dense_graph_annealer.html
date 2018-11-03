@@ -1,0 +1,659 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Dense Graph Annealers &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Bipartite Graph Annealers" href="bipartite_graph_annealer.html" />
+    <link rel="prev" title="Sqaod solvers" href="solvers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="solvers.html" title="Sqaod solvers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dense-graph-annealers">
+<h1>Dense Graph Annealers<a class="headerlink" href="#dense-graph-annealers" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Sqaod implements 3 dense graph annealer classes.</dt>
+<dd><ul class="first last">
+<li><p class="first"><a class="reference internal" href="#sqaod-py-densegraphannealer">sqaod.py.DenseGraphAnnealer</a></p>
+<p>Python-based reference implementation of annealing algorithms.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cpu-densegraphannealer">sqaod.cpu.DenseGraphAnnealer</a></p>
+<p>Parallelized CPU implementation by using OpenMP.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cuda-densegraphannealer">sqaod.cuda.DenseGraphAnnealer</a></p>
+<p>Parallelized and accelearted by using NVIDIA GPU, CUDA.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="factory-function">
+<h2>Factory function<a class="headerlink" href="#factory-function" title="Permalink to this headline">¶</a></h2>
+<p>Every solver class has its own factory function in the same package.
+For example, sqaod.py.DenseGraphAnnealer is instantiated by <a class="reference internal" href="#sqaod.py.dense_graph_annealer">sqaod.py.dense_graph_annealer</a>.</p>
+</div>
+<div class="section" id="method-calling-sequence">
+<h2>Method calling sequence<a class="headerlink" href="#method-calling-sequence" title="Permalink to this headline">¶</a></h2>
+<p>Below is a psudo-code to run annealer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqaod</span> <span class="kn">as</span> <span class="nn">sq</span>
+
+<span class="c1"># Assumption</span>
+<span class="c1"># N     : problem size.</span>
+<span class="c1"># m     : number of trotters.</span>
+<span class="c1"># dtype : np.float32. Numerical precision is assumed to be np.float32.</span>
+
+<span class="c1"># 1. Preparing QUBO matrix, W.</span>
+<span class="c1">#    W is a matrix whose shape is (N, N).</span>
+<span class="c1">#    W should be a upper/lower triangular or symmetrix matrix.</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">create</span> <span class="n">QUBO</span> <span class="o">...</span>
+
+<span class="c1"># 2. define number of trotters.</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">trotters</span> <span class="o">...</span>
+
+<span class="c1"># 3. instantiate annaler</span>
+<span class="c1">#    The initial value of m is given as m = N / 2.</span>
+<span class="n">ann</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">py</span><span class="o">.</span><span class="n">dense_graph_annealer</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">sq</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+<span class="c1"># Alternatively, you&#39;re able to set W and m as shown below.</span>
+<span class="c1">#</span>
+<span class="c1"># ann = sqaod.py.dense_graph_annealer(dtype)</span>
+<span class="c1"># ann.set_qubo(W, sq.minimize)</span>
+<span class="c1"># ann.set_preference(n_trotters = m)</span>
+
+<span class="c1"># 4. (optional)</span>
+<span class="c1">#    Set preferences. You&#39;re able to select annealing algorithm, number of trotters and so on.</span>
+<span class="c1">#    Preferences are given as **kwargs.</span>
+<span class="c1">#</span>
+<span class="c1"># ann.set_preference(n_trotters = m, algorithm = sqaod.coloring)</span>
+<span class="c1">#</span>
+<span class="c1"># You&#39;re also able to set a seed value for psudo random number generator.</span>
+<span class="c1"># ann.set_seed(2391102)</span>
+
+<span class="c1"># 5. prepare to run annealing</span>
+<span class="c1">#    Before calling prepare(), QUBO and m must be given.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+
+<span class="c1"># 6. randomize spins</span>
+<span class="c1">#    Randomize and initialize spins as initial values for annealing.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">randomize_spins</span><span class="p">()</span>
+
+<span class="c1"># Alternatively, you are able to set spins you generated.</span>
+<span class="c1"># Value type of spin should be np.int8.</span>
+<span class="c1">#</span>
+<span class="c1"># Setting initial spins.  q_init is a vector.</span>
+<span class="c1"># q_init = &lt;array of numpy.int8, len(q_init) == N&gt;</span>
+<span class="c1"># ann.set_q(q_init)</span>
+<span class="c1">#</span>
+<span class="c1"># or</span>
+<span class="c1">#</span>
+<span class="c1"># Setting a set of initial spins.  qset_init is a list of numpy.int8 vector.</span>
+<span class="c1"># qset_init = [q0, q1, ... ]   # len(qset_init) == m</span>
+<span class="c1"># ann.set_qset(qset_init)</span>
+
+<span class="n">beta</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># set inverse temperature.</span>
+
+<span class="c1"># 7. run annealing loop</span>
+<span class="k">while</span> <span class="n">run</span> <span class="p">:</span>  <span class="c1"># loop while run == True</span>
+  <span class="n">G</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># updating G for this iteration.</span>
+
+  <span class="c1"># 8. anneal.</span>
+  <span class="c1">#    One call of anneal_one_step() makes tries to flip N x m spins</span>
+  <span class="n">ann</span><span class="o">.</span><span class="n">anneal_one_step</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+  <span class="c1"># 9. (optional) calculate and get QUBO energy if needed.</span>
+  <span class="c1">#    By calling calculate_E() QUBO energy is calculated and cached.</span>
+  <span class="c1">#    Execution of calculate_E() is asynchronous for CUDA-based solvers.</span>
+  <span class="n">ann</span><span class="o">.</span><span class="n">caluculate_E</span><span class="p">()</span>
+  <span class="c1">#    E is a vector of QUBO energy for all trotters.</span>
+  <span class="n">E</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_E</span><span class="p">();</span>
+
+  <span class="c1"># doing something with E.</span>
+
+<span class="c1"># 10. make solution</span>
+<span class="c1"># calculate QUBO energy and prepare solution as a bit array, and caches them.</span>
+<span class="c1"># After calling make_solution(), get_X() and get_E() returns bits and QUBO energy.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">make_solution</span><span class="p">()</span>
+
+<span class="c1"># 11. get solution</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_E</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="classes-and-functions">
+<h2>classes and functions<a class="headerlink" href="#classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sqaod-py-dense-graph-annealer">
+<h3>sqaod.py.dense_graph_annealer<a class="headerlink" href="#sqaod-py-dense-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.py.dense_graph_annealer">
+<code class="descclassname">sqaod.py.</code><code class="descname">dense_graph_annealer</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#dense_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.dense_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.py.DenseGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>numpy.ndarray</strong> – QUBO</li>
+<li><strong>optimize</strong> – specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</li>
+<li><strong>prefs</strong> – <a class="reference external" href="preference.html">preference</a> as **kwargs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.py.DenseGraphAnnealer" title="sqaod.py.DenseGraphAnnealer">sqaod.py.DenseGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-py-densegraphannealer">
+<h3>sqaod.py.DenseGraphAnnealer<a class="headerlink" href="#sqaod-py-densegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.py.DenseGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.py.</code><code class="descname">DenseGraphAnnealer</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>python implementation of dense graph annealer.</p>
+<p>This class is a reference implementation of dense graph annealers.
+All algorithms are written in python.</p>
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.seed">
+<code class="descname">seed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.seed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a seed value for random number generators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seed</strong> (<em>int</em><em> or </em><em>long</em>) – seed value</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">sqaod.py annealer uses global random number genrator, so seed value is ignored.
+For annealers in other packages, given seed value is used as documented.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_problem_size">
+<code class="descname">get_problem_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_problem_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_problem_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>get problem size.</p>
+<p>Problem size is defined as a number of bits of QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">problem size.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.set_qubo">
+<code class="descname">set_qubo</code><span class="sig-paren">(</span><em>W</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.set_qubo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.set_qubo" title="Permalink to this definition">¶</a></dt>
+<dd><p>set QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO matrix.  W should be a sqaure matrix.
+Upper/Lower triangular matrices or symmetric matrices are accepted.</li>
+<li><strong>optimize</strong> – optimize direction, <cite>sqaod.maximize, sqaod.minimize &lt;preference.html#sqaod-maximize-sqaod-minimize&gt;</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.set_hamiltonian">
+<code class="descname">set_hamiltonian</code><span class="sig-paren">(</span><em>h</em>, <em>J</em>, <em>c</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.set_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.set_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>set Hamiltonian.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>numpy.ndarray</strong> – h(vector), J(matrix)</li>
+<li><strong>point number</strong> (<em>floating</em>) – c</li>
+<li><strong>for h</strong><strong>, </strong><strong>J must be</strong> (<em>Shapes</em>) – </li>
+<li><strong>must be a upper/lower triangular</strong><strong> or </strong><strong>symmetric matrix.</strong> (<em>J</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.set_preferences">
+<code class="descname">set_preferences</code><span class="sig-paren">(</span><em>prefdict=None</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.set_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.set_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>set solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prefdict</strong> (<em>dict</em>) – preference dictionary.</li>
+<li><strong>prefs</strong> (<em>dict</em>) – preference dictionary as **kwargs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_preferences">
+<code class="descname">get_preferences</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>get solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">preference dictionary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_optimize_dir">
+<code class="descname">get_optimize_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_optimize_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_optimize_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>get optimize direction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_E">
+<code class="descname">get_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>get QUBO energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">QUBO energy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array of floating point number</td>
+</tr>
+</tbody>
+</table>
+<p>QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</p>
+<p class="rubric">Notes</p>
+<p>You need to call calculate_E() or make_solution() before calling get_E().
+CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_x">
+<code class="descname">get_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>get bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array of bit {0, 1}.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.int8</td>
+</tr>
+</tbody>
+</table>
+<p>x.shape is (m, N) where N is problem size, and m is number of trotters.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">calculate_E() or make_solution() should be called before calling get_E().
+( CPU/CUDA annealers automatically/internally call calculate_E().)</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.set_q">
+<code class="descname">set_q</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.set_q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.set_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>set spins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<em>np.array of np.int8</em>) – array (length = N) of spin {-1, 1}.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.set_qset">
+<code class="descname">set_qset</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.set_qset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.set_qset" title="Permalink to this definition">¶</a></dt>
+<dd><p>set “array of” spins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>qset</strong> (<em>list of np.int8 array</em>) – list of array of spin {-1, 1}.</td>
+</tr>
+</tbody>
+</table>
+<p>qset is a list (length = m) of int8 array (length = N).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_hamiltonian">
+<code class="descname">get_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>get hamiltonian.</p>
+<dl class="docutils">
+<dt>Returns: tuple of Hamiltonian variables</dt>
+<dd>h(vector), J(symmeric matrix), c(scalar)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.get_q">
+<code class="descname">get_q</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.get_q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.get_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>get spins.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array of spin {-1, 1}.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.int8</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.randomize_spin">
+<code class="descname">randomize_spin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.randomize_spin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.randomize_spin" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomize spin.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.calculate_E">
+<code class="descname">calculate_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.calculate_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.calculate_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate QUBO energy.</p>
+<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.prepare">
+<code class="descname">prepare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>preparation of internal resources.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">prepare() should be called prior to run annealing loop.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.make_solution">
+<code class="descname">make_solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.make_solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.make_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>make bit arrays(x) and calculate QUBO energy.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.anneal_one_step">
+<code class="descname">anneal_one_step</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.anneal_one_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.anneal_one_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run annealing one step.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>G</strong> (<em>floating point number</em>) – G in SQA, kT in SA.</li>
+<li><strong>beta</strong> (<em>floating point number</em>) – inverse temperature.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.anneal_one_step_naive">
+<code class="descname">anneal_one_step_naive</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.anneal_one_step_naive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.anneal_one_step_naive" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.naive version of SQA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.anneal_colored_plane">
+<code class="descname">anneal_colored_plane</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em>, <em>offset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.anneal_colored_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.anneal_colored_plane" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) try to flip spins in a colored plane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.anneal_one_step_coloring">
+<code class="descname">anneal_one_step_coloring</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.anneal_one_step_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.anneal_one_step_coloring" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.coloring version of SQA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphAnnealer.anneal_one_step_sa_naive">
+<code class="descname">anneal_one_step_sa_naive</code><span class="sig-paren">(</span><em>kT</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_annealer.html#DenseGraphAnnealer.anneal_one_step_sa_naive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphAnnealer.anneal_one_step_sa_naive" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.sa_naive version of SA</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-dense-graph-annealer">
+<h3>sqaod.cpu.dense_graph_annealer<a class="headerlink" href="#sqaod-cpu-dense-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cpu.dense_graph_annealer">
+<code class="descclassname">sqaod.cpu.</code><code class="descname">dense_graph_annealer</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/dense_graph_annealer.html#dense_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.dense_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for <a class="reference internal" href="#sqaod-cpu-densegraphannealer">sqaod.cpu.DenseGraphAnnealer</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod-cpu-densegraphannealer">sqaod.cpu.DenseGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-densegraphannealer">
+<h3>sqaod.cpu.DenseGraphAnnealer<a class="headerlink" href="#sqaod-cpu-densegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cpu.DenseGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.cpu.</code><code class="descname">DenseGraphAnnealer</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/dense_graph_annealer.html#DenseGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.DenseGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>CPU-based dense graph annealer</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-dense-graph-annealer">
+<h3>sqaod.cuda.dense_graph_annealer<a class="headerlink" href="#sqaod-cuda-dense-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cuda.dense_graph_annealer">
+<code class="descclassname">sqaod.cuda.</code><code class="descname">dense_graph_annealer</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/dense_graph_annealer.html#dense_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.dense_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for <a class="reference internal" href="#sqaod-cuda-densegraphannealer">sqaod.cuda.DenseGraphAnnealer</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod-cuda-densegraphannealer">sqaod.cuda.DenseGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-densegraphannealer">
+<h3>sqaod.cuda.DenseGraphAnnealer<a class="headerlink" href="#sqaod-cuda-densegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cuda.DenseGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.cuda.</code><code class="descname">DenseGraphAnnealer</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/dense_graph_annealer.html#DenseGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.DenseGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>CUDA-based Dense graph annealer</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dense Graph Annealers</a><ul>
+<li><a class="reference internal" href="#factory-function">Factory function</a></li>
+<li><a class="reference internal" href="#method-calling-sequence">Method calling sequence</a></li>
+<li><a class="reference internal" href="#classes-and-functions">classes and functions</a><ul>
+<li><a class="reference internal" href="#sqaod-py-dense-graph-annealer">sqaod.py.dense_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-py-densegraphannealer">sqaod.py.DenseGraphAnnealer</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-dense-graph-annealer">sqaod.cpu.dense_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-densegraphannealer">sqaod.cpu.DenseGraphAnnealer</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-dense-graph-annealer">sqaod.cuda.dense_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-densegraphannealer">sqaod.cuda.DenseGraphAnnealer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="solvers.html"
+                        title="previous chapter">Sqaod solvers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bipartite_graph_annealer.html"
+                        title="next chapter">Bipartite Graph Annealers</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dense_graph_annealer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="solvers.html" title="Sqaod solvers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

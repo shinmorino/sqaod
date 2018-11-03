@@ -1,0 +1,242 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to sqaod documentation! &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sqaod solvers" href="solvers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="solvers.html" title="Sqaod solvers"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-sqaod-documentation">
+<h1>Welcome to sqaod documentation!<a class="headerlink" href="#welcome-to-sqaod-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Sqaod is a collection of sovlers for simulated quantum annealing, providing a high-performance and stable implementation.
+This package is intended for researchers and engineers to explore various problems on quantum computing with conventional workstations and servers. Sqaod is also available for deployment in commercial use-cases.</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Callable from python</p>
+<p>Sqaod supports python 2.7 and python 3.3 and above.</p>
+</li>
+<li><p class="first">QUBO Graphs</p>
+<p>Sqaod is capable to deal with two types of graphs of <strong>dense graph</strong> and <strong>bipartite graph</strong>. These graphs have simple mathematical representations, and solved without any modifications.</p>
+<ul class="simple">
+<li>Dense graph is the most generic form of QUBO, and utilized for problems such as TSP.</li>
+<li>Bipartite graph is for problems that have input and output nodes in graph. An example is RBM.</li>
+</ul>
+</li>
+<li><p class="first">Algorithm</p>
+<p>Two solver algorithms, <strong>simulated quantum annealing with path-integral monte-carlo</strong> and <strong>brute-force search</strong> are implemented.</p>
+<ul class="simple">
+<li>simulated quantum annealing with path-integral monte-carlo is to get approximated solutions for problems with larger number of bits.  One can solve problems with thousands of bits for dense graph and bipartite graph with simulated quantum annealers.</li>
+<li>Brute-force search is for getting strict solutions for problems with smaller number of bits. With brute-force solvers, strict solutions for problems with 30 bits or larger can be obtained within tens of seconds when high-end GPUs are utilized.</li>
+</ul>
+</li>
+<li><p class="first">Reproducibility</p>
+<p>One can reproduce results if the same parameters are used.  This is the main difference between numerical simulatio and real quantum hardware.</p>
+</li>
+<li><p class="first">Parallelized and accelerated</p>
+<p>Sqaod solvers have <strong>CUDA(NVIDIA-GPU)-based</strong> and <strong>CPU(multicore)-based</strong> backends for acceleration.</p>
+<ul class="simple">
+<li>Multi-core CPUs with OpenMP are utilized for CPU-based solvers.</li>
+<li>NVIDIA GPUs by using CUDA are utilized for GPU-based solvers.</li>
+</ul>
+</li>
+<li><p class="first">Problem size and graph complexity</p>
+<ul class="simple">
+<li>Since sqaod is a pure software implementation, solvers are able to deal with problems with a large number of bits as long as memory capacity allows.  It also allows flexible graph while real quantum hardware has restrictions on qubit connections.
+Sqaod is also accelerated by modern high-performance devices such as CPUs and GPUs, thus, able to solve problems with large-sized complex graphs.</li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Documents for solvers includes simplified psudo code to run solvers.
+If you want to run examples, please visit <a class="reference external" href="https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example">example at github</a>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="20%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File name</th>
+<th class="head">graph</th>
+<th class="head">algorithm</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="https://github.com/shinmorino/sqaod/tree/1.0/sqaodpy/example/dense_graph_annealer.py">dense_graph_annealer.py</a></td>
+<td>dense graph</td>
+<td>simulated quantum annealing</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="https://github.com/shinmorino/sqaod/tree/1.0/sqaodpy/example/bipartite_graph_annealer.py">bipartite_graph_annealer.py</a></td>
+<td>bipartite graph</td>
+<td>simulated quantum annealing</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="https://github.com/shinmorino/sqaod/tree/1.0/sqaodpy/example/dense_graph_bf_searcher.py">dense_graph_bf_searcher.py</a></td>
+<td>dense graph</td>
+<td>brute-force searcher</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="https://github.com/shinmorino/sqaod/tree/1.0/sqaodpy/example/bipartite_graph_bf_searcher.py">bipartite_graph_bf_searcher.py</a></td>
+<td>bipartite graph</td>
+<td>brute-force searcher</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="table-of-contents">
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Sqaod solvers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#qubo-graphs">QUBO Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#solver-algorithm">Solver algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#devices">Devices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dense_graph_annealer.html">Dense Graph Annealers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_annealer.html#factory-function">Factory function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_annealer.html#method-calling-sequence">Method calling sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_annealer.html#classes-and-functions">classes and functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bipartite_graph_annealer.html">Bipartite Graph Annealers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_annealer.html#factory-function">Factory function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_annealer.html#method-calling-sequence">Method calling sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_annealer.html#classes-and-functions">classes and functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dense_graph_bf_searcher.html">Dense Graph Brute-force Searcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_bf_searcher.html#factory-function">Factory function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_bf_searcher.html#method-calling-sequence">Method calling sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dense_graph_bf_searcher.html#classes-and-functions">classes and functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bipartite_graph_bf_searcher.html">Bipartite Graph Brute-force Searcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_bf_searcher.html#factory-function">Factory function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_bf_searcher.html#method-calling-sequence">Method calling sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bipartite_graph_bf_searcher.html#classes-and-functions">classes and functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="formulas.html">Formulas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="formulas.html#sqaod-py-formulas">sqaod.py.formulas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="formulas.html#sqaod-cpu-formulas-sqaod-cuda-formulas">sqaod.cpu.formulas, sqaod.cuda.formulas</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="preference.html">Preferences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="preference.html#algorithm">algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to sqaod documentation!</a><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#table-of-contents">Table of contents</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="solvers.html"
+                        title="next chapter">Sqaod solvers</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="solvers.html" title="Sqaod solvers"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

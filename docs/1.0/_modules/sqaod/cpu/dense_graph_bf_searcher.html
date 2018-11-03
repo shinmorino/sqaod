@@ -1,0 +1,146 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>sqaod.cpu.dense_graph_bf_searcher &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for sqaod.cpu.dense_graph_bf_searcher</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sqaod</span>
+<span class="kn">from</span> <span class="nn">sqaod.common.dense_graph_bf_searcher_base</span> <span class="k">import</span> <span class="n">DenseGraphBFSearcherBase</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">cpu_dg_bf_searcher</span> <span class="k">as</span> <span class="n">cext</span>
+
+<div class="viewcode-block" id="DenseGraphBFSearcher"><a class="viewcode-back" href="../../../dense_graph_bf_searcher.html#sqaod.cpu.DenseGraphBFSearcher">[docs]</a><span class="k">class</span> <span class="nc">DenseGraphBFSearcher</span><span class="p">(</span><span class="n">DenseGraphBFSearcherBase</span><span class="p">)</span> <span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">optimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">prefdict</span><span class="p">)</span> <span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cobj</span> <span class="o">=</span> <span class="n">cext</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">DenseGraphBFSearcherBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cext</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">optimize</span><span class="p">,</span> <span class="n">prefdict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dense_graph_bf_searcher"><a class="viewcode-back" href="../../../dense_graph_bf_searcher.html#sqaod.cpu.dense_graph_bf_searcher">[docs]</a><span class="k">def</span> <span class="nf">dense_graph_bf_searcher</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">optimize</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="o">**</span><span class="n">prefs</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; factory function for sqaod.cpu.DenseGraphAnnealer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      numpy.ndarray : QUBO</span>
+<span class="sd">      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize &lt;preference.html#sqaod-maximize-sqaod-minimize&gt;`_.</span>
+<span class="sd">      prefs : `preference &lt;preference.html&gt;`_ as \*\*kwargs</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      sqaod.cpu.DenseGraphBFSearcher: brute-force searcher instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">DenseGraphBFSearcher</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">optimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">prefs</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span> <span class="p">:</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">32</span><span class="p">]])</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">generate_random_symmetric_W</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">dtype</span><span class="p">);</span>
+    <span class="n">bf</span> <span class="o">=</span> <span class="n">dense_graph_bf_searcher</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+    <span class="n">bf</span><span class="o">.</span><span class="n">set_preferences</span><span class="p">(</span><span class="n">tile_size</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+    
+    <span class="kn">import</span> <span class="nn">time</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">bf</span><span class="o">.</span><span class="n">search</span><span class="p">()</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+    
+    <span class="n">x</span> <span class="o">=</span> <span class="n">bf</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> 
+    <span class="n">E</span> <span class="o">=</span> <span class="n">bf</span><span class="o">.</span><span class="n">get_E</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bf</span><span class="o">.</span><span class="n">get_preferences</span><span class="p">())</span>
+    
+<span class="c1">#    import sqaod.py.formulas</span>
+<span class="c1">#    E = np.empty((1), dtype)</span>
+<span class="c1">#    for bits in x :</span>
+<span class="c1">#        print sqaod.py.formulas.dense_graph_calculate_E(W, bits)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

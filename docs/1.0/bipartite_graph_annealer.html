@@ -1,0 +1,621 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Bipartite Graph Annealers &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dense Graph Brute-force Searcher" href="dense_graph_bf_searcher.html" />
+    <link rel="prev" title="Dense Graph Annealers" href="dense_graph_annealer.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dense_graph_bf_searcher.html" title="Dense Graph Brute-force Searcher"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dense_graph_annealer.html" title="Dense Graph Annealers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="bipartite-graph-annealers">
+<h1>Bipartite Graph Annealers<a class="headerlink" href="#bipartite-graph-annealers" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Sqaod implements 3 bipartite graph annealer classes.</dt>
+<dd><ul class="first last">
+<li><p class="first"><a class="reference internal" href="#sqaod-py-bipartitegraphannealer">sqaod.py.BipartiteGraphAnnealer</a></p>
+<p>Python-based reference implementation of annealing algorithms.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cpu-bipartitegraphannealer">sqaod.cpu.BipartiteGraphAnnealer</a></p>
+<p>Parallelized CPU implementation by using OpenMP.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cuda-bipartitegraphannealer">sqaod.cuda.BipartiteGraphAnnealer</a></p>
+<p>Parallelized and accelearted by using NVIDIA GPU, CUDA.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="factory-function">
+<h2>Factory function<a class="headerlink" href="#factory-function" title="Permalink to this headline">¶</a></h2>
+<p>Every solver class has its own factory function in the same package.
+For example, sqaod.py.BipartiteGraphAnnealer is instantiated by <a class="reference internal" href="#sqaod.py.bipartite_graph_annealer">sqaod.py.bipartite_graph_annealer</a>.</p>
+</div>
+<div class="section" id="method-calling-sequence">
+<h2>Method calling sequence<a class="headerlink" href="#method-calling-sequence" title="Permalink to this headline">¶</a></h2>
+<p>Below is a psudo-code to run annealer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqaod</span> <span class="kn">as</span> <span class="nn">sq</span>
+
+<span class="c1"># Assumption</span>
+<span class="c1"># N0, N1 : problem size.</span>
+<span class="c1"># m      : number of trotters.</span>
+<span class="c1"># dtype : np.float32. Numerical precision is assumed to be np.float32.</span>
+
+<span class="c1"># 1. Preparing QUBO matrix, W.</span>
+<span class="c1">#  QUBO energy is defined as E = b0 * x0.T + b1 * x1.T + x1 * W * x0.T</span>
+<span class="n">b0</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># vector(length = N0)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># vector(length = N1)</span>
+<span class="n">W</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># matrix, shape == (N1, N0)</span>
+
+<span class="c1"># 2. define number of trotters.</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">trotters</span> <span class="o">...</span>
+
+<span class="c1"># 3. instantiate annaler</span>
+<span class="c1">#    The initial value of m is given as m = N / 2.</span>
+<span class="n">ann</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">py</span><span class="o">.</span><span class="n">bipartite_graph_annealer</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">sq</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+<span class="c1"># Alternatively, you&#39;re able to set W and m as shown below.</span>
+<span class="c1">#</span>
+<span class="c1"># ann = sqaod.py.bipartite_graph_annealer(dtype)</span>
+<span class="c1"># ann.set_qubo(b0, b1, W, sq.minimize)</span>
+<span class="c1"># ann.set_preference(n_trotters = m)</span>
+
+<span class="c1"># 4. (optional)</span>
+<span class="c1">#    Set preferences. You&#39;re able to select annealing algorithm,</span>
+<span class="c1">#    number of trotters and so on.</span>
+<span class="c1">#    Preferences are given as **kwargs.</span>
+<span class="c1">#</span>
+<span class="c1"># ann.set_preference(n_trotters = m, algorithm = sqaod.coloring)</span>
+<span class="c1">#</span>
+<span class="c1"># You&#39;re also able to set a seed value for psudo random number generator.</span>
+<span class="c1"># ann.set_seed(2391102)</span>
+
+<span class="c1"># 5. prepare to run annealing</span>
+<span class="c1">#    Before calling prepare(), QUBO and m must be given.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+
+<span class="c1"># 6. randomize spins</span>
+<span class="c1">#    Randomize and initialize spins as initial values for annealing.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">randomize_spins</span><span class="p">()</span>
+
+<span class="c1"># Alternatively, you are able to set spins you generated.</span>
+<span class="c1"># Value type of spin should be np.int8.</span>
+<span class="c1">#</span>
+<span class="c1"># Setting initial spins.  q_init is a vector.</span>
+<span class="c1"># q_init = (q0, q1) # array of numpy.int8, len(q0) == N0, len(q1) == N1.</span>
+<span class="c1"># ann.set_q(q_init)</span>
+<span class="c1">#</span>
+<span class="c1"># or</span>
+<span class="c1">#</span>
+<span class="c1"># Setting a set of initial spins.  The qset_init is a list of tuple</span>
+<span class="c1"># storing np.int8 arrays of q0 and q1.</span>
+<span class="c1"># qset_init = (q0, q1) # array of numpy.int8, len(q0) == N0, len(q1) == N1.</span>
+<span class="c1"># qset_init = [(q00, q10), (q01, q11), ... ]   # len(qset_init) == m</span>
+<span class="c1"># ann.set_qset(qset_init)</span>
+
+<span class="n">beta</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># set inverse temperature.</span>
+
+<span class="c1"># 7. run annealing loop</span>
+<span class="k">while</span> <span class="n">run</span> <span class="p">:</span>  <span class="c1"># loop while run == True</span>
+  <span class="n">G</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># updating G for this iteration.</span>
+
+  <span class="c1"># 8. anneal.</span>
+  <span class="c1">#    One call of anneal_one_step() makes tries to flip N x m spins</span>
+  <span class="n">ann</span><span class="o">.</span><span class="n">anneal_one_step</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+  <span class="c1"># 9. (optional) calculate and get QUBO energy if needed.</span>
+  <span class="c1">#    By calling calculate_E() QUBO energy is calculated and cached.</span>
+  <span class="c1">#    Execution of calculate_E() is asynchronous for CUDA-based solvers.</span>
+  <span class="n">ann</span><span class="o">.</span><span class="n">caluculate_E</span><span class="p">()</span>
+  <span class="c1">#    E is a vector of QUBO energy for all trotters.</span>
+  <span class="n">E</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_E</span><span class="p">();</span>
+
+  <span class="c1"># doing something with E.</span>
+
+<span class="c1"># 10. make solution</span>
+<span class="c1"># calculate QUBO energy and prepare solution as a bit array, and caches them.</span>
+<span class="c1"># After calling make_solution(), get_X() and get_E() returns</span>
+<span class="c1"># bits and QUBO energy.</span>
+<span class="n">ann</span><span class="o">.</span><span class="n">make_solution</span><span class="p">()</span>
+
+<span class="c1"># 11. get solution</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>  <span class="c1"># list of tuples, x0 and x1.</span>
+                 <span class="c1">#  x0 and x1 are bit arrays storing solution</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">ann</span><span class="o">.</span><span class="n">get_E</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="classes-and-functions">
+<h2>classes and functions<a class="headerlink" href="#classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sqaod-py-bipartite-graph-annealer">
+<h3>sqaod.py.bipartite_graph_annealer<a class="headerlink" href="#sqaod-py-bipartite-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.py.bipartite_graph_annealer">
+<code class="descclassname">sqaod.py.</code><code class="descname">bipartite_graph_annealer</code><span class="sig-paren">(</span><em>b0=None</em>, <em>b1=None</em>, <em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#bipartite_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.bipartite_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.py.BipartiteGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>b0</strong><strong>, </strong><strong>b1</strong><strong>, </strong><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO</li>
+<li><strong>optimize</strong> – specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</li>
+<li><strong>prefs</strong> – <a class="reference external" href="preference.html">preference</a> as **kwargs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.py.BipartiteGraphAnnealer" title="sqaod.py.BipartiteGraphAnnealer">sqaod.py.BipartiteGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-py-bipartitegraphannealer">
+<h3>sqaod.py.BipartiteGraphAnnealer<a class="headerlink" href="#sqaod-py-bipartitegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.py.BipartiteGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.py.</code><code class="descname">BipartiteGraphAnnealer</code><span class="sig-paren">(</span><em>b0</em>, <em>b1</em>, <em>W</em>, <em>optimize</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>python implementation of bipartite graph annealer.</p>
+<p>This class is a reference implementation of bipartite graph annealers.
+All algorithms are written in python.</p>
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.seed">
+<code class="descname">seed</code><span class="sig-paren">(</span><em>seed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.seed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a seed value for random number generators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seed</strong> (<em>int</em><em> or </em><em>long</em>) – seed value</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">sqaod.py annealer uses global random number genrator, so seed value is ignored.
+For annealers in other packages, given seed value is used as documented.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_problem_size">
+<code class="descname">get_problem_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_problem_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_problem_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>get problem size.</p>
+<p>Problem size is defined as a number of bits of QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple containing problem size, (N0, N1).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.set_qubo">
+<code class="descname">set_qubo</code><span class="sig-paren">(</span><em>b0</em>, <em>b1</em>, <em>W</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.set_qubo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.set_qubo" title="Permalink to this definition">¶</a></dt>
+<dd><p>set QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>b0</strong><strong>, </strong><strong>b1</strong><strong>, </strong><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO.</li>
+<li><strong>optimize</strong> – optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.set_hamiltonian">
+<code class="descname">set_hamiltonian</code><span class="sig-paren">(</span><em>h0</em>, <em>h1</em>, <em>J</em>, <em>c</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.set_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.set_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>set Hamiltonian.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>numpy.ndarray</strong> – h0(vector), h1(vector), J(matrix)</li>
+<li><strong>point number</strong> (<em>floating</em>) – c</li>
+<li><strong>for h0</strong><strong>, </strong><strong>h1</strong><strong>, </strong><strong>J must be</strong> (<em>Shapes</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.set_preferences">
+<code class="descname">set_preferences</code><span class="sig-paren">(</span><em>prefdict=None</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.set_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.set_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>set solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prefdict</strong> (<em>dict</em>) – preference dictionary.</li>
+<li><strong>prefs</strong> (<em>dict</em>) – preference dictionary as **kwargs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_preferences">
+<code class="descname">get_preferences</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>get solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">preference dictionary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_optimize_dir">
+<code class="descname">get_optimize_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_optimize_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_optimize_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>get optimize direction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_E">
+<code class="descname">get_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>get QUBO energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">QUBO energy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array of floating point number</td>
+</tr>
+</tbody>
+</table>
+<p>QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</p>
+<p class="rubric">Notes</p>
+<p>You need to call calculate_E() or make_solution() before calling get_E().
+CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_x">
+<code class="descname">get_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>get bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array of bit {0, 1}.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple of 2 numpy.int8 arrays</td>
+</tr>
+</tbody>
+</table>
+<p>x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">calculate_E() or make_solution() should be called before calling get_E().
+( CPU/CUDA annealers automatically/internally call calculate_E().)</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_hamiltonian">
+<code class="descname">get_hamiltonian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_hamiltonian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>get hamiltonian.</p>
+<dl class="docutils">
+<dt>Returns: tuple of Hamiltonian variables</dt>
+<dd>h0(vector), h1(vector), J(matrix), c(scalar)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.get_q">
+<code class="descname">get_q</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.get_q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.get_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>get spins.</p>
+<p>Returns: tuple for (q0, q1).  The q0 and q1 are numpy.int8 arrays whose lengths are N0 and N1 respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.randomize_spin">
+<code class="descname">randomize_spin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.randomize_spin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.randomize_spin" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomize spin.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.calculate_E">
+<code class="descname">calculate_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.calculate_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.calculate_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate QUBO energy.</p>
+<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.prepare">
+<code class="descname">prepare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>preparation of internal resources.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">prepare() should be called prior to run annealing loop.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.make_solution">
+<code class="descname">make_solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.make_solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.make_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>make bit arrays(x) and calculate QUBO energy.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.anneal_one_step">
+<code class="descname">anneal_one_step</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.anneal_one_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.anneal_one_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run annealing one step.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>G</strong> (<em>floating point number</em>) – G in SQA, kT in SA.</li>
+<li><strong>beta</strong> (<em>floating point number</em>) – inverse temperature.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.anneal_one_step_naive">
+<code class="descname">anneal_one_step_naive</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.anneal_one_step_naive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_naive" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.naive version of SQA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.anneal_one_step_coloring">
+<code class="descname">anneal_one_step_coloring</code><span class="sig-paren">(</span><em>G</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.anneal_one_step_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_coloring" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) try to flip spins in a colored plane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_naive">
+<code class="descname">anneal_one_step_sa_naive</code><span class="sig-paren">(</span><em>kT</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.anneal_one_step_sa_naive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_naive" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.sa_naive version of SA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_coloring">
+<code class="descname">anneal_one_step_sa_coloring</code><span class="sig-paren">(</span><em>kT</em>, <em>beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/bipartite_graph_annealer.html#BipartiteGraphAnnealer.anneal_one_step_sa_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_coloring" title="Permalink to this definition">¶</a></dt>
+<dd><p>(sqaod.py only) sqaod.algorithm.sa_coloring version of SA</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-bipartite-graph-annealer">
+<h3>sqaod.cpu.bipartite_graph_annealer<a class="headerlink" href="#sqaod-cpu-bipartite-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cpu.bipartite_graph_annealer">
+<code class="descclassname">sqaod.cpu.</code><code class="descname">bipartite_graph_annealer</code><span class="sig-paren">(</span><em>b0=None</em>, <em>b1=None</em>, <em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/bipartite_graph_annealer.html#bipartite_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.bipartite_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.cpu.BipartiteGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>b0</strong><strong>, </strong><strong>b1</strong><strong>, </strong><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.cpu.BipartiteGraphAnnealer" title="sqaod.cpu.BipartiteGraphAnnealer">sqaod.cpu.BipartiteGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-bipartitegraphannealer">
+<h3>sqaod.cpu.BipartiteGraphAnnealer<a class="headerlink" href="#sqaod-cpu-bipartitegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cpu.BipartiteGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.cpu.</code><code class="descname">BipartiteGraphAnnealer</code><span class="sig-paren">(</span><em>b0</em>, <em>b1</em>, <em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/bipartite_graph_annealer.html#BipartiteGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.BipartiteGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-bipartite-graph-annealer">
+<h3>sqaod.cuda.bipartite_graph_annealer<a class="headerlink" href="#sqaod-cuda-bipartite-graph-annealer" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cuda.bipartite_graph_annealer">
+<code class="descclassname">sqaod.cuda.</code><code class="descname">bipartite_graph_annealer</code><span class="sig-paren">(</span><em>b0=None</em>, <em>b1=None</em>, <em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/bipartite_graph_annealer.html#bipartite_graph_annealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.bipartite_graph_annealer" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.cuda.BipartiteGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>b0</strong><strong>, </strong><strong>b1</strong><strong>, </strong><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">annealer instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.cuda.BipartiteGraphAnnealer" title="sqaod.cuda.BipartiteGraphAnnealer">sqaod.cuda.BipartiteGraphAnnealer</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-bipartitegraphannealer">
+<h3>sqaod.cuda.BipartiteGraphAnnealer<a class="headerlink" href="#sqaod-cuda-bipartitegraphannealer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cuda.BipartiteGraphAnnealer">
+<em class="property">class </em><code class="descclassname">sqaod.cuda.</code><code class="descname">BipartiteGraphAnnealer</code><span class="sig-paren">(</span><em>b0</em>, <em>b1</em>, <em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/bipartite_graph_annealer.html#BipartiteGraphAnnealer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.BipartiteGraphAnnealer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bipartite Graph Annealers</a><ul>
+<li><a class="reference internal" href="#factory-function">Factory function</a></li>
+<li><a class="reference internal" href="#method-calling-sequence">Method calling sequence</a></li>
+<li><a class="reference internal" href="#classes-and-functions">classes and functions</a><ul>
+<li><a class="reference internal" href="#sqaod-py-bipartite-graph-annealer">sqaod.py.bipartite_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-py-bipartitegraphannealer">sqaod.py.BipartiteGraphAnnealer</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-bipartite-graph-annealer">sqaod.cpu.bipartite_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-bipartitegraphannealer">sqaod.cpu.BipartiteGraphAnnealer</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-bipartite-graph-annealer">sqaod.cuda.bipartite_graph_annealer</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-bipartitegraphannealer">sqaod.cuda.BipartiteGraphAnnealer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dense_graph_annealer.html"
+                        title="previous chapter">Dense Graph Annealers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dense_graph_bf_searcher.html"
+                        title="next chapter">Dense Graph Brute-force Searcher</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/bipartite_graph_annealer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dense_graph_bf_searcher.html" title="Dense Graph Brute-force Searcher"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dense_graph_annealer.html" title="Dense Graph Annealers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

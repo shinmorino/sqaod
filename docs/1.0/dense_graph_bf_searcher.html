@@ -1,0 +1,507 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Dense Graph Brute-force Searcher &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Bipartite Graph Brute-force Searcher" href="bipartite_graph_bf_searcher.html" />
+    <link rel="prev" title="Bipartite Graph Annealers" href="bipartite_graph_annealer.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_bf_searcher.html" title="Bipartite Graph Brute-force Searcher"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dense-graph-brute-force-searcher">
+<h1>Dense Graph Brute-force Searcher<a class="headerlink" href="#dense-graph-brute-force-searcher" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Sqaod implements 3 dense graph brute-force searcher classes.</dt>
+<dd><ul class="first last">
+<li><p class="first"><a class="reference internal" href="#sqaod-py-densegraphbfsearcher">sqaod.py.DenseGraphBFSearcher</a></p>
+<p>Python-based reference implementation of dense graph brute-force search.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cpu-densegraphbfsearcher">sqaod.cpu.DenseGraphBFSearcher</a></p>
+<p>Parallelized CPU implementation by using OpenMP.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="#sqaod-cuda-densegraphbfsearcher">sqaod.cuda.DenseGraphBFSearcher</a></p>
+<p>Parallelized and accelearted by using NVIDIA GPU, CUDA.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="factory-function">
+<h2>Factory function<a class="headerlink" href="#factory-function" title="Permalink to this headline">¶</a></h2>
+<p>Every solver class has its own factory function in the same package.
+For example, sqaod.py.DenseGraphBFSearcher is instantiated by <a class="reference internal" href="#sqaod.py.dense_graph_bf_searcher">sqaod.py.dense_graph_bf_searcher</a>.</p>
+</div>
+<div class="section" id="method-calling-sequence">
+<h2>Method calling sequence<a class="headerlink" href="#method-calling-sequence" title="Permalink to this headline">¶</a></h2>
+<p>Below is a psudo-code to run dense graph brute-force searcher.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqaod</span> <span class="kn">as</span> <span class="nn">sq</span>
+
+<span class="c1"># Assumption</span>
+<span class="c1"># N     : problem size.</span>
+<span class="c1"># m     : number of trotters.</span>
+<span class="c1"># dtype : np.float32. Numerical precision is assumed to be np.float32.</span>
+
+<span class="c1"># 1. Preparing QUBO matrix, W.</span>
+<span class="c1">#    W is a matrix whose shape is (N, N).</span>
+<span class="c1">#    W should be a upper/lower triangular or symmetrix matrix.</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">create</span> <span class="n">QUBO</span> <span class="o">...</span>
+
+<span class="c1"># 2. instantiate dense graph brute-force searcher</span>
+<span class="n">searcher</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">py</span><span class="o">.</span><span class="n">dense_graph_bf_searcher</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sq</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+<span class="c1"># Alternatively, you&#39;re able to set QUBO as shown below.</span>
+<span class="c1">#</span>
+<span class="c1"># searcher = sqaod.py.dense_graph_bf_searcher(dtype)</span>
+<span class="c1"># searcher.set_qubo(W, sq.minimize)</span>
+
+<span class="c1"># 3. (optional)</span>
+<span class="c1">#    Set preferences. You&#39;re able to select tile size.</span>
+<span class="c1">#    Preferences are given as **kwargs.</span>
+<span class="c1">#</span>
+<span class="c1"># searcher.set_preference(tile_size = 1024)</span>
+
+<span class="c1"># 4. prepare to run search</span>
+<span class="c1">#    Before calling prepare(), QUBO and m must be given.</span>
+<span class="n">searcher</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+
+<span class="c1"># 5. run search</span>
+<span class="c1"># If a problem is big, search needs long time, proportional to 2^N.</span>
+<span class="c1"># search_range() method will make stepwise search,</span>
+<span class="c1"># which limits execution time of one call.</span>
+<span class="k">while</span> <span class="n">searcher</span><span class="o">.</span><span class="n">search_range</span><span class="p">()</span> <span class="p">:</span>
+   <span class="c1"># do your job, such as breaking this loop.</span>
+   <span class="k">pass</span>
+
+<span class="c1"># Alternatively, you can use one line for search, searcher.search().</span>
+<span class="c1">#</span>
+<span class="c1"># searcher.search()   # run whole search.</span>
+
+<span class="c1"># 6. make solution</span>
+<span class="c1"># calculate QUBO energy and prepare solution as a bit array, and caches them.</span>
+<span class="c1"># After calling make_solution(), get_X() and get_E() returns</span>
+<span class="c1"># bits and QUBO energy.</span>
+<span class="n">searcher</span><span class="o">.</span><span class="n">make_solution</span><span class="p">()</span>
+
+<span class="c1"># 7. get solution</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">searcher</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>
+<span class="c1"># x is a list of tuples.  Each tuple contains pair of  bit arrays (x0, x1).</span>
+<span class="c1"># E is a vector of QUBO energy.</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">searcher</span><span class="o">.</span><span class="n">get_E</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="classes-and-functions">
+<h2>classes and functions<a class="headerlink" href="#classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sqaod-py-dense-graph-bf-searcher">
+<h3>sqaod.py.dense_graph_bf_searcher<a class="headerlink" href="#sqaod-py-dense-graph-bf-searcher" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.py.dense_graph_bf_searcher">
+<code class="descclassname">sqaod.py.</code><code class="descname">dense_graph_bf_searcher</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#dense_graph_bf_searcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.dense_graph_bf_searcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.py.DenseGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>numpy.ndarray</strong> – QUBO</li>
+<li><strong>optimize</strong> – specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</li>
+<li><strong>prefs</strong> – <a class="reference external" href="preference.html">preference</a> as **kwargs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">brute-force searcher instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.py.DenseGraphBFSearcher" title="sqaod.py.DenseGraphBFSearcher">sqaod.py.DenseGraphBFSearcher</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-py-densegraphbfsearcher">
+<h3>sqaod.py.DenseGraphBFSearcher<a class="headerlink" href="#sqaod-py-densegraphbfsearcher" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.py.DenseGraphBFSearcher">
+<em class="property">class </em><code class="descclassname">sqaod.py.</code><code class="descname">DenseGraphBFSearcher</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dense graph brute-force searcher</p>
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.set_qubo">
+<code class="descname">set_qubo</code><span class="sig-paren">(</span><em>W</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.set_qubo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.set_qubo" title="Permalink to this definition">¶</a></dt>
+<dd><p>set QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>W</strong> (<em>numpy.ndarray</em>) – QUBO matrix.  W should be a sqaure matrix.
+Upper/Lower triangular matrices or symmetric matrices are accepted.</li>
+<li><strong>optimize</strong> – optimize direction, <cite>sqaod.maximize, sqaod.minimize &lt;preference.html#sqaod-maximize-sqaod-minimize&gt;</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.set_preferences">
+<code class="descname">set_preferences</code><span class="sig-paren">(</span><em>prefdict=None</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.set_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.set_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>set solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prefdict</strong> (<em>dict</em>) – preference dictionary.</li>
+<li><strong>prefs</strong> (<em>dict</em>) – preference dictionary as **kwargs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.get_problem_size">
+<code class="descname">get_problem_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.get_problem_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.get_problem_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>get problem size.</p>
+<p>Problem size is defined as a number of bits of QUBO.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple containing problem size, (N0, N1).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.get_preferences">
+<code class="descname">get_preferences</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.get_preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.get_preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>get solver preferences.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">preference dictionary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p><a class="reference external" href="preference.html">preference</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.get_optimize_dir">
+<code class="descname">get_optimize_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.get_optimize_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.get_optimize_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>get optimize direction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize, sqaod.minimize</a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.get_E">
+<code class="descname">get_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.get_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.get_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>get QUBO energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">QUBO energy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array of floating point number</td>
+</tr>
+</tbody>
+</table>
+<p>QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</p>
+<p class="rubric">Notes</p>
+<p>You need to call calculate_E() or make_solution() before calling get_E().
+CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.get_x">
+<code class="descname">get_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.get_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.get_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>get bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array of bit {0, 1}.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple of 2 numpy.int8 arrays</td>
+</tr>
+</tbody>
+</table>
+<p>x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">calculate_E() or make_solution() should be called before calling get_E().
+( CPU/CUDA annealers automatically/internally call calculate_E().)</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.prepare">
+<code class="descname">prepare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.prepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>preparation of internal resources.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">prepare() should be called prior to run annealing loop.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.make_solution">
+<code class="descname">make_solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.make_solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.make_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate QUBO energy.</p>
+<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.calculate_E">
+<code class="descname">calculate_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.calculate_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.calculate_E" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate QUBO energy.</p>
+<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A call to this method can be asynchronous.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.search_range">
+<code class="descname">search_range</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.search_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.search_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search minimum of QUBO energy within a range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if search completed, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+<p>This method enables stepwise minimum QUBO energy search.
+One method call covers a range specified by ‘tile_size’.
+When a given problem is big, whole search takes very long time.
+By using this method, you can do searches stepwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqaod.py.DenseGraphBFSearcher.search">
+<code class="descname">search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>One liner for brute-force search.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-dense-graph-bf-searcher">
+<h3>sqaod.cpu.dense_graph_bf_searcher<a class="headerlink" href="#sqaod-cpu-dense-graph-bf-searcher" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cpu.dense_graph_bf_searcher">
+<code class="descclassname">sqaod.cpu.</code><code class="descname">dense_graph_bf_searcher</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/dense_graph_bf_searcher.html#dense_graph_bf_searcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.dense_graph_bf_searcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.cpu.DenseGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>numpy.ndarray</strong> – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">brute-force searcher instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.cpu.DenseGraphBFSearcher" title="sqaod.cpu.DenseGraphBFSearcher">sqaod.cpu.DenseGraphBFSearcher</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cpu-densegraphbfsearcher">
+<h3>sqaod.cpu.DenseGraphBFSearcher<a class="headerlink" href="#sqaod-cpu-densegraphbfsearcher" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cpu.DenseGraphBFSearcher">
+<em class="property">class </em><code class="descclassname">sqaod.cpu.</code><code class="descname">DenseGraphBFSearcher</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cpu/dense_graph_bf_searcher.html#DenseGraphBFSearcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cpu.DenseGraphBFSearcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-dense-graph-bf-searcher">
+<h3>sqaod.cuda.dense_graph_bf_searcher<a class="headerlink" href="#sqaod-cuda-dense-graph-bf-searcher" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="sqaod.cuda.dense_graph_bf_searcher">
+<code class="descclassname">sqaod.cuda.</code><code class="descname">dense_graph_bf_searcher</code><span class="sig-paren">(</span><em>W=None</em>, <em>optimize=&lt;sqaod.common.preference.Minimize object&gt;</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em>, <em>**prefs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/dense_graph_bf_searcher.html#dense_graph_bf_searcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.dense_graph_bf_searcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>factory function for sqaod.cuda.DenseGraphAnnealer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>numpy.ndarray</strong> – QUBO</li>
+<li><strong>optimize</strong> – <p>specify optimize direction, <a class="reference external" href="preference.html#sqaod-maximize-sqaod-minimize">sqaod.maximize or sqaod.minimize</a>.</p>
+</li>
+<li><strong>prefs</strong> – <p><a class="reference external" href="preference.html">preference</a> as **kwargs</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">brute-force searcher instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#sqaod.cuda.DenseGraphBFSearcher" title="sqaod.cuda.DenseGraphBFSearcher">sqaod.cuda.DenseGraphBFSearcher</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sqaod-cuda-densegraphbfsearcher">
+<h3>sqaod.cuda.DenseGraphBFSearcher<a class="headerlink" href="#sqaod-cuda-densegraphbfsearcher" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="sqaod.cuda.DenseGraphBFSearcher">
+<em class="property">class </em><code class="descclassname">sqaod.cuda.</code><code class="descname">DenseGraphBFSearcher</code><span class="sig-paren">(</span><em>W</em>, <em>optimize</em>, <em>dtype</em>, <em>prefdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/cuda/dense_graph_bf_searcher.html#DenseGraphBFSearcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.cuda.DenseGraphBFSearcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dense Graph Brute-force Searcher</a><ul>
+<li><a class="reference internal" href="#factory-function">Factory function</a></li>
+<li><a class="reference internal" href="#method-calling-sequence">Method calling sequence</a></li>
+<li><a class="reference internal" href="#classes-and-functions">classes and functions</a><ul>
+<li><a class="reference internal" href="#sqaod-py-dense-graph-bf-searcher">sqaod.py.dense_graph_bf_searcher</a></li>
+<li><a class="reference internal" href="#sqaod-py-densegraphbfsearcher">sqaod.py.DenseGraphBFSearcher</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-dense-graph-bf-searcher">sqaod.cpu.dense_graph_bf_searcher</a></li>
+<li><a class="reference internal" href="#sqaod-cpu-densegraphbfsearcher">sqaod.cpu.DenseGraphBFSearcher</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-dense-graph-bf-searcher">sqaod.cuda.dense_graph_bf_searcher</a></li>
+<li><a class="reference internal" href="#sqaod-cuda-densegraphbfsearcher">sqaod.cuda.DenseGraphBFSearcher</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bipartite_graph_annealer.html"
+                        title="previous chapter">Bipartite Graph Annealers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bipartite_graph_bf_searcher.html"
+                        title="next chapter">Bipartite Graph Brute-force Searcher</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dense_graph_bf_searcher.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_bf_searcher.html" title="Bipartite Graph Brute-force Searcher"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,150 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>sqaod.common.preference &#8212; sqaod 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for sqaod.common.preference</h1><div class="highlight"><pre>
+<span></span><span class="c1"># operations to switch minimize / maximize.</span>
+
+<span class="k">class</span> <span class="nc">Algorithm</span> <span class="p">:</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+    <span class="n">naive</span> <span class="o">=</span> <span class="s1">&#39;naive&#39;</span>
+    <span class="n">coloring</span> <span class="o">=</span> <span class="s1">&#39;coloring&#39;</span>
+    <span class="n">brute_force_search</span> <span class="o">=</span> <span class="s1">&#39;brute_force_search&#39;</span>
+    <span class="n">sa_naive</span> <span class="o">=</span> <span class="s1">&#39;sa_naive&#39;</span>
+    <span class="n">sa_coloring</span> <span class="o">=</span> <span class="s1">&#39;sa_coloring&#39;</span>
+    
+<span class="n">algorithm</span> <span class="o">=</span> <span class="n">Algorithm</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  sqaod.common.Algorithm: signatures to select algorithms</span>
+
+<span class="sd">  algorithm signatures are provided as attributes shown below:</span>
+
+<span class="sd">  **default:**</span>
+<span class="sd">    select default algorithm.</span>
+<span class="sd">    Each solver class has its default algorithm.  By specifying algorithm.default, </span>
+<span class="sd">    the default algirhtm will be chosen,</span>
+<span class="sd">  **naive :**</span>
+<span class="sd">    Naive version of SQA algorithm,</span>
+<span class="sd">  **coloring :**</span>
+<span class="sd">    SQA algorithm is parallelized by using color-coding,</span>
+<span class="sd">  **brute_force_search :**</span>
+<span class="sd">    Brute-force search.</span>
+<span class="sd">    All brute-force searchers have &#39;brute_force_search&#39; algorithm,</span>
+<span class="sd">  **sa_naive :**</span>
+<span class="sd">    naive version of SA(simulated annealing, not SQA),</span>
+<span class="sd">  **sa_coloring :**</span>
+<span class="sd">    color-code version of SA.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+
+<span class="k">class</span> <span class="nc">Minimize</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Tag for optimize direction.  This class also has some methods for sign manipulations.&quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">best</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    
+<span class="k">class</span> <span class="nc">Maximize</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Tag for optimize direction.  This class also has some methods for sign manipulations.&quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">v</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">best</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">reverse</span> <span class="o">=</span> <span class="n">true</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+<span class="n">minimize</span> <span class="o">=</span> <span class="n">Minimize</span><span class="p">()</span>  <span class="c1">#: telling solvers to minimize QUBO energy.</span>
+<span class="n">maximize</span> <span class="o">=</span> <span class="n">Maximize</span><span class="p">()</span>  <span class="c1">#: telling solvers to maximize QUBO energy.</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Shinya Morino.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>
