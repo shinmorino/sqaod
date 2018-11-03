@@ -1,4 +1,10 @@
 from . import formulas
+
+from .dense_graph_annealer import DenseGraphAnnealer
+from .dense_graph_bf_searcher import DenseGraphBFSearcher
+from .bipartite_graph_annealer import BipartiteGraphAnnealer
+from .bipartite_graph_bf_searcher import BipartiteGraphBFSearcher
+
 from .dense_graph_annealer import dense_graph_annealer
 from .dense_graph_bf_searcher import dense_graph_bf_searcher
 from .bipartite_graph_annealer import bipartite_graph_annealer

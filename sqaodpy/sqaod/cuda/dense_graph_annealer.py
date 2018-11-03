@@ -6,6 +6,7 @@ from . import cuda_dg_annealer as cext
 from . import device
 
 class DenseGraphAnnealer(DenseGraphAnnealerBase) :
+    """ CUDA-based Dense graph annealer  """
 
     def __init__(self, W, optimize, dtype, prefdict) :
         self._cobj = cext.new(dtype)
@@ -14,9 +15,22 @@ class DenseGraphAnnealer(DenseGraphAnnealerBase) :
         DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
+    """ factory function for sqaod.cuda.DenseGraphAnnealer_.
+
+    Args:
+      numpy.ndarray W : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+
+    Returns:
+      sqaod.cuda.DenseGraphAnnealer_: annealer instance
+
+    """
     ann = DenseGraphAnnealer(W, optimize, dtype, prefs)
     return ann
 
+# refer docstring from interface
+docstring.inherit(DenseGraphAnnealer, sqaod.py.DenseGraphAnnealer)
 
 if __name__ == '__main__' :
 
@@ -38,7 +52,7 @@ if __name__ == '__main__' :
     W = sqaod.generate_random_symmetric_W(N, -0.5, 0.5, np.float64)
 
     ann = dense_graph_annealer(W, dtype=np.float64, n_trotters = m)
-    import sqaod.py as py
+    import sqaod.cuda as py
     #ann = py.dense_graph_annealer(W, n_trotters = m)
     ann.set_qubo(W, sqaod.minimize)
     h, J, c = ann.get_hamiltonian()

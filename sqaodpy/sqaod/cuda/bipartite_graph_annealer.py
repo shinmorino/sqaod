@@ -17,6 +17,15 @@ class BipartiteGraphAnnealer(BipartiteGraphAnnealerBase) :
 
 def bipartite_graph_annealer(b0 = None, b1 = None, W = None, \
                              optimize = sqaod.minimize, dtype = np.float64, **prefs) :
+    """ factory function for sqaod.cuda.BipartiteGraphAnnealer.
+
+    Args:
+      numpy.ndarray b0, b1, W : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+    Returns:
+      sqaod.cuda.BipartiteGraphAnnealer: annealer instance
+    """
     return BipartiteGraphAnnealer(b0, b1, W, optimize, dtype, prefs)
 
 

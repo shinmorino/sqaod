@@ -12,6 +12,16 @@ class DenseGraphBFSearcher(DenseGraphBFSearcherBase) :
 
 
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64, **prefs) :
+    """ factory function for sqaod.cpu.DenseGraphAnnealer.
+
+    Args:
+      numpy.ndarray : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+    Returns:
+      sqaod.cpu.DenseGraphBFSearcher: brute-force searcher instance
+    """
+    
     return DenseGraphBFSearcher(W, optimize, dtype, prefs)
 
 
