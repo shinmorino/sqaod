@@ -48,7 +48,13 @@ Features
 Release history
 ---------------
 
-Current version is Version 1.0.0.
+Current version is 1.0.1.
+
+* Ver 1.0.1
+
+  * `Documentation <https://shinmorino.github.io/sqaod/docs/1.0>`_ prepared.
+
+  * Updated some version sinagures that were not updated.
 
 * Ver 1.0.0
 

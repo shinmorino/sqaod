@@ -1,10 +1,14 @@
 # Sqaod
-#### Latest version : v1.0.0 (deb), 1.0.0 (python). (2018/10/28)
+#### Latest version : v1.0.0 (deb), 1.0.1 (python). (2018/11/3)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
+
+#### Version 1.0.1 Released (2018/11/3)
+- [Documentation](https://shinmorino.github.io/sqaod/docs/1.0) prepared.
+- Updated some version sinagures that were not updated.
 
 #### Version 1.0 Released (2018/10/28)
 - All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57).
