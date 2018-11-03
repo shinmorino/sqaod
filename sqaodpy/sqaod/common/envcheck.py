@@ -86,7 +86,7 @@ class EnvChecker :
             verstr = 'N/A'
         else :
             verok = check_version(version, self.pkgver)
-            verstr = get_string_version(version[0]) if verok else '< 0.3.1'
+            verstr = get_string_version(version[0]) if verok else '< ' + str(self.pkgver)
             if not verok :
                 err_reason = 'version mismatch'
 
