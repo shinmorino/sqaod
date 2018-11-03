@@ -10,7 +10,7 @@ Sqaod implements 3 dense graph annealer classes.
    
    Parallelized CPU implementation by using OpenMP.
    
- * `sqoad.cuda.DenseGraphAnnealer`_
+ * `sqaod.cuda.DenseGraphAnnealer`_
    
    Parallelized and accelearted by using NVIDIA GPU, CUDA.
 

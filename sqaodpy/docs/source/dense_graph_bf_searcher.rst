@@ -10,7 +10,7 @@ Sqaod implements 3 dense graph brute-force searcher classes.
    
    Parallelized CPU implementation by using OpenMP.
    
- * `sqoad.cuda.DenseGraphBFSearcher`_
+ * `sqaod.cuda.DenseGraphBFSearcher`_
    
    Parallelized and accelearted by using NVIDIA GPU, CUDA.
 

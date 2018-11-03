@@ -10,7 +10,7 @@ Sqaod implements 3 bipartite graph brute-force searcher classes.
    
    Parallelized CPU implementation by using OpenMP.
    
- * `sqoad.cuda.BipartiteGraphBFSearcher`_
+ * `sqaod.cuda.BipartiteGraphBFSearcher`_
    
    Parallelized and accelearted by using NVIDIA GPU, CUDA.
 

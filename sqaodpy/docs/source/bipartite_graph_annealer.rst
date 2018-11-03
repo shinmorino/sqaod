@@ -10,7 +10,7 @@ Sqaod implements 3 bipartite graph annealer classes.
    
    Parallelized CPU implementation by using OpenMP.
    
- * `sqoad.cuda.BipartiteGraphAnnealer`_
+ * `sqaod.cuda.BipartiteGraphAnnealer`_
    
    Parallelized and accelearted by using NVIDIA GPU, CUDA.
 
