@@ -1,18 +1,20 @@
 # Sqaod
-#### Latest version : v1.0.0 (deb), 1.0.1 (python). (2018/11/3)
+#### Latest version : v1.0.0 (deb), 1.0.1 (python). (Nov. 3, 2018)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
 
-#### Version 1.0.1 Released (2018/11/3)
-- [Documentation](https://shinmorino.github.io/sqaod/docs/1.0) prepared.
-- Updated some version sinagures that were not updated.
+### Version 1.0.1 Released (Nov. 3, 2018)
+- [Documentation](https://shinmorino.github.io/sqaod/docs/1.0/) prepared.
+- Updated some version signatures that were not updated.
+- This is an update for python packages. Deb/RPM packages stay 1.0.0.
 
-#### Version 1.0 Released (2018/10/28)
-- All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57).
-- Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  [[#59]](https://github.com/shinmorino/sqaod/issues/59).
+### Version 1.0 Released (Oct. 28, 2018)
+- All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57)
+- Simulated annealing algorithms (not simulated quantum annealing) have been implemented. It's automatically selected when n_trotters == 1. [[#59]](https://github.com/shinmorino/sqaod/issues/59)
+- Binary packages are released for Ubuntu 16.04(CUDA 9.0, 10.0), 18.04(CUDA 10.0), CentOS(RHEL) 7 (CUDA 10.0).  See [Supported platforms and versions](https://github.com/shinmorino/sqaod/wiki/Supported-platforms-and-versions).
 - Misc bug fixes.
 
 #### Future plan
