@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.dense_graph_bf_searcher_base import DenseGraphBFSearcherBase
+from sqaod.common import docstring
 from . import cuda_dg_bf_searcher as cext
 from . import device
 
@@ -15,7 +16,19 @@ class DenseGraphBFSearcher(DenseGraphBFSearcherBase) :
 
 
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, dtype=np.float64, **prefs) :
+    """ factory function for sqaod.cuda.DenseGraphAnnealer.
+
+    Args:
+      numpy.ndarray : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+    Returns:
+      sqaod.cuda.DenseGraphBFSearcher: brute-force searcher instance
+    """
     return DenseGraphBFSearcher(W, optimize, dtype, prefs)
+
+# inherit docstring from interface
+docstring.inherit(DenseGraphBFSearcher, sqaod.py.DenseGraphBFSearcher)
 
 if __name__ == '__main__' :
 

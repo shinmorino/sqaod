@@ -5,6 +5,7 @@ from sqaod.common import checkers
 from sqaod import algorithm as algo
 
 class BipartiteGraphBFSearcher :
+    """ Bipartite graph  brute-force searcher"""
 
     _tile_size_0_default = 512
     _tile_size_1_default = 512
@@ -19,10 +20,23 @@ class BipartiteGraphBFSearcher :
         return self._b0, self._b1, self._W
 
     def get_problem_size(self) :
+        """ get problem size.
+
+        Problem size is defined as a number of bits of QUBO.
+
+        Returns:
+          tuple containing problem size, (N0, N1).
+        """
         return self._N0, self._N1
     
     def set_qubo(self, b0, b1, W, optimize = sqaod.minimize) :
+        """ set QUBO.
+
+        Args:
+          numpy.ndarray b0, b1, W : QUBO.
+          optimize : optimize direction, `sqaod.maximize, sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
         checkers.bipartite_graph.qubo(b0, b1, W)
+        """
         self._N0 = b0.shape[0]
         self._N1 = b1.shape[0]
         self._optimize = optimize
@@ -36,6 +50,15 @@ class BipartiteGraphBFSearcher :
         return algo.brute_force_search
 
     def set_preferences(self, prefdict=None, **prefs) :
+        """ set solver preferences.
+
+        Args:
+          prefdict(dict) : preference dictionary.
+          prefs(dict) : preference dictionary as \*\*kwargs. 
+
+        References:
+          `preference <preference.html>`_
+        """
         if not prefdict is None :
             self._set_prefdict(prefdict)
         self._set_prefdict(prefs)
@@ -49,6 +72,14 @@ class BipartiteGraphBFSearcher :
             self._tile_size_1 = v;
 
     def get_preferences(self) :
+        """ get solver preferences.
+
+        Returns:
+          dict: preference dictionary.
+
+        References:
+          `preference <preference.html>`_
+        """
         prefs = {}
         prefs['tile_size_0'] = self._tile_size_0
         prefs['tile_size_1'] = self._tile_size_1
@@ -56,15 +87,47 @@ class BipartiteGraphBFSearcher :
         return prefs
 
     def get_optimize_dir(self) :
+        """ get optimize direction
+        
+        Returns:
+          optimize direction, `sqaod.maximize, sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+        """
         return self._optimize
     
     def get_E(self) :
+        """ get QUBO energy.
+
+        Returns:
+          array of floating point number : QUBO energy.
+
+        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.
+
+        Notes:
+          You need to call calculate_E() or make_solution() before calling get_E().
+          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
+        """
         return self._E
 
     def get_x(self) :
+        """ get bits.
+
+        Returns:
+          tuple of 2 numpy.int8 arrays : array of bit {0, 1}.
+
+        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.
+
+        Note:
+          calculate_E() or make_solution() should be called before calling get_E().
+          ( CPU/CUDA annealers automatically/internally call calculate_E().)
+        """
         return self._xPairs
 
     def prepare(self) :
+        """ preparation of internal resources.
+        
+        Note:
+          prepare() should be called prior to run annealing loop.
+        """
         N0, N1 = self.get_problem_size()
         self._x0begin = 0
         self._x1begin = 0
@@ -76,9 +139,21 @@ class BipartiteGraphBFSearcher :
         self._xPairs = []
 
     def make_solution(self) :
+        """ make bit arrays(x) and calculate QUBO energy.
+
+        Note:
+          A call to this method can be asynchronous.
+        """
         self.calculate_E()
 
     def calculate_E(self) :
+        """ calculate QUBO energy.
+        
+        This method calculate QUBO energy, and caches it, does not return any value.
+
+        Note:
+          A call to this method can be asynchronous.
+        """
         nXmin = len(self._xPairs)
         self._E = np.empty((nXmin))
         self._E[...] = self._optimize.sign(self._Emin)
@@ -103,6 +178,16 @@ class BipartiteGraphBFSearcher :
                     self._xPairs.append = [(x0, x1)]
         
     def search_range(self) :
+        """ Search minimum of QUBO energy within a range.
+
+        Returns:
+          True if search completed, False otherwise.
+
+        This method enables stepwise minimum QUBO energy search.
+        One method call covers a range specified by 'tile_size'.
+        When a given problem is big, whole search takes very long time.
+        By using this method, you can do searches stepwise.
+        """
         N0, N1 = self.get_problem_size()
         b0, b1, W = self._vars()
         x0begin = max(0, min(self._x0max, self._x0begin))
@@ -141,6 +226,7 @@ class BipartiteGraphBFSearcher :
 
                     
     def search(self) :
+        """ One liner for brute-force search. """
         self.prepare()
 
         while not self.search_range() :
@@ -149,6 +235,15 @@ class BipartiteGraphBFSearcher :
         self.make_solution()
         
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, **prefs) :
+    """ factory function for sqaod.py.BipartiteGraphAnnealer.
+
+    Args:
+      numpy.ndarray b0, b1, W : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+    Returns:
+      sqaod.py.BipartiteGraphBFSearcher: annealer instance
+    """
     return BipartiteGraphBFSearcher(b0, b1, W, optimize, prefs)
 
 

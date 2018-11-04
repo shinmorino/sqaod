@@ -2,9 +2,19 @@ import numpy as np
 import sqaod
 from sqaod.common import checkers, symmetrize
 
-# dense graph
 
 def dense_graph_calculate_hamiltonian(W, dtype = None) :
+    """ Calculate hamiltonian from given QUBO.
+
+    Args:
+      numpy.ndarray W : QUBO, W should be a upper/lower triangular or symmetric matrix.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      tuple: tuple containing Hamiltonian.
+        h(vector as numpy.array), J(2-D symmetric matrix as numpy.array), c(scalar value)
+    """
+ 
     checkers.dense_graph.qubo(W)
     W = symmetrize(W)
 
@@ -24,6 +34,17 @@ def dense_graph_calculate_hamiltonian(W, dtype = None) :
 
 
 def dense_graph_calculate_E(W, x, dtype = None) :
+    """ Calculate desne graph QUBO energy from bits.
+
+    Args:
+      numpy.array W: QUBO, W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x : array of bit {0, 1}.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
+    
     checkers.dense_graph.qubo(W)
     checkers.dense_graph.x(W, x)
     W = symmetrize(W)
@@ -35,6 +56,18 @@ def dense_graph_calculate_E(W, x, dtype = None) :
     return np.dot(x, np.matmul(W, x.T))
 
 def dense_graph_batch_calculate_E(W, x, dtype = None) :
+    """ Batched version of the function to calculate dense graph QUBO energy from bits.
+
+    Args:
+      numpy.ndarray W: QUBO, W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x:
+        bit arrays repsesented as 2-D matrix(n_trotters x n_bits).
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64
+
+    Returns:
+      QUBO energy
+    """
+    
     checkers.dense_graph.qubo(W)
     checkers.dense_graph.xbatch(W, x)
     W = symmetrize(W)
@@ -44,6 +77,17 @@ def dense_graph_batch_calculate_E(W, x, dtype = None) :
     return np.sum(x * np.matmul(W, x.T).T, 1)
 
 def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
+    """ Calculate desne graph QUBO energy from spins.
+
+    Args:
+      (numpy.ndarray) h, J, c : Hamiltonian h(1-D vector), W(sqauare matrix), c(scalar).
+        W must be a upper/lower triangular or symmetric matrix.
+      q (numpy.ndarray) : array of spin {-1, 1}.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64
+
+    Returns:
+      floating point number : QUBO energy
+    """
     checkers.dense_graph.hJc(h, J, c)
     checkers.dense_graph.q(J, q)
     J = symmetrize(J)
@@ -51,6 +95,18 @@ def dense_graph_calculate_E_from_spin(h, J, c, q, dtype = None) :
     return - c - np.dot(h, q) - np.dot(q, np.matmul(J, q.T))
 
 def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
+    """ Batched version of the function to calculate dense graph QUBO energy from spins.
+
+    Args:
+      numpy.ndarray h, J, c : Hamiltonian h(1-D vector), W(sqauare matrix), c(scalar).
+        W must be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray q :
+        bit arrays repsesented as 2-D matrix(n_trotters x n_bits).
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
     checkers.dense_graph.hJc(h, J, c)
     checkers.dense_graph.qbatch(J, q)
     J = symmetrize(J)
@@ -60,10 +116,19 @@ def dense_graph_batch_calculate_E_from_spin(h, J, c, q, dtype = None) :
     return - c - np.matmul(h, q.T) - np.sum(q.T * np.matmul(J, q.T), 0)
 
 
-
 # bibartite graph
 
 def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype = None) :
+    """ Calculate hamiltonian from given QUBO.
+
+    Args:
+      numpy.ndarray b0, b1, W : Bipartite graph QUBO.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64
+
+    Returns:
+      tuple: tuple containing Hamiltonian.
+        h0(1-D numpy.array), h1(1-D numpy.array), J(matrix as numpy.array), c(scalr value).
+    """
     checkers.bipartite_graph.qubo(b0, b1, W);
     N0 = W.shape[1]
     N1 = W.shape[0]
@@ -80,11 +145,33 @@ def bipartite_graph_calculate_hamiltonian(b0, b1, W, dtype = None) :
     return h0, h1, J, c
 
 def bipartite_graph_calculate_E(b0, b1, W, x0, x1, dtype = None) :
+    """ Calculate bipartite graph QUBO energy from bits.
+
+    Args:
+      numpy.array b0, b1, W: QUBO.  b0(vector as numpy.array), b1(vector as numpy.array), W(matrix as numpy.array).  W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x0, x1 : array of bit {0, 1}.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
     checkers.bipartite_graph.qubo(b0, b1, W)
     checkers.bipartite_graph.x(W, x0, x1)
     return np.dot(b0, x0) + np.dot(b1, x1) + np.dot(x1, np.matmul(W, x0))
 
 def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
+    """ Batched version of the function to calculate dense graph QUBO energy from bits.
+
+    Args:
+      numpy.array b0, b1, W: QUBO.  b0(vector as numpy.array), b1(vector as numpy.array), W(matrix as numpy.array).  W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x0, x1:
+        bit arrays repsesented as 2-D matrix.
+        x0 shape is n_trotters x n_bits_0, and x1 shape is n_trotters x n_bits_1
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
     if len(x0.shape) == 1 :
         x0 = x0.reshape(1, -1)
     if len(x1.shape) == 1 :
@@ -98,6 +185,22 @@ def bipartite_graph_batch_calculate_E(b0, b1, W, x0, x1, dtype = None) :
     return np.matmul(b0, x0.T) + np.matmul(b1, x1.T) + np.sum(x1 * np.matmul(W, x0.T).T, 1)
 
 def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype = None) :
+    """ 2D batched version of the function to calculate dense graph QUBO energy from bits.
+
+    Args:
+      numpy.array b0, b1, W: QUBO.  b0(vector as numpy.array), b1(vector as numpy.array), W(matrix as numpy.array).  W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x0, x1:
+        bit arrays repsesented as 2-D matrix.
+        x0 shape is n_trotters x n_bits_0, and x1 shape is n_trotters x n_bits_1
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy as a matrix, whose shape is (len(x1), (len(x0)).
+
+    This function calculates QUBO energy for all combinations of elements x0 and x1, 
+    used in bipartite graph brute-force searchers.
+
+    """
     if len(x0.shape) == 1 :
         x0 = x0.reshape(1, -1)
     if len(x1.shape) == 1 :
@@ -109,12 +212,34 @@ def bipartite_graph_batch_calculate_E_2d(b0, b1, W, x0, x1, dtype = None) :
         + np.matmul(x1, np.matmul(W, x0.T))
 
 def bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
+    """ Calculate bipartite graph QUBO energy from spins.
+
+    Args:
+      numpy.array b0, b1, W: QUBO.  b0(vector as numpy.array), b1(vector as numpy.array), W(matrix as numpy.array).  W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x0, x1 : array of bit {0, 1}.
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
     checkers.bipartite_graph.hJc(h0, h1, J, c)
     checkers.bipartite_graph.q(J, q0, q1)
     
     return - np.dot(h0, q0) - np.dot(h1, q1) - np.dot(q1, np.matmul(J, q0)) - c
 
 def bipartite_graph_batch_calculate_E_from_spin(h0, h1, J, c, q0, q1, dtype = None) :
+    """ Batched version of the function to calculate dense graph QUBO energy from bits.
+
+    Args:
+      numpy.array b0, b1, W: QUBO. b0(vector as numpy.array), b1(vector as numpy.array), W(matrix as numpy.array).  W should be a upper/lower triangular or symmetric matrix.
+      numpy.ndarray x0, x1:
+        bit arrays repsesented as 2-D matrix.
+        x0 shape is n_trotters x n_bits_0, and x1 shape is n_trotters x n_bits_1
+      numpy.dtype dtype : Numerical precision, numpy.float32 or numpy.float64.
+
+    Returns:
+      QUBO energy
+    """
     if len(q0.shape) == 1 :
         q0 = q0.reshape(1, -1)
     if len(q1.shape) == 1 :

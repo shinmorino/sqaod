@@ -48,7 +48,21 @@ Features
 Release history
 ---------------
 
-Current version is Beta2(Update1), ver 0.3.1.
+Current version is 1.0.1.
+
+* Ver 1.0.1
+
+  * `Documentation <https://shinmorino.github.io/sqaod/docs/1.0>`_ prepared.
+
+  * Updated some version sinagures that were not updated.
+
+* Ver 1.0.0
+
+  * All solvers and functions are able to accept upper/lower triangular matrices. `[#57] <https://github.com/shinmorino/sqaod/issues/57>`_.
+
+  * Simulated annealing algorithms (not simulated *quantum* annealing) have been implemented.  It's automatically selected when n_trotters == 1.  `[#59] <https://github.com/shinmorino/sqaod/issues/59>`_.
+
+  * Misc bug fixes.
 
 * Ver 0.3.1 (Beta2 Update1)
 

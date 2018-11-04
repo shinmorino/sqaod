@@ -2,10 +2,12 @@ from __future__ import print_function
 import numpy as np
 import sqaod
 from sqaod.common.dense_graph_annealer_base import DenseGraphAnnealerBase
+from sqaod.common import docstring
 from . import cuda_dg_annealer as cext
 from . import device
 
 class DenseGraphAnnealer(DenseGraphAnnealerBase) :
+    """ CUDA-based Dense graph annealer  """
 
     def __init__(self, W, optimize, dtype, prefdict) :
         self._cobj = cext.new(dtype)
@@ -14,9 +16,22 @@ class DenseGraphAnnealer(DenseGraphAnnealerBase) :
         DenseGraphAnnealerBase.__init__(self, cext, dtype, W, optimize, prefdict)
 
 def dense_graph_annealer(W = None, optimize=sqaod.minimize, dtype=np.float64, **prefs) :
+    """ factory function for sqaod.cuda.DenseGraphAnnealer_.
+
+    Args:
+      numpy.ndarray W : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+
+    Returns:
+      sqaod.cuda.DenseGraphAnnealer_: annealer instance
+
+    """
     ann = DenseGraphAnnealer(W, optimize, dtype, prefs)
     return ann
 
+# inherit docstring from interface
+docstring.inherit(DenseGraphAnnealer, sqaod.py.DenseGraphAnnealer)
 
 if __name__ == '__main__' :
 

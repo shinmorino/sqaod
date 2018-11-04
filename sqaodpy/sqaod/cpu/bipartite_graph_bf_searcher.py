@@ -12,6 +12,15 @@ class BipartiteGraphBFSearcher(BipartiteGraphBFSearcherBase) :
         
 
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, dtype = np.float64, **prefs) :
+    """ factory function for sqaod.cpu.BipartiteGraphAnnealer.
+
+    Args:
+      numpy.ndarray b0, b1, W : QUBO
+      optimize : specify optimize direction, `sqaod.maximize or sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`_.
+      prefs : `preference <preference.html>`_ as \*\*kwargs
+    Returns:
+      sqaod.cpu.BipartiteGraphBFSearcher: annealer instance
+    """
     return BipartiteGraphBFSearcher(b0, b1, W, optimize, dtype, prefs)
 
 
