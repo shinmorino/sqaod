@@ -170,8 +170,16 @@ class TestBipartiteGraphAnnealerBase:
         an.prepare()
         an.randomize_spin()
 
-        Ginit, Gfin = 5, 0.01
-        beta = 1. / 0.0001
+        prefs = an.get_preferences()
+        algo = prefs['algorithm']
+        
+        if algo == sq.algorithm.sa_naive or algo == sq.algorithm.sa_coloring :
+            Ginit, Gfin = 10, 0.02
+            beta = 1.  # not used.
+        else :
+            Ginit, Gfin = 5, 0.02
+            beta = 1. / 0.03
+        
         nSteps = 100
 
         G = Ginit
@@ -180,7 +188,6 @@ class TestBipartiteGraphAnnealerBase:
             an.anneal_one_step(G, beta)
             G *= tau
         an.make_solution()
-        
         
     def _test_anneal_minimize(self, algorithm, m) :
         N0, N1 = 10, 8
@@ -264,7 +271,7 @@ class TestBipartiteGraphAnnealerBase:
         
     def test_anneal_sa_naive(self) :
         self._test_anneal_minimize(sq.algorithm.sa_naive, 1)
-        self._test_anneal_maximize(sq.algorithm.sa_naive, 2)
+        self._test_anneal_maximize(sq.algorithm.sa_naive, 1)
         self._test_anneal_hamiltonian(sq.algorithm.sa_naive, 1)
 
     def test_anneal_sa_coloring(self) :

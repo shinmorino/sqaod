@@ -155,10 +155,17 @@ class TestDenseGraphAnnealerBase:
         an.prepare()
         an.randomize_spin()
 
-        Ginit, Gfin = 5, 0.01
-        beta = 1. / 0.005
+        prefs = an.get_preferences()
+        algo = prefs['algorithm']
+        
+        if algo == sq.algorithm.sa_naive or algo == sq.algorithm.sa_coloring :
+            Ginit, Gfin = 10, 0.02
+            beta = 1.  # not used.
+        else :
+            Ginit, Gfin = 5, 0.02
+            beta = 1. / 0.03
+        
         nSteps = 100
-
         G = Ginit
         tau = exp(log(Gfin / Ginit) / nSteps)
         for loop in range(0, nSteps) :
