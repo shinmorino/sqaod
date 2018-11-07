@@ -155,7 +155,10 @@ void Annealer<real>::selectDefaultAlgorithm(sqaod::Algorithm algoOrg, sqaod::Alg
         algo_ = algoDef;
         return;
     }
-
+    if (algoOrg == sqaod::algoSADefault) {
+        algo_ = algoSADef;
+        return;
+    }
     if (sqaod::isSQAAlgorithm(algoOrg))
         algo_ = algoDef;
     else

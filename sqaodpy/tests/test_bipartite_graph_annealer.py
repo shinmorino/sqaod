@@ -290,6 +290,10 @@ class TestPyBipartiteGraphAnnealer(TestBipartiteGraphAnnealerBase, unittest.Test
         pref = ann.get_preferences()
         self.assertEqual(pref['algorithm'], sq.algorithm.naive)
 
+        ann.set_preferences(algorithm = sq.algorithm.sa_default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
         ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
         ann.prepare()
         pref = ann.get_preferences()
@@ -309,6 +313,10 @@ class TestNativeBipartiteGraphAnnealerBase(TestBipartiteGraphAnnealerBase) :
         ann.set_preferences(algorithm = sq.algorithm.default)
         pref = ann.get_preferences()
         self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+
+        ann.set_preferences(algorithm = sq.algorithm.sa_default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_coloring)
 
         ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
         ann.prepare()

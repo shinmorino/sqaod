@@ -283,6 +283,10 @@ class TestNativeDenseGraphAnnealerBase(TestDenseGraphAnnealerBase) :
         ann.set_preferences(algorithm = sq.algorithm.default)
         pref = ann.get_preferences()
         self.assertEqual(pref['algorithm'], sq.algorithm.coloring)
+        
+        ann.set_preferences(algorithm = sq.algorithm.sa_default)
+        pref = ann.get_preferences()
+        self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
 
         ann.set_preferences(algorithm = sq.algorithm.naive, n_trotters = 1)
         ann.prepare()

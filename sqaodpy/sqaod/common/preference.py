@@ -5,6 +5,7 @@ class Algorithm :
     naive = 'naive'
     coloring = 'coloring'
     brute_force_search = 'brute_force_search'
+    sa_default = 'sa_default'
     sa_naive = 'sa_naive'
     sa_coloring = 'sa_coloring'
     
@@ -25,8 +26,10 @@ algorithm = Algorithm()
   **brute_force_search :**
     Brute-force search.
     All brute-force searchers have 'brute_force_search' algorithm,
+  **sa_default :**
+    select default algorithm for SA(simulated annealing, not SQA),
   **sa_naive :**
-    naive version of SA(simulated annealing, not SQA),
+    naive version of SA,
   **sa_coloring :**
     color-code version of SA.
 

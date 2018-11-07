@@ -92,6 +92,9 @@ class DenseGraphAnnealer :
         elif algoname == algo.sa_naive :
             self.anneal_one_step = \
                 MethodType(DenseGraphAnnealer.anneal_one_step_sa_naive, self)
+        elif algoname == algo.sa_default :
+            self.anneal_one_step = \
+                MethodType(DenseGraphAnnealer.anneal_one_step_sa_naive, self)
         else :
             self.anneal_one_step = \
                 MethodType(DenseGraphAnnealer.anneal_one_step_naive, self)

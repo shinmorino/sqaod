@@ -25,6 +25,8 @@ const char *sqaod::algorithmToString(Algorithm algo) {
         return "coloring";
     case algoBruteForceSearch:
         return "brute_force_search";
+    case algoSADefault :
+        return "sa_default";
     case algoSANaive :
         return "sa_naive";
     case algoSAColoring :
@@ -44,6 +46,8 @@ Algorithm sqaod::algorithmFromString(const char *algoStr) {
         return algoColoring;
     if (strcasecmp("brute_force_search", algoStr) == 0)
         return algoBruteForceSearch;
+    if (strcasecmp("sa_default", algoStr) == 0)
+        return algoSADefault;
     if (strcasecmp("sa_naive", algoStr) == 0)
         return algoSANaive;
     if (strcasecmp("sa_coloring", algoStr) == 0)
