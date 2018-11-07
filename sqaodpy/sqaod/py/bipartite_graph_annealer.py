@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import division
+import copy
 import numpy as np
 from types import MethodType
 import sqaod
@@ -164,7 +165,7 @@ class BipartiteGraphAnnealer :
           You need to call calculate_E() or make_solution() before calling get_E().
           CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
         """
-        return self._E
+        return np.copy(self._E)
     
     def get_x(self) :
         """ get bits.
@@ -178,7 +179,7 @@ class BipartiteGraphAnnealer :
           calculate_E() or make_solution() should be called before calling get_E().
           ( CPU/CUDA annealers automatically/internally call calculate_E().)
         """
-        return self._x_pairs
+        return copy.deepcopy(self._x_pairs)
 
     def set_q(self, qpair) :
         self.prepare()
@@ -212,7 +213,7 @@ class BipartiteGraphAnnealer :
         qlist = []
         for qpair in zip(self._q0, self._q1) :
             qlist.append(qpair)
-        return qlist
+        return copy.deepcopy(qlist)
 
     def randomize_spin(self) :
         """ randomize spin. """

@@ -161,7 +161,7 @@ class DenseGraphAnnealer :
           You need to call calculate_E() or make_solution() before calling get_E().
           CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
         """
-        return self._E
+        return np.copy(self._E)
 
     def get_x(self) :
         """ get bits.
@@ -175,7 +175,7 @@ class DenseGraphAnnealer :
           calculate_E() or make_solution() should be called before calling get_E().
           ( CPU/CUDA annealers automatically/internally call calculate_E().)
         """
-        return self._x
+        return np.copy(self._x)
 
     def set_q(self, q) :
         """ set spins.
@@ -215,7 +215,7 @@ class DenseGraphAnnealer :
         Returns: tuple of Hamiltonian variables
           h(vector), J(symmeric matrix), c(scalar)
         """
-        return self._h, self._J, self._c
+        return np.copy(self._h), np.copy(self._J), self._c
 
     def get_q(self) :
         """ get spins.
@@ -223,7 +223,7 @@ class DenseGraphAnnealer :
         Returns:
           numpy.int8 : array of spin {-1, 1}.
         """
-        return self._q
+        return np.copy(self._q)
     
     def randomize_spin(self) :
         """ randomize spin. """

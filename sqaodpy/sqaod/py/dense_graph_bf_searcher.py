@@ -97,7 +97,7 @@ class DenseGraphBFSearcher :
           You need to call calculate_E() or make_solution() before calling get_E().
           CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
         """
-        return self._E
+        return np.copy(self._E)
         
     def get_x(self) :
         """ get bits.
@@ -111,7 +111,7 @@ class DenseGraphBFSearcher :
           calculate_E() or make_solution() should be called before calling get_E().
           ( CPU/CUDA annealers automatically/internally call calculate_E().)
         """
-        return self._x
+        return np.copy(self._x)
 
     def prepare(self) :
         """ preparation of internal resources.
