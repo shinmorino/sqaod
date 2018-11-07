@@ -323,7 +323,7 @@ void CUDABipartiteGraphAnnealer<real>::makeSolution() {
 //                const DeviceVector &d_h, real G, real beta) {
 //     real twoDivM = real(2.) / m_;
 //     bgFuncs_.devMath.matmul(d_Jq, d_J, op, qFixed, opTranspose);
-//     real tempCoef = std::log(std::tanh(G * beta / m_)) * beta;
+//     real tempCoef = std::log(std::tanh(G * beta / m_)) / beta;
 //     for (int loop = 0; loop < IdxType(N * m_); ++loop) {
 //         real q = qAnneal(im, iq);
 //         real dE = twoDivM * q * (h[iq] + dEmat(iq, im));
@@ -392,7 +392,7 @@ tryFlipKernel(real *d_qAnneal, sq::SizeType qAnnealStride,
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlip(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
         const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
     real twoDivM = real(2.) / m_;
     int m2 = m_ / 2;
     bool mIsOdd = (m_ & 1) != 0;
@@ -453,7 +453,7 @@ deviceTryFlipSQA(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlipSQA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
            const DeviceVector &d_h, const real *d_realRand, real G, real beta) {
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
     real twoDivM = real(2.) / m_;
     int m2 = m_ / 2;
     bool mIsOdd = (m_ & 1) != 0;

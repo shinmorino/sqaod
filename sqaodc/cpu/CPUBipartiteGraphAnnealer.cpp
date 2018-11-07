@@ -267,7 +267,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     throwErrorIfQNotSet();
     
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
     sq::Random &random = random_[0];
     int N = N0_ + N1_;
     for (int loop = 0; loop < sq::IdxType(N * m_); ++loop) {
@@ -321,7 +321,7 @@ annealHalfStepColoring(int N, EigenMatrix &qAnneal,
                        const EigenRowVector &h, const EigenMatrix &J,
                        const EigenMatrix &qFixed, real G, real beta) {
     real twoDivM = real(2.) / m_;
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     EigenMatrix dEmat = qFixed * J.transpose();
     sq::Random &random = random_[0];
@@ -349,7 +349,7 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
                                const EigenMatrix &qFixed, real G, real beta) {
 #ifdef _OPENMP    
     real twoDivM = real(2.) / m_;
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     int m2 = (m_ / 2) * 2; /* round down */
     EigenMatrix dEmat(qFixed.rows(), J.rows());

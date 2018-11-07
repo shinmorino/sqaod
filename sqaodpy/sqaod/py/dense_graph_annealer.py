@@ -285,7 +285,7 @@ class DenseGraphAnnealer :
         N = self._N
         m = self._m
         two_div_m = 2. / np.float64(m)
-        coef = np.log(np.tanh(G * beta / m)) * beta
+        coef = np.log(np.tanh(G * beta / m)) / beta
         
         for i in range(self._N * self._m):
             x = np.random.randint(N)
@@ -304,7 +304,7 @@ class DenseGraphAnnealer :
         N = self._N
         m = self._m
         two_div_m = 2. / np.float64(m)
-        coef = np.log(np.tanh(G * beta / m)) * beta
+        coef = np.log(np.tanh(G * beta / m)) / beta
         
         for y in range(self._m):
             x = (offset + np.random.randint(1 << 30) * 2) % N

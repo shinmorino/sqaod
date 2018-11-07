@@ -254,7 +254,7 @@ void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     throwErrorIfQNotSet();
 
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
     sq::Random &random = random_[0];
     for (int loop = 0; loop < sq::IdxType(N_ * m_); ++loop) {
         int y = random.randInt(m_);
@@ -266,7 +266,7 @@ void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
 template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlane(real G, real beta) {
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
     /* single thread */
     sq::Random &random = random_[0];
     for (int yOffset = 0; yOffset < 2; ++yOffset) {
@@ -289,7 +289,7 @@ template<class real>
 void CPUDenseGraphAnnealer<real>::annealColoredPlaneParallel(real G, real beta) {
 #ifdef _OPENMP
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     sq::IdxType m2 = (m_ / 2) * 2; /* round down */
 #  pragma omp parallel

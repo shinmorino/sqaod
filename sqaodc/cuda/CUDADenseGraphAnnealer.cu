@@ -342,7 +342,7 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
 template<class real>
 void annealOneStep(real G, real beta) {
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     for (int outer = 0; outer < IdxType(N_); ++outer) {
         int x[m];
@@ -447,7 +447,7 @@ annealOneStepSQA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d
                  const real *d_random,
                  const DeviceVector &d_h, const DeviceMatrix &d_J, real G, real beta) {
     real twoDivM = real(2.) / real(m_);
-    real coef = std::log(std::tanh(G * beta / m_)) * beta;
+    real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     dim3 blockDim(128);
 

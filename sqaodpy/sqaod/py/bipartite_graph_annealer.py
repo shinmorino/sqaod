@@ -281,7 +281,7 @@ class BipartiteGraphAnnealer :
         m = self._m
         N = N0 + N1
         twoDivM = 2. / m
-        tempCoef = np.log(np.tanh(G * beta / m)) * beta
+        tempCoef = np.log(np.tanh(G * beta / m)) / beta
 
         for loop in range(N * m) :
             iq = np.random.randint(N)
@@ -309,7 +309,7 @@ class BipartiteGraphAnnealer :
         """ (sqaod.py only) try to flip spins in a colored plane for SQA. """
         dEmat = np.matmul(J, qFixed.T)
         twoDivM = 2. / m
-        tempCoef = np.log(np.tanh(G * beta / m)) * beta
+        tempCoef = np.log(np.tanh(G * beta / m)) / beta
         for im in range(0, m, 2) :
             mNeibour0 = (im + m - 1) % m
             mNeibour1 = (im + 1) % m
