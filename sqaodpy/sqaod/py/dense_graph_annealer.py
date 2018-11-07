@@ -289,7 +289,7 @@ class DenseGraphAnnealer :
             y = np.random.randint(m)
             qyx = q[y][x]
             sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
-            dE = two_div_m * qyx * (h[x] + sum)
+            dE = two_div_m * qyx * (h[x] + 2. * sum)
             dE -= qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * coef
             threshold = 1. if (dE <= 0.) else np.exp(-dE * beta)
             if threshold > np.random.rand():
@@ -307,7 +307,7 @@ class DenseGraphAnnealer :
             x = (offset + np.random.randint(1 << 30) * 2) % N
             qyx = q[y][x]
             sum = np.dot(J[x], q[y]); # diagnoal elements in J are zero.
-            dE = two_div_m * qyx * (h[x] + sum)
+            dE = two_div_m * qyx * (h[x] + 2 * sum)
             dE -= qyx * (q[(m + y - 1) % m][x] + q[(y + 1) % m][x]) * coef
             threshold = 1. if (dE <= 0.) else np.exp(-dE * beta)
             if threshold > np.random.rand():
@@ -331,7 +331,7 @@ class DenseGraphAnnealer :
                 x = np.random.randint(N)
                 qx = qm[x]
                 sum = np.dot(J[x], qm); # diagnoal elements in J are zero.
-                dE = 2. * qx * (h[x] + sum)
+                dE = 2. * qx * (h[x] + 2. * sum)
                 threshold = 1. if (dE <= 0.) else np.exp(- dE * invKT)
                 if threshold > np.random.rand():
                     qm[x] = - qx

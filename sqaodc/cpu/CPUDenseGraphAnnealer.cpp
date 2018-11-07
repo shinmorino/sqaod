@@ -240,7 +240,7 @@ void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, c
 #else
     real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
 #endif
-    real dE = twoDivM * qyx * (h(x) + sum);
+    real dE = twoDivM * qyx * (h(x) + 2. * sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;
     dE -= qyx * (matQ(neibour0, x) + matQ(neibour1, x)) * coef;
@@ -248,7 +248,6 @@ void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, c
     if (threshold > random.random<real>())
         matQ(y, x) = - qyx;
 }
-
 
 template<class real>
 void CPUDenseGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
