@@ -57,14 +57,15 @@ def symmetrize(mat) :
         return mat
     
     if is_triangular(mat) :
-        d = np.diag(mat)
-        mat = mat + mat.T
-        N = mat.shape[0]
-        mat[range(N), range(N)] -= d
-        return mat
+        return (mat + mat.T) * 0.5
     
     raise RuntimeError("given matrix is not triangular nor symmetric.")
-    
+
+def symmetric_to_triu(mat) :
+    return np.triu(mat) + np.triu(mat, 1)
+
+def symmetric_to_tril(mat) :
+    return np.tril(mat) + np.tril(mat, -1)
 
 def generate_random_symmetric_W(N, wmin = -0.5, wmax = 0.5, dtype=np.float64) :
     W = np.zeros((N, N), dtype)
