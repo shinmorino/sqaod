@@ -66,7 +66,7 @@ private:
     void annealColoredPlane(real G, real beta);
     void annealColoredPlaneParallel(real G, real beta);
     /* simulated annealing */
-    void annealOneStepSANaive(real kT, real beta);
+    void annealOneStepSANaive(real kT, real _);
 
     void syncBits();
     

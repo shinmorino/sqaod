@@ -336,12 +336,13 @@ class BipartiteGraphAnnealer :
         self._anneal_half_step_coloring(N0, q0, h0, J.T, q1, G, beta, m)
 
     # simulated annealing
-    def anneal_one_step_sa_naive(self, kT, beta) :
+    def anneal_one_step_sa_naive(self, kT, _) :
         """ (sqaod.py only) sqaod.algorithm.sa_naive version of SA """
         h0, h1, J, c, q0, q1 = self._vars()
         N0, N1 = self.get_problem_size()
         m = self._m
         N = N0 + N1
+        invKT = 1. / kT
 
         for im in range(m) :
             q0m, q1m = q0[im],q1[im]
@@ -351,18 +352,18 @@ class BipartiteGraphAnnealer :
                 if (iq < N0) :
                     q = q0m[iq]
                     dE = 2. * q * (h0[iq] + np.dot(J.T[iq], q1m))
-                    thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                    thresh = 1 if dE < 0 else np.exp(-dE * invKT) 
                     if thresh > np.random.rand():
                         q0m[iq] = -q
                 else :
                     iq -= N0
                     q = q1m[iq]
                     dE = 2. * q * (h1[iq] + np.dot(J[iq], q0m))
-                    thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                    thresh = 1 if dE < 0 else np.exp(-dE * invKT) 
                     if thresh > np.random.rand():
                         q1m[iq] = -q
                         
-    def _anneal_half_step_sa_coloring(self, N, qAnneal, h, J, qFixed, kT, beta, m) :
+    def _anneal_half_step_sa_coloring(self, N, qAnneal, h, J, qFixed, invKT, m) :
         """ (sqaod.py only) try to flip spins in a colored plane for SA. """
         dEmat = np.matmul(J, qFixed.T)
         for im in range(m) :
@@ -370,17 +371,18 @@ class BipartiteGraphAnnealer :
             for iq in range(0, N) :
                 q = qAnnealm[iq]
                 dE = 2. * q * (h[iq] + dEmat[iq, im])
-                thresh = 1 if dE < 0 else np.exp(-dE * kT * beta) 
+                thresh = 1 if dE < 0 else np.exp(-dE * invKT) 
                 if thresh > np.random.rand():
                     qAnnealm[iq] = -q
                 
-    def anneal_one_step_sa_coloring(self, kT, beta) :
+    def anneal_one_step_sa_coloring(self, kT, _) :
         """ (sqaod.py only) sqaod.algorithm.sa_coloring version of SA """
         h0, h1, J, c, q0, q1 = self._vars()
         N0, N1 = self.get_problem_size()
         m = self._m
-        self._anneal_half_step_sa_coloring(N1, q1, h1, J, q0, kT, beta, m)
-        self._anneal_half_step_sa_coloring(N0, q0, h0, J.T, q1, kT, beta, m)
+        invKT = 1. / kT
+        self._anneal_half_step_sa_coloring(N1, q1, h1, J, q0, invKT, m)
+        self._anneal_half_step_sa_coloring(N0, q0, h0, J.T, q1, invKT, m)
         
 
 

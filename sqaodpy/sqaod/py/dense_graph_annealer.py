@@ -319,10 +319,11 @@ class DenseGraphAnnealer :
             self.anneal_colored_plane(G, beta, 0)
             self.anneal_colored_plane(G, beta, 1)
     
-    def anneal_one_step_sa_naive(self, kT, beta) :
+    def anneal_one_step_sa_naive(self, kT, _) :
         """ (sqaod.py only) sqaod.algorithm.sa_naive version of SA """
         h, J, c, q = self._vars()
         N = self._N
+        invKT = 1. / kT
 
         for iq in range(self._m) :
             qm = q[iq]
@@ -331,7 +332,7 @@ class DenseGraphAnnealer :
                 qx = qm[x]
                 sum = np.dot(J[x], qm); # diagnoal elements in J are zero.
                 dE = 2. * qx * (h[x] + sum)
-                threshold = 1. if (dE <= 0.) else np.exp(-dE * kT * beta)
+                threshold = 1. if (dE <= 0.) else np.exp(- dE * invKT)
                 if threshold > np.random.rand():
                     qm[x] = - qx
 

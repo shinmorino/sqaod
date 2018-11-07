@@ -406,7 +406,7 @@ tryFlipSQAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
 
             int neibour0 = (y == 0) ? m - 1 : y - 1;
             int neibour1 = (y == m - 1) ? 0 : y + 1;
-            real dE = twoDivM * (real)qyx * (d_Jq[y] + d_h[x]);
+            real dE = twoDivM * (real)qyx * (real(2.) * d_Jq[y] + d_h[x]);
             dE -= (real)qyx * (d_q[qStride * neibour0 + x] + d_q[qStride * neibour1 + x]) * coef;
             real threshold = (dE < real(0.)) ? real(1.) : exp(-dE * beta);
             if (threshold > d_random[y])
@@ -508,7 +508,7 @@ __global__ static void
 tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
                 const real *d_h,
                 const int *d_x, const real *d_random, sq::SizeType m,
-                const real Tnorm) {
+                const real invKT) {
 
     int gid = blockDim.x * blockIdx.x + threadIdx.x;
     if (gid < m) {
@@ -517,7 +517,7 @@ tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
         char qyx = d_q[qStride * y + x];
         
         real dE = real(2.) * (real)qyx * (d_Jq[y] + d_h[x]);
-        real threshold = (dE < real(0.)) ? real(1.) : exp(-dE * Tnorm);
+        real threshold = (dE < real(0.)) ? real(1.) : exp(-dE * invKT);
         if (threshold > d_random[y])
             d_q[qStride * y + x] = - qyx;
     }
@@ -526,7 +526,7 @@ tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
 template<class real> void CUDADenseGraphAnnealer<real>::
 annealOneStepSA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_x,
                 const real *d_random,
-                const DeviceVector &d_h, const DeviceMatrix &d_J, real Tnorm) {
+                const DeviceVector &d_h, const DeviceMatrix &d_J, real invKT) {
     dim3 blockDim(128);
     dim3 gridDim(std::max(divru(m_, blockDim.x), 1));
     cudaStream_t stream = devStream_->getCudaStream();
@@ -534,11 +534,11 @@ annealOneStepSA(DeviceBitMatrix *d_matq, const DeviceVector &d_Jq, const int *d_
     tryFlipSAKernel<real><<<gridDim, blockDim, 0, stream>>>(d_matq->d_data, d_matq->stride,
                                                             d_Jq.d_data, d_h.d_data,
                                                             d_x, d_random, m_,
-                                                            Tnorm);
+                                                            invKT);
 #else
     void *args[] = {(void*)&d_matq->d_data, (void*)&d_matq->stride,
                     (void*)&d_Jq.d_data, (void*)&d_h.d_data, (void*)&d_x, (void*)&d_random, 
-                    (void*)&m_, (void*)&Tnorm, NULL};
+                    (void*)&m_, (void*)&invKT, NULL};
     cudaLaunchKernel((void*)tryFlipSAKernel<real>, gridDim, blockDim, args, 0, stream);
 #endif
     DEBUG_SYNC;
@@ -555,12 +555,12 @@ void CUDADenseGraphAnnealer<real>::annealOneStepSA(real kT, real beta) {
     if (!realNumBuffer_.available(m_ * N_))
         realNumBuffer_.generate<real>(d_random_, N_ * m_ * nRunsPerRandGen_);
 
-    real Tnorm = kT * beta;
+    real invKT = real(1.) / kT;
     for (int idx = 0; idx < N_; ++idx) {
         const int *d_flipPos = flipPosBuffer_.acquire<int>(m_);
         const real *d_random = realNumBuffer_.acquire<real>(m_);
         calculate_Jq(&d_Jq_, d_J_, d_matq_, d_flipPos);
-        annealOneStepSA(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, Tnorm);
+        annealOneStepSA(&d_matq_, d_Jq_, d_flipPos, d_random, d_h_, d_J_, invKT);
     }
 }
 

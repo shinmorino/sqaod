@@ -326,7 +326,7 @@ void CPUDenseGraphAnnealer<real>::annealOneStepColoringParallel(real G, real bet
 
 template<class real> inline static
 void tryFlipSA(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, const sq::MatrixType<real> &J, 
-             sq::Random &random, real Tnorm) {
+             sq::Random &random, real invKT) {
     int N = J.rows;
     int x = random.randInt(N);
     real qyx = matQ(y, x);
@@ -337,17 +337,17 @@ void tryFlipSA(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h,
 #else
     real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
 #endif
-    real dE = real(2.) * qyx * (h(x) + sum);
-    real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * Tnorm);
+    real dE = real(2.) * qyx * (h(x) + 2. * sum);
+    real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
     if (threshold > random.random<real>())
         matQ(y, x) = - qyx;
 }
 
 template<class real>
-void CPUDenseGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
+void CPUDenseGraphAnnealer<real>::annealOneStepSANaive(real kT, real _) {
     throwErrorIfQNotSet();
 
-    real Tnorm = kT * beta;
+    real invKT = real(1.) / kT;
     
 #ifndef _OPENMP
     sq::Random &random = random_[0];
@@ -357,7 +357,7 @@ void CPUDenseGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
 #endif   
     for (int y = 0; y < m_; ++y) {
         for (int loop = 0; loop < sq::IdxType(N_); ++loop)
-            tryFlipSA(matQ_, y, h_, J_, random, Tnorm);
+            tryFlipSA(matQ_, y, h_, J_, random, invKT);
     }
     clearState(solSolutionAvailable);
 }

@@ -513,14 +513,14 @@ __device__ __forceinline__ static void
 deviceTryFlipSA(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
                 int N, int m, const real *d_Emat, sq::SizeType EmatStride,
                 const real *d_h, const real *d_realRand,
-                real Tnorm) {
+                real invKT) {
     int iq = gidx;
 
     if ((iq < N) && (gidy < m)) {
         int im = gidy;
         real q = d_qAnneal[im * qAnnealStride + iq];
         real dE = real(2.) * q * (d_h[iq] + d_Emat[im * qAnnealStride + iq]);
-        real thresh = dE < real(0.) ? real(1.) : exp(-dE * Tnorm);
+        real thresh = dE < real(0.) ? real(1.) : exp(-dE * invKT);
         if (thresh > d_realRand[N * gidy + iq])
             d_qAnneal[im * qAnnealStride + iq] = - q;
     }
@@ -528,7 +528,7 @@ deviceTryFlipSA(int gidx, int gidy, real *d_qAnneal, sq::SizeType qAnnealStride,
 
 template<class real> void CUDABipartiteGraphAnnealer<real>::
 tryFlipSA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
-          const DeviceVector &d_h, const real *d_realRand, real Tnorm) {
+          const DeviceVector &d_h, const real *d_realRand, real invKT) {
 
     real *d_qAnneal_data = d_qAnneal->d_data;
     sq::SizeType qAnnealStride = d_qAnneal->stride;
@@ -541,7 +541,7 @@ tryFlipSA(DeviceMatrix *d_qAnneal, const DeviceMatrix &d_Jq, int N, int m,
     auto flipOp0 = [=]__device__(int gidx, int gidy) {
         deviceTryFlipSA(gidx, gidy,
                         d_qAnneal_data, qAnnealStride, N, m, d_Emat, EmatStride,
-                        d_h_data, d_realRand, Tnorm);
+                        d_h_data, d_realRand, invKT);
     };
     transform2d(flipOp0, N, m, dim3(64, 2), stream);
 }
@@ -557,18 +557,18 @@ void CUDABipartiteGraphAnnealer<real>::annealOneStepSA(real kT, real beta) {
         d_randReal_.generate<real>(d_random_, nRequiredRandNum);
     const real *d_randNum;
 
-    real Tnorm = kT * beta;
+    real invKT = real(1.) / kT;
     
     /* 1st */
     calculate_Jq(&d_Jq1_, d_J_, opNone, d_matq0_);
     d_randNum = d_randReal_.acquire<real>(N1_ * m_);
-    tryFlipSA(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, Tnorm);
+    tryFlipSA(&d_matq1_, d_Jq1_, N1_, m_, d_h1_, d_randNum, invKT);
     DEBUG_SYNC;
 
     /* 2nd */
     calculate_Jq(&d_Jq0_, d_J_, opTranspose, d_matq1_);
     d_randNum = d_randReal_.acquire<real>(N0_ * m_);
-    tryFlipSA(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, Tnorm);
+    tryFlipSA(&d_matq0_, d_Jq0_, N0_, m_, d_h0_, d_randNum, invKT);
     DEBUG_SYNC;
 }
 

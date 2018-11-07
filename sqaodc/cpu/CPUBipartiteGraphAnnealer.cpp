@@ -406,10 +406,10 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel(real G, real
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real _) {
     throwErrorIfQNotSet();
 
-    real Tnorm = kT * beta;
+    real invKT = real(1.) / kT;
     
     sq::Random &random = random_[0];
     int N = N0_ + N1_;
@@ -420,7 +420,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
                 real qyx = matQ0_(y, x);
                 real sum = J_.transpose().row(x).dot(matQ1_.row(y));
                 real dE = real(2.) * qyx * (h0_(x) + sum);
-                real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * Tnorm);
+                real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
                 if (threshold > random.random<real>())
                     matQ0_(y, x) = - qyx;
             }
@@ -429,7 +429,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
                 real qyx = matQ1_(y, x);
                 real sum = J_.row(x).dot(matQ0_.row(y));
                 real dE = real(2.) * qyx * (h1_(x) + sum);
-                real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * Tnorm);
+                real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
                 if (threshold > random.random<real>())
                     matQ1_(y, x) = - qyx;
             }
@@ -444,11 +444,11 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real beta) {
 template<class real, class T> static inline
 void tryFlipSA(sq::EigenMatrixType<real> &qAnneal, int im,
                const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h,
-               const T &J, sq::SizeType N, real Tnorm, sq::Random &random) {
+               const T &J, sq::SizeType N, real invKT, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
         real dE = real(2.) * q * (h[iq] + dEmat(im, iq));
-        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * Tnorm);
+        real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
         if (thresh > random.random<real>())
             qAnneal(im, iq) = -q;
     }
@@ -458,7 +458,7 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::
 annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
                          const EigenRowVector &h, const EigenMatrix &J,
-                         const EigenMatrix &qFixed, real Tnorm) {
+                         const EigenMatrix &qFixed, real invKT) {
 #ifdef _OPENMP    
     EigenMatrix dEmat(qFixed.rows(), J.rows());
     // dEmat = qFixed * J.transpose();  // For debug
@@ -475,7 +475,7 @@ annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
         sq::Random &random = random_[threadNum];
 #  pragma omp for
         for (int im = 0; im < m_; ++im)
-            tryFlipSA(qAnneal, im, dEmat, h, J, N, Tnorm, random);
+            tryFlipSA(qAnneal, im, dEmat, h, J, N, invKT, random);
     }
 #else
     abort_("Must not reach here.");
@@ -484,13 +484,13 @@ annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
 
 
 template<class real>
-void CPUBipartiteGraphAnnealer<real>::annealOneStepSAColoring(real kT, real beta) {
+void CPUBipartiteGraphAnnealer<real>::annealOneStepSAColoring(real kT, real _) {
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
 
-    real Tnorm = kT * beta;
-    annealHalfStepSAColoring(N1_, matQ1_, h1_, J_, matQ0_, Tnorm);
-    annealHalfStepSAColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, Tnorm);
+    real invKT = real(1.) / kT;
+    annealHalfStepSAColoring(N1_, matQ1_, h1_, J_, matQ0_, invKT);
+    annealHalfStepSAColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, invKT);
 }
 
 
