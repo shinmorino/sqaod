@@ -13,14 +13,14 @@ class Base :
             Wsym = example_problems.dense_graph_random(self.N, self.dtype)
             hsym, Jsym, csym = self.pkg.formulas.dense_graph_calculate_hamiltonian(Wsym, Wsym.dtype)
 
-            Wu = np.triu(Wsym)
+            Wu = sq.common.symmetric_to_triu(Wsym)
             hu, Ju, cu = self.pkg.formulas.dense_graph_calculate_hamiltonian(Wu, Wu.dtype)
 
             self.assertTrue(np.allclose(hsym, hu))
             self.assertTrue(np.allclose(Jsym, Ju))
             self.assertTrue(np.allclose(csym, cu))
 
-            Wl = np.tril(Wsym)
+            Wl = sq.common.symmetric_to_tril(Wsym)
             hl, Jl, cl = self.pkg.formulas.dense_graph_calculate_hamiltonian(Wl, Wl.dtype)
 
             self.assertTrue(np.allclose(hsym, hl))
@@ -36,11 +36,11 @@ class Base :
 
             Esym = self.pkg.formulas.dense_graph_calculate_E(Wsym, x, Wsym.dtype)
 
-            Wu = np.triu(Wsym)
+            Wu = sq.common.symmetric_to_triu(Wsym)
             Eu = self.pkg.formulas.dense_graph_calculate_E(Wu, x, Wu.dtype)
             self.assertTrue(np.allclose(Esym, Eu))
 
-            Wl = np.tril(Wsym)
+            Wl = sq.common.symmetric_to_tril(Wsym)
             El = self.pkg.formulas.dense_graph_calculate_E(Wl, x, Wl.dtype)
             self.assertTrue(np.allclose(Esym, El))
 
@@ -53,11 +53,11 @@ class Base :
 
             Esym = self.pkg.formulas.dense_graph_batch_calculate_E(Wsym, x, Wsym.dtype)
 
-            Wu = np.triu(Wsym)
+            Wu = sq.common.symmetric_to_triu(Wsym)
             Eu = self.pkg.formulas.dense_graph_batch_calculate_E(Wu, x, Wu.dtype)
             self.assertTrue(np.allclose(Esym, Eu))
 
-            Wl = np.tril(Wsym)
+            Wl = sq.common.symmetric_to_tril(Wsym)
             El = self.pkg.formulas.dense_graph_batch_calculate_E(Wl, x, Wl.dtype)
             self.assertTrue(np.allclose(Esym, El))
 
@@ -70,11 +70,11 @@ class Base :
 
             Esym = self.pkg.formulas.dense_graph_calculate_E_from_spin(h, Jsym, c, q, Jsym.dtype)
 
-            Ju = np.triu(Jsym)
+            Ju = sq.common.symmetric_to_triu(Jsym)
             Eu = self.pkg.formulas.dense_graph_calculate_E_from_spin(h, Ju, c, q, Ju.dtype)
             self.assertTrue(np.allclose(Esym, Eu))
 
-            Jl = np.tril(Jsym)
+            Jl = sq.common.symmetric_to_tril(Jsym)
             El = self.pkg.formulas.dense_graph_calculate_E_from_spin(h, Jl, c, q, Jl.dtype)
             self.assertTrue(np.allclose(Esym, El))
 
@@ -88,11 +88,11 @@ class Base :
 
             Esym = self.pkg.formulas.dense_graph_batch_calculate_E_from_spin(h, Jsym, c, q, Jsym.dtype)
 
-            Ju = np.triu(Jsym)
+            Ju = sq.common.symmetric_to_triu(Jsym)
             Eu = self.pkg.formulas.dense_graph_batch_calculate_E_from_spin(h, Ju, c, q, Ju.dtype)
             self.assertTrue(np.allclose(Esym, Eu))
 
-            Jl = np.tril(Jsym)
+            Jl = sq.common.symmetric_to_tril(Jsym)
             El = self.pkg.formulas.dense_graph_batch_calculate_E_from_spin(h, Jl, c, q, Jl.dtype)
             self.assertTrue(np.allclose(Esym, El))
 

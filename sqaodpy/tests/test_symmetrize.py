@@ -29,7 +29,7 @@ class Base :
             self.assertFalse(sq.common.is_symmetric(W))
             Wsym = sq.common.symmetrize(W)
             self.assertTrue(sq.common.is_symmetric(Wsym))
-            self.assertTrue(np.allclose(W, np.triu(Wsym)))
+            self.assertTrue(np.allclose(W, sq.common.symmetric_to_triu(Wsym)))
             self.assertNotEqual(id(W), id(Wsym))
 
         def test_symmetrize_tril(self) :
@@ -37,7 +37,7 @@ class Base :
             self.assertFalse(sq.common.is_symmetric(W))
             Wsym = sq.common.symmetrize(W)
             self.assertTrue(sq.common.is_symmetric(Wsym))
-            self.assertTrue(np.allclose(W, np.tril(Wsym)))
+            self.assertTrue(np.allclose(W, sq.common.symmetric_to_tril(Wsym)))
             self.assertNotEqual(id(W), id(Wsym))
 
         def test_symmetrize_symmetric(self) :

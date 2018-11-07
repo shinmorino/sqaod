@@ -15,8 +15,8 @@ class TestSymmetrizeBase :
             W = example_problems.dense_graph_random(self.N, self.dtype)
             sol.set_qubo(W)
             h0, J0, c0 = sol.get_hamiltonian()
-
-            Wtriu = np.triu(W)
+            
+            Wtriu = sq.common.symmetric_to_triu(W)
             sol.set_qubo(Wtriu)
             h1, J1, c1 = sol.get_hamiltonian()
 
@@ -28,7 +28,7 @@ class TestSymmetrizeBase :
             sol.set_qubo(W)
             h0, J0, c0 = sol.get_hamiltonian()
 
-            Wtril = np.tril(W)
+            Wtril = sq.common.symmetric_to_tril(W)
             sol.set_qubo(Wtril)
             h1, J1, c1 = sol.get_hamiltonian()
 
@@ -40,7 +40,7 @@ class TestSymmetrizeBase :
             sol.set_qubo(W)
             h0, J0, c0 = self.pkg.formulas.dense_graph_calculate_hamiltonian(W, W.dtype)
 
-            J0u = np.triu(J0)
+            J0u = sq.common.symmetric_to_triu(J0)
             sol.set_hamiltonian(h0, J0u, c0)
             h1, J1, c1 = sol.get_hamiltonian()
 
@@ -52,7 +52,7 @@ class TestSymmetrizeBase :
             sol.set_qubo(W)
             h0, J0, c0 = self.pkg.formulas.dense_graph_calculate_hamiltonian(W, W.dtype)
 
-            J0l = np.tril(J0)
+            J0l = sq.common.symmetric_to_tril(J0)
             sol.set_hamiltonian(h0, J0l, c0)
             h1, J1, c1 = sol.get_hamiltonian()
 
@@ -69,7 +69,7 @@ class TestSymmetrizeBase :
             x = sol.get_x()
             E = sol.get_E()
 
-            Wu = np.triu(W)
+            Wu = sq.common.symmetric_to_triu(W)
             sol.set_qubo(Wu)
             sol.search()
             xu = sol.get_x()
@@ -78,7 +78,7 @@ class TestSymmetrizeBase :
             self.assertTrue(np.allclose(E, Eu))
             self.assertTrue(np.allclose(x, xu))
 
-            Wl = np.tril(W)
+            Wl = sq.common.symmetric_to_tril(W)
             sol.set_qubo(Wl)
             sol.search()
             xl = sol.get_x()
