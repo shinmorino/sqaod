@@ -158,13 +158,11 @@ class DenseGraphAnnealer :
         Returns:
           array of floating point number : QUBO energy.
 
-        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.
-
-        Notes:
-          You need to call calculate_E() or make_solution() before calling get_E().
-          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
+        Calculates and returns QUBO energy, for all trotters. len(E) is m.
         """
-        return np.copy(self._E)
+        h, J, c, q = self._vars()
+        E = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, q)
+        return self._optimize.sign(E)
 
     def get_x(self) :
         """ get bits.
@@ -172,13 +170,13 @@ class DenseGraphAnnealer :
         Returns:
           numpy.int8 : array of bit {0, 1}.
 
-        x.shape is (m, N) where N is problem size, and m is number of trotters.
-
-        Note:
-          calculate_E() or make_solution() should be called before calling get_E().
-          ( CPU/CUDA annealers automatically/internally call calculate_E().)
+        x is a list of int8 arrays.  len(x) is m, and len(int8 array) is N.
         """
-        return np.copy(self._x)
+        x = []
+        for idx in range(self._m) :
+            xtmp = sqaod.bit_from_spin(self._q[idx])
+            x.append(xtmp)
+        return x
 
     def set_q(self, q) :
         """ set spins.
@@ -234,17 +232,14 @@ class DenseGraphAnnealer :
 
     def calculate_E(self) :
         """ calculate QUBO energy.
-        
-        This method calculate QUBO energy, and caches it, does not return any value.
+        This method calculates QUBO energy, and caches it.
+        This method can be empty if a class does not cache qubo energy.
 
         Note:
           A call to this method can be asynchronous.
         """
+        pass
         
-        h, J, c, q = self._vars()
-        E = formulas.dense_graph_batch_calculate_E_from_spin(h, J, c, q)
-        self._E = self._optimize.sign(E)
-
     def prepare(self) :
         """ preparation of internal resources.
         
@@ -258,21 +253,20 @@ class DenseGraphAnnealer :
     def make_solution(self) :
         """ make bit arrays(x) and calculate QUBO energy.
 
+        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.
+        This method can be empty if a class does not cache solution.
+
         Note:
           A call to this method can be asynchronous.
         """
-        self._x = []
-        for idx in range(self._m) :
-            x = sqaod.bit_from_spin(self._q[idx])
-            self._x.append(x)
-        self.calculate_E()
+        pass
 
     def anneal_one_step(self, G, beta) :
         """ Run annealing one step.
 
         Args:
           G (floating point number) : G in SQA, kT in SA.
-          beta (floating point number) : inverse temperature.
+          beta (floating point number) : inverse temperature.  SA algorithms ignore this parameter.
         """
 
         # will be dynamically replaced.

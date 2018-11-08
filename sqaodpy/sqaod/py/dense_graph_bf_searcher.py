@@ -91,13 +91,13 @@ class DenseGraphBFSearcher :
         Returns:
           array of floating point number : QUBO energy.
 
-        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.
-
-        Notes:
-          You need to call calculate_E() or make_solution() before calling get_E().
-          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
+        Calculates and returns QUBO energy for all trotters. len(E) is m.
         """
-        return np.copy(self._E)
+        nMinX = len(self._x)
+        E = np.empty((nMinX))
+        E[...] = self._optimize.sign(self._Emin)
+        return E
+    
         
     def get_x(self) :
         """ get bits.
@@ -105,11 +105,7 @@ class DenseGraphBFSearcher :
         Returns:
           tuple of 2 numpy.int8 arrays : array of bit {0, 1}.
 
-        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.
-
-        Note:
-          calculate_E() or make_solution() should be called before calling get_E().
-          ( CPU/CUDA annealers automatically/internally call calculate_E().)
+        x is a list of int8 arrays.  len(x) is m, and len(int8 array) is N.
         """
         return np.copy(self._x)
 
@@ -127,26 +123,25 @@ class DenseGraphBFSearcher :
         self._xbegin = 0
 
     def make_solution(self) :
-        """ calculate QUBO energy.
-        
-        This method calculate QUBO energy, and caches it, does not return any value.
+        """ make bit arrays(x) and calculate QUBO energy.
+
+        This method calculates QUBO energy, and prepare solution as bit arrays, and caches them.
+        This method can be empty if a class does not cache solution.
 
         Note:
           A call to this method can be asynchronous.
         """
-        self.calculate_E()
+        pass
 
     def calculate_E(self) :
         """ calculate QUBO energy.
-        
-        This method calculate QUBO energy, and caches it, does not return any value.
+        This method calculates QUBO energy, and caches it.
+        This method can be empty if a class does not cache qubo energy.
 
         Note:
           A call to this method can be asynchronous.
         """
-        nMinX = len(self._x)
-        self._E = np.empty((nMinX))
-        self._E[...] = self._optimize.sign(self._Emin)
+        pass
         
     def search_range(self) :
         """ Search minimum of QUBO energy within a range.
@@ -187,7 +182,6 @@ class DenseGraphBFSearcher :
         xStep = min(self._tile_size, self._xMax)
         while not self.search_range() :
             pass
-        self.make_solution()
         
     
 def dense_graph_bf_searcher(W = None, optimize = sqaod.minimize, **prefs) :

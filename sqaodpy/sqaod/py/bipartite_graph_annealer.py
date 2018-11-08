@@ -162,27 +162,28 @@ class BipartiteGraphAnnealer :
         Returns:
           array of floating point number : QUBO energy.
 
-        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.
-
-        Notes:
-          You need to call calculate_E() or make_solution() before calling get_E().
-          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
+        Calculates and returns QUBO energy for all trotters. len(E) is m.
         """
-        return np.copy(self._E)
+        h0, h1, J, c, q0, q1 = self._vars()
+        E = np.empty((self._m), J.dtype)
+        for idx in range(self._m) :
+            # FIXME: 1d output for batch calculation
+            E[idx] = formulas.bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0[idx], q1[idx])
+        return self._optimize.sign(E)
     
     def get_x(self) :
         """ get bits.
 
         Returns:
-          tuple of 2 numpy.int8 arrays : array of bit {0, 1}.
-
-        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.
-
-        Note:
-          calculate_E() or make_solution() should be called before calling get_E().
-          ( CPU/CUDA annealers automatically/internally call calculate_E().)
+          list of tuples.  Each tuple contains 2 numpy.int8 arrays of x0 and x1
+          x0 and x1 are arrays of bits, {0, 1}.
         """
-        return copy.deepcopy(self._x_pairs)
+        x_pairs = []
+        for idx in range(self._m) :
+            x0 = sqaod.bit_from_spin(self._q0[idx])
+            x1 = sqaod.bit_from_spin(self._q1[idx])
+            x_pairs.append((x0, x1))
+        return x_pairs
 
     def set_q(self, qpair) :
         self.prepare()
@@ -225,18 +226,13 @@ class BipartiteGraphAnnealer :
 
     def calculate_E(self) :
         """ calculate QUBO energy.
-        
-        This method calculate QUBO energy, and caches it, does not return any value.
+        This method calculates QUBO energy, and caches it.
+        This method can be empty if a class does not cache qubo energy.
 
         Note:
           A call to this method can be asynchronous.
         """
-        h0, h1, J, c, q0, q1 = self._vars()
-        E = np.empty((self._m), J.dtype)
-        for idx in range(self._m) :
-            # FIXME: 1d output for batch calculation
-            E[idx] = formulas.bipartite_graph_calculate_E_from_spin(h0, h1, J, c, q0[idx], q1[idx])
-        self._E = self._optimize.sign(E)
+        pass
 
     def prepare(self) :
         """ preparation of internal resources.
@@ -254,22 +250,20 @@ class BipartiteGraphAnnealer :
     def make_solution(self) :
         """ make bit arrays(x) and calculate QUBO energy.
 
+        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.
+        This method can be empty if a class does not cache solution.
+
         Note:
           A call to this method can be asynchronous.
         """
-        self._x_pairs = []
-        for idx in range(self._m) :
-            x0 = sqaod.bit_from_spin(self._q0[idx])
-            x1 = sqaod.bit_from_spin(self._q1[idx])
-            self._x_pairs.append((x0, x1))
-        self.calculate_E()
+        pass
 
     def anneal_one_step(self, G, beta) :
         """ Run annealing one step.
 
         Args:
           G (floating point number) : G in SQA, kT in SA.
-          beta (floating point number) : inverse temperature.
+          beta (floating point number) : inverse temperature.  SA algorithms ignore this parameter.
         """
         # will be dynamically replaced.
         pass

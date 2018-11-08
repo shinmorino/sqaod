@@ -101,25 +101,19 @@ class BipartiteGraphBFSearcher :
         Returns:
           array of floating point number : QUBO energy.
 
-        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.
-
-        Notes:
-          You need to call calculate_E() or make_solution() before calling get_E().
-          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()
+        Calculates and returns QUBO energy for all trotters. len(E) is m.
         """
-        return np.copy(self._E)
+        nXmin = len(self._xPairs)
+        E = np.empty((nXmin))
+        E[...] = self._optimize.sign(self._Emin)
+        return E
 
     def get_x(self) :
         """ get bits.
 
         Returns:
-          tuple of 2 numpy.int8 arrays : array of bit {0, 1}.
-
-        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.
-
-        Note:
-          calculate_E() or make_solution() should be called before calling get_E().
-          ( CPU/CUDA annealers automatically/internally call calculate_E().)
+          list of tuples.  Each tuple contains 2 numpy.int8 arrays of x0 and x1
+          x0 and x1 are arrays of bits, {0, 1}.
         """
         return copy.deepcopy(self._xPairs)
 
@@ -142,22 +136,24 @@ class BipartiteGraphBFSearcher :
     def make_solution(self) :
         """ make bit arrays(x) and calculate QUBO energy.
 
+        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.
+        This method can be empty if a class does not cache solution.
+
         Note:
           A call to this method can be asynchronous.
         """
-        self.calculate_E()
+        pass
 
     def calculate_E(self) :
         """ calculate QUBO energy.
-        
-        This method calculate QUBO energy, and caches it, does not return any value.
+        This method calculates QUBO energy, and caches it.
+        This method can be empty if a class does not cache qubo energy.
 
         Note:
           A call to this method can be asynchronous.
         """
-        nXmin = len(self._xPairs)
-        self._E = np.empty((nXmin))
-        self._E[...] = self._optimize.sign(self._Emin)
+        pass
+
 
     # Not used.  Keeping it for reference.    
     def _search_naive(self) :
@@ -233,8 +229,7 @@ class BipartiteGraphBFSearcher :
         while not self.search_range() :
             pass
 
-        self.make_solution()
-        
+
 def bipartite_graph_bf_searcher(b0 = None, b1 = None, W = None, optimize = sqaod.minimize, **prefs) :
     """ factory function for sqaod.py.BipartiteGraphAnnealer.
 
