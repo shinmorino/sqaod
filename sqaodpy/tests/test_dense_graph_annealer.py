@@ -80,7 +80,6 @@ class TestDenseGraphAnnealerBase:
         self.assertTrue(np.allclose(h0, h1, atol=self.epu))
         self.assertTrue(np.allclose(J0, J1))
         self.assertTrue(np.allclose(c0, c1)) #, atol=self.epu))
-
         
     def test_min_energy(self):
         N = 200
@@ -90,7 +89,7 @@ class TestDenseGraphAnnealerBase:
         q = np.ndarray((N), np.int8)
         q[:] = -1
         an.set_q(q)
-        an.calculate_E()
+        # an.calculate_E()
         E = an.get_E()
         res = np.allclose(E[0], 0., atol=self.epu)
         self.assertTrue(res)
@@ -111,7 +110,7 @@ class TestDenseGraphAnnealerBase:
             
             q = sq.bit_to_spin(x)
             an.set_q(q)
-            an.calculate_E()
+            # an.calculate_E()
             Ean = an.get_E()
             if not np.allclose(Eref,  Ean, atol=self.epu) :
                 print(Eref, Ean, Eref - Ean)
@@ -151,6 +150,32 @@ class TestDenseGraphAnnealerBase:
                 res &= np.allclose(q0, q1)
         self.assertTrue(res)
 
+    def test_get_E(self) :
+        N = 8
+        an = self.new_annealer(N, 1)
+        W = np.ones((N, N), self.dtype)
+        an.set_qubo(W)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
+        q = np.ones((N, ), np.int8)
+        an.set_q(q)
+        E = an.get_E()
+        self.assertEqual(len(E), 1)
+        self.assertEqual(E[0], N * N)
+
+    def test_get_x(self) :
+        N = 8
+        an = self.new_annealer(N, 1)
+        W = np.ones((N, N), self.dtype)
+        an.set_qubo(W)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
+        q = np.ones((N, ), np.int8)
+        an.set_q(q)
+        x = an.get_x()
+        self.assertEqual(len(x), 1)
+        self.assertTrue(np.all(x[0] == 1))
+
     def anneal(self, an) :
         an.prepare()
         an.randomize_spin()
@@ -171,7 +196,7 @@ class TestDenseGraphAnnealerBase:
         for loop in range(0, nSteps) :
             an.anneal_one_step(G, beta)
             G *= tau
-        an.make_solution()
+        # an.make_solution()
 
     def _test_anneal_minimize(self, algorithm, m) :
         N = 10

@@ -33,6 +33,28 @@ class TestDenseGraphBFSearcherBase:
         searcher.get_preferences()
         x = searcher.get_x()
 
+    def test_get_E(self) :
+        N = 4
+        searcher = self.new_searcher(N)
+        W = np.ones((N, N), self.dtype)
+        searcher.set_qubo(W, sq.maximize)
+        searcher.prepare()
+        searcher.search()
+        E = searcher.get_E()
+        self.assertEqual(len(E), 1)
+        self.assertEqual(E[0], N * N)
+
+    def test_get_x(self) :
+        N = 4
+        searcher = self.new_searcher(N)
+        W = np.ones((N, N), self.dtype)
+        searcher.set_qubo(W, sq.maximize)
+        searcher.prepare()
+        searcher.search()
+        x = searcher.get_x()
+        self.assertEqual(len(x), 1)
+        self.assertTrue(np.all(x[0] == 1))
+
     def test_problem_size(self) :
         N = 63
         searcher = self.new_searcher(N)
@@ -46,11 +68,11 @@ class TestDenseGraphBFSearcherBase:
         searcher.prepare()
         searcher.search()
 
-        searcher.calculate_E()
+        # searcher.calculate_E()
         E = searcher.get_E()
         self.assertTrue(np.allclose(E[0], Eexp, atol=self.epu))
 
-        searcher.make_solution()
+        # searcher.make_solution()
         x = searcher.get_x()
         self.assertTrue(np.allclose(x, xexp))
         

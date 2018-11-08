@@ -34,6 +34,32 @@ class TestBipartiteGraphBFSearcherBase:
         searcher.get_preferences()
         x = searcher.get_x()
 
+    def test_get_E(self) :
+        N0, N1 = 4, 4
+        searcher = self.new_searcher(N0, N1)
+        W = np.ones((N1, N0), self.dtype)
+        b0, b1 = np.ones((N0, ), self.dtype), np.ones((N1, ), self.dtype)
+        searcher.set_qubo(b0, b1, W, sq.maximize)
+        searcher.prepare()
+        searcher.search()
+        E = searcher.get_E()
+        self.assertEqual(len(E), 1)
+        self.assertEqual(E[0], N0 * N1 + N0 + N1)
+
+    def test_get_x(self) :
+        N0, N1 = 4, 4
+        searcher = self.new_searcher(N0, N1)
+        W = np.ones((N1, N0), self.dtype)
+        b0, b1 = np.ones((N0, ), self.dtype), np.ones((N1, ), self.dtype)
+        searcher.set_qubo(b0, b1, W, sq.maximize)
+        searcher.prepare()
+        searcher.search()
+        
+        xpairs = searcher.get_x()
+        self.assertEqual(len(xpairs), 1)
+        self.assertTrue(np.all(xpairs[0][0] == 1))
+        self.assertTrue(np.all(xpairs[0][1] == 1))
+        
     def test_problem_size(self) :
         N0, N1 = 8, 8
         searcher = self.new_searcher(N0, N1)
@@ -46,14 +72,14 @@ class TestBipartiteGraphBFSearcherBase:
         searcher = self.new_searcher(N0, N1)
         searcher.set_qubo(b0, b1, W, opt)
         searcher.search()
-        searcher.calculate_E()
+        # searcher.calculate_E()
         E = searcher.get_E()
 
         res = np.allclose(E[0], Eexp, atol=self.epu)
         #print(E[0], Eexp)
         self.assertTrue(res)
 
-        searcher.make_solution()
+        # searcher.make_solution()
         xlist = searcher.get_x()
         self.assertEqual(len(xlist), 1)
         x0, x1 = xlist[0]

@@ -94,7 +94,7 @@ class TestBipartiteGraphAnnealerBase:
         q0[:] = -1
         q1[:] = -1
         an.set_q((q0, q1))
-        an.calculate_E()
+        # an.calculate_E()
         E = an.get_E()
         res = np.allclose(E, 0., atol=self.epu)
         if not res :
@@ -124,7 +124,7 @@ class TestBipartiteGraphAnnealerBase:
                 Ebf = np.dot(b0, x0.transpose()) + np.dot(b1, x1.transpose()) \
                       + np.dot(x1, np.matmul(W, x0.transpose()))
                 an.set_q((q0, q1))
-                an.calculate_E()
+                # an.calculate_E()
                 Ean = an.get_E()
                 if not np.allclose(Ebf, Ean, atol=self.epu) :
                     print(i, j, Ebf, Ean)
@@ -166,6 +166,37 @@ class TestBipartiteGraphAnnealerBase:
             res &= np.allclose(qinpair[0], qoutpair[0]) and np.allclose(qinpair[1], qoutpair[1])
         self.assertTrue(res)
 
+    def test_get_E(self) :
+        N0, N1 = 4, 4
+        an = self.new_annealer(N0, N1, 1)
+        W = np.ones((N1, N0), self.dtype)
+        b0, b1 = np.ones((N0, ), self.dtype), np.ones((N1, ), self.dtype)
+        an.set_qubo(b0, b1, W)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
+        q0, q1 = np.ones((N0, ), np.int8), np.ones((N1, ), np.int8)
+        an.set_q((q0, q1))
+        E = an.get_E()
+        self.assertEqual(len(E), 1)
+        self.assertEqual(E[0], N0 * N1 + N0 + N1)
+
+    def test_get_x(self) :
+        N0, N1 = 4, 4
+        an = self.new_annealer(N0, N1, 1)
+        W = np.ones((N1, N0), self.dtype)
+        b0, b1 = np.ones((N0, ), self.dtype), np.ones((N1, ), self.dtype)
+        an.set_qubo(b0, b1, W)
+        an.set_preferences(n_trotters = 1)
+        an.prepare()
+        an.prepare()
+        q0, q1 = np.ones((N0, ), np.int8), np.ones((N1, ), np.int8)
+        an.set_q((q0, q1))
+        
+        xpairs = an.get_x()
+        self.assertEqual(len(xpairs), 1)
+        self.assertTrue(np.all(xpairs[0][0] == 1))
+        self.assertTrue(np.all(xpairs[0][1] == 1))
+
     def anneal(self, an) :
         an.prepare()
         an.randomize_spin()
@@ -187,7 +218,6 @@ class TestBipartiteGraphAnnealerBase:
         for loop in range(0, nSteps) :
             an.anneal_one_step(G, beta)
             G *= tau
-        an.make_solution()
         
     def _test_anneal_minimize(self, algorithm, m) :
         N0, N1 = 10, 8
