@@ -97,21 +97,12 @@ Below is a psudo-code to run annealer.
      ann.anneal_one_step(G, beta)
      
      # 9. (optional) calculate and get QUBO energy if needed.
-     #    By calling calculate_E() QUBO energy is calculated and cached.
-     #    Execution of calculate_E() is asynchronous for CUDA-based solvers.
-     ann.caluculate_E()
      #    E is a vector of QUBO energy for all trotters.
      E = ann.get_E();
      
      # doing something with E.
-     
-   # 10. make solution
-   # calculate QUBO energy and prepare solution as a bit array, and caches them.
-   # After calling make_solution(), get_X() and get_E() returns
-   # bits and QUBO energy.  
-   ann.make_solution()
 
-   # 11. get solution
+   # 10. get solution
    x = ann.get_x()  # list of tuples, x0 and x1.
                     #  x0 and x1 are bit arrays storing solution
    E = ann.get_E()
