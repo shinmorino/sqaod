@@ -18,6 +18,7 @@ template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {
     devStream_ = NULL;
     m_ = -1;
+    dotSpins0_ = dotSpins1_ = NULL;
     selectAlgorithm(sq::algoDefault);
 }
 
@@ -33,6 +34,12 @@ template<class real>
 CUDABipartiteGraphAnnealer<real>::~CUDABipartiteGraphAnnealer() {
     deallocate();
     d_random_.deallocate();
+
+    if (dotSpins0_ != NULL) {
+        delete dotSpins0_;
+        delete dotSpins1_;
+        dotSpins0_ = dotSpins1_ = NULL;
+    }
 }
 
 template<class real>
@@ -57,6 +64,7 @@ void CUDABipartiteGraphAnnealer<real>::deallocateInternalObjects() {
     halloc.deallocate(h_q1_);
     halloc.deallocate(h_E_);
     E_ = HostVector();
+    halloc.deallocate(h_spinDotSum_);
     
     d_randReal_.deallocate();
     
@@ -83,6 +91,10 @@ void CUDABipartiteGraphAnnealer<real>::assignDevice(Device &device) {
     devCopy_.assignDevice(device);
     d_random_.assignDevice(device);
     d_randReal_.assignDevice(device);
+
+    /* initialize sumJq */
+    dotSpins0_ = new DotSpins<real>(device, devStream_);
+    dotSpins1_ = new DotSpins<real>(device, devStream_);
 }
 
 template<class real>
@@ -298,6 +310,7 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
     halloc.allocate(&h_q1_, m_, N1_);
     bitsPairX_.reserve(m_);
     bitsPairQ_.reserve(m_);
+    halloc.allocate(&h_spinDotSum_);
 
     /* estimate # rand nums required per one anneal. */
     sq::SizeType N = N0_ + N1_;
@@ -305,6 +318,11 @@ void CUDABipartiteGraphAnnealer<real>::prepare() {
     nRunsPerRandGen_ = std::max(2, std::min(nRunsPerRandGen_, (sq::SizeType)maxNRunsPerRandGen));
     sq::SizeType requiredSize = nRunsPerRandGen_ * m_ * N * sizeof(real) / sizeof(float);
     d_random_.setRequiredSize(requiredSize);
+
+    DotSpins<real> &dotSpins0 = static_cast<DotSpins<real>&>(*dotSpins0_);
+    dotSpins0.configure(N0_, m_, false);
+    DotSpins<real> &dotSpins1 = static_cast<DotSpins<real>&>(*dotSpins1_);
+    dotSpins1.configure(N0_, m_, false);
 
     setState(solPrepared);
 }
@@ -320,6 +338,34 @@ void CUDABipartiteGraphAnnealer<real>::makeSolution() {
     setState(solSolutionAvailable);
 }
 
+
+template<class real>
+real CUDABipartiteGraphAnnealer<real>::getSystemE(real G, real beta) const {
+    auto _this = const_cast<CUDABipartiteGraphAnnealer<real>*>(this);
+    _this->calculate_E(); /* asynchronous */
+
+    if (isSQAAlgorithm(algo_)) {
+        DeviceVector *d_spinDot0 = devStream_->tempDeviceVector<real>(m_);
+        DotSpins<real> &dotSpins0 = static_cast<DotSpins<real>&>(*dotSpins0_);
+        dotSpins0(d_matq0_, d_spinDot0);
+        DeviceVector *d_spinDot1 = devStream_->tempDeviceVector<real>(m_);
+        DotSpins<real> &dotSpins1 = static_cast<DotSpins<real>&>(*dotSpins1_);
+        dotSpins1(d_matq1_, d_spinDot1);
+
+        _this->devFormulas_.devMath.sum(&_this->h_spinDotSum_, real(1.), *d_spinDot0);
+        _this->devFormulas_.devMath.sum(&_this->h_spinDotSum_, real(1.), *d_spinDot1, 1.);
+    }
+    devStream_->synchronize();
+
+    real E = E_.sum() / m_;
+    if (isSQAAlgorithm(algo_)) {
+        real coef = real(0.5) / beta * std::log(std::tanh(G * beta / m_));
+        E -= *h_spinDotSum_.d_data * coef;
+    }
+    if (om_ == sq::optMaximize)
+        E *= real(-1.);
+    return E;
+}
 
 
 // template<class real>

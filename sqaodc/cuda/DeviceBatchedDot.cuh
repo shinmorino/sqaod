@@ -57,6 +57,23 @@ int2 operator+(const int2 &lhs, const int v) {
 }
 
 
+/* wrapped offset */
+
+struct WrappedOffset  {
+    __host__
+    WrappedOffset(int _m, int _stride)
+            : m(_m), stride(_stride) { }
+
+    __device__ __forceinline__
+    int2 operator[](sq::IdxType idx) const {
+        int idxNeighbour = (idx + 1) % m;
+        return make_int2(idx * stride, idxNeighbour * stride);
+    }
+    sq::SizeType m;
+    sq::SizeType stride;
+};
+
+
 }
 
 
@@ -71,6 +88,9 @@ struct iterator_traits<sqaod_cuda::In2TypeDotPtr<Vout, Vin0, Vin1>> : sqaod_cuda
 
 template<>
 struct iterator_traits<sqaod_cuda::Offset2way> : sqaod_cuda::base_iterator_traits<int2> { };
+
+template<>
+struct iterator_traits<sqaod_cuda::WrappedOffset> : sqaod_cuda::base_iterator_traits<int2> { };
 
 }
 
@@ -118,6 +138,27 @@ public:
         Base::operator()(in, outIt, offset);
     }
 };
+
+
+
+template<class Vout, class Vin>
+struct DeviceDotSpins : DeviceSegmentedSumType<Vout, In2TypeDotPtr<Vout, Vin, Vin>, Vout*, WrappedOffset, 1> {
+    typedef DeviceSegmentedSumType<Vout, In2TypeDotPtr<Vout, Vin, Vin>, Vout*, WrappedOffset, 1> Base;
+public:
+    
+    DeviceDotSpins(Device &device, DeviceStream *devStream)
+            : Base(device, devStream) {
+    }
+
+    DeviceDotSpins(DeviceStream *devStream) : Base(devStream) { }
+    
+    void operator()(const DeviceMatrixType<Vin> &d_q, DeviceVectorType<Vout> *out) {
+        In2TypeDotPtr<Vout, Vin, Vin> in(d_q.d_data, d_q.d_data);
+        WrappedOffset offset(d_q.rows, d_q.stride);
+        Base::operator()(in, out->d_data, offset);
+    }
+};
+
 
 
 /* Vectorized */

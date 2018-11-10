@@ -19,6 +19,9 @@ template<class real>
 using DotJq = DeviceDotJq<real, real*>;
 #endif
 
+template<class real>
+using DotSpins = DeviceDotSpins<real, char>;
+
 
 template<class real>
 CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
@@ -47,6 +50,8 @@ CUDADenseGraphAnnealer<real>::~CUDADenseGraphAnnealer() {
     if (dotJq_ != NULL) {
         delete dotJq_;
         dotJq_ = NULL;
+        delete dotSpins_;
+        dotSpins_ = NULL;
     }
 }
 
@@ -73,6 +78,7 @@ void CUDADenseGraphAnnealer<real>::deallocateInternalObjects() {
     halloc.deallocate(h_E_);
     halloc.deallocate(h_q_);
     E_ = HostVector();
+    halloc.deallocate(h_spinDotSum_);
         
     flipPosBuffer_.deallocate();
     realNumBuffer_.deallocate();
@@ -101,6 +107,7 @@ void CUDADenseGraphAnnealer<real>::assignDevice(Device &device) {
 
     /* initialize sumJq */
     dotJq_ = new DotJq<real>(device, devStream_);
+    dotSpins_ = new DotSpins<real>(device, devStream_);
 }
 
 template<class real>
@@ -295,6 +302,8 @@ void CUDADenseGraphAnnealer<real>::prepare() {
     halloc.allocate(&h_E_, m_);
     E_.map(h_E_.d_data, h_E_.size);
     halloc.allocate(&h_q_, sq::Dim(m_, N_));
+    halloc.allocate(&h_spinDotSum_);
+    
     xlist_.reserve(m_);
     qlist_.reserve(m_);
 
@@ -308,6 +317,9 @@ void CUDADenseGraphAnnealer<real>::prepare() {
 
     DotJq<real> &dotJq = static_cast<DotJq<real>&>(*dotJq_);
     dotJq.configure(N_, m_, false);
+    
+    DotSpins<real> &dotSpins = static_cast<DotSpins<real>&>(*dotSpins_);
+    dotSpins.configure(N_, m_, false);
 
     setState(solPrepared);
 }
@@ -335,6 +347,30 @@ void CUDADenseGraphAnnealer<real>::syncBits() {
         x = x_from_q(q);
         xlist_.pushBack(x);
     }
+}
+
+template<class real>
+real CUDADenseGraphAnnealer<real>::getSystemE(real G, real beta) const {
+    auto _this = const_cast<CUDADenseGraphAnnealer<real>*>(this);
+    _this->calculate_E(); /* asynchronous */
+
+    if (isSQAAlgorithm(algo_)) {
+        DeviceVector *d_spinDot = devStream_->tempDeviceVector<real>(m_);
+        DotSpins<real> &dotSpins = static_cast<DotSpins<real>&>(*dotSpins_);
+        dotSpins(d_matq_, d_spinDot);
+        _this->devFormulas_.devMath.sum(&_this->h_spinDotSum_, real(1.), *d_spinDot);
+    }
+    devStream_->synchronize();
+
+    real E = E_.sum() / m_;
+    if (isSQAAlgorithm(algo_)) {
+        real coef = real(0.5) / beta * std::log(std::tanh(G * beta / m_));
+        E -= *_this->h_spinDotSum_.d_data * coef;
+    }
+
+    if (om_ == sq::optMaximize)
+        E *= real(-1.);
+    return E;
 }
 
 #if 0

@@ -72,6 +72,8 @@ public:
 
     void makeSolution();
 
+    real getSystemE(real G, real beta) const;
+
     void annealOneStep(real G, real beta) {
         (this->*annealMethod_)(G, beta);
     }
@@ -124,7 +126,9 @@ private:
     sq::BitSetArray qlist_;
 
     sq::NullBase *dotJq_;
-
+    sq::NullBase *dotSpins_;
+    DeviceScalar h_spinDotSum_;
+    
     DeviceStream *devStream_;
     DeviceFormulas devFormulas_;
     DeviceCopy devCopy_;
