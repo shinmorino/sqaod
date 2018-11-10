@@ -226,6 +226,26 @@ void CPUDenseGraphAnnealer<real>::syncBits() {
 }
 
 
+template<class real>
+real CPUDenseGraphAnnealer<real>::getSystemE(real G, real beta) const {
+    const_cast<CPUDenseGraphAnnealer<real>*>(this)->calculate_E();
+    real E = E_.sum() / m_;
+
+    if (isSQAAlgorithm(algo_)) {
+        real spinDotSum = real(0.);
+        for (int y0 = 0; y0 < m_; ++y0) {
+            int y1 = (y0 + 1) % m_;
+            spinDotSum += dot_simd(matQ_.rowPtr(y0), matQ_.rowPtr(y1), N_);
+        }
+        real coef = real(0.5) / beta * std::log(std::tanh(G * beta / m_));
+        E -= spinDotSum * coef;
+    }
+    if (om_ == sq::optMaximize)
+        E *= real(-1.);
+    return E;
+}
+
+
 template<class real> inline static
 void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, const sq::MatrixType<real> &J, 
              sq::Random &random, real twoDivM, real coef, real beta) {
@@ -233,13 +253,7 @@ void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, c
     int m = matQ.rows;
     int x = random.randInt(N);
     real qyx = matQ(y, x);
-#if defined(__AVX2__)
-    real sum = dot_avx2(J.rowPtr(x), matQ.rowPtr(y), N);
-#elif defined(__SSE2__)
-    real sum = dot_sse2(J.rowPtr(x), matQ.rowPtr(y), N);
-#else
-    real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
-#endif
+    real sum = dot_simd(J.rowPtr(x), matQ.rowPtr(y), N);
     real dE = twoDivM * qyx * (h(x) + 2. * sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;

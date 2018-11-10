@@ -55,6 +55,8 @@ public:
 
     void makeSolution();
 
+    real getSystemE(real G, real beta) const;
+
     void annealOneStep(real G, real beta) {
         (this->*annealMethod_)(G, beta);
     }

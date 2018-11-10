@@ -5,9 +5,14 @@
 #include <float.h>
 #include <algorithm>
 #include <exception>
+#include "DeviceBatchedDot.cuh"
+
 
 namespace sqint = sqaod_internal;
 using namespace sqaod_cuda;
+
+template<class real>
+using DotSpins = DeviceDotSpins<real, real>;
 
 template<class real>
 CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {

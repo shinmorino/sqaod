@@ -6,6 +6,7 @@
 #include <exception>
 #include "SharedFormulas.h"
 #include <time.h>
+#include "Dot_SIMD.h"
 #include <omp.h>
 
 namespace sqint = sqaod_internal;
@@ -114,13 +115,14 @@ void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
                  "Dimension of q1, %d,  should be equal to N1, %d.", qPair.bits1.size, N1_);
 
     Vector q0 = sq::cast<real>(qPair.bits0);
-    Vector q1 = sq::cast<real>(qPair.bits1);
-    
+    Vector q1 = sq::cast<real>(qPair.bits1);    
     for (int idx = 0; idx < m_; ++idx) {
         Vector(matQ0_.rowPtr(idx), N0_).copyFrom(q0);
         Vector(matQ1_.rowPtr(idx), N1_).copyFrom(q1);
     }
-
+    matQ0_.clearPadding();
+    matQ1_.clearPadding();
+    
     setState(solQSet);
 }
 
@@ -133,6 +135,8 @@ void CPUBipartiteGraphAnnealer<real>::set_qset(const sq::BitSetPairArray &qPairs
         Vector(matQ0_.rowPtr(idx), N0_).copyFrom(sq::cast<real>(qPairs[idx].bits0));
         Vector(matQ1_.rowPtr(idx), N1_).copyFrom(sq::cast<real>(qPairs[idx].bits1));
     }
+    matQ0_.clearPadding();
+    matQ1_.clearPadding();
 
     setState(solQSet);
 }
@@ -201,6 +205,9 @@ void CPUBipartiteGraphAnnealer<real>::randomizeSpin() {
         }
     };
 #endif
+    matQ0_.clearPadding();
+    matQ1_.clearPadding();
+    
     setState(solQSet);
 }
 
@@ -257,6 +264,25 @@ void CPUBipartiteGraphAnnealer<real>::makeSolution() {
     calculate_E();
 }
 
+template<class real>
+real CPUBipartiteGraphAnnealer<real>::getSystemE(real G, real beta) const {
+    const_cast<CPUBipartiteGraphAnnealer<real>*>(this)->calculate_E();
+    real E = E_.sum() / m_;
+
+    if (isSQAAlgorithm(algo_)) {
+        real spinDotSum = real(0.);
+        for (int y0 = 0; y0 < m_; ++y0) {
+            int y1 = (y0 + 1) % m_;
+            spinDotSum += dot_simd(matQ0_.rowPtr(y0), matQ0_.rowPtr(y1), N0_);
+            spinDotSum += dot_simd(matQ1_.rowPtr(y0), matQ1_.rowPtr(y1), N1_);
+        }
+        real coef = real(0.5) / beta * std::log(std::tanh(G * beta / m_));
+        E -= spinDotSum * coef;
+    }
+    if (om_ == sq::optMaximize)
+        E *= real(-1.);
+    return E;
+}
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
