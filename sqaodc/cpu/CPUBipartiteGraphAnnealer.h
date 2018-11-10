@@ -2,7 +2,6 @@
 #pragma once
 
 #include <sqaodc/common/Common.h>
-#include <sqaodc/common/EigenBridge.h>
 
 namespace sqaod_cpu {
 
@@ -12,8 +11,6 @@ template<class real>
 class CPUBipartiteGraphAnnealer : public sq::BipartiteGraphAnnealer<real> {
     typedef sq::MatrixType<real> Matrix;
     typedef sq::VectorType<real> Vector;
-    typedef sq::EigenMatrixType<real> EigenMatrix;
-    typedef sq::EigenRowVectorType<real> EigenRowVector;
     
 public:
     CPUBipartiteGraphAnnealer();
@@ -72,18 +69,21 @@ private:
 
     void annealOneStepColoringParallel(real G, real beta);
     
-    void annealHalfStepColoring(int N, EigenMatrix &qAnneal,
-                                const EigenRowVector &h, const EigenMatrix &J,
-                                const EigenMatrix &qFixed, real G, real beta);
+    template<class T>
+    void annealHalfStepColoring(int N, Matrix &qAnneal,
+                                const Vector &h, const T &J,
+                                const Matrix &qFixed, real G, real beta);
 
-    void annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
-                                        const EigenRowVector &h, const EigenMatrix &J,
-                                        const EigenMatrix &qFixed, real G, real beta);
+    template<class T>
+    void annealHalfStepColoringParallel(int N, Matrix &qAnneal,
+                                        const Vector &h, const T &J,
+                                        const Matrix &qFixed, real G, real beta);
 
     /* simulated annealing */
-    void annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
-                                  const EigenRowVector &h, const EigenMatrix &J,
-                                  const EigenMatrix &qFixed, real invKT);
+    template<class T>
+    void annealHalfStepSAColoring(int N, Matrix &qAnneal,
+                                  const Vector &h, const T &J,
+                                  const Matrix &qFixed, real invKT);
     void annealOneStepSANaive(real kT, real _);
     void annealOneStepSAColoring(real kT, real _);
 
@@ -92,11 +92,11 @@ private:
     
     sq::Random *random_;
     int nWorkers_;
-    EigenRowVector h0_, h1_;
-    EigenMatrix J_;
+    Vector h0_, h1_;
+    Matrix J_;
     real c_;
     Vector E_;
-    EigenMatrix matQ0_, matQ1_;
+    Matrix matQ0_, matQ1_;
     sq::BitSetPairArray bitsPairX_;
     sq::BitSetPairArray bitsPairQ_;
 

@@ -60,9 +60,7 @@ void CPUBipartiteGraphAnnealer<real>::setQUBO(const Vector &b0, const Vector &b1
     h0_.resize(N0_);
     h1_.resize(N1_);
     J_.resize(N1_, N0_);
-    Vector h0(sq::mapFrom(h0_)), h1(sq::mapFrom(h1_));
-    Matrix J(sq::mapFrom(J_));
-    BGFuncs<real>::calculateHamiltonian(&h0, &h1, &J, &c_, b0, b1, W);
+    BGFuncs<real>::calculateHamiltonian(&h0_, &h1_, &J_, &c_, b0, b1, W);
     
     om_ = om;
     if (om_ == sq::optMaximize) {
@@ -83,9 +81,9 @@ setHamiltonian(const Vector &h0, const Vector &h1, const Matrix &J, real c) {
     N1_ = (int)h1.size;
     m_ = (N0_ + N1_) / 4; /* setting number of trotters. */
 
-    h0_ = sq::mapToRowVector(h0);
-    h1_ = sq::mapToRowVector(h1);
-    J_ = sq::mapTo(J);
+    h0_ = h0;
+    h1_ = h1;
+    J_ = J;
     c_ = c;
     om_ = sq::optMinimize;
     setState(solProblemSet);
@@ -107,7 +105,7 @@ const sq::BitSetPairArray &CPUBipartiteGraphAnnealer<real>::get_x() const {
 
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
-    sqint::isingModelShapeCheck(sq::mapFrom(h0_), sq::mapFrom(h1_), sq::mapFrom(J_), c_,
+    sqint::isingModelShapeCheck(h0_, h1_, J_, c_,
                                 qPair.bits0, qPair.bits1, __func__);
     throwErrorIfNotPrepared();
     throwErrorIf(qPair.bits0.size != N0_,
@@ -115,11 +113,12 @@ void CPUBipartiteGraphAnnealer<real>::set_q(const sq::BitSetPair &qPair) {
     throwErrorIf(qPair.bits1.size != N1_,
                  "Dimension of q1, %d,  should be equal to N1, %d.", qPair.bits1.size, N1_);
 
-    EigenRowVector q0 = mapToRowVector(qPair.bits0).cast<real>();
-    EigenRowVector q1 = mapToRowVector(qPair.bits1).cast<real>();
+    Vector q0 = sq::cast<real>(qPair.bits0);
+    Vector q1 = sq::cast<real>(qPair.bits1);
+    
     for (int idx = 0; idx < m_; ++idx) {
-        matQ0_.row(idx) = q0;
-        matQ1_.row(idx) = q1;
+        Vector(matQ0_.rowPtr(idx), N0_).copyFrom(q0);
+        Vector(matQ1_.rowPtr(idx), N1_).copyFrom(q1);
     }
 
     setState(solQSet);
@@ -131,8 +130,8 @@ void CPUBipartiteGraphAnnealer<real>::set_qset(const sq::BitSetPairArray &qPairs
     m_ = qPairs.size();
     prepare();
     for (int idx = 0; idx < m_; ++idx) {
-        matQ0_.row(idx) = mapToRowVector(qPairs[idx].bits0).cast<real>();
-        matQ1_.row(idx) = mapToRowVector(qPairs[idx].bits1).cast<real>();
+        Vector(matQ0_.rowPtr(idx), N0_).copyFrom(sq::cast<real>(qPairs[idx].bits0));
+        Vector(matQ1_.rowPtr(idx), N1_).copyFrom(sq::cast<real>(qPairs[idx].bits1));
     }
 
     setState(solQSet);
@@ -151,9 +150,9 @@ template<class real>
 void CPUBipartiteGraphAnnealer<real>::getHamiltonian(Vector *h0, Vector *h1,
                                                      Matrix *J, real *c) const {
     throwErrorIfProblemNotSet();
-    *h0 = sq::mapFrom(h0_);
-    *h1 = sq::mapFrom(h1_);
-    *J = sq::mapFrom(J_);
+    *h0 = h0_;
+    *h1 = h1_;
+    *J = J_;
     *c = c_;
 }
 
@@ -171,22 +170,20 @@ void CPUBipartiteGraphAnnealer<real>::randomizeSpin() {
 #ifndef _OPENMP
     {
         sq::Random &random = random_[0];
-        real *q = matQ0_.data();
 #else
 #pragma omp parallel
     {
         sq::Random &random = random_[omp_get_thread_num()];
-        real *q = matQ0_.data();
 #pragma omp for
 #endif
-        for (int idx = 0; idx < sq::IdxType(N0_ * m_); ++idx)
-            q[idx] = random.randInt(2) ? real(1.) : real(-1.);
-        q = matQ1_.data();
-#ifdef _OPENMP
-#pragma omp for 
-#endif
-        for (int idx = 0; idx < sq::IdxType(N1_ * m_); ++idx)
-            q[idx] = random.randInt(2) ? real(1.) : real(-1.);
+        for (int im = 0; im < m_; ++im) {
+            real *q = matQ0_.rowPtr(im);
+            for (int in = 0; in < N0_; ++in)
+                q[in] = random.randInt(2) ? real(1.) : real(-1.);
+            q = matQ1_.rowPtr(im);
+            for (int in = 0; in < N1_; ++in)
+                q[in] = random.randInt(2) ? real(1.) : real(-1.);
+        }
     }
 
 #if 0
@@ -210,8 +207,7 @@ void CPUBipartiteGraphAnnealer<real>::randomizeSpin() {
 template<class real>
 void CPUBipartiteGraphAnnealer<real>::calculate_E() {
     throwErrorIfQNotSet();
-    BGFuncs<real>::calculate_E(&E_, sq::mapFrom(h0_), sq::mapFrom(h1_), sq::mapFrom(J_), c_,
-                               sq::mapFrom(matQ0_), sq::mapFrom(matQ1_));
+    BGFuncs<real>::calculate_E(&E_, h0_, h1_, J_, c_, matQ0_, matQ1_);
     if (om_ == sq::optMaximize)
         mapToRowVector(E_) *= real(-1.);
     setState(solEAvailable);
@@ -270,12 +266,17 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     real coef = std::log(std::tanh(G * beta / m_)) / beta;
     sq::Random &random = random_[0];
     int N = N0_ + N1_;
+
+    sq::EigenMappedMatrixType<real> eJ(sq::mapTo(J_));
+    sq::EigenMappedMatrixType<real> eMatQ0(sq::mapTo(matQ0_));
+    sq::EigenMappedMatrixType<real> eMatQ1(sq::mapTo(matQ1_));
+    
     for (int loop = 0; loop < sq::IdxType(N * m_); ++loop) {
         int x = random.randInt(N);
         int y = random.randInt(m_);
         if (x < N0_) {
             real qyx = matQ0_(y, x);
-            real sum = J_.transpose().row(x).dot(matQ1_.row(y));
+            real sum = eJ.transpose().row(x).dot(eMatQ1.row(y));
             real dE = twoDivM * qyx * (h0_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
@@ -287,7 +288,7 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
         else {
             x -= N0_;
             real qyx = matQ1_(y, x);
-            real sum = J_.row(x).dot(matQ0_.row(y));
+            real sum = eJ.row(x).dot(eMatQ0.row(y));
             real dE = twoDivM * qyx * (h1_(x) + sum);
             int neibour0 = (y == 0) ? m_ - 1 : y - 1;
             int neibour1 = (y == m_ - 1) ? 0 : y + 1;
@@ -300,12 +301,12 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepNaive(real G, real beta) {
     clearState(solSolutionAvailable);
 }
 
-template<class real, class T> static inline
-void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h, const T &J, sq::SizeType N, sq::SizeType m, 
+template<class real> static inline
+void tryFlip(sq::MatrixType<real> &qAnneal, int im, const sq::MatrixType<real> &dEmat, const sq::VectorType<real> &h, sq::SizeType N, sq::SizeType m, 
              real twoDivM, real beta, real coef, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
-        real dE = twoDivM * q * (h[iq] + dEmat(im, iq));
+        real dE = twoDivM * q * (h(iq) + dEmat(im, iq));
         int mNeibour0 = (im + m - 1) % m;
         int mNeibour1 = (im + 1) % m;
         dE -= q * (qAnneal(mNeibour0, iq) + qAnneal(mNeibour1, iq)) * coef;
@@ -315,19 +316,21 @@ void tryFlip(sq::EigenMatrixType<real> &qAnneal, int im, const sq::EigenMatrixTy
     }
 }
 
-template<class real>
+template<class real>template<class T>
 void CPUBipartiteGraphAnnealer<real>::
-annealHalfStepColoring(int N, EigenMatrix &qAnneal,
-                       const EigenRowVector &h, const EigenMatrix &J,
-                       const EigenMatrix &qFixed, real G, real beta) {
+annealHalfStepColoring(int N, Matrix &qAnneal,
+                       const Vector &h, const T &eJ,
+                       const Matrix &qFixed, real G, real beta) {
     real twoDivM = real(2.) / m_;
     real coef = std::log(std::tanh(G * beta / m_)) / beta;
-
-    EigenMatrix dEmat = qFixed * J.transpose();
+    
+    Matrix dEmat(qFixed.rows, eJ.rows());
+    sq::mapTo(dEmat) = sq::mapTo(qFixed) * eJ.transpose();
+    
     sq::Random &random = random_[0];
     for (int offset = 0; offset < 2; ++offset) {
         for (int im = offset; im < m_; im += 2)
-            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+            tryFlip(qAnneal, im, dEmat, h, N, m_, twoDivM, beta, coef, random);
     }
 }
 
@@ -337,32 +340,38 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepColoring(real G, real beta) {
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
 
-    annealHalfStepColoring(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
-    annealHalfStepColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+    sq::EigenMappedMatrixType<real> eJ(sq::mapTo(J_));
+    annealHalfStepColoring(N1_, matQ1_, h1_, eJ, matQ0_, G, beta);
+    annealHalfStepColoring(N0_, matQ0_, h0_, eJ.transpose(), matQ1_, G, beta);
 }
 
 
-template<class real>
+template<class real>template<class T>
 void CPUBipartiteGraphAnnealer<real>::
-annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
-                               const EigenRowVector &h, const EigenMatrix &J,
-                               const EigenMatrix &qFixed, real G, real beta) {
+annealHalfStepColoringParallel(int N, Matrix &qAnneal,
+                               const Vector &h, const T &eJ,
+                               const Matrix &qFixed, real G, real beta) {
 #ifdef _OPENMP    
     real twoDivM = real(2.) / m_;
     real coef = std::log(std::tanh(G * beta / m_)) / beta;
 
     int m2 = (m_ / 2) * 2; /* round down */
-    EigenMatrix dEmat(qFixed.rows(), J.rows());
+    Matrix dEmat(qFixed.rows, eJ.rows());
+
+    sq::EigenMappedMatrixType<real> edEmat(sq::mapTo(dEmat));
+    sq::EigenMappedMatrixType<real> eqFixed(sq::mapTo(qFixed));    
+    
     // dEmat = qFixed * J.transpose();  // For debug
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int qRowSpan = (qFixed.rows() + nWorkers_ - 1) / nWorkers_;
-        int qRowBegin = std::min(J.rows(), qRowSpan * threadNum);
-        int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadNum + 1));
+        int qRowSpan = (eqFixed.rows() + nWorkers_ - 1) / nWorkers_;
+        int qRowBegin = std::min(eJ.rows(), qRowSpan * threadNum);
+        int qRowEnd = std::min(eqFixed.rows(), qRowSpan * (threadNum + 1));
         qRowSpan = qRowEnd - qRowBegin;
         if (0 < qRowSpan)
-            dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) = qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
+            edEmat.block(qRowBegin, 0, qRowSpan, eJ.rows()) =
+                    eqFixed.block(qRowBegin, 0, qRowSpan, eqFixed.cols()) * eJ.transpose();
     }
 
 #pragma omp parallel
@@ -371,12 +380,12 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
         sq::Random &random = random_[threadNum];
 #  pragma omp for
         for (int im = 0; im < m2; im += 2) {
-            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+            tryFlip(qAnneal, im, dEmat, h, N, m_, twoDivM, beta, coef, random);
         }
     }
     if ((m_ % 2) != 0) { /* m is odd. */
         int im = m_ - 1;
-        tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random_[0]);
+        tryFlip(qAnneal, im, dEmat, h, N, m_, twoDivM, beta, coef, random_[0]);
     }
 
 #pragma omp parallel
@@ -385,7 +394,7 @@ annealHalfStepColoringParallel(int N, EigenMatrix &qAnneal,
         sq::Random &random = random_[threadNum];
 #  pragma omp for
         for (int im = 1; im < m2; im += 2) {
-            tryFlip(qAnneal, im, dEmat, h, J, N, m_, twoDivM, beta, coef, random);
+            tryFlip(qAnneal, im, dEmat, h, N, m_, twoDivM, beta, coef, random);
         }
     }
 #else
@@ -399,8 +408,9 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepColoringParallel(real G, real
     throwErrorIfQNotSet();
     clearState(solSolutionAvailable);
 
-    annealHalfStepColoringParallel(N1_, matQ1_, h1_, J_, matQ0_, G, beta);
-    annealHalfStepColoringParallel(N0_, matQ0_, h0_, J_.transpose(), matQ1_, G, beta);
+    sq::EigenMappedMatrixType<real> eJ(sq::mapTo(J_));
+    annealHalfStepColoringParallel(N1_, matQ1_, h1_, eJ, matQ0_, G, beta);
+    annealHalfStepColoringParallel(N0_, matQ0_, h0_, eJ.transpose(), matQ1_, G, beta);
 }
 
 
@@ -411,27 +421,31 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real _) {
 
     real invKT = real(1.) / kT;
     
+    sq::EigenMappedMatrixType<real> eJ(sq::mapTo(J_));
+    sq::EigenMappedMatrixType<real> eMatQ0(sq::mapTo(matQ0_));
+    sq::EigenMappedMatrixType<real> eMatQ1(sq::mapTo(matQ1_));
+    
     sq::Random &random = random_[0];
     int N = N0_ + N1_;
     for (int y = 0; y < m_; ++y) {
         for (int loop = 0; loop < sq::IdxType(N * m_); ++loop) {
             int x = random.randInt(N);
             if (x < N0_) {
-                real qyx = matQ0_(y, x);
-                real sum = J_.transpose().row(x).dot(matQ1_.row(y));
+                real qyx = eMatQ0(y, x);
+                real sum = eJ.transpose().row(x).dot(eMatQ1.row(y));
                 real dE = real(2.) * qyx * (h0_(x) + sum);
                 real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
                 if (threshold > random.random<real>())
-                    matQ0_(y, x) = - qyx;
+                    eMatQ0(y, x) = - qyx;
             }
             else {
                 x -= N0_;
-                real qyx = matQ1_(y, x);
-                real sum = J_.row(x).dot(matQ0_.row(y));
+                real qyx = eMatQ1(y, x);
+                real sum = eJ.row(x).dot(eMatQ0.row(y));
                 real dE = real(2.) * qyx * (h1_(x) + sum);
                 real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
                 if (threshold > random.random<real>())
-                    matQ1_(y, x) = - qyx;
+                    eMatQ1(y, x) = - qyx;
             }
         }
         clearState(solSolutionAvailable);
@@ -441,41 +455,47 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSANaive(real kT, real _) {
 
 /* Simulated annealing */
 
-template<class real, class T> static inline
-void tryFlipSA(sq::EigenMatrixType<real> &qAnneal, int im,
-               const sq::EigenMatrixType<real> &dEmat, const sq::EigenRowVectorType<real> &h,
-               const T &J, sq::SizeType N, real invKT, sq::Random &random) {
+template<class real> static inline
+void tryFlipSA(sq::MatrixType<real> &qAnneal, int im,
+               const sq::MatrixType<real> &dEmat, const sq::VectorType<real> &h,
+               sq::SizeType N, real invKT, sq::Random &random) {
     for (int iq = 0; iq < N; ++iq) {
         real q = qAnneal(im, iq);
-        real dE = real(2.) * q * (h[iq] + dEmat(im, iq));
+        real dE = real(2.) * q * (h(iq) + dEmat(im, iq));
         real thresh = dE < real(0.) ? real(1.) : std::exp(- dE * invKT);
         if (thresh > random.random<real>())
             qAnneal(im, iq) = -q;
     }
 }
 
-template<class real>
+template<class real>template<class T>
 void CPUBipartiteGraphAnnealer<real>::
-annealHalfStepSAColoring(int N, EigenMatrix &qAnneal,
-                         const EigenRowVector &h, const EigenMatrix &J,
-                         const EigenMatrix &qFixed, real invKT) {
+annealHalfStepSAColoring(int N, Matrix &qAnneal,
+                         const Vector &h, const T &eJ,
+                         const Matrix &qFixed, real invKT) {
 #ifdef _OPENMP    
-    EigenMatrix dEmat(qFixed.rows(), J.rows());
+    Matrix dEmat(qFixed.rows, eJ.rows());
+        
+    sq::EigenMappedMatrixType<real> edEmat(sq::mapTo(dEmat));
+    sq::EigenMappedMatrixType<real> eqFixed(sq::mapTo(qFixed));
+    
     // dEmat = qFixed * J.transpose();  // For debug
 #pragma omp parallel
     {
         int threadNum = omp_get_thread_num();
-        int qRowSpan = (qFixed.rows() + nWorkers_ - 1) / nWorkers_;
-        int qRowBegin = std::min(J.rows(), qRowSpan * threadNum);
-        int qRowEnd = std::min(qFixed.rows(), qRowSpan * (threadNum + 1));
+        int qRowSpan = (eqFixed.rows() + nWorkers_ - 1) / nWorkers_;
+        int qRowBegin = std::min(eJ.rows(), qRowSpan * threadNum);
+        int qRowEnd = std::min(eqFixed.rows(), qRowSpan * (threadNum + 1));
         qRowSpan = qRowEnd - qRowBegin;
-        if (0 < qRowSpan)
-            dEmat.block(qRowBegin, 0, qRowSpan, J.rows()) = qFixed.block(qRowBegin, 0, qRowSpan, qFixed.cols()) * J.transpose();
+        if (0 < qRowSpan) {
+            edEmat.block(qRowBegin, 0, qRowSpan, eJ.rows()) =
+                    eqFixed.block(qRowBegin, 0, qRowSpan, eqFixed.cols()) * eJ.transpose();
+        }
 #  pragma omp barrier
         sq::Random &random = random_[threadNum];
 #  pragma omp for
         for (int im = 0; im < m_; ++im)
-            tryFlipSA(qAnneal, im, dEmat, h, J, N, invKT, random);
+            tryFlipSA(qAnneal, im, dEmat, h, N, invKT, random);
     }
 #else
     abort_("Must not reach here.");
@@ -489,8 +509,9 @@ void CPUBipartiteGraphAnnealer<real>::annealOneStepSAColoring(real kT, real _) {
     clearState(solSolutionAvailable);
 
     real invKT = real(1.) / kT;
-    annealHalfStepSAColoring(N1_, matQ1_, h1_, J_, matQ0_, invKT);
-    annealHalfStepSAColoring(N0_, matQ0_, h0_, J_.transpose(), matQ1_, invKT);
+    sq::EigenMappedMatrixType<real> eJ(sq::mapTo(J_));
+    annealHalfStepSAColoring(N1_, matQ1_, h1_, eJ, matQ0_, invKT);
+    annealHalfStepSAColoring(N0_, matQ0_, h0_, eJ.transpose(), matQ1_, invKT);
 }
 
 
@@ -500,8 +521,8 @@ void CPUBipartiteGraphAnnealer<real>::syncBits() {
     bitsPairQ_.clear();
     sq::BitSet x0, x1;
     for (int idx = 0; idx < sq::IdxType(m_); ++idx) {
-        sq::BitSet q0 = sq::extractRow<char>(matQ0_, idx);
-        sq::BitSet q1 = sq::extractRow<char>(matQ1_, idx);
+        sq::BitSet q0 = sq::cast<char>(Vector(matQ0_.rowPtr(idx), N0_));
+        sq::BitSet q1 = sq::cast<char>(Vector(matQ1_.rowPtr(idx), N1_));
         bitsPairQ_.pushBack(sq::BitSetPairArray::ValueType(q0, q1));
         sq::BitSet x0 = x_from_q(q0), x1 = x_from_q(q1);
         bitsPairX_.pushBack(sq::BitSetPairArray::ValueType(x0, x1));
