@@ -109,6 +109,8 @@ struct Annealer : Solver<real> {
     
     virtual void annealOneStep(real G, real beta) = 0;
 
+    virtual real getSystemE(real G, real beta) const = 0;
+    
 protected:
     Annealer() : m_(0) { }
     sqaod::Algorithm algo_;
