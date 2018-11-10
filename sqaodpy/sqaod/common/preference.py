@@ -8,6 +8,16 @@ class Algorithm :
     sa_default = 'sa_default'
     sa_naive = 'sa_naive'
     sa_coloring = 'sa_coloring'
+
+    @staticmethod
+    def is_sqa(algo) :
+        if algo == Algorithm.default or \
+           algo == Algorithm.naive or \
+           algo == Algorithm.coloring :
+            return True
+       
+        return False
+   
     
 algorithm = Algorithm()
 """

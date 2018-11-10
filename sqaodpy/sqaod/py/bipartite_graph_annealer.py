@@ -258,6 +258,26 @@ class BipartiteGraphAnnealer :
         """
         pass
 
+    def get_system_E(self, G, beta) :
+        # average energy
+        E = np.mean(self.get_E())
+        
+        m = self._m
+        algo = self._get_algorithm()
+        if sqaod.algorithm.is_sqa(algo) :
+            q0, q1 = self._q0, self._q1
+            spinDotSum = 0.
+            for im in range(m) :
+                q00 = np.asarray(q0[im], np.float64)
+                q01 = np.asarray(q0[(im + 1) % m], np.float64)
+                spinDotSum += q00.dot(q01)
+                q10 = np.asarray(q1[im], np.float64)
+                q11 = np.asarray(q1[(im + 1) % m], np.float64)
+                spinDotSum += q10.dot(q11)
+            E += - 1. / (2 * beta) * np.log(np.tanh(G * beta / m)) * spinDotSum
+            
+        return E
+    
     def anneal_one_step(self, G, beta) :
         """ Run annealing one step.
 

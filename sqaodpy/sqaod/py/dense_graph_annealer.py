@@ -261,6 +261,23 @@ class DenseGraphAnnealer :
         """
         pass
 
+    def get_system_E(self, G, beta) :
+        # average energy
+        E = np.mean(self.get_E())
+        
+        m = self._m
+        algo = self._get_algorithm()
+        if sqaod.algorithm.is_sqa(algo) :
+            q = self._q
+            spinDotSum = 0.
+            for im in range(m) :
+                q0 = np.asarray(q[im], np.float64)
+                q1 = np.asarray(q[(im + 1) % m], np.float64)
+                spinDotSum += q0.dot(q1)
+            E -= 0.5 / beta * np.log(np.tanh(G * beta / m)) * spinDotSum
+            
+        return E
+    
     def anneal_one_step(self, G, beta) :
         """ Run annealing one step.
 

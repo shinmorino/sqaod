@@ -92,6 +92,10 @@ class DenseGraphAnnealerBase :
     def make_solution(self) :
         self._cext.make_solution(self._cobj, self.dtype)
 
+    def get_system_E(self, G, beta) :
+        G, beta = self.dtype(G), self.dtype(beta)
+        return self._cext.get_system_E(self._cobj, G, beta, self.dtype)
+
     def anneal_one_step(self, G, beta) :
         G, beta = self.dtype(G), self.dtype(beta)
         self._cext.anneal_one_step(self._cobj, G, beta, self.dtype)

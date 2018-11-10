@@ -820,6 +820,34 @@ PyObject *annealer_make_solution(PyObject *module, PyObject *args) {
     return Py_None;    
 }
 
+template<class real>
+PyObject *internal_get_system_E(PyObject *objExt, PyObject *objG, PyObject *objBeta) {
+    typedef NpConstScalarType<real> NpConstScalar;
+    NpConstScalar G(objG), beta(objBeta);
+    if (G.err || beta.err)
+        return NULL;
+    real E = pyobjToCppObj<real>(objExt)->getSystemE(G, beta);
+    PyObject *objE = newScalarObj(E);
+    // Py_INCREF(objE);
+    return objE;
+}
+
+extern "C"
+PyObject *annealer_get_system_E(PyObject *module, PyObject *args) {
+    PyObject *objExt, *objG, *objKT, *dtype;
+    if (!PyArg_ParseTuple(args, "OOOO", &objExt, &objG, &objKT, &dtype))
+        return NULL;
+
+    ASSERT_DTYPE(dtype);
+
+    TRY {
+        if (isFloat64(dtype))
+            return internal_get_system_E<double>(objExt, objG, objKT);
+        else // if (isFloat32(dtype))
+            return internal_get_system_E<float>(objExt, objG, objKT);
+    } CATCH_ERROR_AND_RETURN;
+    return NULL;
+}
 
 template<class real>
 PyObject *internal_anneal_one_step(PyObject *objExt, PyObject *objG, PyObject *objBeta) {
@@ -876,6 +904,7 @@ PyMethodDef annealer_methods[] = {
 	{"calculate_E", annealer_calculate_E, METH_VARARGS},
 	{"prepare", annealer_prepare, METH_VARARGS},
 	{"make_solution", annealer_make_solution, METH_VARARGS},
+	{"get_system_E", annealer_get_system_E, METH_VARARGS},
 	{"anneal_one_step", annealer_anneal_one_step, METH_VARARGS},
 	{NULL},
 };
