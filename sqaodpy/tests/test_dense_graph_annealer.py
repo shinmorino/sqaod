@@ -387,6 +387,11 @@ class TestNativeDenseGraphAnnealerBase(TestDenseGraphAnnealerBase) :
     def __init__(self, anpkg, dtype) :
         TestDenseGraphAnnealerBase.__init__(self, anpkg, dtype)
 
+    def test_anneal_before_prepare(self) :
+        an = self.new_annealer(10, 10)
+        with self.assertRaises(RuntimeError):
+            an.anneal_one_step(0., 0.)
+
     def test_prec_prefs(self) :
         an = self.new_annealer(10, 10)
         prefs = an.get_preferences()

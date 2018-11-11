@@ -448,6 +448,11 @@ class TestNativeBipartiteGraphAnnealerBase(TestBipartiteGraphAnnealerBase) :
     def __init__(self, anpkg, dtype) :
         TestBipartiteGraphAnnealerBase.__init__(self, anpkg, dtype)
 
+    def test_anneal_before_prepare(self) :
+        an = self.new_annealer(10, 10, 10)
+        with self.assertRaises(RuntimeError):
+            an.anneal_one_step(0., 0.)
+
     def test_precision(self) :
         an = self.new_annealer(10, 10, 1)
         self.assertEqual(an.dtype, self.dtype)
