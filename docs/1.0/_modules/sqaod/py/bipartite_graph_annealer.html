@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sqaod.py.bipartite_graph_annealer &#8212; sqaod 1.0 documentation</title>
+    <title>sqaod.py.bipartite_graph_annealer &#8212; sqaod 1.0.2 documentation</title>
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -41,6 +41,7 @@
   <h1>Source code for sqaod.py.bipartite_graph_annealer</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="k">import</span> <span class="n">MethodType</span>
 <span class="kn">import</span> <span class="nn">sqaod</span>
@@ -132,6 +133,9 @@
         <span class="k">elif</span> <span class="n">algoname</span> <span class="o">==</span> <span class="n">algo</span><span class="o">.</span><span class="n">sa_naive</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
                 <span class="n">MethodType</span><span class="p">(</span><span class="n">BipartiteGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_sa_naive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">algoname</span> <span class="o">==</span> <span class="n">algo</span><span class="o">.</span><span class="n">sa_default</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
+                <span class="n">MethodType</span><span class="p">(</span><span class="n">BipartiteGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_sa_naive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">algoname</span> <span class="o">==</span> <span class="n">algo</span><span class="o">.</span><span class="n">sa_coloring</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
                 <span class="n">MethodType</span><span class="p">(</span><span class="n">BipartiteGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_sa_coloring</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
@@ -199,27 +203,28 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          array of floating point number : QUBO energy.</span>
 
-<span class="sd">        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</span>
-
-<span class="sd">        Notes:</span>
-<span class="sd">          You need to call calculate_E() or make_solution() before calling get_E().</span>
-<span class="sd">          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</span>
+<span class="sd">        Calculates and returns QUBO energy for all trotters. len(E) is m.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E</span></div>
+        <span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">),</span> <span class="n">J</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
+            <span class="c1"># FIXME: 1d output for batch calculation</span>
+            <span class="n">E</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">formulas</span><span class="o">.</span><span class="n">bipartite_graph_calculate_E_from_spin</span><span class="p">(</span><span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">q1</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="BipartiteGraphAnnealer.get_x"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.get_x">[docs]</a>    <span class="k">def</span> <span class="nf">get_x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; get bits.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          tuple of 2 numpy.int8 arrays : array of bit {0, 1}.</span>
-
-<span class="sd">        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">          calculate_E() or make_solution() should be called before calling get_E().</span>
-<span class="sd">          ( CPU/CUDA annealers automatically/internally call calculate_E().)</span>
+<span class="sd">          list of tuples.  Each tuple contains 2 numpy.int8 arrays of x0 and x1</span>
+<span class="sd">          x0 and x1 are arrays of bits, {0, 1}.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_pairs</span></div>
+        <span class="n">x_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q1</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">x_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x_pairs</span></div>
 
     <span class="k">def</span> <span class="nf">set_q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qpair</span><span class="p">)</span> <span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
@@ -253,7 +258,7 @@
         <span class="n">qlist</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">qpair</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q1</span><span class="p">)</span> <span class="p">:</span>
             <span class="n">qlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qpair</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">qlist</span></div>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">qlist</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BipartiteGraphAnnealer.randomize_spin"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.randomize_spin">[docs]</a>    <span class="k">def</span> <span class="nf">randomize_spin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; randomize spin. &quot;&quot;&quot;</span>
@@ -262,18 +267,13 @@
 
 <div class="viewcode-block" id="BipartiteGraphAnnealer.calculate_E"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.calculate_E">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_E</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; calculate QUBO energy.</span>
-<span class="sd">        </span>
-<span class="sd">        This method calculate QUBO energy, and caches it, does not return any value.</span>
+<span class="sd">        This method calculates QUBO energy, and caches it.</span>
+<span class="sd">        This method can be empty if a class does not cache qubo energy.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
-        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">),</span> <span class="n">J</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
-            <span class="c1"># FIXME: 1d output for batch calculation</span>
-            <span class="n">E</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">formulas</span><span class="o">.</span><span class="n">bipartite_graph_calculate_E_from_spin</span><span class="p">(</span><span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">q1</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></div>
+        <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="BipartiteGraphAnnealer.prepare"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.prepare">[docs]</a>    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; preparation of internal resources.</span>
@@ -291,22 +291,40 @@
 <div class="viewcode-block" id="BipartiteGraphAnnealer.make_solution"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.make_solution">[docs]</a>    <span class="k">def</span> <span class="nf">make_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; make bit arrays(x) and calculate QUBO energy.</span>
 
+<span class="sd">        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.</span>
+<span class="sd">        This method can be empty if a class does not cache solution.</span>
+
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_x_pairs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-            <span class="n">x1</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q1</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_x_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_E</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
 
+    <span class="k">def</span> <span class="nf">get_system_E</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
+        <span class="c1"># average energy</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_E</span><span class="p">())</span>
+        
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
+        <span class="n">algo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_algorithm</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">is_sqa</span><span class="p">(</span><span class="n">algo</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q1</span>
+            <span class="n">spinDotSum</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q0</span><span class="p">[</span><span class="n">im</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">q01</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q0</span><span class="p">[(</span><span class="n">im</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">spinDotSum</span> <span class="o">+=</span> <span class="n">q00</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q01</span><span class="p">)</span>
+                <span class="n">q10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q1</span><span class="p">[</span><span class="n">im</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">q11</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q1</span><span class="p">[(</span><span class="n">im</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">spinDotSum</span> <span class="o">+=</span> <span class="n">q10</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q11</span><span class="p">)</span>
+            <span class="n">E</span> <span class="o">+=</span> <span class="o">-</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">spinDotSum</span>
+            
+        <span class="k">return</span> <span class="n">E</span>
+    
 <div class="viewcode-block" id="BipartiteGraphAnnealer.anneal_one_step"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.anneal_one_step">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Run annealing one step.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          G (floating point number) : G in SQA, kT in SA.</span>
-<span class="sd">          beta (floating point number) : inverse temperature.</span>
+<span class="sd">          beta (floating point number) : inverse temperature.  SA algorithms ignore this parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># will be dynamically replaced.</span>
         <span class="k">pass</span></div>
@@ -318,7 +336,7 @@
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
         <span class="n">N</span> <span class="o">=</span> <span class="n">N0</span> <span class="o">+</span> <span class="n">N1</span>
         <span class="n">twoDivM</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">m</span>
-        <span class="n">tempCoef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">beta</span>
+        <span class="n">tempCoef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span>
 
         <span class="k">for</span> <span class="n">loop</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="n">m</span><span class="p">)</span> <span class="p">:</span>
             <span class="n">iq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
@@ -346,7 +364,7 @@
         <span class="sd">&quot;&quot;&quot; (sqaod.py only) try to flip spins in a colored plane for SQA. &quot;&quot;&quot;</span>
         <span class="n">dEmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">qFixed</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="n">twoDivM</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">m</span>
-        <span class="n">tempCoef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">beta</span>
+        <span class="n">tempCoef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span>
         <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span>
             <span class="n">mNeibour0</span> <span class="o">=</span> <span class="p">(</span><span class="n">im</span> <span class="o">+</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span>
             <span class="n">mNeibour1</span> <span class="o">=</span> <span class="p">(</span><span class="n">im</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span>
@@ -377,12 +395,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_anneal_half_step_coloring</span><span class="p">(</span><span class="n">N0</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span></div>
 
     <span class="c1"># simulated annealing</span>
-<div class="viewcode-block" id="BipartiteGraphAnnealer.anneal_one_step_sa_naive"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_naive">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
+<div class="viewcode-block" id="BipartiteGraphAnnealer.anneal_one_step_sa_naive"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_naive">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; (sqaod.py only) sqaod.algorithm.sa_naive version of SA &quot;&quot;&quot;</span>
         <span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
         <span class="n">N0</span><span class="p">,</span> <span class="n">N1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_problem_size</span><span class="p">()</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
         <span class="n">N</span> <span class="o">=</span> <span class="n">N0</span> <span class="o">+</span> <span class="n">N1</span>
+        <span class="n">invKT</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">kT</span>
 
         <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="p">:</span>
             <span class="n">q0m</span><span class="p">,</span> <span class="n">q1m</span> <span class="o">=</span> <span class="n">q0</span><span class="p">[</span><span class="n">im</span><span class="p">],</span><span class="n">q1</span><span class="p">[</span><span class="n">im</span><span class="p">]</span>
@@ -392,18 +411,18 @@
                 <span class="k">if</span> <span class="p">(</span><span class="n">iq</span> <span class="o">&lt;</span> <span class="n">N0</span><span class="p">)</span> <span class="p">:</span>
                     <span class="n">q</span> <span class="o">=</span> <span class="n">q0m</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span>
                     <span class="n">dE</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">q</span> <span class="o">*</span> <span class="p">(</span><span class="n">h0</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">iq</span><span class="p">],</span> <span class="n">q1m</span><span class="p">))</span>
-                    <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">kT</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span> 
+                    <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">invKT</span><span class="p">)</span> 
                     <span class="k">if</span> <span class="n">thresh</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
                         <span class="n">q0m</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">q</span>
                 <span class="k">else</span> <span class="p">:</span>
                     <span class="n">iq</span> <span class="o">-=</span> <span class="n">N0</span>
                     <span class="n">q</span> <span class="o">=</span> <span class="n">q1m</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span>
                     <span class="n">dE</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">q</span> <span class="o">*</span> <span class="p">(</span><span class="n">h1</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">[</span><span class="n">iq</span><span class="p">],</span> <span class="n">q0m</span><span class="p">))</span>
-                    <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">kT</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span> 
+                    <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">invKT</span><span class="p">)</span> 
                     <span class="k">if</span> <span class="n">thresh</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
                         <span class="n">q1m</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">q</span></div>
                         
-    <span class="k">def</span> <span class="nf">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">qAnneal</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">qFixed</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">qAnneal</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">qFixed</span><span class="p">,</span> <span class="n">invKT</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; (sqaod.py only) try to flip spins in a colored plane for SA. &quot;&quot;&quot;</span>
         <span class="n">dEmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">qFixed</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="p">:</span>
@@ -411,17 +430,18 @@
             <span class="k">for</span> <span class="n">iq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="p">:</span>
                 <span class="n">q</span> <span class="o">=</span> <span class="n">qAnnealm</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span>
                 <span class="n">dE</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">q</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">+</span> <span class="n">dEmat</span><span class="p">[</span><span class="n">iq</span><span class="p">,</span> <span class="n">im</span><span class="p">])</span>
-                <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">kT</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span> 
+                <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dE</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">invKT</span><span class="p">)</span> 
                 <span class="k">if</span> <span class="n">thresh</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
                     <span class="n">qAnnealm</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">q</span>
                 
-<div class="viewcode-block" id="BipartiteGraphAnnealer.anneal_one_step_sa_coloring"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_coloring">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
+<div class="viewcode-block" id="BipartiteGraphAnnealer.anneal_one_step_sa_coloring"><a class="viewcode-back" href="../../../bipartite_graph_annealer.html#sqaod.py.BipartiteGraphAnnealer.anneal_one_step_sa_coloring">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_coloring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; (sqaod.py only) sqaod.algorithm.sa_coloring version of SA &quot;&quot;&quot;</span>
         <span class="n">h0</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
         <span class="n">N0</span><span class="p">,</span> <span class="n">N1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_problem_size</span><span class="p">()</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="n">N1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="n">N0</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span></div></div>
+        <span class="n">invKT</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">kT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="n">N1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">invKT</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anneal_half_step_sa_coloring</span><span class="p">(</span><span class="n">N0</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">invKT</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span></div></div>
         
 
 
@@ -503,7 +523,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

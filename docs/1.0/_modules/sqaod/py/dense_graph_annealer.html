@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sqaod.py.dense_graph_annealer &#8212; sqaod 1.0 documentation</title>
+    <title>sqaod.py.dense_graph_annealer &#8212; sqaod 1.0.2 documentation</title>
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -99,13 +99,14 @@
 <span class="sd">          optimize : optimize direction, `sqaod.maximize, sqaod.minimize &lt;preference.html#sqaod-maximize-sqaod-minimize&gt;`        &quot;&quot;&quot;</span>
         
         <span class="n">checkers</span><span class="o">.</span><span class="n">dense_graph</span><span class="o">.</span><span class="n">qubo</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
-        <span class="n">W</span> <span class="o">=</span> <span class="n">symmetrize</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+        <span class="c1"># symmetrized internally in dense_graph_calculate_hamiltonian..</span>
+        <span class="c1"># W = symmetrize(W)</span>
 
         <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">formulas</span><span class="o">.</span><span class="n">dense_graph_calculate_hamiltonian</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span> <span class="o">=</span> <span class="n">optimize</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_J</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">h</span><span class="p">),</span> <span class="n">optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">J</span><span class="p">),</span> <span class="n">optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">//</span> <span class="mi">2</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">//</span> <span class="mi">4</span></div>
         
 <div class="viewcode-block" id="DenseGraphAnnealer.set_hamiltonian"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.set_hamiltonian">[docs]</a>    <span class="k">def</span> <span class="nf">set_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; set Hamiltonian.</span>
@@ -131,6 +132,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
                 <span class="n">MethodType</span><span class="p">(</span><span class="n">DenseGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_coloring</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">algoname</span> <span class="o">==</span> <span class="n">algo</span><span class="o">.</span><span class="n">sa_naive</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
+                <span class="n">MethodType</span><span class="p">(</span><span class="n">DenseGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_sa_naive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">algoname</span> <span class="o">==</span> <span class="n">algo</span><span class="o">.</span><span class="n">sa_default</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_one_step</span> <span class="o">=</span> \
                 <span class="n">MethodType</span><span class="p">(</span><span class="n">DenseGraphAnnealer</span><span class="o">.</span><span class="n">anneal_one_step_sa_naive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -196,13 +200,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          array of floating point number : QUBO energy.</span>
 
-<span class="sd">        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</span>
-
-<span class="sd">        Notes:</span>
-<span class="sd">          You need to call calculate_E() or make_solution() before calling get_E().</span>
-<span class="sd">          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</span>
+<span class="sd">        Calculates and returns QUBO energy, for all trotters. len(E) is m.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E</span></div>
+        <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">formulas</span><span class="o">.</span><span class="n">dense_graph_batch_calculate_E_from_spin</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DenseGraphAnnealer.get_x"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.get_x">[docs]</a>    <span class="k">def</span> <span class="nf">get_x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; get bits.</span>
@@ -210,13 +212,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          numpy.int8 : array of bit {0, 1}.</span>
 
-<span class="sd">        x.shape is (m, N) where N is problem size, and m is number of trotters.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">          calculate_E() or make_solution() should be called before calling get_E().</span>
-<span class="sd">          ( CPU/CUDA annealers automatically/internally call calculate_E().)</span>
+<span class="sd">        x is a list of int8 arrays.  len(x) is m, and len(int8 array) is N.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span></div>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">xtmp</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xtmp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 
 <div class="viewcode-block" id="DenseGraphAnnealer.set_q"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.set_q">[docs]</a>    <span class="k">def</span> <span class="nf">set_q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; set spins.</span>
@@ -256,7 +258,7 @@
 <span class="sd">        Returns: tuple of Hamiltonian variables</span>
 <span class="sd">          h(vector), J(symmeric matrix), c(scalar)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_J</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_J</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span></div>
 
 <div class="viewcode-block" id="DenseGraphAnnealer.get_q"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.get_q">[docs]</a>    <span class="k">def</span> <span class="nf">get_q</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; get spins.</span>
@@ -264,7 +266,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          numpy.int8 : array of spin {-1, 1}.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="DenseGraphAnnealer.randomize_spin"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.randomize_spin">[docs]</a>    <span class="k">def</span> <span class="nf">randomize_spin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; randomize spin. &quot;&quot;&quot;</span>
@@ -272,17 +274,14 @@
 
 <div class="viewcode-block" id="DenseGraphAnnealer.calculate_E"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.calculate_E">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_E</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; calculate QUBO energy.</span>
-<span class="sd">        </span>
-<span class="sd">        This method calculate QUBO energy, and caches it, does not return any value.</span>
+<span class="sd">        This method calculates QUBO energy, and caches it.</span>
+<span class="sd">        This method can be empty if a class does not cache qubo energy.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
         
-        <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
-        <span class="n">E</span> <span class="o">=</span> <span class="n">formulas</span><span class="o">.</span><span class="n">dense_graph_batch_calculate_E_from_spin</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="DenseGraphAnnealer.prepare"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.prepare">[docs]</a>    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; preparation of internal resources.</span>
 <span class="sd">        </span>
@@ -296,21 +295,37 @@
 <div class="viewcode-block" id="DenseGraphAnnealer.make_solution"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.make_solution">[docs]</a>    <span class="k">def</span> <span class="nf">make_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; make bit arrays(x) and calculate QUBO energy.</span>
 
+<span class="sd">        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.</span>
+<span class="sd">        This method can be empty if a class does not cache solution.</span>
+
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">bit_from_spin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_E</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
 
+    <span class="k">def</span> <span class="nf">get_system_E</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
+        <span class="c1"># average energy</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_E</span><span class="p">())</span>
+        
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
+        <span class="n">algo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_algorithm</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">is_sqa</span><span class="p">(</span><span class="n">algo</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q</span>
+            <span class="n">spinDotSum</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">im</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">q1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q</span><span class="p">[(</span><span class="n">im</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">spinDotSum</span> <span class="o">+=</span> <span class="n">q0</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q1</span><span class="p">)</span>
+            <span class="n">E</span> <span class="o">-=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">spinDotSum</span>
+            
+        <span class="k">return</span> <span class="n">E</span>
+    
 <div class="viewcode-block" id="DenseGraphAnnealer.anneal_one_step"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.anneal_one_step">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Run annealing one step.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">          G (floating point number) : G in SQA, kT in SA.</span>
-<span class="sd">          beta (floating point number) : inverse temperature.</span>
+<span class="sd">          beta (floating point number) : inverse temperature.  SA algorithms ignore this parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># will be dynamically replaced.</span>
@@ -323,14 +338,14 @@
         <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
         <span class="n">two_div_m</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">beta</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span>
         
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
             <span class="n">qyx</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span>
             <span class="nb">sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="n">y</span><span class="p">]);</span> <span class="c1"># diagnoal elements in J are zero.</span>
-            <span class="n">dE</span> <span class="o">=</span> <span class="n">two_div_m</span> <span class="o">*</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">)</span>
+            <span class="n">dE</span> <span class="o">=</span> <span class="n">two_div_m</span> <span class="o">*</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="mf">2.</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">)</span>
             <span class="n">dE</span> <span class="o">-=</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span><span class="p">[(</span><span class="n">m</span> <span class="o">+</span> <span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="n">q</span><span class="p">[(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">][</span><span class="n">x</span><span class="p">])</span> <span class="o">*</span> <span class="n">coef</span>
             <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="p">(</span><span class="n">dE</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
@@ -342,13 +357,13 @@
         <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m</span>
         <span class="n">two_div_m</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">beta</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span>
         
         <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">30</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="n">N</span>
             <span class="n">qyx</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span>
             <span class="nb">sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="n">y</span><span class="p">]);</span> <span class="c1"># diagnoal elements in J are zero.</span>
-            <span class="n">dE</span> <span class="o">=</span> <span class="n">two_div_m</span> <span class="o">*</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">)</span>
+            <span class="n">dE</span> <span class="o">=</span> <span class="n">two_div_m</span> <span class="o">*</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">)</span>
             <span class="n">dE</span> <span class="o">-=</span> <span class="n">qyx</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span><span class="p">[(</span><span class="n">m</span> <span class="o">+</span> <span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="n">q</span><span class="p">[(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">m</span><span class="p">][</span><span class="n">x</span><span class="p">])</span> <span class="o">*</span> <span class="n">coef</span>
             <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="p">(</span><span class="n">dE</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
@@ -360,10 +375,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_colored_plane</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">anneal_colored_plane</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="DenseGraphAnnealer.anneal_one_step_sa_naive"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.anneal_one_step_sa_naive">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="p">:</span>
+<div class="viewcode-block" id="DenseGraphAnnealer.anneal_one_step_sa_naive"><a class="viewcode-back" href="../../../dense_graph_annealer.html#sqaod.py.DenseGraphAnnealer.anneal_one_step_sa_naive">[docs]</a>    <span class="k">def</span> <span class="nf">anneal_one_step_sa_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kT</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; (sqaod.py only) sqaod.algorithm.sa_naive version of SA &quot;&quot;&quot;</span>
         <span class="n">h</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">()</span>
         <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span>
+        <span class="n">invKT</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">kT</span>
 
         <span class="k">for</span> <span class="n">iq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m</span><span class="p">)</span> <span class="p">:</span>
             <span class="n">qm</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="n">iq</span><span class="p">]</span>
@@ -371,8 +387,8 @@
                 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
                 <span class="n">qx</span> <span class="o">=</span> <span class="n">qm</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
                 <span class="nb">sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">qm</span><span class="p">);</span> <span class="c1"># diagnoal elements in J are zero.</span>
-                <span class="n">dE</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">)</span>
-                <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="p">(</span><span class="n">dE</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dE</span> <span class="o">*</span> <span class="n">kT</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span>
+                <span class="n">dE</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">qx</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="mf">2.</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">)</span>
+                <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.</span> <span class="k">if</span> <span class="p">(</span><span class="n">dE</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">dE</span> <span class="o">*</span> <span class="n">invKT</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">():</span>
                     <span class="n">qm</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">qx</span></div></div>
 
@@ -487,7 +503,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

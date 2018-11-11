@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sqaod.py.bipartite_graph_bf_searcher &#8212; sqaod 1.0 documentation</title>
+    <title>sqaod.py.bipartite_graph_bf_searcher &#8212; sqaod 1.0.2 documentation</title>
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -41,6 +41,7 @@
   <h1>Source code for sqaod.py.bipartite_graph_bf_searcher</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">sqaod</span>
 <span class="kn">from</span> <span class="nn">sqaod.common</span> <span class="k">import</span> <span class="n">checkers</span>
 <span class="kn">from</span> <span class="nn">sqaod</span> <span class="k">import</span> <span class="n">algorithm</span> <span class="k">as</span> <span class="n">algo</span>
@@ -141,27 +142,21 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          array of floating point number : QUBO energy.</span>
 
-<span class="sd">        QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</span>
-
-<span class="sd">        Notes:</span>
-<span class="sd">          You need to call calculate_E() or make_solution() before calling get_E().</span>
-<span class="sd">          CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</span>
+<span class="sd">        Calculates and returns QUBO energy for all trotters. len(E) is m.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E</span></div>
+        <span class="n">nXmin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xPairs</span><span class="p">)</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nXmin</span><span class="p">))</span>
+        <span class="n">E</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Emin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">E</span></div>
 
 <div class="viewcode-block" id="BipartiteGraphBFSearcher.get_x"><a class="viewcode-back" href="../../../bipartite_graph_bf_searcher.html#sqaod.py.BipartiteGraphBFSearcher.get_x">[docs]</a>    <span class="k">def</span> <span class="nf">get_x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; get bits.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">          tuple of 2 numpy.int8 arrays : array of bit {0, 1}.</span>
-
-<span class="sd">        x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">          calculate_E() or make_solution() should be called before calling get_E().</span>
-<span class="sd">          ( CPU/CUDA annealers automatically/internally call calculate_E().)</span>
+<span class="sd">          list of tuples.  Each tuple contains 2 numpy.int8 arrays of x0 and x1</span>
+<span class="sd">          x0 and x1 are arrays of bits, {0, 1}.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xPairs</span></div>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xPairs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BipartiteGraphBFSearcher.prepare"><a class="viewcode-back" href="../../../bipartite_graph_bf_searcher.html#sqaod.py.BipartiteGraphBFSearcher.prepare">[docs]</a>    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; preparation of internal resources.</span>
@@ -182,22 +177,24 @@
 <div class="viewcode-block" id="BipartiteGraphBFSearcher.make_solution"><a class="viewcode-back" href="../../../bipartite_graph_bf_searcher.html#sqaod.py.BipartiteGraphBFSearcher.make_solution">[docs]</a>    <span class="k">def</span> <span class="nf">make_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; make bit arrays(x) and calculate QUBO energy.</span>
 
+<span class="sd">        This method calculates QUBO energy, and prepare solution as a bit array, and caches them.</span>
+<span class="sd">        This method can be empty if a class does not cache solution.</span>
+
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_E</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="BipartiteGraphBFSearcher.calculate_E"><a class="viewcode-back" href="../../../bipartite_graph_bf_searcher.html#sqaod.py.BipartiteGraphBFSearcher.calculate_E">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_E</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; calculate QUBO energy.</span>
-<span class="sd">        </span>
-<span class="sd">        This method calculate QUBO energy, and caches it, does not return any value.</span>
+<span class="sd">        This method calculates QUBO energy, and caches it.</span>
+<span class="sd">        This method can be empty if a class does not cache qubo energy.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">          A call to this method can be asynchronous.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nXmin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xPairs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nXmin</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_E</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimize</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_Emin</span><span class="p">)</span></div>
+        <span class="k">pass</span></div>
+
 
     <span class="c1"># Not used.  Keeping it for reference.    </span>
     <span class="k">def</span> <span class="nf">_search_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
@@ -271,10 +268,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
 
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_range</span><span class="p">()</span> <span class="p">:</span>
-            <span class="k">pass</span>
+            <span class="k">pass</span></div></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">make_solution</span><span class="p">()</span></div></div>
-        
+
 <div class="viewcode-block" id="bipartite_graph_bf_searcher"><a class="viewcode-back" href="../../../bipartite_graph_bf_searcher.html#sqaod.py.bipartite_graph_bf_searcher">[docs]</a><span class="k">def</span> <span class="nf">bipartite_graph_bf_searcher</span><span class="p">(</span><span class="n">b0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">optimize</span> <span class="o">=</span> <span class="n">sqaod</span><span class="o">.</span><span class="n">minimize</span><span class="p">,</span> <span class="o">**</span><span class="n">prefs</span><span class="p">)</span> <span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; factory function for sqaod.py.BipartiteGraphAnnealer.</span>
 
@@ -337,7 +333,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

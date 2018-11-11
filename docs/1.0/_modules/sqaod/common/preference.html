@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sqaod.common.preference &#8212; sqaod 1.0 documentation</title>
+    <title>sqaod.common.preference &#8212; sqaod 1.0.2 documentation</title>
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -46,8 +46,19 @@
     <span class="n">naive</span> <span class="o">=</span> <span class="s1">&#39;naive&#39;</span>
     <span class="n">coloring</span> <span class="o">=</span> <span class="s1">&#39;coloring&#39;</span>
     <span class="n">brute_force_search</span> <span class="o">=</span> <span class="s1">&#39;brute_force_search&#39;</span>
+    <span class="n">sa_default</span> <span class="o">=</span> <span class="s1">&#39;sa_default&#39;</span>
     <span class="n">sa_naive</span> <span class="o">=</span> <span class="s1">&#39;sa_naive&#39;</span>
     <span class="n">sa_coloring</span> <span class="o">=</span> <span class="s1">&#39;sa_coloring&#39;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_sqa</span><span class="p">(</span><span class="n">algo</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">if</span> <span class="n">algo</span> <span class="o">==</span> <span class="n">Algorithm</span><span class="o">.</span><span class="n">default</span> <span class="ow">or</span> \
+           <span class="n">algo</span> <span class="o">==</span> <span class="n">Algorithm</span><span class="o">.</span><span class="n">naive</span> <span class="ow">or</span> \
+           <span class="n">algo</span> <span class="o">==</span> <span class="n">Algorithm</span><span class="o">.</span><span class="n">coloring</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+       
+        <span class="k">return</span> <span class="kc">False</span>
+   
     
 <span class="n">algorithm</span> <span class="o">=</span> <span class="n">Algorithm</span><span class="p">()</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -66,8 +77,10 @@
 <span class="sd">  **brute_force_search :**</span>
 <span class="sd">    Brute-force search.</span>
 <span class="sd">    All brute-force searchers have &#39;brute_force_search&#39; algorithm,</span>
+<span class="sd">  **sa_default :**</span>
+<span class="sd">    select default algorithm for SA(simulated annealing, not SQA),</span>
 <span class="sd">  **sa_naive :**</span>
-<span class="sd">    naive version of SA(simulated annealing, not SQA),</span>
+<span class="sd">    naive version of SA,</span>
 <span class="sd">  **sa_coloring :**</span>
 <span class="sd">    color-code version of SA.</span>
 
@@ -138,7 +151,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">sqaod 1.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

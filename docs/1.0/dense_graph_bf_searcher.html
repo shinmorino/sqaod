@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Dense Graph Brute-force Searcher &#8212; sqaod 1.0 documentation</title>
+    <title>Dense Graph Brute-force Searcher &#8212; sqaod 1.0.2 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -112,13 +112,7 @@ For example, sqaod.py.DenseGraphBFSearcher is instantiated by <a class="referenc
 <span class="c1">#</span>
 <span class="c1"># searcher.search()   # run whole search.</span>
 
-<span class="c1"># 6. make solution</span>
-<span class="c1"># calculate QUBO energy and prepare solution as a bit array, and caches them.</span>
-<span class="c1"># After calling make_solution(), get_X() and get_E() returns</span>
-<span class="c1"># bits and QUBO energy.</span>
-<span class="n">searcher</span><span class="o">.</span><span class="n">make_solution</span><span class="p">()</span>
-
-<span class="c1"># 7. get solution</span>
+<span class="c1"># 6. get solution</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">searcher</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span>
 <span class="c1"># x is a list of tuples.  Each tuple contains pair of  bit arrays (x0, x1).</span>
 <span class="c1"># E is a vector of QUBO energy.</span>
@@ -262,10 +256,7 @@ Upper/Lower triangular matrices or symmetric matrices are accepted.</li>
 </tr>
 </tbody>
 </table>
-<p>QUBO energy value is calculated for each trotter. so E is a vector whose length is m.</p>
-<p class="rubric">Notes</p>
-<p>You need to call calculate_E() or make_solution() before calling get_E().
-CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
+<p>Calculates and returns QUBO energy for all trotters. len(E) is m.</p>
 </dd></dl>
 
 <dl class="method">
@@ -282,12 +273,7 @@ CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
 </tr>
 </tbody>
 </table>
-<p>x0.shape and x1.shape are (m, N0) and (m, N1) repsectively, and m is number of trotters.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">calculate_E() or make_solution() should be called before calling get_E().
-( CPU/CUDA annealers automatically/internally call calculate_E().)</p>
-</div>
+<p>x is a list of int8 arrays.  len(x) is m, and len(int8 array) is N.</p>
 </dd></dl>
 
 <dl class="method">
@@ -303,8 +289,9 @@ CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
 <dl class="method">
 <dt id="sqaod.py.DenseGraphBFSearcher.make_solution">
 <code class="descname">make_solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.make_solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.make_solution" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate QUBO energy.</p>
-<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<dd><p>make bit arrays(x) and calculate QUBO energy.</p>
+<p>This method calculates QUBO energy, and prepare solution as bit arrays, and caches them.
+This method can be empty if a class does not cache solution.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A call to this method can be asynchronous.</p>
@@ -314,8 +301,9 @@ CPU/CUDA versions of solvers automatically call calculate_E() in get_E()</p>
 <dl class="method">
 <dt id="sqaod.py.DenseGraphBFSearcher.calculate_E">
 <code class="descname">calculate_E</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqaod/py/dense_graph_bf_searcher.html#DenseGraphBFSearcher.calculate_E"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sqaod.py.DenseGraphBFSearcher.calculate_E" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate QUBO energy.</p>
-<p>This method calculate QUBO energy, and caches it, does not return any value.</p>
+<dd><p>calculate QUBO energy.
+This method calculates QUBO energy, and caches it.
+This method can be empty if a class does not cache qubo energy.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A call to this method can be asynchronous.</p>
@@ -496,7 +484,7 @@ By using this method, you can do searches stepwise.</p>
         <li class="right" >
           <a href="bipartite_graph_annealer.html" title="Bipartite Graph Annealers"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">sqaod 1.0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

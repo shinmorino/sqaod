@@ -68,14 +68,8 @@ Below is a psudo-code to run bipartite graph brute-force searcher.
    # Alternatively, you can use one line for search, searcher.search().
    #
    # searcher.search()   # run whole search.
-     
-   # 6. make solution
-   # calculate QUBO energy and prepare solution as a bit array, and caches them.
-   # After calling make_solution(), get_X() and get_E() returns
-   # bits and QUBO energy.  
-   searcher.make_solution()
 
-   # 7. get solution
+   # 6. get solution
    # x is a list of tuples.  Each tuple contains pair of  bit arrays (x0, x1).
    # E is a vector of QUBO energy.
    x = searcher.get_x()
