@@ -58,7 +58,8 @@ class DenseGraphAnnealer :
           optimize : optimize direction, `sqaod.maximize, sqaod.minimize <preference.html#sqaod-maximize-sqaod-minimize>`        """
         
         checkers.dense_graph.qubo(W)
-        W = symmetrize(W)
+        # symmetrized internally in dense_graph_calculate_hamiltonian..
+        # W = symmetrize(W)
 
         h, J, c = formulas.dense_graph_calculate_hamiltonian(W)
         self._optimize = optimize
