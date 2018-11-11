@@ -1,26 +1,26 @@
 # Sqaod
-#### Latest version : v1.0.0 (deb), 1.0.1 (python). (Nov. 3, 2018)
+#### Latest version : v1.0.2 (deb), 1.0.2 (python). (Nov. 11, 2018)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
+### Version 1.0.2 Released (2018/11/11)
+Version 1.0.2 includes miscellaneous bug fixes that affect annealing behavior.
+Please update to 1.0.2 if you're using older versions.
 
-### Version 1.0.1 Released (Nov. 3, 2018)
-- [Documentation](https://shinmorino.github.io/sqaod/docs/1.0/) prepared.
-- Updated some version signatures that were not updated.
-- This is an update for python packages. Deb/RPM packages stay 1.0.0.
+- getSystemE() is added to solvers to calculate system energy during annealing. [[#60]](https://github.com/shinmorino/sqaod/issues/60)
+- sqaod.algorithm.sa_default is added to select default SA algorithms in annealers. [[#61]](https://github.com/shinmorino/sqaod/issues/61)
+- calculate_E() and make_solutions() are not required to get QUBO energy and solutions.  These functions are for caching energies and solutions. [[#63]](https://github.com/shinmorino/sqaod/issues/63)
+- Python solvers return copies of objects.[[#62]](https://github.com/shinmorino/sqaod/issues/62)
+- Fix: anneal_one_step() for SA algorithm did not work, since parameters are not correctly passed. [[#65]](https://github.com/shinmorino/sqaod/issues/65)
+- Fix: QUBO energy was not correctly calculated and beta was not correctly applied in SQA algorithms. [[#64]](https://github.com/shinmorino/sqaod/issues/64)
+- Fix: symmetrize() was not correctly handled. [[#66]](https://github.com/shinmorino/sqaod/issues/66)
 
-### Version 1.0 Released (Oct. 28, 2018)
-- All dense graph solvers and functions are able to accept upper/lower triangular matrices. [[#57]](https://github.com/shinmorino/sqaod/issues/57)
-- Simulated annealing algorithms (not simulated quantum annealing) have been implemented. It's automatically selected when n_trotters == 1. [[#59]](https://github.com/shinmorino/sqaod/issues/59)
-- Binary packages are released for Ubuntu 16.04(CUDA 9.0, 10.0), 18.04(CUDA 10.0), CentOS(RHEL) 7 (CUDA 10.0).  See [Supported platforms and versions](https://github.com/shinmorino/sqaod/wiki/Supported-platforms-and-versions).
-- Misc bug fixes.
+Please visit the '[Release history](https://github.com/shinmorino/sqaod/wiki/Release-history)' page for changes and updates.
 
 #### Future plan
 - Version 1.1 planning is undergoing.  Please file your requests to [Version 1.1 planning [#55]]( https://github.com/shinmorino/sqaod/issues/55).
-
-Please visit the '[Release history](https://github.com/shinmorino/sqaod/wiki/Release-history)' page for changes and updates.
 
 ## Installation  
 
