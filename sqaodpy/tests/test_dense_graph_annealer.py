@@ -283,6 +283,25 @@ class TestDenseGraphAnnealerBase:
         E *= 1. / (2 * beta) * np.log(1 / np.tanh(G * beta / m))
         return E
         
+    def test_get_system_E_for_SA(self) :
+        G = 0.01
+        beta = 1. / 0.05
+        N, m = 10, 5
+        
+        ann = self.anpkg.dense_graph_annealer(dtype = self.dtype)
+        W = dense_graph_random(N, self.dtype)
+        ann.set_qubo(W)
+        ann.set_preferences(n_trotters = m, algorithm=sq.algorithm.sa_default)
+        ann.prepare()
+        
+        qset = np.empty((m, N), np.int8)
+        sq.common.randomize_spin(qset)
+        ann.set_qset(qset)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        self.assertTrue(np.allclose(Esys, Emean, atol=self.epu))
+
     def test_get_system_E_with_uniform_q(self) :
         G = 0.01
         beta = 1. / 0.05

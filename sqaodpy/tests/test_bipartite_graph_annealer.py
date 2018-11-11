@@ -320,6 +320,31 @@ class TestBipartiteGraphAnnealerBase:
         E *= 1. / (2 * beta) * np.log(1 / np.tanh(G * beta / m))
         return E
         
+    def test_get_system_E_for_SA(self) :
+        G = 0.01
+        beta = 1. / 0.05
+        N0, N1, m = 5, 5, 5
+        
+        ann = self.anpkg.bipartite_graph_annealer(dtype = self.dtype)
+        b0, b1, W = bipartite_graph_random(N0, N1, self.dtype)
+        ann.set_qubo(b0, b1, W)
+        ann.set_preferences(n_trotters = m, algorithm = sqaod.algorithm.sa_default)
+        ann.prepare()
+        
+        # random
+        qset = []
+        for _ in range(m) :
+            q0, q1 = - np.ones((N0, ), np.int8), - np.ones((N1, ), np.int8)
+            sq.common.randomize_spin(q0)
+            sq.common.randomize_spin(q1)
+            qset.append((q0, q1))
+
+        ann.set_qset(qset)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        self.assertTrue(np.allclose(Esys, Emean, atol=self.epu))
+        
     def test_get_system_E_with_uniform_q(self) :
         G = 0.01
         beta = 1. / 0.05
