@@ -29,6 +29,7 @@ CUDADenseGraphAnnealer<real>::CUDADenseGraphAnnealer() {
     m_ = -1;
     d_reachCount_ = NULL;
     selectAlgorithm(sq::algoDefault);
+    annealMethod_ = &CUDADenseGraphAnnealer::annealOneStepSQA;
 }
 
 template<class real>

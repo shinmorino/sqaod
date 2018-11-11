@@ -16,6 +16,7 @@ template<class real>
 CPUBipartiteGraphAnnealer<real>::CPUBipartiteGraphAnnealer() {
     m_ = -1;
     selectAlgorithm(sq::algoDefault);
+    annealMethod_ = &CPUBipartiteGraphAnnealer::annealOneStepNaive;
     nWorkers_ = sq::getDefaultNumThreads();
     sq::log("# workers: %d", nWorkers_);
     random_ = new sq::Random[nWorkers_];

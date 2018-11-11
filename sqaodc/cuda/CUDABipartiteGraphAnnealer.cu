@@ -20,6 +20,7 @@ CUDABipartiteGraphAnnealer<real>::CUDABipartiteGraphAnnealer() {
     m_ = -1;
     dotSpins0_ = dotSpins1_ = NULL;
     selectAlgorithm(sq::algoDefault);
+    annealMethod_ = &CUDABipartiteGraphAnnealer::annealOneStepSQA;
 }
 
 template<class real>
