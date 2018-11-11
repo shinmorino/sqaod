@@ -1,6 +1,9 @@
 from setuptools import setup, find_packages, Extension, dist
 import sys
 
+name = 'sqaod'
+version = '1.0.2'
+
 #https://stackoverflow.com/questions/35112511/pip-setup-py-bdist-wheel-no-longer-builds-forced-non-pure-wheels
 class BinaryDistribution(dist.Distribution):
     def has_ext_modules(self):
@@ -12,8 +15,6 @@ if 'linux' in sys.platform :
 else :    
     package_data = {'sqaod.cpu' : ['*.pyd', 'sqaod/cpu/*.pyd' ], 'sqaod.cuda' : ['*.pyd', 'sqaod/cuda/*.pyd' ] }
     
-
-name = 'sqaod'
 
 pyver= [
     'Programming Language :: Python :: 2',
@@ -48,7 +49,7 @@ with open('README.rst') as file:
 
 setup(
     name=name,
-    version='1.0.0',
+    version=version,
     url=url,
     author=author,
     author_email=email,
