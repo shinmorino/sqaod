@@ -32,6 +32,7 @@ class TestDenseGraphAnnealerBase:
         an.randomize_spin()
         an.anneal_one_step(1, 1)
         an.calculate_E()
+        an.get_system_E(1, 1)
         an.make_solution()
         an.get_E()
         an.get_problem_size()
@@ -175,7 +176,7 @@ class TestDenseGraphAnnealerBase:
         x = an.get_x()
         self.assertEqual(len(x), 1)
         self.assertTrue(np.all(x[0] == 1))
-
+        
     def anneal(self, an) :
         an.prepare()
         an.randomize_spin()
@@ -272,6 +273,73 @@ class TestDenseGraphAnnealerBase:
         ann.set_preferences(algorithm = sq.algorithm.sa_naive)
         pref = ann.get_preferences()
         self.assertEqual(pref['algorithm'], sq.algorithm.sa_naive)
+
+    def _get_spin_energy_ref(self, qset, G, beta) :
+        m = len(qset)
+        E = 0.
+        for im in range(m) :
+            imnext = (im + 1) % m
+            E +=  np.sum(qset[im][:] * qset[imnext][:])
+        E *= 1. / (2 * beta) * np.log(1 / np.tanh(G * beta / m))
+        return E
+        
+    def test_get_system_E_with_uniform_q(self) :
+        G = 0.01
+        beta = 1. / 0.05
+        N, m = 10, 5
+        
+        ann = self.anpkg.dense_graph_annealer(dtype = self.dtype)
+        W = np.ones((N, N), self.dtype)
+        ann.set_qubo(W)
+        ann.set_preferences(n_trotters = m)
+        ann.prepare()
+        
+        q = np.ones((N, ), np.int8)
+        ann.set_q(q)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        EspinRef = self._get_spin_energy_ref(ann.get_q(), G, beta)
+        self.assertTrue(np.allclose(Esys, Emean + EspinRef, atol=self.epu))
+
+        q = - np.ones((N, ), np.int8)
+        ann.set_q(q)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        EspinRef = self._get_spin_energy_ref(ann.get_q(), G, beta)
+        self.assertTrue(np.allclose(Esys, Emean + EspinRef, atol=self.epu))
+        
+    def test_get_system_E_with_non_uniform_q(self) :
+        G = 0.01
+        beta = 1. / 0.05
+        N, m = 10, 5
+        
+        ann = self.anpkg.dense_graph_annealer(dtype = self.dtype)
+        W = dense_graph_random(N, self.dtype)
+        ann.set_qubo(W)
+        ann.set_preferences(n_trotters = m)
+        ann.prepare()
+        
+        qset = np.empty((m, N), np.int8)
+        it = np.nditer(qset, ['multi_index'], [['writeonly']])
+        while not it.finished :
+            qset[it.multi_index] = 1 if (np.sum(it.multi_index) % 2) == 0 else -1
+            it.iternext()
+        ann.set_qset(qset)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        EspinRef = self._get_spin_energy_ref(ann.get_q(), G, beta)
+        self.assertTrue(np.allclose(Esys, Emean + EspinRef, atol=self.epu))
+
+        sq.common.randomize_spin(qset)
+        ann.set_qset(qset)
+        Esys = ann.get_system_E(G, beta)
+
+        Emean = np.mean(ann.get_E())
+        EspinRef = self._get_spin_energy_ref(ann.get_q(), G, beta)
+        self.assertTrue(np.allclose(Esys, Emean + EspinRef, atol=self.epu))
         
     def test_reuse_solver(self) :
         # test no errors
