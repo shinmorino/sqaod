@@ -1,3 +1,24 @@
+sqaod (1.0.2-0~@DIST@) @DIST@; urgency=medium
+
+  * Version 1.0.2 includes miscellaneous bug fixes, that affect annealing behavior.   Please update to 1.0.2 if you're using older versions.
+
+  * getSystemE() is added to solvers to calculate system energy during annealing. [#60]
+
+  * sqaod.algorithm.sa_default is added to select default SA algorithms in annealers. [#61]
+
+  * calculate_E() and make_solutions() are not required to get QUBO energy and solutions.  These functions are for caching energies and solutions. [#63]
+
+  * Python solvers return copies of objects.[#62]
+
+  * Fix: anneal_one_step() for SA algorithm did not work, since parameters are not correctly passed. [#65]
+
+  * Fix: QUBO energy was not correctly calculated and beta was not correctly applied in SQA algorithms. [#64]
+
+  * Fix: symmetrize() was not correctly handled. [#66]
+
+ -- Shinya Morino <shin.morino@gmail.com>  Sun,11 Nov 2018 12:00:00 +0900
+
+
 sqaod (1.0.0-0~@DIST@) @DIST@; urgency=medium
 
   * Version 1.0.0
