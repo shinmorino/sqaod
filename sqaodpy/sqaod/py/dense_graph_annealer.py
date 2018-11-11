@@ -65,7 +65,7 @@ class DenseGraphAnnealer :
         self._optimize = optimize
         self._h, self._J, self._c = optimize.sign(h), optimize.sign(J), optimize.sign(c)
         self._N = W.shape[0]
-        self._m = self._N // 2
+        self._m = self._N // 4
         
     def set_hamiltonian(self, h, J, c) :
         """ set Hamiltonian.
