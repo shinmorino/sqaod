@@ -255,7 +255,7 @@ void tryFlip(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h, c
     int x = random.randInt(N);
     real qyx = matQ(y, x);
     real sum = dot_simd(J.rowPtr(x), matQ.rowPtr(y), N);
-    real dE = twoDivM * qyx * (h(x) + 2. * sum);
+    real dE = twoDivM * qyx * (h(x) + real(2.) * sum);
     int neibour0 = (y == 0) ? m - 1 : y - 1;
     int neibour1 = (y == m - 1) ? 0 : y + 1;
     dE -= qyx * (matQ(neibour0, x) + matQ(neibour1, x)) * coef;
@@ -344,8 +344,8 @@ void tryFlipSA(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h,
     int N = J.rows;
     int x = random.randInt(N);
     real qyx = matQ(y, x);
-    real dE = real(2.) * qyx * (h(x) + 2. * sum);
     real sum = dot_simd(J.rowPtr(x), matQ.rowPtr(y), N);
+    real dE = real(2.) * qyx * (h(x) + real(2.) * sum);
     real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
     if (threshold > random.random<real>())
         matQ(y, x) = - qyx;
