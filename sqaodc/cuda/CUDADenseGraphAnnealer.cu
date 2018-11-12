@@ -553,7 +553,7 @@ tryFlipSAKernel(char *d_q, sq::SizeType qStride, const real *d_Jq,
         int x = d_x[y]; /* N */
         char qyx = d_q[qStride * y + x];
         
-        real dE = real(2.) * (real)qyx * (d_Jq[y] + d_h[x]);
+        real dE = real(2.) * (real)qyx * (real(2.) * d_Jq[y] + d_h[x]);
         real threshold = (dE < real(0.)) ? real(1.) : exp(-dE * invKT);
         if (threshold > d_random[y])
             d_q[qStride * y + x] = - qyx;
