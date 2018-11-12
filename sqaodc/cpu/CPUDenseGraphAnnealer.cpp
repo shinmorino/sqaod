@@ -344,14 +344,8 @@ void tryFlipSA(sq::MatrixType<real> &matQ, int y, const sq::VectorType<real> &h,
     int N = J.rows;
     int x = random.randInt(N);
     real qyx = matQ(y, x);
-#if defined(__AVX2__)
-    real sum = dot_avx2(J.rowPtr(x), matQ.rowPtr(y), N);
-#elif defined(__SSE2__)
-    real sum = dot_sse2(J.rowPtr(x), matQ.rowPtr(y), N);
-#else
-    real sum = dot_naive(J.rowPtr(x), matQ.rowPtr(y), N);
-#endif
     real dE = real(2.) * qyx * (h(x) + 2. * sum);
+    real sum = dot_simd(J.rowPtr(x), matQ.rowPtr(y), N);
     real threshold = (dE < real(0.)) ? real(1.) : std::exp(-dE * invKT);
     if (threshold > random.random<real>())
         matQ(y, x) = - qyx;
