@@ -1,6 +1,8 @@
 # Ref. https://qiita.com/gyu-don/items/0c59423b12256821c38c
 # Notebook : https://github.com/gyu-don/wildcat/blob/master/Number%20Place%204x4.ipynb
 
+from __future__ import print_function
+
 problem_str = '''
 1? ??
 ?? 2?
