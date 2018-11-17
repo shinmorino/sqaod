@@ -1,11 +1,11 @@
 # Sqaod
-#### Latest version : v1.0.2 (deb), 1.0.2 (python). (Nov. 11, 2018)
+#### Latest version : v1.0.3 (deb), 1.0.2 (python). (Nov. 11, 2018)
 
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
-### Version 1.0.3 Released (2018/11/13)
+### Version 1.0.3 Released (2018/11/17)
 Version 1.0.3 includes one bug fix that was not fixed in 1.0.2.
 Please update to 1.0.3 if you're using older versions.
 - Fix: QUBO energy was not correctly calculated and in SA algorithms in CUDA-based solver.
