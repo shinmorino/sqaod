@@ -1,5 +1,5 @@
 # AC_PREREQ([2.69])
-AC_INIT(sqaodc, 1.0.2, shin.morino@gmail.com)    
+AC_INIT(sqaodc, 1.0.3, shin.morino@gmail.com)    
 AC_CONFIG_AUX_DIR(config)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([configure.ac])

@@ -5,10 +5,12 @@ Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
 ## Project status
-### Version 1.0.2 Released (2018/11/11)
-Version 1.0.2 includes miscellaneous bug fixes that affect annealing behavior.
-Please update to 1.0.2 if you're using older versions.
+### Version 1.0.3 Released (2018/11/13)
+Version 1.0.3 includes one bug fix that was not fixed in 1.0.2.
+Please update to 1.0.3 if you're using older versions.
+- Fix: QUBO energy was not correctly calculated and in SA algorithms in CUDA-based solver.
 
+### Version 1.0.2 Released (2018/11/11)
 - getSystemE() is added to solvers to calculate system energy during annealing. [[#60]](https://github.com/shinmorino/sqaod/issues/60)
 - sqaod.algorithm.sa_default is added to select default SA algorithms in annealers. [[#61]](https://github.com/shinmorino/sqaod/issues/61)
 - calculate_E() and make_solutions() are not required to get QUBO energy and solutions.  These functions are for caching energies and solutions. [[#63]](https://github.com/shinmorino/sqaod/issues/63)
