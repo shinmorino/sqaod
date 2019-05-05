@@ -4,6 +4,11 @@
 Collections of solvers/annealers for simulated quantum annealing on CPU and CUDA(NVIDIA GPU).<BR>
 Please visit [sqaod wiki](https://github.com/shinmorino/sqaod/wiki) for more details.
 
+Here's a list of useful links for starters:
+- [Installation](https://github.com/shinmorino/sqaod/wiki/Installation)
+- [sqaod documentation](https://shinmorino.github.io/sqaod/docs/1.0)
+- [sqaod/sqaodpy/examples](https://github.com/shinmorino/sqaod/tree/master/sqaodpy/example)
+
 ## Project status
 ### Version 1.0.3 Released (2018/11/17)
 Version 1.0.3 includes one bug fix that was not fixed in 1.0.2.
