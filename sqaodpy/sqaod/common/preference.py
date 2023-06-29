@@ -60,6 +60,7 @@ class Minimize :
         return sorted(list)
     def __int__(self) :
         return 0
+    __index__ = __int__
 
     
 class Maximize :
@@ -75,6 +76,7 @@ class Maximize :
         return sorted(list, reverse = true)
     def __int__(self) :
         return 1
+    __index__ = __int__
 
 minimize = Minimize()  #: telling solvers to minimize QUBO energy.
 maximize = Maximize()  #: telling solvers to maximize QUBO energy.
